@@ -135,18 +135,6 @@ public class DragImageMaker implements DraggableWithImage {
         final int width = (int) Math.max(Math.ceil(visual.getWidth() * targetScale), 1);
         final int height = (int) Math.max(Math.ceil(visual.getHeight() * targetScale), 1);
 
-        // TEMPORARY DIAGNOSTIC (ike-issues#638 drag-image truncation) — remove after diagnosis.
-        // Drag from a truncated source (ANF Concepts / navigator) and the correct one (performance
-        // statement) and compare: if prefW >> onscreenW but snapW ≈ onscreenW, the resize did not
-        // take; if prefW ≈ onscreenW, the node's preferred width is itself capped.
-        System.out.println("[DRAG-IMG] node=" + node.getClass().getSimpleName()
-                + " onscreenW=" + String.format("%.0f", restoreWidth)
-                + " prefW=" + (region != null ? String.format("%.0f", region.prefWidth(-1)) : "n/a")
-                + " snapW=" + String.format("%.0f", visual.getWidth())
-                + " snapH=" + String.format("%.0f", visual.getHeight())
-                + " scale=" + String.format("%.2f", targetScale)
-                + " img=" + width + "x" + height);
-
         // Scale to the standard height, then translate so the (possibly negative) top-left of the
         // visual bounds lands on the image origin — captures borders/effects on every edge.
         final Affine transform = new Affine();

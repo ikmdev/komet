@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.events.EvtBus;
@@ -254,13 +255,33 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                 Dragboard dragboard = getSkinnable().startDragAndDrop(TransferMode.COPY_OR_MOVE);
                 ClipboardContent clipboardContent = new ClipboardContent();
                 clipboardContent.put(KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT, list);
+                // Also advertise the standard multi-concept format (ike-issues#854) so any target —
+                // the assistant compose box, another list — can read all dragged concepts, not just
+                // the navigator's own format.
+                int[] nids = draggedItems.stream()
+                        .filter(i -> i.getValue() != null && i.getValue().publicId() != null)
+                        .mapToInt(i -> i.getValue().nid())
+                        .toArray();
+                KometClipboard.putConcepts(clipboardContent, nids);
                 dragboard.setContent(clipboardContent);
-                WritableImage snapshot = createSnapshot();
-                dragboard.setDragView(snapshot);
+                // The canonical multi-concept glyph — the lead concept's pill with a count badge —
+                // built from identity, so a many-concept drag reads as one koncept glyph rather than
+                // a composite of tile snapshots (ike-issues#854). A count of 1 shows no badge. Falls
+                // back to the tile-composite snapshot only when no concept resolves.
+                draggedItems.stream()
+                        .filter(i -> i.getValue() != null && i.getValue().publicId() != null)
+                        .findFirst()
+                        .ifPresentOrElse(
+                                lead -> KonceptDragGlyph.setMultiDragView(dragboard, lead.getValue().nid(),
+                                        treeView.getNavigator().getViewCalculator(), list.size()),
+                                () -> dragboard.setDragView(createSnapshot()));
                 e.consume();
             }
         });
-        treeView.setOnDragDone(_ -> resetSelection());
+        // Keep the tree's selection after a drag ends — the user may drag the same set again or act
+        // on it (ike-issues#854). Only the transient bounding-box gesture mode is cleared; the
+        // clicking-mode flag stays consistent with the selection size via the selection listener.
+        treeView.setOnDragDone(_ -> setMultipleSelectionByBoundingBox(false));
 
         // External drag and drop
         treeView.setOnDragOver(event -> {

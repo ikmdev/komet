@@ -20,6 +20,7 @@ import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.StyleClasses;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.dnd.KonceptDragSource;
+import dev.ikm.komet.framework.graphics.SmallCapsFonts;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.common.id.IntIds;
@@ -34,12 +35,12 @@ import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.css.PseudoClass;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,19 +57,25 @@ import java.util.Locale;
  * <p>Because the identicon and the name are deterministic functions of the component's
  * {@link PublicId}, an on-screen badge matches the identicon and label shown for the same
  * component in generated documents (ike-issues#563). When the component's latest version is
- * inactive (retired) in the view, the name is struck through (a combining long-stroke overlay,
- * since the ellipsizing {@code Label} cannot strike through via CSS) and shown in the retired colour.
+ * inactive (retired) in the view, the name is struck through — a real strikethrough on the name's
+ * {@code Text} node, driven by {@code komet.css} — and shown in the retired colour (#586).
  *
- * <p>All visual treatment lives in {@code komet.css} ({@code .koncept-chip}, {@code .koncept-label},
- * {@code .koncept-status} and the {@code .koncept-defined}/{@code -primitive}/{@code -multiparent}/{@code -root}
+ * <p>Colour and the retired strikethrough live in {@code komet.css} ({@code .koncept-chip},
+ * {@code .koncept-label}, {@code .koncept-status} and the
+ * {@code .koncept-defined}/{@code -primitive}/{@code -multiparent}/{@code -root}
  * colour modifiers), mirroring the AsciiDoc {@code koncept.css}; this control adds only the style
- * classes and the {@code inactive} pseudo-class. JavaFX CSS has no {@code font-variant}, so the
- * small-caps effect is approximated by upper-casing the label text and reducing its size.
+ * classes and the {@code inactive} pseudo-class. JavaFX CSS has no {@code font-variant}, so true
+ * small caps come from the bundled dedicated family ({@link SmallCapsFonts} — capitals full height,
+ * the rest small capitals, the name in its natural case), set in code because CSS cannot express
+ * the runtime fallback: absent the font the label falls back to the shrunken all-caps
+ * approximation (#855). The name is an {@link EllipsisText}, so it still ellipsises in a
+ * width-constrained host.
  *
  * <p>The badge is a drag source (copy) carrying the component on a {@link KometClipboard}, and
  * exposes the full grounded identity (name, optional SCTID, UUID, nid) on hover. It is the shared
  * atom for the refreshed axiom tree (ike-issues#639) and the recursive semantic viewer
- * (ike-issues#641); it does not truncate the concept label.
+ * (ike-issues#641); it never applies policy truncation to the concept label — only width-driven
+ * ellipsis when a host constrains it, with the full name preserved on the identity tooltip.
  */
 public class KonceptBadge extends HBox {
 
@@ -89,6 +96,16 @@ public class KonceptBadge extends HBox {
     /** Inline edge length (px) of the {@link KonceptKind#STAMP} pentagon sigil. */
     private static final double STAMP_SIGIL_SIZE = 14;
 
+    /**
+     * Name font size (px) in the true small-caps family. Slightly larger than the fallback because
+     * the family's lowercase glyphs are small capitals (well below full height), the same
+     * size-per-mode split the assistant chip uses.
+     */
+    private static final double SC_FONT_SIZE = 12;
+
+    /** Name font size (px) for the shrunken all-caps fallback — the pre-#855 rendering. */
+    private static final double FALLBACK_FONT_SIZE = 11;
+
     /** Sentinel nid for a presentation-only badge built without a populated store/view. */
     private static final int UNKNOWN_NID = Integer.MIN_VALUE;
 
@@ -100,7 +117,7 @@ public class KonceptBadge extends HBox {
     private final HBox sigilBox = new HBox();
     private final HBox statusBox = new HBox();
     private final ImageView identicon;
-    private final Label label = new Label();
+    private final EllipsisText nameNode = new EllipsisText();
 
     private String conceptName;
     private String sctid;
@@ -171,16 +188,21 @@ public class KonceptBadge extends HBox {
         this.identicon.setSmooth(false);
         this.identicon.getStyleClass().add(StyleClasses.KONCEPT_IDENTICON.toString());
 
-        this.label.getStyleClass().add(StyleClasses.KONCEPT_LABEL.toString());
-        // Let the label shrink and ellipsize (with the full name on the identity tooltip) so the
+        this.nameNode.textNode().getStyleClass().add(StyleClasses.KONCEPT_LABEL.toString());
+        // True small caps via the bundled dedicated family; absent the font, the shrunken all-caps
+        // fallback (see the class comment). Set in code, not komet.css, because only code can ask
+        // the resolver whether the family registered.
+        String scFamily = SmallCapsFonts.family();
+        this.nameNode.setFont(scFamily != null
+                ? Font.font(scFamily, SC_FONT_SIZE)
+                : Font.font(FALLBACK_FONT_SIZE));
+        // Let the name shrink and ellipsize (with the full name on the identity tooltip) so the
         // badge fits a fixed-width container without forcing a horizontal scrollbar.
-        this.label.setMinWidth(0);
-        this.label.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(this.label, Priority.ALWAYS);
+        HBox.setHgrow(this.nameNode, Priority.ALWAYS);
         setMaxWidth(Double.MAX_VALUE);
         setConceptName(explicitName != null ? explicitName : resolveName(nid, viewProperties));
 
-        getChildren().addAll(sigilBox, statusBox, identicon, label);
+        getChildren().addAll(sigilBox, statusBox, identicon, nameNode);
         setStatus(showStatus && viewProperties != null && nid != UNKNOWN_NID
                 ? computeStatus(nid, viewProperties, premiseType)
                 : KonceptStatus.NONE);
@@ -357,28 +379,27 @@ public class KonceptBadge extends HBox {
 
     private void setConceptName(String name) {
         this.conceptName = name;
-        // JavaFX CSS has no font-variant; upper-case + reduced size approximates small-caps.
-        String display = name == null ? "" : name.toUpperCase(Locale.ROOT);
-        // A Label can't strike through via CSS (only Text can), and the label is a Label so it can
-        // ellipsize. So for an inactive/retired concept, strike the name at the text level with a
-        // combining long-stroke overlay (U+0336) on each character — a font-level strikethrough that
-        // works in any font and survives ellipsis. The tooltip keeps the un-struck name.
-        label.setText(inactive ? strikeThrough(display) : display);
+        // The retired strikethrough needs nothing here: the name is a Text node, and komet.css
+        // strikes it (with the retired colour) under the inactive pseudo-class.
+        nameNode.setText(displayText(name, SmallCapsFonts.family()));
     }
 
     /**
-     * Returns {@code text} with a combining long-stroke overlay after each character, rendering it
-     * struck through in any font.
+     * The display form of a concept name: with the dedicated small-caps family, the name in its
+     * natural case (the family's own glyphs are the small caps — capitals full height, the rest
+     * small capitals); without it, upper-cased, so the shrunken all-caps fallback still reads as
+     * small caps.
      *
-     * @param text the text to strike through
-     * @return the struck-through text
+     * @param name             the concept name; {@code null} yields the empty string
+     * @param smallCapsFamily  the resolved small-caps family ({@link SmallCapsFonts#family()}), or
+     *                         {@code null} when the bundled font is unavailable
+     * @return the string to display, never {@code null}
      */
-    private static String strikeThrough(String text) {
-        StringBuilder struck = new StringBuilder(text.length() * 2);
-        for (int i = 0; i < text.length(); i++) {
-            struck.append(text.charAt(i)).append('̶');
+    static String displayText(String name, String smallCapsFamily) {
+        if (name == null) {
+            return "";
         }
-        return struck.toString();
+        return smallCapsFamily != null ? name : name.toUpperCase(Locale.ROOT);
     }
 
     private void installTooltip() {

@@ -46,6 +46,13 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
      */
     private boolean nameManuallyAssigned = false;
 
+    /**
+     * The nid of the reference component read from preferences, awaiting resolution to the canonical
+     * pattern instance via {@link #resolveReferenceComponent(List)}. The referenced pattern can live in
+     * any of the window's sections, so resolution has to wait until the whole window has loaded.
+     */
+    private Integer unresolvedReferenceComponentNid;
+
     public EditorSectionModel() {
         patterns.addListener(this::patternsChanged);
         supplementalAreas.addListener(this::supplementalAreasChanged);
@@ -99,7 +106,7 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
         sectionPreferences.getInt(KL_GRID_NUMBER_COLUMNS).ifPresent(this::setNumberColumns);
 
         sectionPreferences.getEntity(KL_REFERENCE_COMPONENT).ifPresent(referenceComponent ->
-                setReferenceComponent(new EditorPatternModel(viewCalculator, referenceComponent.nid())));
+                unresolvedReferenceComponentNid = referenceComponent.nid());
 
         List<EditorPatternModel> editorPatternModels = EditorPatternModel.load(sectionPreferences, viewCalculator);
         getPatterns().setAll(editorPatternModels);
@@ -110,6 +117,28 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
             areas.add(EditorSupplementalAreaModel.load(sectionPreferences, UUID.fromString(areaId)));
         }
         getSupplementalAreas().setAll(areas);
+    }
+
+    /**
+     * Resolves the reference component read from preferences to the pattern instance with the same nid
+     * among the window's loaded patterns. Using the window's own instance (rather than constructing a
+     * new model for the same pattern) keeps the reference identical to an entry in the existing-patterns
+     * list, which the reference component combo box relies on to display the pattern's name.
+     * Called by the window model once all of its sections have loaded. If the referenced pattern is no
+     * longer part of the window, the reference component stays unset.
+     *
+     * @param windowPatterns all patterns loaded into the window, across all its sections
+     */
+    void resolveReferenceComponent(List<EditorPatternModel> windowPatterns) {
+        if (unresolvedReferenceComponentNid == null) {
+            return;
+        }
+
+        windowPatterns.stream()
+                .filter(pattern -> pattern.getNid() == unresolvedReferenceComponentNid)
+                .findFirst()
+                .ifPresent(this::setReferenceComponent);
+        unresolvedReferenceComponentNid = null;
     }
 
     /**

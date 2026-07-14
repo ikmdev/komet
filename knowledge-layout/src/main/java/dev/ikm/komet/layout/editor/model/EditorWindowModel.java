@@ -4,8 +4,10 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.layout.Region;
@@ -27,6 +29,7 @@ import static dev.ikm.komet.preferences.KLEditorPreferences.KL_WINDOW_COORDINATE
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_WINDOW_PREF_HEIGHT;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_WINDOW_PREF_WIDTH;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_WINDOW_TIMELINE_VISIBLE;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_WINDOW_TYPE;
 
 /**
  * Represents a Window. It has properties like its title, the main Section (EditorSectionModel instance)
@@ -82,6 +85,8 @@ public class EditorWindowModel extends EditorModelBase {
         editorWindowPreferences.getDouble(KL_WINDOW_PREF_HEIGHT).ifPresent(editorWindowModel::setPrefHeight);
         editorWindowPreferences.getBoolean(KL_WINDOW_COORDINATE_VISIBLE).ifPresent(editorWindowModel::setCoordinateVisible);
         editorWindowPreferences.getBoolean(KL_WINDOW_TIMELINE_VISIBLE).ifPresent(editorWindowModel::setTimelineVisible);
+        editorWindowPreferences.get(KL_WINDOW_TYPE).ifPresent(type ->
+                editorWindowModel.setWindowType(EditorWindowType.valueOf(type)));
 
         editorWindowModel.loadMainSection(editorWindowPreferences, viewCalculator);
 
@@ -89,7 +94,22 @@ public class EditorWindowModel extends EditorModelBase {
         List<EditorSectionModel> editorSectionModels = EditorSectionModel.load(editorWindowPreferences, viewCalculator);
         editorWindowModel.getAdditionalSections().setAll(editorSectionModels);
 
+        // Resolve the sections' reference components to the pattern instances loaded above. A reference
+        // can point at a pattern in any section, so this can only run once all sections have loaded.
+        editorWindowModel.resolveReferenceComponents();
+
         return editorWindowModel;
+    }
+
+    /**
+     * Returns all Patterns in this Window, across the main Section and the additional Sections.
+     */
+    public List<EditorPatternModel> getAllPatterns() {
+        List<EditorPatternModel> allPatterns = new ArrayList<>(mainSection.getPatterns());
+        for (EditorSectionModel section : additionalSections) {
+            allPatterns.addAll(section.getPatterns());
+        }
+        return allPatterns;
     }
 
     /**
@@ -112,6 +132,7 @@ public class EditorWindowModel extends EditorModelBase {
         editorWindowPreferences.putDouble(KL_WINDOW_PREF_HEIGHT, getPrefHeight());
         editorWindowPreferences.putBoolean(KL_WINDOW_COORDINATE_VISIBLE, isCoordinateVisible());
         editorWindowPreferences.putBoolean(KL_WINDOW_TIMELINE_VISIBLE, isTimelineVisible());
+        editorWindowPreferences.put(KL_WINDOW_TYPE, getWindowType().name());
 
         // Main Section
         editorWindowPreferences.put(KL_MAIN_SECTION, getMainSection().getName());
@@ -143,6 +164,15 @@ public class EditorWindowModel extends EditorModelBase {
      * Private API                                                                 *
      *                                                                             *
      ******************************************************************************/
+
+    private void resolveReferenceComponents() {
+        List<EditorPatternModel> allPatterns = getAllPatterns();
+
+        mainSection.resolveReferenceComponent(allPatterns);
+        for (EditorSectionModel section : additionalSections) {
+            section.resolveReferenceComponent(allPatterns);
+        }
+    }
 
     private void loadMainSection(KometPreferences editorWindowPreferences, ViewCalculator viewCalculator) {
         Optional<String> mainSectionName = editorWindowPreferences.get(KL_MAIN_SECTION);
@@ -234,6 +264,17 @@ public class EditorWindowModel extends EditorModelBase {
      * The additional Sections (besides the main section) inside this Window.
      */
     public ObservableList<EditorSectionModel> getAdditionalSections() { return additionalSections; }
+
+    // -- window type
+    /**
+     * The type of this Window. Defaults to {@link EditorWindowType#SEMANTICS} (a user-created
+     * window); the standard windows are seeded with their specific type.
+     */
+    private final ObjectProperty<EditorWindowType> windowType =
+            new SimpleObjectProperty<>(this, "windowType", EditorWindowType.SEMANTICS);
+    public EditorWindowType getWindowType() { return windowType.get(); }
+    public ObjectProperty<EditorWindowType> windowTypeProperty() { return windowType; }
+    public void setWindowType(EditorWindowType type) { windowType.set(type); }
 
     // -- preferred width
     /**

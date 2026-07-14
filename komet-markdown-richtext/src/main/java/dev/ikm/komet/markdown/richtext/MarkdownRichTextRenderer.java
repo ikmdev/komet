@@ -55,14 +55,18 @@ import org.commonmark.node.Text;
 import org.commonmark.node.ThematicBreak;
 import org.commonmark.parser.Parser;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Renders CommonMark (with the GFM tables extension) into styled {@link RichParagraph} runs
  * for the incubator {@code RichTextArea}. Block and inline structure is generic; every
  * <em>content</em> text run is delegated to an {@link InlineDecorator}, so consumers can
- * inject inline nodes (e.g. concept chips) without this module depending on them. Structural
- * text — table separators, horizontal rules, fenced-code lines — is emitted directly.
+ * inject inline nodes (e.g. concept chips) without this module depending on them. Fenced code
+ * blocks are dispatched by their info string to a {@link BlockRenderer}, so consumers can render
+ * a closed menu of block presentations (e.g. a concept tree) as native nodes, with any
+ * unrecognised tag falling through to preformatted text. Structural text — table separators,
+ * horizontal rules, fenced-code lines — is emitted directly.
  *
  * <p>This renderer is tinkar-free and holds no JavaFX scene state; it only builds the
  * RichTextArea model. Pair the produced paragraphs with {@link MarkdownStyledModel}.
@@ -75,15 +79,64 @@ public final class MarkdownRichTextRenderer {
     private static final String MONO = "monospace";
 
     private final double base;
+    private final String fontFamily;
     private final InlineDecorator decorator;
+    private final BlockRenderer blockRenderer;
 
     /**
+     * Equivalent to {@link #MarkdownRichTextRenderer(double, InlineDecorator, BlockRenderer)} with
+     * no block renderer, so every fenced code block renders as preformatted text.
+     *
      * @param base      base body font size in px; headings and code scale from it
      * @param decorator the inline-run decorator; {@code null} uses {@link InlineDecorator#PLAIN}
      */
     public MarkdownRichTextRenderer(double base, InlineDecorator decorator) {
+        this(base, decorator, BlockRenderer.NONE);
+    }
+
+    /**
+     * Equivalent to {@link #MarkdownRichTextRenderer(double, String, InlineDecorator, BlockRenderer)}
+     * with the platform-default body font family.
+     *
+     * @param base          base body font size in px; headings and code scale from it
+     * @param decorator     the inline-run decorator; {@code null} uses {@link InlineDecorator#PLAIN}
+     * @param blockRenderer the fenced-block renderer, dispatched by the block's info string;
+     *                      {@code null} uses {@link BlockRenderer#NONE}
+     */
+    public MarkdownRichTextRenderer(double base, InlineDecorator decorator, BlockRenderer blockRenderer) {
+        this(base, null, decorator, blockRenderer);
+    }
+
+    /**
+     * @param base          base body font size in px; headings and code scale from it
+     * @param fontFamily    the base body font family applied to prose, headings, lists, and the
+     *                      non-code runs of table cells (and inherited by concept chips);
+     *                      {@code null} uses the platform default. Code spans and code blocks stay
+     *                      monospaced regardless — this only sets the <em>prose</em> family, which
+     *                      is a model attribute (not CSS), so it is the only way to give, e.g., a
+     *                      print rendering a serif manuscript body.
+     * @param decorator     the inline-run decorator; {@code null} uses {@link InlineDecorator#PLAIN}
+     * @param blockRenderer the fenced-block renderer, dispatched by the block's info string;
+     *                      {@code null} uses {@link BlockRenderer#NONE}
+     */
+    public MarkdownRichTextRenderer(double base, String fontFamily, InlineDecorator decorator,
+                                    BlockRenderer blockRenderer) {
         this.base = base;
+        this.fontFamily = fontFamily;
         this.decorator = decorator == null ? InlineDecorator.PLAIN : decorator;
+        this.blockRenderer = blockRenderer == null ? BlockRenderer.NONE : blockRenderer;
+    }
+
+    /**
+     * Combines the configured base font family (when set) onto the caller's base style, so all
+     * prose that inherits from it picks up the family. Code runs re-set {@code monospace} on top of
+     * the result, so they stay monospaced. Returns the style unchanged when no family is configured.
+     */
+    private StyleAttributeMap withFamily(StyleAttributeMap baseStyle) {
+        if (fontFamily == null) {
+            return baseStyle;
+        }
+        return baseStyle.combine(StyleAttributeMap.builder().setFontFamily(fontFamily).build());
     }
 
     /**
@@ -92,9 +145,10 @@ public final class MarkdownRichTextRenderer {
      */
     public void render(String markdown, StyleAttributeMap baseStyle,
                        List<RichParagraph> out, List<String> plain) {
+        StyleAttributeMap effectiveBase = withFamily(baseStyle);
         Node document = PARSER.parse(markdown == null ? "" : markdown);
         for (Node block = document.getFirstChild(); block != null; block = block.getNext()) {
-            renderBlock(block, out, plain, 0, baseStyle);
+            renderBlock(block, out, plain, 0, effectiveBase);
         }
     }
 
@@ -104,11 +158,68 @@ public final class MarkdownRichTextRenderer {
      */
     public void renderPlainText(String text, StyleAttributeMap style,
                                 List<RichParagraph> out, List<String> plain) {
+        StyleAttributeMap effectiveStyle = withFamily(style);
         for (String line : (text == null ? "" : text).split("\n", -1)) {
             RichParagraph.Builder b = RichParagraph.builder();
-            decorator.emit(b, line, style);
+            decorator.emit(b, line, effectiveStyle);
             out.add(b.build());
             plain.add(line);
+        }
+    }
+
+    /**
+     * Parses {@code markdown} and renders it as an ordered list of {@link DocumentSegment}s — the
+     * block-stack projection. Splitting happens only at the <em>top level</em> of the document: a
+     * fenced code block whose info string the {@link BlockRenderer} accepts, and a GFM table,
+     * each flush the accumulated prose and emit a {@link DocumentSegment.NodeBlock}; every other
+     * block (including a fenced block the renderer declines, which stays preformatted text, and
+     * any table or fence nested inside a quote or list) accumulates into the current
+     * {@link DocumentSegment.ProseRun}. Rendering any block is byte-identical to
+     * {@link #render}; only the packaging differs.
+     *
+     * @param markdown  the CommonMark source; {@code null} is treated as empty
+     * @param baseStyle the base run style prose inherits
+     * @return the document's segments in order; empty when the source renders to nothing
+     */
+    public List<DocumentSegment> renderSegments(String markdown, StyleAttributeMap baseStyle) {
+        List<DocumentSegment> segments = new ArrayList<>();
+        List<RichParagraph> proseOut = new ArrayList<>();
+        List<String> prosePlain = new ArrayList<>();
+        StyleAttributeMap effectiveBase = withFamily(baseStyle);
+        Node document = PARSER.parse(markdown == null ? "" : markdown);
+        for (Node block = document.getFirstChild(); block != null; block = block.getNext()) {
+            switch (block) {
+                case FencedCodeBlock fc -> {
+                    List<BlockPiece> pieces = blockRenderer.render(fc.getInfo(), fc.getLiteral(), effectiveBase);
+                    if (pieces.isEmpty()) {
+                        // Declined tag — preformatted text, part of the flowing prose.
+                        emitCodeBlock(fc.getLiteral(), proseOut, prosePlain);
+                    } else {
+                        flushProse(segments, proseOut, prosePlain);
+                        for (BlockPiece piece : pieces) {
+                            segments.add(new DocumentSegment.NodeBlock(piece.node(), piece.plainText()));
+                        }
+                    }
+                }
+                case TableBlock tb -> {
+                    flushProse(segments, proseOut, prosePlain);
+                    segments.add(new DocumentSegment.NodeBlock(() -> buildTableNode(tb),
+                            GfmTableSerializer.serialize(TableModel.fromCommonMark(tb))));
+                }
+                default -> renderBlock(block, proseOut, prosePlain, 0, effectiveBase);
+            }
+        }
+        flushProse(segments, proseOut, prosePlain);
+        return segments;
+    }
+
+    /** Wraps any accumulated prose paragraphs into a {@link DocumentSegment.ProseRun} and clears. */
+    private static void flushProse(List<DocumentSegment> segments,
+                                   List<RichParagraph> out, List<String> plain) {
+        if (!out.isEmpty()) {
+            segments.add(new DocumentSegment.ProseRun(out, plain));
+            out.clear();
+            plain.clear();
         }
     }
 
@@ -135,7 +246,7 @@ public final class MarkdownRichTextRenderer {
                     renderBlock(c, out, plain, listDepth, qs);
                 }
             }
-            case FencedCodeBlock fc -> emitCodeBlock(fc.getLiteral(), out, plain);
+            case FencedCodeBlock fc -> emitFencedBlock(fc, out, plain, baseStyle);
             case IndentedCodeBlock ic -> emitCodeBlock(ic.getLiteral(), out, plain);
             case BulletList bl -> {
                 for (Node item = bl.getFirstChild(); item != null; item = item.getNext()) {
@@ -356,7 +467,7 @@ public final class MarkdownRichTextRenderer {
         javafx.scene.text.Text t = new javafx.scene.text.Text(text);
         FontWeight weight = style.bold() ? FontWeight.BOLD : FontWeight.NORMAL;
         FontPosture posture = style.italic() ? FontPosture.ITALIC : FontPosture.REGULAR;
-        t.setFont(Font.font(style.mono() ? MONO : null, weight, posture, base));
+        t.setFont(Font.font(style.mono() ? MONO : fontFamily, weight, posture, base));
         t.setStrikethrough(style.strike());
         return t;
     }
@@ -371,6 +482,8 @@ public final class MarkdownRichTextRenderer {
         }
         if (style.mono()) {
             b.setFontFamily(MONO);
+        } else if (fontFamily != null) {
+            b.setFontFamily(fontFamily);
         }
         return b.build();
     }
@@ -399,6 +512,25 @@ public final class MarkdownRichTextRenderer {
             return view;
         } catch (RuntimeException e) {
             return new ImageView();
+        }
+    }
+
+    /**
+     * Dispatches a fenced code block to the {@link BlockRenderer} by its info string. If the
+     * renderer returns pieces, each becomes one atomic inline-node paragraph (like a GFM table)
+     * with its plain-text projection; otherwise the block falls through to preformatted rendering,
+     * so an unrecognised or absent tag never regresses.
+     */
+    private void emitFencedBlock(FencedCodeBlock fc, List<RichParagraph> out, List<String> plain,
+                                 StyleAttributeMap baseStyle) {
+        List<BlockPiece> pieces = blockRenderer.render(fc.getInfo(), fc.getLiteral(), baseStyle);
+        if (pieces.isEmpty()) {
+            emitCodeBlock(fc.getLiteral(), out, plain);
+            return;
+        }
+        for (BlockPiece piece : pieces) {
+            out.add(RichParagraph.builder().addInlineNode(piece.node()).build());
+            plain.add(piece.plainText());
         }
     }
 

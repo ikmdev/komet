@@ -12,6 +12,7 @@ import javafx.scene.control.Control;
 
 public class StampViewControl extends Control {
     private static final PseudoClass STAMP_SELECTED = PseudoClass.getPseudoClass("selected");
+    private static final PseudoClass STAMP_VIEW_ONLY = PseudoClass.getPseudoClass("view-only");
 
     public StampViewControl() {
         getStyleClass().add("stamp-view-control");
@@ -90,4 +91,20 @@ public class StampViewControl extends Control {
     public boolean isSelected() { return selected.get(); }
     public BooleanProperty selectedProperty() { return selected; }
     public void setSelected(boolean value) { selected.set(value); }
+
+    // -- selectable
+    /**
+     * Whether the control can be selected by clicking it. When false the control is view-only:
+     * mouse presses no longer toggle the {@link #selectedProperty() selected} state, and the
+     * {@code view-only} pseudo-class suppresses the hover styling.
+     */
+    private final BooleanProperty selectable = new SimpleBooleanProperty(this, "selectable", true) {
+        @Override
+        protected void invalidated() {
+            pseudoClassStateChanged(STAMP_VIEW_ONLY, !get());
+        }
+    };
+    public boolean isSelectable() { return selectable.get(); }
+    public BooleanProperty selectableProperty() { return selectable; }
+    public void setSelectable(boolean value) { selectable.set(value); }
 }

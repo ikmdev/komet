@@ -117,10 +117,11 @@ public class KLEditorMainScreenController {
 
         saveButton.disableProperty().bind(titleTextField.textProperty().isEmpty());
 
-        KLEditorSession.startSession();
-
         // Init Window
         initWindow(windowToLoad);
+
+        // Start the session once the window model exists — the session tracks the window's patterns.
+        KLEditorSession.startSession(editorWindowModel);
 
         // Init KLEditorWindow Controller
         klEditorWindowController = new KLEditorWindowController(editorWindowModel, editorWindowControl, viewCalculator);

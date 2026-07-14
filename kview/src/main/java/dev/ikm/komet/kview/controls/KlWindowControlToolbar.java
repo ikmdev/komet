@@ -20,13 +20,17 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.control.Control;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.Skin;
 
 /**
- * The control bar shown at the top of a Knowledge Layout chapter window. It hosts the
- * coordinate menu, the timeline toggle, the properties toggle and the window close button.
+ * The control bar shown at the top of a Knowledge Layout chapter window. It hosts the window's
+ * title tab (the drag-dots icon, the {@link #titleProperty() title} and an optional DRAFT chip)
+ * on its top row, and below it the coordinate menu, the timeline toggle, the properties toggle
+ * and the window close button.
  * <p>
  * The buttons are created and laid out by {@link KlWindowControlToolbarSkin}. Rather than exposing those
  * buttons, the control offers an action-oriented API: callers register <em>what</em> should happen (e.g.
@@ -49,6 +53,25 @@ public class KlWindowControlToolbar extends Control {
     protected Skin<?> createDefaultSkin() {
         return new KlWindowControlToolbarSkin(this);
     }
+
+    // -- title
+    /**
+     * The text shown in the window's title tab, on the toolbar's top row.
+     */
+    private final StringProperty title = new SimpleStringProperty(this, "title", "");
+    public StringProperty titleProperty() { return title; }
+    public String getTitle() { return title.get(); }
+    public void setTitle(String value) { title.set(value); }
+
+    // -- draft visible
+    /**
+     * Controls whether the DRAFT chip is shown next to the title in the window's title tab.
+     * Shown while the window is in create mode, i.e. framing a component that doesn't exist yet.
+     */
+    private final BooleanProperty draftVisible = new SimpleBooleanProperty(this, "draftVisible", false);
+    public BooleanProperty draftVisibleProperty() { return draftVisible; }
+    public boolean isDraftVisible() { return draftVisible.get(); }
+    public void setDraftVisible(boolean value) { draftVisible.set(value); }
 
     // -- on close action
     private ObjectProperty<Runnable> onCloseAction = new SimpleObjectProperty<>();

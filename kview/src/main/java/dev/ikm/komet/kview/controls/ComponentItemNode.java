@@ -1,6 +1,9 @@
 package dev.ikm.komet.kview.controls;
 
+import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
 import dev.ikm.komet.framework.dnd.KonceptDragSource;
+import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.komet.kview.mvvm.view.JournalNavigationUtils;
 import dev.ikm.komet.kview.mvvm.view.common.SVGConstants;
 import dev.ikm.tinkar.common.id.PublicId;
@@ -19,8 +22,8 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
+import javafx.geometry.HPos;
+import javafx.geometry.VPos;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
@@ -68,7 +71,6 @@ public class ComponentItemNode extends Region {
         textLabel.setGraphic(iconImageView);
 
         textLabel.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(textLabel, Priority.ALWAYS);
 
         textLabel.tooltipProperty().bind(tooltipProperty());
         textLabel.wrapTextProperty().bind(wrapTextProperty());
@@ -206,9 +208,17 @@ public class ComponentItemNode extends Region {
             if (dragImageSupplier.get() != null) {
                 dragboard.setDragView(dragImageSupplier.get().get());
             } else if (getScene() != null) {
-                // Standard-size drag image with canonical cursor placement (right of the identicon);
-                // the caller-supplied image branch above is left intact.
-                KonceptDragSource.setDragView(dragboard, this);
+                // A concept drags as the canonical koncept pill, built from its identity
+                // (ike-issues#854); a non-concept component keeps the node snapshot.
+                ComponentItem item = componentItem.get();
+                if (item != null && item.isConcept() && item.getPublicId() != null) {
+                    // Resolve name (fully-qualified first) and inactive through the default view — the
+                    // same overload the navigators use — so the glyph is identical from every source.
+                    KonceptDragGlyph.setDragView(dragboard,
+                            PrimitiveData.nid(item.getPublicId()), Calculators.View.Default());
+                } else {
+                    KonceptDragSource.setDragView(dragboard, this);
+                }
             }
 
             textLabel.setStyle(previousStyle);
@@ -276,6 +286,19 @@ public class ComponentItemNode extends Region {
     protected double computeMinHeight(double width) {
         // Make the min height be the same as the pref height
         return super.computePrefHeight(width);
+    }
+
+    @Override
+    protected void layoutChildren() {
+        // Stretch the label to fill the available width, so its hover/edit-mode highlight spans
+        // the whole row — but never below its preferred width: when a parent squeezes this node,
+        // the label keeps its preferred size and overflows (Region's default behavior) instead of
+        // wrapping or truncating.
+        double contentWidth = getWidth() - snappedLeftInset() - snappedRightInset();
+        double contentHeight = getHeight() - snappedTopInset() - snappedBottomInset();
+        double labelWidth = Math.max(textLabel.prefWidth(-1), contentWidth);
+        layoutInArea(textLabel, snappedLeftInset(), snappedTopInset(), labelWidth, contentHeight,
+                -1, HPos.LEFT, VPos.CENTER);
     }
 
     /*=========================================================================*

@@ -84,6 +84,7 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewMenuTask;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.layout.expand.KlExpansionHost;
 import dev.ikm.komet.layout.KlPeerable;
 import dev.ikm.komet.layout.area.KlToolArea;
 import dev.ikm.komet.layout.editor.StandardEditorWindows;
@@ -391,6 +392,12 @@ public class JournalController {
         journalTopic = journalViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
 
         journalRootPane.getProperties().put(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic);
+
+        // The journal window is the top rung of every figure's expansion ladder. Stamping it here — the
+        // same properties-map idiom the topic above uses — is what lets knowledge-layout offer the window
+        // as an expansion target without depending on kview. Only a window has OS full screen beyond it;
+        // whether a given figure may step out there is that figure's own choice.
+        KlExpansionHost.mark(journalRootPane, () -> "Journal window", true);
 
         // Initialize the journal window view, which is provided in the WindowSettings
         windowView = journalViewModel.getPropertyValue(JournalViewModel.PARENT_VIEW_COORDINATES);

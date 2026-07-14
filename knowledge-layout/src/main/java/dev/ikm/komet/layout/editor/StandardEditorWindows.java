@@ -2,6 +2,7 @@ package dev.ikm.komet.layout.editor;
 
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
+import dev.ikm.komet.layout.editor.model.EditorWindowType;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.service.RemoteConceptSearchService;
 import dev.ikm.tinkar.common.service.ServiceLifecycleManager;
@@ -54,6 +55,8 @@ public final class StandardEditorWindows {
                                            ViewCalculator viewCalculator) {
         EditorWindowModel window = new EditorWindowModel();
         window.setTitle(CONCEPT_WINDOW_2);
+        window.setWindowType(EditorWindowType.STANDARD_CONCEPT);
+        window.setTimelineVisible(true);
 
         ensureLocallyResolvable(viewCalculator, TinkarTerm.DESCRIPTION_PATTERN);
 

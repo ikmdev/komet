@@ -15,37 +15,24 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
-import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
-import dev.ikm.komet.kview.mvvm.view.common.StampFormController;
+import dev.ikm.komet.kview.fxutils.CssHelper;
 import dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController;
 import dev.ikm.komet.kview.mvvm.view.genediting.ReferenceComponentController;
 import dev.ikm.komet.kview.mvvm.view.genediting.SemanticFieldsController;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl.Tab;
 import dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.FormMode;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampAddSubmitFormViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampCreateFormViewModel;
-import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
-import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
+import javafx.geometry.Pos;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Pane;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
-import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.carlfx.cognitive.loader.NamedVm;
 import org.slf4j.Logger;
@@ -60,136 +47,59 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.Confi
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Type.CONCEPT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.FIELD_INDEX;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.REF_COMPONENT;
-import static dev.ikm.komet.kview.events.StampEvent.ADD_STAMP;
-import static dev.ikm.komet.kview.events.StampEvent.CREATE_STAMP;
 
 public class GenPurposePropertiesController {
-
     private static final Logger LOG = LoggerFactory.getLogger(GenPurposePropertiesController.class);
-    private static final String EDIT_FIELD = "Edit Field";
-    private static final String ADD_FIELD = "Add Field";
 
-    @FXML
-    private ToggleButton addEditButton;
+    private final BorderPane propertiesPane = new BorderPane();
 
-    @FXML
-    private ToggleButton historyButton;
+    private final PropertiesTabsControl propertiesTabs = new PropertiesTabsControl();
 
-    @FXML
-    private ToggleButton instancesButton;
+    private final BorderPane contentBorderPane = new BorderPane();
 
-    public ToggleButton commentsButton;
-
-    @FXML
-    private ToggleGroup propertyToggleButtonGroup;
-
-    @FXML
-    private BorderPane contentBorderPane;
-
-    @FXML
-    private FlowPane propertiesTabsPane;
-
-    private EntityFacade newSemantic;
-
-    /////////// Private variables
     /**
      * Show the current edit window.
      */
     public enum PaneProperties {
         PROPERTY_PANE_OPEN,
     }
-    private Pane currentEditPane;
 
     private Pane closePropsPane;
 
-    private StampAddSubmitFormViewModel stampAddSubmitFormViewModel;
-
-    private StampCreateFormViewModel stampCreateFormViewModel;
-
-    private JFXNode<Pane, StampFormController> stampJFXNode;
-
-    @InjectViewModel
-    private GenPurposeViewModel genPurposeViewModel;
+    private final GenPurposeViewModel genPurposeViewModel;
 
     private Subscriber<KLPropertyPanelEvent> showPanelSubscriber;
 
     private Subscriber<GenEditingEvent> genEditingEventSubscriber;
 
-    private Subscriber<StampEvent> addStampSubscriber;
-
-    private Subscriber<StampEvent> createStampSubscriber;
-
     private JFXNode<Pane, SemanticFieldsController> editFieldsJfxNode;
 
-    private JFXNode<Pane, ReferenceComponentController> referenceComponentJfxNode;
+    public GenPurposePropertiesController(GenPurposeViewModel genPurposeViewModel) {
+        this.genPurposeViewModel = genPurposeViewModel;
 
-    public GenPurposePropertiesController() {
-        // The header STAMP belongs to the window's reference component, which is a Concept.
-        this.stampAddSubmitFormViewModel = new StampAddSubmitFormViewModel(CONCEPT);
-        this.stampCreateFormViewModel = new StampCreateFormViewModel(CONCEPT);
-    }
+        buildView();
 
-    @FXML
-    private void initialize() {
-        clearView();
-
-        setupShowingStampForm();
         setupShowingPanelHandlers();
-//        setupShowReferencePanelHandlers();
     }
 
-    private void setupShowingStampForm() {
-        // Load Stamp add View Panel (FXML & Controller)
-        Config stampConfig = new Config(StampFormController.class.getResource(StampFormController.STAMP_FORM_FXML_FILE));
-        stampJFXNode = FXMLMvvmLoader.make(stampConfig);
+    private void buildView() {
+        propertiesTabs.getTabs().setAll(Tab.ADD_EDIT, Tab.COMMENTS);
+        propertiesTabs.setSelectedTab(Tab.ADD_EDIT);
 
-        // -- add stamp: edit the STAMP of the window's reference component (which always exists in a
-        //    Knowledge Layout window), adding a new committed version. There is no CREATE flow here
-        //    because the reference component is never created from this window.
-        addStampSubscriber = evt -> {
-            if (evt.getEventType() == ADD_STAMP) {
-                EntityFacade refComponent = genPurposeViewModel.getPropertyValue(REF_COMPONENT);
-                if (refComponent == null) {
-                    return;
-                }
-                stampJFXNode.controller().init(stampAddSubmitFormViewModel);
-                stampAddSubmitFormViewModel.update(refComponent,
-                        genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), genPurposeViewModel.getViewProperties());
+        contentBorderPane.getStyleClass().add("properties-tab-container-content");
 
-                contentBorderPane.setCenter(stampJFXNode.node());
-
-                addEditButton.setSelected(true);
-            }
-        };
-        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), StampEvent.class, addStampSubscriber);
-
-        // -- create stamp: open an editable STAMP form for the new component being created. Create mode has
-        //    no reference component, so the form starts from default values rather than an existing STAMP.
-        //    update() first so the view properties and module/path lists are populated before defaults.
-        createStampSubscriber = evt -> {
-            if (evt.getEventType() == CREATE_STAMP) {
-                stampCreateFormViewModel.update(genPurposeViewModel.getPropertyValue(REF_COMPONENT),
-                        genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), genPurposeViewModel.getViewProperties());
-                stampCreateFormViewModel.populateDefaults();
-                stampJFXNode.controller().init(stampCreateFormViewModel);
-
-                contentBorderPane.setCenter(stampJFXNode.node());
-
-                addEditButton.setSelected(true);
-            }
-        };
-        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), StampEvent.class, createStampSubscriber);
+        // "properties-tab-outer-container" carries the gen purpose window's left divider border
+        // and bottom padding (see kview.css); the historical inner/outer nesting is collapsed
+        // into this single pane.
+        propertiesPane.getStyleClass().addAll("properties-tab-outer-container", "properties-tab-container");
+        propertiesPane.getStylesheets().add(CssHelper.defaultStyleSheet());
+        propertiesPane.setMinHeight(300);
+        propertiesPane.setPrefWidth(518);
+        propertiesPane.setTop(propertiesTabs);
+        BorderPane.setAlignment(propertiesTabs, Pos.CENTER);
+        propertiesPane.setCenter(contentBorderPane);
     }
-
-    //Refers to Add Reference Component
-//    private void setupShowReferencePanelHandlers() {
-//        Config addReferenceConfig = new Config(this.getClass().getResource("reference-component.fxml"))
-//                .addNamedViewModel(new NamedVm("genEditingViewModel", genEditingViewModel));
-//        referenceComponentJfxNode = FXMLMvvmLoader.make(addReferenceConfig);
-//    }
 
     private void setupShowingPanelHandlers() {
         Config config = new Config(this.getClass().getResource("genpurpose-edit-fields.fxml"))
@@ -229,7 +139,7 @@ public class GenPurposePropertiesController {
 
         showPanelSubscriber = evt -> {
             LOG.info("Show Panel by event type: " + evt.getEventType());
-            propertyToggleButtonGroup.selectToggle(addEditButton);
+            propertiesTabs.setSelectedTab(Tab.ADD_EDIT);
 
             if (evt.getEventType() == KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS) {
                 genPurposeViewModel.setPropertyValue(FIELD_INDEX, -1);
@@ -248,94 +158,19 @@ public class GenPurposePropertiesController {
                 KLPropertyPanelEvent.class, showPanelSubscriber);
     }
 
-
-    @FXML
-    private void showAddEditView(ActionEvent event) {
-        LOG.info("Show Add/Edit View " + event);
-        event.consume();
-        this.addEditButton.setSelected(true);
-//        contentBorderPane.setCenter(currentEditPane);
-    }
-
-    @FXML
-    private void showInstances(ActionEvent actionEvent) {
-        LOG.info("Show Instances " + actionEvent);
-//        contentBorderPane.setCenter(instancesPane);
-    }
-
-    @FXML
-    private void showHistoryView(ActionEvent event) {
-        LOG.info("Show Pattern History");
-        this.historyButton.setSelected(true);
-//        contentBorderPane.setCenter(historyPane);
-    }
-
-    public String selectedView() {
-        Toggle tab = propertyToggleButtonGroup.getSelectedToggle();
-        if (addEditButton.equals(tab)) {
-            return "EDIT";
-        } else if (instancesButton.equals(tab)) {
-            return "INSTANCES";
-        } else if (historyButton.equals(tab)) {
-            return "HISTORY";
-        } else if (commentsButton.equals(tab)) {
-            return "COMMENTS";
-        } else {
-            return "NONE";
-        }
-    };
-
-    public void restoreSelectedView(String selectedView) {
-        LOG.info("restore selected Pattern view with " + selectedView);
-        switch (selectedView) {
-            case "EDIT" -> {
-                addEditButton.setSelected(true);
-                contentBorderPane.setCenter(currentEditPane);
-            }
-            case "INSTANCES" -> {
-                instancesButton.setSelected(true);
-                //contentBorderPane.setCenter(instancesPane); // TODO: hook up nodes once impelemted
-            }
-            case "HISTORY" -> {
-                historyButton.setSelected(true);
-                //contentBorderPane.setCenter(historyPane); // TODO: hook up nodes once impelemted
-            }
-            case "COMMENTS" -> {
-                commentsButton.setSelected(true);
-                // contentBorderPane.setCenter(commentsPane); // TODO hook up nodes once impelemted
-            }
-            default -> {
-                addEditButton.setSelected(false);
-                instancesButton.setSelected(false);
-                historyButton.setSelected(false);
-                commentsButton.setSelected(false);
-                contentBorderPane.setCenter(closePropsPane);
-            }
-        }
-    }
-
-    public void clearView() {
+    /**
+     * Returns the root node of the properties panel, to be attached to the window's slideout tray.
+     */
+    public BorderPane getNode() {
+        return propertiesPane;
     }
 
     /**
-     * Returns the propertiesTabsPane to be used as a draggable region.
-     * @return The FlowPane containing the property tabs
+     * Returns the properties tabs control to be used as a draggable region.
+     * @return The control containing the property tabs
      */
-    public FlowPane getPropertiesTabsPane() {
-        return propertiesTabsPane;
+    public PropertiesTabsControl getPropertiesTabs() {
+        return propertiesTabs;
     }
 
-    /***************************************************************************
-     *                                                                         *
-     * Properties                                                              *
-     *                                                                         *
-     **************************************************************************/
-
-    /**
-     * The STAMP form view model used to edit the reference component's STAMP. The details controller
-     * reads this to refresh the header STAMP once the user submits a new version.
-     */
-    public StampFormViewModelBase getStampFormViewModel() {
-        return genPurposeViewModel.getMode() == FormMode.CREATE ? stampCreateFormViewModel : stampAddSubmitFormViewModel;
-    }
 }
