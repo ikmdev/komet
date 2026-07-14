@@ -1506,6 +1506,11 @@ public class JournalController {
             }
         });
 
+        // Force a full CSS pass so .root looked-up color variables (-Grey-11, -Secondary-05, etc.)
+        // are resolved and cached before this window's pane is revealed in the live scene graph
+        // (JDK-8093516; see IKE-Network/ike-komet-wsr#4).
+        chapterKlWindow.fxObject().applyCss();
+
         // Adding the concept window panel as a child to the workspace.
         workspace.getWindows().add(chapterKlWindow);
         chapterKlWindow.onShown();
