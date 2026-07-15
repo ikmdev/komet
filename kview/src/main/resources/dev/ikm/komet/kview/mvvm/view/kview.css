@@ -6658,6 +6658,14 @@ Styling a context menu for kview ui/ux controls
     -fx-spacing: 10px;
 }
 
+/* Empty pattern placeholder: a pattern with no semantic shows one muted line where its
+   semantic's fields would render, so the section reads as deliberately empty. */
+.gen-purpose-window .pattern-container .semantics-container .no-semantic-label {
+    -fx-text-fill: -Grey-7;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+}
+
 .gen-purpose-window .pattern-container .semantics-container > .separator  > .line {
     -fx-border-width: 0, 0 0 1px 0;
     -fx-border-style: solid, solid;
