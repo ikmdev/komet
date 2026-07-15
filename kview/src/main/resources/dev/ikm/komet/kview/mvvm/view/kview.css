@@ -1303,7 +1303,10 @@ selected(active) - dark black
  ******************************************************************************/
 
 .kl-window-control-toolbar .concept-header-control {
-    -fx-background-color: -Natural-Grey-Main;
+    /* The bar's fill goes through -bar-color (themes override just the color) so the
+       :drag-hover tint below can derive from whichever theme is active. */
+    -bar-color: -Natural-Grey-Main;
+    -fx-background-color: -bar-color;
     -fx-padding: 0 5 0 12;
 }
 
@@ -1318,6 +1321,70 @@ selected(active) - dark black
     -fx-alignment: center-left;
 }
 
+/* The coordinate button is shaped as its own glyph (-fx-shape), so its backplate lives on
+   this plate wrapper, sized to match the other 28px button boxes. */
+.kl-window-control-toolbar .concept-header-control .coordinate-plate {
+    -plate-size: 28px;
+    -fx-min-width: -plate-size;
+    -fx-pref-width: -plate-size;
+    -fx-max-width: -plate-size;
+    -fx-min-height: -plate-size;
+    -fx-pref-height: -plate-size;
+    -fx-max-height: -plate-size;
+}
+
+.kl-window-control-toolbar .concept-header-control .coordinate-plate:hover,
+.kl-window-control-toolbar .concept-header-control .button:hover,
+.kl-window-control-toolbar .concept-header-control .toggle-button.timeline:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.16);
+    -fx-background-radius: 5;
+}
+
+.kl-window-control-toolbar .concept-header-control .coordinate-plate:pressed,
+.kl-window-control-toolbar .concept-header-control .button:armed,
+.kl-window-control-toolbar .concept-header-control .toggle-button.timeline:armed {
+    -fx-background-color: rgba(255, 255, 255, 0.28);
+    -fx-background-radius: 5;
+}
+
+/* The properties switch graphic outgrows its button box, so a backplate would sit behind
+   only part of it — it gets a soft halo instead. */
+.kl-window-control-toolbar .concept-header-control .properties-toggle-button:hover {
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.45), 7, 0.5, 0, 0);
+}
+
+.kl-window-control-toolbar .concept-header-control {
+    -fx-cursor: open-hand;
+}
+
+.kl-window-control-toolbar .concept-header-control:pressed {
+    -fx-cursor: closed-hand;
+}
+
+.kl-window-control-toolbar .concept-header-control:drag-hover {
+    -fx-background-color: derive(-bar-color, 5%);
+}
+
+/* Buttons keep the arrow cursor, masking the bar's hand cursor while over them. */
+.kl-window-control-toolbar .concept-header-control .coordinate-plate,
+.kl-window-control-toolbar .concept-header-control .button,
+.kl-window-control-toolbar .concept-header-control .toggle-button {
+    -fx-cursor: default;
+}
+
+/* The title tab is the other drag surface; -tab-color is themed further down (window blue,
+   create-mode dim) the same way -bar-color is. */
+.kl-window-control-toolbar .lidr-rounded-tab {
+    -fx-cursor: open-hand;
+}
+
+.kl-window-control-toolbar .lidr-rounded-tab:pressed {
+    -fx-cursor: closed-hand;
+}
+
+.kl-window-control-toolbar .lidr-rounded-tab:drag-hover {
+    -fx-background-color: derive(-tab-color, 10%);
+}
 
 .concept-header-control .spacer1  {
     -fx-background-color: transparent;
@@ -6402,7 +6469,10 @@ Styling a context menu for kview ui/ux controls
 /* Window chrome: darker tab chip with rounder top corners; the drag-dots icon and the
    window title are centered on the same line, with breathing room around them. */
 .gen-purpose-window .lidr-rounded-tab {
-    -fx-background-color: #4A4A4C;
+    /* Like the toolbar's -bar-color: the fill goes through -tab-color so the hover tint
+       (drag affordance) derives from whichever theme is active. */
+    -tab-color: #4A4A4C;
+    -fx-background-color: -tab-color;
     -fx-background-radius: 8 8 0 0;
     -fx-border-radius: 8 8 0 0;
     -fx-alignment: center-left;
@@ -6416,11 +6486,11 @@ Styling a context menu for kview ui/ux controls
    layout's authored type (EditorWindowType) is STANDARD_CONCEPT; the other standard
    windows and user-created Semantics Windows keep the default grey chrome. */
 .gen-purpose-window.concept-window-theme .lidr-rounded-tab {
-    -fx-background-color: derive(-Secondary-06, -25%);
+    -tab-color: derive(-Secondary-06, -25%);
 }
 
 .gen-purpose-window.concept-window-theme .kl-window-control-toolbar .concept-header-control {
-    -fx-background-color: -Secondary-06;
+    -bar-color: -Secondary-06;
 }
 
 /*******************************************************************************
@@ -6437,11 +6507,11 @@ Styling a context menu for kview ui/ux controls
    the state. Driven by the :create-mode pseudo-class toggled from the mode property in
    GenPurposeDetailsController. */
 .gen-purpose-window.concept-window-theme:create-mode .lidr-rounded-tab {
-    -fx-background-color: #5C74A0; /* dimmed derive(-Secondary-06, -25%), hue kept */
+    -tab-color: #5C74A0; /* dimmed derive(-Secondary-06, -25%), hue kept */
 }
 
 .gen-purpose-window.concept-window-theme:create-mode .kl-window-control-toolbar .concept-header-control {
-    -fx-background-color: #7E95BC; /* dimmed -Secondary-06, hue kept */
+    -bar-color: #7E95BC; /* dimmed -Secondary-06, hue kept */
 }
 
 .gen-purpose-window:create-mode .lidr-rounded-tab {
