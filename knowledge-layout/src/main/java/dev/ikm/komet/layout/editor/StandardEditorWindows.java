@@ -22,6 +22,9 @@ public final class StandardEditorWindows {
     /** Title of the standard Concept window. */
     public static final String CONCEPT_WINDOW_2 = "Concept (2)";
 
+    /** Title of the standard Pattern window. */
+    public static final String PATTERN_WINDOW_2 = "Pattern (2)";
+
     private StandardEditorWindows() {
     }
 
@@ -38,6 +41,9 @@ public final class StandardEditorWindows {
         if (!standardWindows.contains(CONCEPT_WINDOW_2)) {
             saveConceptWindow2(standardWindowsPreferences, viewCalculator);
         }
+        if (!standardWindows.contains(PATTERN_WINDOW_2)) {
+            savePatternWindow2(standardWindowsPreferences, viewCalculator);
+        }
     }
 
     /**
@@ -49,6 +55,27 @@ public final class StandardEditorWindows {
         EditorWindowModel window = new EditorWindowModel();
         window.setTitle(CONCEPT_WINDOW_2);
         window.setWindowType(EditorWindowType.STANDARD_CONCEPT);
+        window.setTimelineVisible(true);
+
+        EditorPatternModel descriptionPattern =
+                new EditorPatternModel(viewCalculator, TinkarTerm.DESCRIPTION_PATTERN.nid());
+        descriptionPattern.setRequired(true);
+        window.getMainSection().getPatterns().add(descriptionPattern);
+
+        window.save(standardWindowsPreferences);
+    }
+
+    /**
+     * The standard Pattern window: like the standard Concept window, a single section containing
+     * the Description pattern, required when the window is opened in the Journal in create mode.
+     * Unlike the Concept window it keeps the default grey chrome (see the concept-window-theme
+     * rules in kview.css, applied only to {@link EditorWindowType#STANDARD_CONCEPT}).
+     */
+    private static void savePatternWindow2(KometPreferences standardWindowsPreferences,
+                                           ViewCalculator viewCalculator) {
+        EditorWindowModel window = new EditorWindowModel();
+        window.setTitle(PATTERN_WINDOW_2);
+        window.setWindowType(EditorWindowType.STANDARD_PATTERN);
         window.setTimelineVisible(true);
 
         EditorPatternModel descriptionPattern =

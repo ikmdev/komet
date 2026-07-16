@@ -33,8 +33,6 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WI
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.observable.ObservableComposer;
-import dev.ikm.komet.framework.observable.ObservableConcept;
-import dev.ikm.komet.framework.observable.ObservableConceptVersion;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
@@ -263,7 +261,7 @@ public class GenPurposeDetailsController {
                 initializeComposer();
 
                 // In create mode that commit also finalized the window's lazily created reference
-                // concept (see createUncommitedReferenceConcept) — the window is now editing a
+                // component (see createUncommitedReferenceComponent) — the window is now editing a
                 // real component, so refresh the banner/identifier/STAMP from the committed entity.
                 if (genPurposeViewModel.getMode() == FormMode.CREATE) {
                     genPurposeViewModel.setMode(FormMode.EDIT);
@@ -470,23 +468,27 @@ public class GenPurposeDetailsController {
     }
 
     /**
-     * Creates the window's reference component as a new, uncommitted concept — used in create mode,
-     * where the window was opened without one. The concept joins the composer's current transaction,
-     * so it gets committed together with the semantic whose creation triggered it.
+     * Creates the window's reference component as a new, uncommitted entity — used in create mode,
+     * where the window was opened without one. The component kind follows the authored window type:
+     * the standard Pattern window creates a Pattern, all others create a Concept. The new component
+     * joins the composer's current transaction, so it gets committed together with the semantic
+     * whose creation triggered it.
      *
-     * @return the new uncommitted concept, already set as the window's reference component
+     * @return the new uncommitted component, already set as the window's reference component
      */
-    private EntityFacade createUncommitedReferenceConcept() {
+    private EntityFacade createUncommitedReferenceComponent() {
         initializeComposer();
 
-        ObservableComposer.EntityComposer<ObservableConceptVersion.Editable, ObservableConcept> conceptComposer =
-                composer.composeConcept(PublicIds.newRandom());
+        ObservableComposer.EntityComposer<?, ?> entityComposer =
+                editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN
+                        ? composer.composePattern(PublicIds.newRandom())
+                        : composer.composeConcept(PublicIds.newRandom());
 
-        conceptComposer.save(); // Save to create an uncommitted version
+        entityComposer.save(); // Save to create an uncommitted version
 
-        EntityFacade newConcept = conceptComposer.getEntity();
-        genPurposeViewModel.setPropertyValue(ViewModelKey.REF_COMPONENT, newConcept);
-        return newConcept;
+        EntityFacade newComponent = entityComposer.getEntity();
+        genPurposeViewModel.setPropertyValue(ViewModelKey.REF_COMPONENT, newComponent);
+        return newComponent;
     }
 
     private void setupProperties() {
@@ -742,12 +744,13 @@ public class GenPurposeDetailsController {
             refComponent = sectionTitledPane.getSelectedReferenceComponent();
         }
 
-        // In create mode the standard Concept window has no reference component yet — the new
-        // concept is created lazily when the user authors the first semantic (see onCreateSemantic),
-        // so the popup still opens, offering only "Create Semantic".
+        // In create mode the standard Concept/Pattern window has no reference component yet — the
+        // new component is created lazily when the user authors the first semantic (see
+        // onCreateSemantic), so the popup still opens, offering only "Create Semantic".
         boolean canCreateReferenceComponent = sectionModel.getReferenceComponent() == null
                 && genPurposeViewModel.getMode() == FormMode.CREATE
-                && editorWindowModel.getWindowType() == EditorWindowType.STANDARD_CONCEPT;
+                && (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_CONCEPT
+                        || editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN);
 
         if (refComponent == null && !canCreateReferenceComponent) {
             // No reference concept to edit against — nothing to populate.
@@ -797,10 +800,10 @@ public class GenPurposeDetailsController {
 
     private void onCreateSemantic(ActionEvent actionEvent, EditorSectionModel sectionModelOfPattern, EntityFacade refComponent) {
         // Lazy reference-component creation: in create mode the window has no component yet — the
-        // first semantic the user authors brings the new concept into existence with it. Both join
-        // the composer's transaction, so submitting the semantic commits them together.
+        // first semantic the user authors brings the new component into existence with it. Both
+        // join the composer's transaction, so submitting the semantic commits them together.
         if (refComponent == null) {
-            refComponent = createUncommitedReferenceConcept();
+            refComponent = createUncommitedReferenceComponent();
         }
 
         EditorPatternModel editorPatternModel = sectionModelOfPattern.getPatterns().getFirst();

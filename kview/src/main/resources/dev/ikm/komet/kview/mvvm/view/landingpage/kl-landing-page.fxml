@@ -46,7 +46,7 @@
         <Label styleClass="sub-title" text="Edit Standard Views"/>
         <FlowPane prefHeight="200.0" prefWidth="200.0" styleClass="edit-standard-views-container">
             <KLLandingPageCardControl onMousePressed="#mousePressedOnConceptView" title="Concept View" iconStyleClass="kl-concept-view"/>
-            <KLLandingPageCardControl title="Pattern View" iconStyleClass="kl-pattern-view"/>
+            <KLLandingPageCardControl onMousePressed="#mousePressedOnPatternView" title="Pattern View" iconStyleClass="kl-pattern-view"/>
             <KLLandingPageCardControl title="Semantic View" iconStyleClass="kl-semantic-view"/>
         </FlowPane>
         <Label styleClass="sub-title" text="Saved Custom Views"/>
