@@ -1349,9 +1349,19 @@ public class JournalController {
 
         ViewProperties viewProperties = journalViewProperties;
 
-        AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.CONCEPT,
-                journalTopic, conceptFacade, viewProperties, preferences);
-        setupWorkspaceWindow(chapterKlWindow);
+        // Deferred out of the originating mouse-click/context-menu event handler: building this
+        // window's whole subtree (createWindow()) and attaching it (setupWorkspaceWindow()) in the
+        // SAME synchronous frame as the context-menu's own close and the tree cell's own
+        // hover/selected pseudo-class transitions trips a reentrancy bug in
+        // CssStyleHelper.transitionToState()/.lookup() (confirmed via jdb) that corrupts -fx-lookup
+        // color resolution app-wide. Running it on a fresh pulse, once the originating event has
+        // fully finished dispatching, decouples this window's first CSS pass from that concurrent
+        // pseudo-class churn. See IKE-Network/ike-komet-wsr#4.
+        Platform.runLater(() -> {
+            AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.CONCEPT,
+                    journalTopic, conceptFacade, viewProperties, preferences);
+            setupWorkspaceWindow(chapterKlWindow);
+        });
     }
 
     private void createGenPurposeKLWindow(EntityFacade entityFacade, KometPreferences klEditorWindowPreferences) {
@@ -1505,11 +1515,6 @@ public class JournalController {
                 }
             }
         });
-
-        // Force a full CSS pass so .root looked-up color variables (-Grey-11, -Secondary-05, etc.)
-        // are resolved and cached before this window's pane is revealed in the live scene graph
-        // (JDK-8093516; see IKE-Network/ike-komet-wsr#4).
-        chapterKlWindow.fxObject().applyCss();
 
         // Adding the concept window panel as a child to the workspace.
         workspace.getWindows().add(chapterKlWindow);
