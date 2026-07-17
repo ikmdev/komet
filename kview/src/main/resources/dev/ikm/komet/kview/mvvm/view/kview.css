@@ -6466,6 +6466,19 @@ Styling a context menu for kview ui/ux controls
  *                                                                             *
  ******************************************************************************/
 
+/* Soft light shadow lifting the window off the desktop. */
+.gen-purpose-window {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 12, 0.0, 0, 3);
+}
+
+/* While the window has focus (the mouse was pressed inside it or one of its controls
+   holds keyboard focus — the :window-focused pseudo-class toggled in
+   GenPurposeDetailsController) the shadow grows and drops further, so the window reads
+   as sitting closer to the screen than its unfocused siblings. */
+.gen-purpose-window:window-focused {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.30), 28, 0.0, 0, 10);
+}
+
 /* Window chrome: darker tab chip with rounder top corners; the drag-dots icon and the
    window title are centered on the same line, with breathing room around them. */
 .gen-purpose-window .lidr-rounded-tab {
