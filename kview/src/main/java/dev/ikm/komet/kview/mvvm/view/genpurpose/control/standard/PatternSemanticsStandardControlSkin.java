@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard;
 
 import javafx.collections.ListChangeListener;
+import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.control.SkinBase;
 import javafx.scene.layout.VBox;
@@ -65,6 +66,14 @@ public class PatternSemanticsStandardControlSkin extends SkinBase<PatternSemanti
         semanticsContainer.getChildren().clear();
 
         var semantics = getSkinnable().getSemantics();
+        if (semantics.isEmpty()) {
+            // A pattern with no semantic shows a single muted placeholder line where its
+            // semantic's fields would render.
+            Label noSemanticLabel = new Label("No semantic");
+            noSemanticLabel.getStyleClass().add("no-semantic-label");
+            semanticsContainer.getChildren().add(noSemanticLabel);
+            return;
+        }
         for (int i = 0; i < semantics.size(); i++) {
             if (i > 0) {
                 semanticsContainer.getChildren().add(new Separator());

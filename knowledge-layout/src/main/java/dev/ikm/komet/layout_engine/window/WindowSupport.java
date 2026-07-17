@@ -82,6 +82,14 @@ public class WindowSupport {
     public static final String WINDOW_SUPPORT_KEY = "windowSupport";
 
     /**
+     * Container-property key a window can set to {@code Boolean.TRUE} to opt out of the highlight
+     * outline (the hover/resize border). Must be set before window support is created for the
+     * container. The key lives on the pane's properties (rather than on this instance) so the
+     * opt-out survives the WindowSupport being cleaned up and recreated for the same pane.
+     */
+    public static final String HIGHLIGHT_DISABLED_KEY = "windowSupportHighlightDisabled";
+
+    /**
      * When true, renders resize handles with visible colors for debugging UI interactions.
      * Set to false for production where handles should be invisible to users.
      */
@@ -134,6 +142,13 @@ public class WindowSupport {
     // Visual elements
     private Rectangle outlineRect;
 
+    /**
+     * Whether the outline highlight (hover and resize feedback) is shown for this window.
+     * Windows opt out via {@link #HIGHLIGHT_DISABLED_KEY} — e.g. the gen-purpose window,
+     * which relies on the edge resize cursors alone.
+     */
+    private final boolean highlightEnabled;
+
     // Core components
     private final Pane pane;
     private final MutableList<Node> draggableNodes = Lists.mutable.empty();
@@ -170,6 +185,7 @@ public class WindowSupport {
      */
     private WindowSupport(final Pane container) {
         this.pane = container;
+        this.highlightEnabled = !Boolean.TRUE.equals(container.getProperties().get(HIGHLIGHT_DISABLED_KEY));
 
         initializePrimaryFields();
         initializeDefaultHandlersAndPaneEvents();
@@ -322,7 +338,11 @@ public class WindowSupport {
     private Subscription createWindowBaseSubscriptions() {
         return Subscription.combine(
                 createConsumerSubscription(pane, MouseEvent.MOUSE_PRESSED, _ -> pane.toFront()),
-                createConsumerSubscription(pane, MouseEvent.MOUSE_ENTERED, _ -> outlineRect.setStroke(HIGHLIGHT_COLOR)),
+                createConsumerSubscription(pane, MouseEvent.MOUSE_ENTERED, _ -> {
+                    if (highlightEnabled) {
+                        outlineRect.setStroke(HIGHLIGHT_COLOR);
+                    }
+                }),
                 createConsumerSubscription(pane, MouseEvent.MOUSE_EXITED, _ -> {
                     if (windowState == WindowState.IDLE) {
                         outlineRect.setStroke(TRANSPARENT);
@@ -616,7 +636,9 @@ public class WindowSupport {
             windowState = WindowState.RESIZING;
 
             // Show the highlight border to provide visual feedback during resize
-            outlineRect.setStroke(HIGHLIGHT_COLOR);
+            if (highlightEnabled) {
+                outlineRect.setStroke(HIGHLIGHT_COLOR);
+            }
         } catch (Exception e) {
             LOG.error("Error in mouse press handler", e);
             resetWindowState();

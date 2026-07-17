@@ -69,6 +69,11 @@ public class KlLandingPageController {
         loadStandardKLEditorWindow(mouseEvent, StandardEditorWindows.CONCEPT_WINDOW_2);
     }
 
+    @FXML
+    private void mousePressedOnPatternView(MouseEvent mouseEvent) {
+        loadStandardKLEditorWindow(mouseEvent, StandardEditorWindows.PATTERN_WINDOW_2);
+    }
+
     /**
      * Opens the KL Editor with a standard (application-provided) window loaded for editing.
      *

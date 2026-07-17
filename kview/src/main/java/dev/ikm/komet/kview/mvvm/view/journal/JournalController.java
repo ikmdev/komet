@@ -1349,9 +1349,19 @@ public class JournalController {
 
         ViewProperties viewProperties = journalViewProperties;
 
-        AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.CONCEPT,
-                journalTopic, conceptFacade, viewProperties, preferences);
-        setupWorkspaceWindow(chapterKlWindow);
+        // Deferred out of the originating mouse-click/context-menu event handler: building this
+        // window's whole subtree (createWindow()) and attaching it (setupWorkspaceWindow()) in the
+        // SAME synchronous frame as the context-menu's own close and the tree cell's own
+        // hover/selected pseudo-class transitions trips a reentrancy bug in
+        // CssStyleHelper.transitionToState()/.lookup() (confirmed via jdb) that corrupts -fx-lookup
+        // color resolution app-wide. Running it on a fresh pulse, once the originating event has
+        // fully finished dispatching, decouples this window's first CSS pass from that concurrent
+        // pseudo-class churn. See IKE-Network/ike-komet-wsr#4.
+        Platform.runLater(() -> {
+            AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.CONCEPT,
+                    journalTopic, conceptFacade, viewProperties, preferences);
+            setupWorkspaceWindow(chapterKlWindow);
+        });
     }
 
     private void createGenPurposeKLWindow(EntityFacade entityFacade, KometPreferences klEditorWindowPreferences) {
@@ -1896,13 +1906,36 @@ public class JournalController {
      */
     @FXML
     public void newCreateConcept2Window(ActionEvent actionEvent) {
+        newCreateStandardKLWindow(StandardEditorWindows.CONCEPT_WINDOW_2);
+    }
+
+    /**
+     * Opens the standard "Pattern (2)" window in create mode when triggered from the menu.
+     * <p>
+     * "Pattern (2)" is a standard (application-provided) KL window definition stored under
+     * kl-editor-app/standard-windows.
+     *
+     * @param actionEvent The event triggered by selecting the menu item
+     */
+    @FXML
+    public void newCreatePattern2Window(ActionEvent actionEvent) {
+        newCreateStandardKLWindow(StandardEditorWindows.PATTERN_WINDOW_2);
+    }
+
+    /**
+     * Opens the named standard (application-provided) KL window in create mode, seeding the
+     * standard window definitions first so the named definition exists on disk.
+     *
+     * @param windowTitle the title of the standard window (e.g. {@link StandardEditorWindows#CONCEPT_WINDOW_2})
+     */
+    private void newCreateStandardKLWindow(String windowTitle) {
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         final KometPreferences standardWindowsPreferences =
                 appPreferences.node(KL_EDITOR_APP).node(KL_STANDARD_WINDOWS_DIR);
 
         StandardEditorWindows.ensureStandardWindows(standardWindowsPreferences, journalViewProperties.calculator());
 
-        createGenPurposeKLWindow(null, standardWindowsPreferences.node(StandardEditorWindows.CONCEPT_WINDOW_2));
+        createGenPurposeKLWindow(null, standardWindowsPreferences.node(windowTitle));
     }
 
     public void newCreateGenPurposeKLWindow(EntityFacade entityFacade, String windowTitle) {

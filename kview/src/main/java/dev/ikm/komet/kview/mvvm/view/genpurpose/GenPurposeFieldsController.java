@@ -292,6 +292,17 @@ public class GenPurposeFieldsController {
             // Not sure this is needed and needs to be revisted
 //            processCommittedValues();
             loadUIData(); // And populates Nodes and Observable fields.
+
+            // Drop the previous edit session's subscriber before registering one for this
+            // semantic. Left subscribed, it would react to its own semantic being saved (e.g.
+            // when the shared transaction commits all pending semantics at once) by writing
+            // that semantic's field values into the fields now loaded for THIS semantic —
+            // corrupting them with wrongly-typed values (ClassCastException).
+            if (entityVersionChangeEventSubscriber != null) {
+                EvtBusFactory.getDefaultEvtBus().unsubscribe(VERSION_CHANGED_TOPIC,
+                        EntityVersionChangeEvent.class, entityVersionChangeEventSubscriber);
+            }
+
             entityVersionChangeEventSubscriber = evt -> {
                 LOG.info("Version has been updated: " + evt.getEventType());
                 // get payload
@@ -601,10 +612,18 @@ public class GenPurposeFieldsController {
 //                processCommittedValues();
 //                enableDisableButtons();
 
-                // In create mode this submit is the one that brings the window's reference concept
-                // into existence (it commits together with the semantic). The PUBLISH event below is
-                // handled synchronously and flips a CREATE window to EDIT, so capture the mode first.
-                boolean createdConcept = genPurposeViewModel.getMode() == FormMode.CREATE;
+                // Persist the edited field values as an uncommitted version. The PUBLISH handler
+                // may defer the commit (create mode with required patterns still missing a
+                // semantic), and the details area re-renders from the stored version — so the
+                // values must be saved, not left pending in the editable overlay until commit.
+                semanticEditor.save();
+
+                // In create mode this submit may be the one that brings the window's reference
+                // concept into existence (it commits together with the semantic). The PUBLISH event
+                // below is handled synchronously and flips a CREATE window to EDIT only when it
+                // actually commits — while required patterns are still missing a semantic it defers
+                // the commit, leaving the mode at CREATE.
+                boolean wasCreateMode = genPurposeViewModel.getMode() == FormMode.CREATE;
 
                 // Publish event to refresh details area
                 EvtBusFactory.getDefaultEvtBus().publish(
@@ -612,19 +631,22 @@ public class GenPurposeFieldsController {
                         new GenPurposeEvent(actionEvent.getSource(), PUBLISH, fieldValues, currentEditingSemantic)
                 );
 
+                boolean createdConcept = wasCreateMode && genPurposeViewModel.getMode() == FormMode.EDIT;
+
                 // Submitting finishes the create/edit flow, so close the properties bumpout.
                 EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
                         new KLPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
 
-                // Show success message
-                String submitMessage = createdConcept
-                        ? "Concept created"
-                        : "Semantic Details Edited Successfully!";
-                toast().withUndoAction(undoActionEvent -> LOG.info("undo called"))
-                        .show(Toast.Status.SUCCESS, submitMessage);
+                // Show success message (unless creation was deferred because required patterns
+                // are still missing a semantic — the window's create-mode hint covers that).
+                if (!wasCreateMode || createdConcept) {
+                    String submitMessage = createdConcept
+                            ? "Concept created"
+                            : "Semantic Details Edited Successfully";
+                    toast().show(Toast.Status.SUCCESS, submitMessage);
+                }
 
                 // Cleanup and reset
-                genPurposeViewModel.setMode(FormMode.EDIT);
                 readyToEditVersion.set(false); // reset change flag when user types older listener will trigger rebind.
             } catch (Exception e) {
                 LOG.error("Error committing semantic changes", e);
