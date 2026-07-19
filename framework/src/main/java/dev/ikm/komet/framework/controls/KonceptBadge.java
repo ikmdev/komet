@@ -239,8 +239,11 @@ public class KonceptBadge extends HBox {
      * Sets the component-kind sigil shown ahead of the identicon, replacing any current sigil
      * (ike-issues#638). A {@link KonceptKind#CONCEPT} shows no sigil (the bare default);
      * {@link KonceptKind#STAMP} shows the {@link StampSigil} pentagon; every other kind shows its
-     * coloured letter glyph. The accessible kind name is installed on the sigil's tooltip — the
-     * non-colour accessibility channel, so kind is never carried by colour alone.
+     * coloured letter glyph. A sigil always immediately precedes the identicon and is never bare:
+     * a stamp keeps the STAMP's own identicon after its pentagon — the identicon tells one STAMP
+     * from another at a glance — with the compact provenance text in place of a name. The
+     * accessible kind name is installed on the sigil's tooltip — the non-colour accessibility
+     * channel, so kind is never carried by colour alone.
      *
      * @param kind the component kind; {@code null} is treated as {@link KonceptKind#CONCEPT}
      */
@@ -255,10 +258,9 @@ public class KonceptBadge extends HBox {
             Tooltip.install(sigil, new Tooltip(this.kind.accessibleName()));
             sigilBox.getChildren().add(sigil);
         }
-        // A stamp is the pentagon + its compact provenance text (no identicon — it is provenance,
-        // not a name-pill); every other kind keeps its identicon.
-        identicon.setManaged(!this.kind.isStamp());
-        identicon.setVisible(!this.kind.isStamp());
+        // Every kind keeps its identicon — for a stamp the pentagon precedes the STAMP's own
+        // identicon (a sigil is never bare; the identicon tells one STAMP from another at a
+        // glance), with the compact provenance text in place of a name (revised ike-issues#638).
         refreshAlarm();
     }
 

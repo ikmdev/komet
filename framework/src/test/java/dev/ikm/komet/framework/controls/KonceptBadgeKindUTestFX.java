@@ -20,6 +20,7 @@ import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension.RunOnJavaFXThread;
 import dev.ikm.tinkar.common.id.PublicIds;
 import javafx.css.PseudoClass;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -61,13 +62,18 @@ class KonceptBadgeKindUTestFX {
     }
 
     @Test
-    void stampShowsThePentagonSigil() {
+    void stampShowsThePentagonSigilAndKeepsItsIdenticon() {
         KonceptBadge badge = badge();
         badge.setKind(KonceptKind.STAMP);
         assertEquals(KonceptKind.STAMP, badge.getKind());
         assertTrue(badge.isConceptViolation());
         assertInstanceOf(StampSigil.class, sigilBox(badge).getChildrenUnmodifiable().get(0),
                 "a stamp's sigil is the pentagon, not a letter");
+        // Revised ike-issues#638 doctrine: the sigil is never bare — the pentagon precedes the
+        // STAMP's own identicon, which tells one STAMP from another at a glance.
+        ImageView identicon = assertInstanceOf(ImageView.class, badge.getChildrenUnmodifiable().get(2));
+        assertTrue(identicon.isVisible(), "a stamp badge keeps the STAMP's own identicon");
+        assertTrue(identicon.isManaged(), "the stamp's identicon occupies its slot after the pentagon");
     }
 
     @Test
