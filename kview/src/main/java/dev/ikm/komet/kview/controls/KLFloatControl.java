@@ -31,6 +31,14 @@ public class KLFloatControl extends Control {
     public KLFloatControl() {
         getStyleClass().add("float-control");
         getStylesheets().add(getUserAgentStylesheet());
+
+        // the suggestions popup is styled through the scene's stylesheets,
+        // the control's own stylesheets don't reach it
+        sceneProperty().subscribe(newScene -> {
+            if (newScene != null && !newScene.getStylesheets().contains(getUserAgentStylesheet())) {
+                newScene.getStylesheets().add(getUserAgentStylesheet());
+            }
+        });
     }
 
     /**
@@ -50,6 +58,7 @@ public class KLFloatControl extends Control {
     /**
      * A Float property that holds a float value, between
      * {@link Float#MIN_VALUE} and {@link Float#MAX_VALUE},
+     * {@link Float#POSITIVE_INFINITY} or {@link Float#NEGATIVE_INFINITY},
      * or null if no value is set.
      */
     private final ObjectProperty<Float> valueProperty = new SimpleObjectProperty<>(this, "value");

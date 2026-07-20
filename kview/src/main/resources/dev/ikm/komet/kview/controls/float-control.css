@@ -17,6 +17,17 @@
     -fx-border-width: 0;
 }
 
+.float-control > .text-field  > .right-button > .right-button-graphic,
+.float-control > .text-field:infinity  > .right-button > .right-button-graphic {
+    -fx-font-size: 13px; /* The right button graphic is in 'em' so depends on the font size that is set */
+}
+
+/* Noto Sans has no infinity glyph (U+221E); Open Sans has it and blends in */
+.float-control > .text-field:infinity {
+    -fx-font-family: "Open Sans SemiBold";
+    -fx-font-size: 20px;
+}
+
 .float-control > .text-field:focused {
     -fx-background-color: #8ab4f8, white;
     -fx-background-insets: 0, 2;
@@ -33,4 +44,30 @@
     -fx-text-alignment: center;
     -fx-wrap-text: true;
     -fx-alignment: center;
+}
+
+/* Suggestions popup, matching the styling of the app's other auto-complete popups */
+.float-popup.auto-complete-popup > .main-container {
+    -fx-background-radius: 0 0 4 4;
+
+    /* last cell sits flush with the popup bottom */
+    -fx-padding: 0;
+}
+
+.float-popup.auto-complete-popup > .main-container > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    /* must match the suggestionsNodeHeight set in KLFloatControlSkin, so the
+       cells exactly fill the list and the last one ends at the popup bottom */
+    -fx-cell-size: 28;
+    -fx-padding: 4 10 4 10;
+
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 13px;
+    -fx-text-fill: #44495E;
+}
+
+.float-popup.auto-complete-popup > .main-container > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected,
+.float-popup.auto-complete-popup > .main-container > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover,
+.float-popup.auto-complete-popup > .main-container > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected:hover {
+    -fx-background: #f4fbf0;
+    -fx-background-color: -fx-background;
 }

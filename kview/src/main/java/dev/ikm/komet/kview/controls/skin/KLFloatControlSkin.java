@@ -1,12 +1,16 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import dev.ikm.komet.kview.controls.AutoCompleteTextField;
 import dev.ikm.komet.kview.controls.KLFloatControl;
 import javafx.animation.PauseTransition;
+import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextFormatter;
 import javafx.util.Subscription;
 
+import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
@@ -17,6 +21,18 @@ public class KLFloatControlSkin extends KLDebounceControlSkin<KLFloatControl> {
 
     private static final Pattern NUMERICAL_PATTERN = Pattern.compile("^[+-]?(\\d+([.]\\d*)?([eE][+-]?\\d+)?|[.]\\d+([eE][+-]?\\d+)?)$");
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.float-control");
+
+    private static final String INFINITY = "Infinity";
+    private static final String NEGATIVE_INFINITY = "-Infinity";
+    private static final String INFINITY_SYMBOL = "∞";
+    private static final String NEGATIVE_INFINITY_SYMBOL = "-∞";
+
+    /**
+     * Pseudo-class set on the text field while it displays the infinity symbol, so CSS can
+     * switch to a font that contains the glyph (the default Noto Sans doesn't, and the
+     * fallback system font renders it small and faded).
+     */
+    private static final PseudoClass INFINITY_PSEUDO_CLASS = PseudoClass.getPseudoClass("infinity");
 
     private final Label titleLabel;
 
@@ -32,7 +48,7 @@ public class KLFloatControlSkin extends KLDebounceControlSkin<KLFloatControl> {
      * @param control The control that this skin should be installed onto.
      */
     public KLFloatControlSkin(KLFloatControl control) {
-        super(control);
+        super(control, new AutoCompleteTextField<String>());
 
         titleLabel = new Label();
         titleLabel.textProperty().bind(control.titleProperty());
@@ -40,6 +56,14 @@ public class KLFloatControlSkin extends KLDebounceControlSkin<KLFloatControl> {
 
         textField.promptTextProperty().bind(control.promptTextProperty());
         textField.getStyleClass().add("text-field");
+
+        // suggest Infinity/-Infinity while the user types an infinity token,
+        // both as a shortcut and to make the support for infinity discoverable
+        AutoCompleteTextField<String> autoCompleteTextField = (AutoCompleteTextField<String>) textField;
+        autoCompleteTextField.setCompleter(KLFloatControlSkin::infinitySuggestions);
+        autoCompleteTextField.getPopupStyleClasses().add("float-popup");
+        // must match the -fx-cell-size of the float-popup cells in float-control.css
+        autoCompleteTextField.setSuggestionsNodeHeight(28);
 
         errorLabel = new Label();
         errorLabel.visibleProperty().bind(control.showErrorProperty().and(
@@ -59,6 +83,12 @@ public class KLFloatControlSkin extends KLDebounceControlSkin<KLFloatControl> {
             if (!change.isContentChange()) {
                 // change can also be cursor location, so if no content change, then it is
                 // something else like cursor location change
+                return change;
+            }
+
+            // partial or complete infinity token (e.g. "-In", "inf", "Infinity", "∞"),
+            // accepted as it is being typed
+            if (isPartialInfinityToken(newText)) {
                 return change;
             }
 
@@ -123,7 +153,11 @@ public class KLFloatControlSkin extends KLDebounceControlSkin<KLFloatControl> {
         }));
 
         // value was set externally
-        subscription = control.valueProperty().subscribe(nv -> textField.setText(nv == null ? null : nv.toString()));
+        subscription = control.valueProperty().subscribe(nv -> textField.setText(toDisplayText(nv)));
+
+        subscription = subscription.and(textField.textProperty().subscribe(nv ->
+                textField.pseudoClassStateChanged(INFINITY_PSEUDO_CLASS,
+                        nv != null && INFINITY_SYMBOL.equals(stripSign(nv)))));
 
         final PauseTransition pauseTransition = new PauseTransition(KLIntegerControlSkin.ERROR_DURATION);
         pauseTransition.setOnFinished(f -> {
@@ -148,6 +182,8 @@ public class KLFloatControlSkin extends KLDebounceControlSkin<KLFloatControl> {
         if (nv == null || nv.isEmpty()) {
             // When new text is null or empty, reset control's value
             control.setValue(null);
+        } else if (isInfinityToken(nv)) {
+            control.setValue(nv.startsWith("-") ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY);
         } else if (!("-".equals(nv) || "+".equals(nv) || endsWithExponent(nv) || endsWithSignedExponent(nv))) {
             try {
                 // only set control's value when it is a valid number
@@ -210,6 +246,73 @@ public class KLFloatControlSkin extends KLDebounceControlSkin<KLFloatControl> {
             labelPrefHeight = errorLabel.prefHeight(labelPrefWidth);
             errorLabel.resizeRelocate(x, y, textField.getWidth(), labelPrefHeight);
         }
+    }
+
+    /**
+     * Returns the text to show in the text field for a given value, using the
+     * infinity symbol for infinite values.
+     */
+    private static String toDisplayText(Float value) {
+        if (value == null) {
+            return null;
+        }
+        if (value == Float.POSITIVE_INFINITY) {
+            return INFINITY_SYMBOL;
+        }
+        if (value == Float.NEGATIVE_INFINITY) {
+            return NEGATIVE_INFINITY_SYMBOL;
+        }
+        return value.toString();
+    }
+
+    /**
+     * Returns true if the text is a complete infinity token: an optional sign
+     * followed by "inf" or "infinity" (case-insensitive), or the infinity symbol.
+     */
+    private static boolean isInfinityToken(String text) {
+        String unsigned = stripSign(text);
+        String lower = unsigned.toLowerCase(Locale.ROOT);
+        return "inf".equals(lower) || "infinity".equals(lower) || INFINITY_SYMBOL.equals(unsigned);
+    }
+
+    /**
+     * Returns true if the text is a complete infinity token or a partially typed
+     * one: an optional sign followed by a prefix of "infinity" (case-insensitive)
+     * or by the infinity symbol.
+     */
+    private static boolean isPartialInfinityToken(String text) {
+        String unsigned = stripSign(text);
+        if (unsigned.isEmpty()) {
+            return false;
+        }
+        return INFINITY_SYMBOL.equals(unsigned) || "infinity".startsWith(unsigned.toLowerCase(Locale.ROOT));
+    }
+
+    private static String stripSign(String text) {
+        return text.startsWith("-") || text.startsWith("+") ? text.substring(1) : text;
+    }
+
+    /**
+     * Completer for the auto-complete text field: while the user is typing an
+     * infinity token, suggests "Infinity" and/or "-Infinity" depending on the sign
+     * typed so far.
+     */
+    private static List<String> infinitySuggestions(String text) {
+        if (text == null) {
+            return List.of();
+        }
+        String unsigned = stripSign(text);
+        if (unsigned.isEmpty() || INFINITY_SYMBOL.equals(unsigned) ||
+                !"infinity".startsWith(unsigned.toLowerCase(Locale.ROOT))) {
+            return List.of();
+        }
+        if (text.startsWith("-")) {
+            return List.of(NEGATIVE_INFINITY);
+        }
+        if (text.startsWith("+")) {
+            return List.of(INFINITY);
+        }
+        return List.of(INFINITY, NEGATIVE_INFINITY);
     }
 
     private static boolean hasExponent(String text) {

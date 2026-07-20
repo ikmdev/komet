@@ -15,6 +15,12 @@
     -fx-font-family: "Noto Sans SemiBold";
     -fx-font-size: 13px;
 }
+
+/* Noto Sans has no infinity glyph (U+221E); Open Sans has it and blends in */
+.read-only-data-control .text-container > .text:infinity {
+    -fx-font-family: "Open Sans SemiBold";
+    -fx-font-size: 20px;
+}
 .read-only-data-control:hover .main-container .text-container,
 .read-only-data-control:preview-mode .main-container .text-container {
     -fx-background-color: #f4f4f4;
