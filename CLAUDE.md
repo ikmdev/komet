@@ -1,6 +1,6 @@
 # komet
 
-komet component.
+komet subproject.
 
 ## Build Standards
 
