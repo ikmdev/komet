@@ -1,6 +1,6 @@
 package dev.ikm.komet.layout.controls;
 
-import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+import static dev.ikm.tinkar.common.service.PrimitiveData.PRE_INCEPTION_TIME;
 import dev.ikm.komet.framework.view.ObservableCoordinate;
 import dev.ikm.komet.framework.view.ObservableLanguageCoordinate;
 import dev.ikm.komet.framework.view.ObservableNavigationCoordinate;
@@ -417,7 +417,7 @@ public class FilterOptionsUtils {
                 return;
             }
             long time = handle.expectStamp().time();
-            if (time != PREMUNDANE_TIME) {
+            if (time != PRE_INCEPTION_TIME) {
                 sortedSet.add(Instant.ofEpochMilli(time).atZone(ZoneOffset.systemDefault()));
             }
         });

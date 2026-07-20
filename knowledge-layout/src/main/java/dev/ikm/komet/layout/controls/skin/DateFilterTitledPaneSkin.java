@@ -1,7 +1,7 @@
 package dev.ikm.komet.layout.controls.skin;
 
 import static dev.ikm.komet.layout.controls.RangeCalendarControl.DATE_FORMATTER;
-import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+import static dev.ikm.tinkar.common.service.PrimitiveData.PRE_INCEPTION_TIME;
 import dev.ikm.komet.layout.controls.DateFilterTitledPane;
 import dev.ikm.komet.layout.controls.DateRange;
 import dev.ikm.komet.layout.controls.FilterOptions;
@@ -41,7 +41,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
     private static final PseudoClass MODIFIED_TITLED_PANE = PseudoClass.getPseudoClass("modified");
     private static final PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     private static final PseudoClass TALLER_TITLE_AREA = PseudoClass.getPseudoClass("taller");
-    private static final String PREMUNDANE_TIME_STRING = String.valueOf(PREMUNDANE_TIME);
+    private static final String PRE_INCEPTION_TIME_STRING = String.valueOf(PRE_INCEPTION_TIME);
     private static final String LATEST_TIME_STRING = String.valueOf(Long.MAX_VALUE);
 
     private final Region arrow;
@@ -159,7 +159,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
         // fill combobox only once
         if (comboBox.getItems().isEmpty()) {
             // TODO: DATE_RANGE not supported yet
-            comboBox.setItems(FXCollections.observableArrayList(EnumSet.of(DateFilterTitledPane.MODE.LATEST, DateFilterTitledPane.MODE.SINGLE_DATE, DateFilterTitledPane.MODE.PREMUNDANE)));
+            comboBox.setItems(FXCollections.observableArrayList(EnumSet.of(DateFilterTitledPane.MODE.LATEST, DateFilterTitledPane.MODE.SINGLE_DATE, DateFilterTitledPane.MODE.PRE_INCEPTION)));
             comboBox.getSelectionModel().select(DateFilterTitledPane.MODE.LATEST);
         }
 
@@ -188,7 +188,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
         }));
 
         subscription = subscription.and(comboBox.getSelectionModel().selectedItemProperty().subscribe((_, value) -> {
-            if (value == DateFilterTitledPane.MODE.LATEST || value == DateFilterTitledPane.MODE.PREMUNDANE) {
+            if (value == DateFilterTitledPane.MODE.LATEST || value == DateFilterTitledPane.MODE.PRE_INCEPTION) {
                 contentBox.getChildren().clear();
                 calendarControl = null;
                 if (value != control.getMode()) {
@@ -233,8 +233,8 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
                 LATEST_TIME_STRING.equals(selectedOptions.getFirst()))) {
             control.setMode(DateFilterTitledPane.MODE.LATEST);
         } else if (selectedOptions.isEmpty() || (selectedOptions.size() == 1 &&
-                PREMUNDANE_TIME_STRING.equals(selectedOptions.getFirst()))) {
-            control.setMode(DateFilterTitledPane.MODE.PREMUNDANE);
+                PRE_INCEPTION_TIME_STRING.equals(selectedOptions.getFirst()))) {
+            control.setMode(DateFilterTitledPane.MODE.PRE_INCEPTION);
         } else if (containsDateRange(selectedOptions) || containsDateRange(excludedOptions)) {
             control.setMode(DateFilterTitledPane.MODE.DATE_RANGE_LIST);
         } else if (containsDate(selectedOptions) && (excludedOptions == null || excludedOptions.isEmpty())) {
@@ -274,8 +274,8 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
                         .forEach(dr -> currentOption.excludedOptions().add(dr.toString()));
             }
         } else {
-            currentOption.selectedOptions().add(selectedItem == DateFilterTitledPane.MODE.PREMUNDANE ?
-                    PREMUNDANE_TIME_STRING : LATEST_TIME_STRING);
+            currentOption.selectedOptions().add(selectedItem == DateFilterTitledPane.MODE.PRE_INCEPTION ?
+                    PRE_INCEPTION_TIME_STRING : LATEST_TIME_STRING);
         }
         updateModifiedState(currentOption);
         control.setOption(currentOption.copy());
@@ -319,7 +319,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
 
         if (containsDate(option.selectedOptions())) {
             String value = option.selectedOptions().getFirst();
-            if (!PREMUNDANE_TIME_STRING.equals(value) && !LATEST_TIME_STRING.equals(value)) {
+            if (!PRE_INCEPTION_TIME_STRING.equals(value) && !LATEST_TIME_STRING.equals(value)) {
                 try {
                     long timestamp = Long.parseLong(value);
                     calendarControl.setTimestamp(timestamp);
@@ -405,7 +405,7 @@ public class DateFilterTitledPaneSkin extends TitledPaneSkin {
             } else {
                 return MessageFormat.format(resources.getString("time.option.range.excluding"), including, excluding);
             }
-        } else if (!option.selectedOptions().isEmpty() && option.selectedOptions().getFirst().equals(PREMUNDANE_TIME_STRING)) {
+        } else if (!option.selectedOptions().isEmpty() && option.selectedOptions().getFirst().equals(PRE_INCEPTION_TIME_STRING)) {
             return resources.getString("time.item3");
         } else if (!option.selectedOptions().isEmpty() && option.selectedOptions().getFirst().equals(LATEST_TIME_STRING)) {
             return resources.getString("time.item1");

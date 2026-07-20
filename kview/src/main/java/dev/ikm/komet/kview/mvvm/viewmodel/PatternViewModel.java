@@ -19,7 +19,6 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Pr
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
-import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
 import static dev.ikm.tinkar.terms.EntityProxy.Pattern;
 import static dev.ikm.tinkar.terms.TinkarTerm.ACCEPTABLE;
 import static dev.ikm.tinkar.terms.TinkarTerm.DEFINITION_DESCRIPTION_TYPE;

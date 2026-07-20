@@ -57,8 +57,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.LongConsumer;
 
-import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
-import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
+import static dev.ikm.tinkar.common.service.PrimitiveData.PRE_INCEPTION_TIME;
+import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PRE_INCEPTION;
 
 public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
     private static final Logger LOG = LoggerFactory.getLogger(ViewMenuTask.class);
@@ -200,8 +200,8 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             LocalDateTime localTime = DateTimeUtil.epochToZonedDateTime(time).toLocalDateTime();
             Menu aYearMenu = yearMenuMap.getIfAbsentPutWithKey(localTime.getYear(), (int year) -> {
                 String yearString = Integer.toString(year);
-                if (time == PREMUNDANE_TIME){
-                    yearString = PREMUNDANE;
+                if (time == PRE_INCEPTION_TIME){
+                    yearString = PRE_INCEPTION;
                 }
                 Menu yearMenu = new Menu(yearString);
                 changePositionMenu.getItems().add(yearMenu);
