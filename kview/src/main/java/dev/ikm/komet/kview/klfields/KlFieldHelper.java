@@ -581,6 +581,12 @@ public class KlFieldHelper {
         }
         ByteArrayInputStream bis = new ByteArrayInputStream(imageByteArray);
         Image image = new Image(bis);
+        // Byte-array fields share this editor but need not hold an image at all
+        // (IKE-Network/ike-issues#924): undecodable bytes yield a non-null Image
+        // with isError() set — treat that as "no image", never as a renderable one.
+        if (image.isError()) {
+            return null;
+        }
         return image;
     }
 
@@ -592,6 +598,12 @@ public class KlFieldHelper {
      */
     public static byte[] newByteArrayFromImage(Image image) {
         BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
+        if (bufferedImage == null) {
+            // fromFXImage answers null for an errored or unrenderable Image
+            // (IKE-Network/ike-issues#924) — an empty byte[] is this editor's
+            // established "no image" value, never an exception.
+            return new byte[0];
+        }
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try {
             ImageIO.write(bufferedImage, "png", bos);
