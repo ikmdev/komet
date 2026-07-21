@@ -26,6 +26,7 @@ public class KLFloatControlSkin extends KLDebounceControlSkin<KLFloatControl> {
     private static final String NEGATIVE_INFINITY = "-Infinity";
     private static final String INFINITY_SYMBOL = "∞";
     private static final String NEGATIVE_INFINITY_SYMBOL = "-∞";
+    private static final String NAN = "NaN";
 
     /**
      * Pseudo-class set on the text field while it displays the infinity symbol, so CSS can
@@ -57,10 +58,10 @@ public class KLFloatControlSkin extends KLDebounceControlSkin<KLFloatControl> {
         textField.promptTextProperty().bind(control.promptTextProperty());
         textField.getStyleClass().add("text-field");
 
-        // suggest Infinity/-Infinity while the user types an infinity token,
-        // both as a shortcut and to make the support for infinity discoverable
+        // suggest Infinity/-Infinity/NaN while the user types one of those tokens,
+        // both as a shortcut and to make the support for them discoverable
         AutoCompleteTextField<String> autoCompleteTextField = (AutoCompleteTextField<String>) textField;
-        autoCompleteTextField.setCompleter(KLFloatControlSkin::infinitySuggestions);
+        autoCompleteTextField.setCompleter(KLFloatControlSkin::specialValueSuggestions);
         autoCompleteTextField.getPopupStyleClasses().add("float-popup");
         // must match the -fx-cell-size of the float-popup cells in float-control.css
         autoCompleteTextField.setSuggestionsNodeHeight(28);
@@ -86,9 +87,9 @@ public class KLFloatControlSkin extends KLDebounceControlSkin<KLFloatControl> {
                 return change;
             }
 
-            // partial or complete infinity token (e.g. "-In", "inf", "Infinity", "∞"),
-            // accepted as it is being typed
-            if (isPartialInfinityToken(newText)) {
+            // partial or complete infinity or NaN token (e.g. "-In", "inf", "Infinity",
+            // "∞", "na", "NaN"), accepted as it is being typed
+            if (isPartialInfinityToken(newText) || isPartialNaNToken(newText)) {
                 return change;
             }
 
@@ -184,6 +185,8 @@ public class KLFloatControlSkin extends KLDebounceControlSkin<KLFloatControl> {
             control.setValue(null);
         } else if (isInfinityToken(nv)) {
             control.setValue(nv.startsWith("-") ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY);
+        } else if (isNaNToken(nv)) {
+            control.setValue(Float.NaN);
         } else if (!("-".equals(nv) || "+".equals(nv) || endsWithExponent(nv) || endsWithSignedExponent(nv))) {
             try {
                 // only set control's value when it is a valid number
@@ -288,6 +291,28 @@ public class KLFloatControlSkin extends KLDebounceControlSkin<KLFloatControl> {
         return INFINITY_SYMBOL.equals(unsigned) || "infinity".startsWith(unsigned.toLowerCase(Locale.ROOT));
     }
 
+    /**
+     * Returns true if the text is a complete NaN token: an optional sign
+     * followed by "nan" (case-insensitive). The sign is only a typing
+     * convenience: NaN has no meaningful sign, the token always maps to
+     * {@link Float#NaN}.
+     */
+    private static boolean isNaNToken(String text) {
+        return "nan".equals(stripSign(text).toLowerCase(Locale.ROOT));
+    }
+
+    /**
+     * Returns true if the text is a complete NaN token or a partially typed
+     * one: an optional sign followed by a prefix of "nan" (case-insensitive).
+     */
+    private static boolean isPartialNaNToken(String text) {
+        String unsigned = stripSign(text);
+        if (unsigned.isEmpty()) {
+            return false;
+        }
+        return "nan".startsWith(unsigned.toLowerCase(Locale.ROOT));
+    }
+
     private static String stripSign(String text) {
         return text.startsWith("-") || text.startsWith("+") ? text.substring(1) : text;
     }
@@ -295,24 +320,30 @@ public class KLFloatControlSkin extends KLDebounceControlSkin<KLFloatControl> {
     /**
      * Completer for the auto-complete text field: while the user is typing an
      * infinity token, suggests "Infinity" and/or "-Infinity" depending on the sign
-     * typed so far.
+     * typed so far, and while the user is typing a NaN token, suggests "NaN".
      */
-    private static List<String> infinitySuggestions(String text) {
+    private static List<String> specialValueSuggestions(String text) {
         if (text == null) {
             return List.of();
         }
         String unsigned = stripSign(text);
-        if (unsigned.isEmpty() || INFINITY_SYMBOL.equals(unsigned) ||
-                !"infinity".startsWith(unsigned.toLowerCase(Locale.ROOT))) {
+        if (unsigned.isEmpty() || INFINITY_SYMBOL.equals(unsigned)) {
             return List.of();
         }
-        if (text.startsWith("-")) {
-            return List.of(NEGATIVE_INFINITY);
+        String lower = unsigned.toLowerCase(Locale.ROOT);
+        if ("infinity".startsWith(lower)) {
+            if (text.startsWith("-")) {
+                return List.of(NEGATIVE_INFINITY);
+            }
+            if (text.startsWith("+")) {
+                return List.of(INFINITY);
+            }
+            return List.of(INFINITY, NEGATIVE_INFINITY);
         }
-        if (text.startsWith("+")) {
-            return List.of(INFINITY);
+        if ("nan".startsWith(lower)) {
+            return List.of(NAN);
         }
-        return List.of(INFINITY, NEGATIVE_INFINITY);
+        return List.of();
     }
 
     private static boolean hasExponent(String text) {

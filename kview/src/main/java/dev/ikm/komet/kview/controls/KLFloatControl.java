@@ -58,8 +58,10 @@ public class KLFloatControl extends Control {
     /**
      * A Float property that holds a float value, between
      * {@link Float#MIN_VALUE} and {@link Float#MAX_VALUE},
-     * {@link Float#POSITIVE_INFINITY} or {@link Float#NEGATIVE_INFINITY},
-     * or null if no value is set.
+     * {@link Float#POSITIVE_INFINITY}, {@link Float#NEGATIVE_INFINITY} or
+     * {@link Float#NaN}, or null if no value is set. Positive and negative
+     * zero are distinct values, as they are distinct under
+     * {@link Float#equals(Object)}.
      */
     private final ObjectProperty<Float> valueProperty = new SimpleObjectProperty<>(this, "value");
     public final ObjectProperty<Float> valueProperty() {
