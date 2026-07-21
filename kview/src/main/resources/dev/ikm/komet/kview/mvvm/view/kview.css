@@ -6728,7 +6728,10 @@ Styling a context menu for kview ui/ux controls
     -fx-padding: 0 0 3px 0;
 }
 
-/* Pattern container */
+/*******************************************************************************
+ * Pattern Semantics Standard View                                             *
+ ******************************************************************************/
+
 .gen-purpose-window .pattern-container {
     -fx-padding: 0 0 10px 0;
 }
@@ -6754,6 +6757,50 @@ Styling a context menu for kview ui/ux controls
     -fx-border-style: solid, solid;
     -fx-border-insets: 0, 0 3px 0 3px;
     -fx-border-color: transparent, transparent transparent #ddd transparent;
+}
+
+/* Field value text: grey instead of the control's default near-black */
+.gen-purpose-window .pattern-container .read-only-data-control .text-container > .text {
+    -fx-text-fill: -Grey-10;
+}
+
+/* Standard pattern view content scrollbar: slim rounded thumb over a transparent track,
+   matching the concept window's content scrollbar */
+.gen-purpose-window .pattern-container > .scroll-pane > .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 8;
+    -fx-padding: 0 0 0 2;
+}
+
+.gen-purpose-window .pattern-container > .scroll-pane > .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+}
+
+.gen-purpose-window .pattern-container > .scroll-pane > .scroll-bar .thumb {
+    -fx-background-color: -Grey-1, rgba(0, 0, 0, 0.4);
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 6px;
+    -fx-padding: 0;
+}
+
+.gen-purpose-window .pattern-container > .scroll-pane > .scroll-bar:hover .thumb {
+    -fx-background-color: -Grey-1, rgba(0, 0, 0, 0.5);
+}
+
+.gen-purpose-window .pattern-container > .scroll-pane > .scroll-bar .increment-button,
+.gen-purpose-window .pattern-container > .scroll-pane > .scroll-bar .decrement-button {
+    -fx-background-insets: 0;
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-min-height: 0;
+    -fx-pref-height: 0;
+    -fx-padding: 0;
+}
+
+.gen-purpose-window .pattern-container > .scroll-pane > .scroll-bar .increment-arrow,
+.gen-purpose-window .pattern-container > .scroll-pane > .scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
 }
 
 /*******************  Section Semantics ComboBox  **************************/
