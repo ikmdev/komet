@@ -317,13 +317,13 @@ public class NextGenSearchController {
                         createMapOfEntries(topItems, results);
 
                         // sort children inside each by score
-                        topItems.forEach((k, v) -> Collections.sort(v, (o1, o2) ->
-                                Float.compare(o1.score(), o2.score())));
+                        topItems.forEach((k, v) -> v.sort((o1, o2) ->
+                                Float.compare(o2.score(), o1.score())));
 
                         List<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>> myList = new ArrayList<>(topItems.entrySet());
 
-                        Collections.sort(myList, (m1, m2) ->
-                                Float.compare(m2.getValue().get(0).score(), m1.getValue().get(0).score()));
+                        myList.sort((m1, m2) ->
+                                Float.compare(m2.getValue().getFirst().score(), m1.getValue().getFirst().score()));
 
                         processedResults = myList;
                     }

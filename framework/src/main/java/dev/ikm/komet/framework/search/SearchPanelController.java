@@ -184,8 +184,8 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
                             populateTempRoot(tempRoot, resultsTopComponentScoreOrder);
                             for (TreeItem<Object> topItem : tempRoot.getChildren()) {
                                 topItem.getChildren().sort((o1, o2) ->
-                                        Float.compare(((LatestVersionSearchResult) o1.getValue()).score(),
-                                                ((LatestVersionSearchResult) o2.getValue()).score()));
+                                        Float.compare(((LatestVersionSearchResult) o2.getValue()).score(),
+                                                ((LatestVersionSearchResult) o1.getValue()).score()));
                             }
                             tempRoot.getChildren().sort((o1, o2) -> Float.compare(((LatestVersionSearchResult) o2.getChildren().get(0).getValue()).score(),
                                     ((LatestVersionSearchResult) o1.getChildren().get(0).getValue()).score()));
