@@ -1,23 +1,20 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
-import dev.ikm.komet.framework.dnd.KonceptDragSource;
-import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
+import dev.ikm.komet.kview.controls.ComponentItem;
+import dev.ikm.komet.kview.controls.ComponentItemActions;
 import dev.ikm.komet.kview.controls.ConceptTile;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentCollectionControl;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.event.ActionEvent;
@@ -63,11 +60,11 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     /**
      * Drag format for component control drag and drop operations from KLComponentControl to KLComponentControl.
      */
-    public static final DataFormat COMPONENT_CONTROL_DRAG_FORMAT;
+    public static final DataFormat COMPONENT_CONTROL_DRAG_REORDER_FORMAT;
 
     static {
         DataFormat dataFormat = DataFormat.lookupMimeType("application/x-komet-component-control-format");
-        COMPONENT_CONTROL_DRAG_FORMAT = dataFormat == null ? new DataFormat("application/x-komet-component-control-format") : dataFormat;
+        COMPONENT_CONTROL_DRAG_REORDER_FORMAT = dataFormat == null ? new DataFormat("application/x-komet-component-control-format") : dataFormat;
     }
 
     private final Label titleLabel;
@@ -79,6 +76,9 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private final StackPane dragHandleIconContainer;
 
     private AutoCompleteTextField<EntityProxy> typeAheadSearchField;
+
+    /** The component currently rendered by the control; null while the control is empty. */
+    private ComponentItem componentItem;
 
     /**
      * Creates a new KLComponentControlSkin instance, installing the necessary child
@@ -123,6 +123,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
             if (control.isEmpty()) {
                selectedConceptContainer.getChildren().clear();
                conceptContainer.setVisible(true);
+               componentItem = null;
 
                typeAheadSearchField.clear();
             }
@@ -162,17 +163,20 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     }
 
     /**
-     * There are two type of DND operations:
-     * - Drop a concept over an empty KLComponentControl (dragboard string is publicId)
-     * - Rearrange non-empty KLComponentControls that belong to a KLComponentListControl
-     * (dragboard string is CONTROL_DRAG_KEY)
+     * There are three types of DND operations:
+     * - Drop a component over an empty KLComponentControl
+     * - Rearrange non-empty KLComponentControls that belong to a KLComponentCollectionControl
+     * - Drag a component out of a non-empty KLComponentControl, to be dropped anywhere a
+     * component dragged from a read only control can be dropped (a journal, another control, ...)
+     * A drag from a non-empty control offers the last two at once: the dragboard carries both
+     * the rearrange and the component formats, and the drop target decides which one to honor.
      */
     private void setupDragNDrop() {
         KLComponentControl control = getSkinnable();
         control.setOnDragOver(event -> {
-            if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT)) {
+            if (isRearrangeDrag(event)) {
                 event.acceptTransferModes(TransferMode.MOVE);
-            } else if(event.getDragboard().hasContent(COMPONENT_DRAG_FORMAT)) {
+            } else if(event.getGestureSource() != control && event.getDragboard().hasContent(COMPONENT_DRAG_FORMAT)) {
                 event.acceptTransferModes(TransferMode.COPY);
             } else if (event.getGestureSource() != control && event.getDragboard().hasString()) {
                 if (isFilterAllowedWhileDragAndDropping(event)) {
@@ -191,10 +195,8 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
             if (event.getGestureSource() != control &&
                     (event.getDragboard().hasString() || event.getDragboard().hasContent(COMPONENT_DRAG_FORMAT))) {
                 conceptContainer.setOpacity(.90);
-                if (event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT)) {
-                    if (hasAllowedDND(control)) {
-                        aboutToRearrangeHBox.setVisible(true);
-                    }
+                if (isRearrangeDrag(event)) {
+                    aboutToRearrangeHBox.setVisible(true);
                 } else if (!isFilterAllowedWhileDragAndDropping(event)) {
                     doNotDropBorderPane.setVisible(true);  // show error message.
                 } else {
@@ -215,23 +217,15 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         });
 
         control.setOnDragDetected(ev -> {
-            if (hasAllowedDND(control)) {
-                Dragboard dragboard = control.startDragAndDrop(TransferMode.MOVE);
-                ClipboardContent clipboardContent = new ClipboardContent();
-                clipboardContent.put(COMPONENT_CONTROL_DRAG_FORMAT, "component-control");
-                control.setUserData(control.getEntity().publicId());
-                clipboardContent.putString(control.getEntity().toString());
-                dragboard.setContent(clipboardContent);
-                // A concept drags as the canonical koncept pill, built from its identity, so it
-                // matches the same concept dragged from a card or navigator (ike-issues#854); a
-                // non-concept component keeps the field-node snapshot.
-                if (control.getEntity() instanceof ConceptFacade concept) {
-                    // Resolve name (fully-qualified first) and inactive through the default view — the
-                    // same overload the navigators use — so the glyph is identical from every source.
-                    KonceptDragGlyph.setDragView(dragboard, concept.nid(), Calculators.View.Default());
-                } else {
-                    KonceptDragSource.setDragView(dragboard, control);
+            if (!control.isEmpty()) {
+                Dragboard dragboard = control.startDragAndDrop(TransferMode.COPY_OR_MOVE);
+                ClipboardContent clipboardContent = ComponentItemActions.buildClipboardContent(componentItem);
+                if (control.getParent() instanceof KLComponentCollectionControl) {
+                    clipboardContent.put(COMPONENT_CONTROL_DRAG_REORDER_FORMAT, "component-control");
+                    control.setUserData(control.getEntity().publicId());
                 }
+                dragboard.setContent(clipboardContent);
+                ComponentItemActions.setDragView(dragboard, componentItem, control);
             }
             ev.consume();
         });
@@ -239,9 +233,13 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         control.setOnDragDropped(event -> {
             Dragboard dragboard = event.getDragboard();
 
-            if (!(event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_FORMAT) &&
-                    event.getGestureSource() instanceof KLComponentControl cc && haveAllowedDND(control, cc)) &&
-                dragboard.hasString() && !(event.getGestureSource() instanceof KLComponentControl)) {
+            if (isRearrangeDrag(event)) {
+                // The containing collection performs the rearrange on this same event once it
+                // bubbles up to its skin, so leave it unconsumed here.
+                return;
+            }
+
+            if (dragboard.hasString() && !(event.getGestureSource() instanceof KLComponentControl)) {
                 // drop concept
                 if (!isFilterAllowedWhileDragAndDropping(event)) {
                     event.setDropCompleted(false);
@@ -419,14 +417,16 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         return false;
     }
 
-    private boolean hasAllowedDND(KLComponentControl control) {
-        return control != null && control.getEntity() != null &&
-                (control.getParent() instanceof KLComponentCollectionControl cl && cl.getValue().size() > 1);
-    }
-
-    private boolean haveAllowedDND(KLComponentControl source, KLComponentControl target) {
-        // only allowed if both source and target have the same parent
-        return hasAllowedDND(source) && hasAllowedDND(target);
+    /**
+     * Returns true if the given drag is a rearrange of components within a
+     * {@link KLComponentCollectionControl}: it was started by a component control that put the
+     * rearrange format on the dragboard, and this control is itself a collection member, so the
+     * drop is left to the collection skin.
+     */
+    private boolean isRearrangeDrag(DragEvent event) {
+        return event.getDragboard().hasContent(COMPONENT_CONTROL_DRAG_REORDER_FORMAT)
+                && event.getGestureSource() instanceof KLComponentControl
+                && getSkinnable().getParent() instanceof KLComponentCollectionControl;
     }
 
     private HBox createSearchBox() {
@@ -576,6 +576,15 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
         selectedConcept.getStyleClass().add("concept-selected-entity-box");
         selectedConcept.setAlignment(Pos.CENTER_LEFT);
         HBox.setMargin(selectedConceptContainer, new Insets(8));
+
+        componentItem = new ComponentItem(componentNameLabel.getText(), imageView.getImage(),
+                entity.publicId(), EntityHandle.get(entity.nid()).isConcept());
+
+        selectedConcept.setOnContextMenuRequested(event -> {
+            ComponentItemActions.buildContextMenu(selectedConcept, componentItem)
+                    .show(selectedConcept, event.getScreenX(), event.getScreenY());
+            event.consume();
+        });
 
         selectedConceptContainer.getChildren().add(selectedConcept);
         conceptContainer.setVisible(false);
