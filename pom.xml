@@ -54,6 +54,7 @@
     <subprojects>
         <subproject>komet-terms</subproject>
         <subproject>preferences</subproject>
+        <subproject>artifact-resolution</subproject>
         <subproject>framework</subproject>
         <subproject>artifact</subproject>
         <subproject>builder</subproject>
