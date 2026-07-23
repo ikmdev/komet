@@ -1,6 +1,6 @@
 schema: 1
-standards-version: '228'
-applied: '2026-06-27T15:28:44.923258Z'
+standards-version: '235'
+applied: '2026-07-20T05:11:42.707098Z'
 files:
   .gitignore:
     tier: tracked-block
@@ -19,3 +19,7 @@ files:
   mvnw.cmd:
     tier: tool-owned
     template-sha: sha256:46eedb8419bd14fe70d5bb2916d7b6f51806e51b39d5b76a42610384ca929c1c
+  CLAUDE.md:
+    tier: tracked-block
+    template-sha: sha256:af5ca4cbb4bbb0abcf0386f029a0b21e5e342dc48d50101aa5c620ee28834d50
+    applied-sha: sha256:af5ca4cbb4bbb0abcf0386f029a0b21e5e342dc48d50101aa5c620ee28834d50

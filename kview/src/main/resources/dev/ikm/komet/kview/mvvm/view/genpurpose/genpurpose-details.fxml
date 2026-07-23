@@ -6,18 +6,16 @@
 <?import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane?>
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Text?>
+<?import javafx.scene.shape.SVGPath?>
 
 <?import javafx.scene.control.SplitPane?>
 <?import dev.ikm.komet.kview.controls.ComponentItemNode?>
@@ -27,29 +25,24 @@
     <center>
         <BorderPane fx:id="detailsCenterBorderPane" prefWidth="762.0">
             <top>
-                <VBox BorderPane.alignment="CENTER">
-                    <children>
-                        <FlowPane styleClass="rounded-top">
-                            <children>
-                                <HBox fx:id="tabHeader" prefHeight="18.0" spacing="4.0"
-                                      style="-fx-background-color: -Natural-Grey-Main;">
-                                    <styleClass>
-                                        <String fx:value="lidr-rounded-tab"/>
-                                    </styleClass>
-                                    <children>
-                                        <Region prefHeight="12.0" prefWidth="8.4" styleClass="nine-dots-icon"/>
-                                        <Text fx:id="windowTitleLabel" strokeType="OUTSIDE" strokeWidth="0.0"
-                                              styleClass="lidr-tab-text"/>
-                                    </children>
-                                    <cursor>
-                                        <Cursor fx:constant="CLOSED_HAND"/>
-                                    </cursor>
-                                </HBox>
-                            </children>
-                        </FlowPane>
-                        <KlWindowControlToolbar fx:id="windowControlToolbar"/>
-                    </children>
-                </VBox>
+                <!-- The toolbar also carries the window's title tab on its top row -->
+                <KlWindowControlToolbar fx:id="windowControlToolbar"/>
+            </top>
+            <center>
+        <!-- Wraps everything below the toolbar (hint, content and the slideout trays), so the
+             create-mode dashed frame drawn on it follows the window's outside edges even when
+             the properties bumpout is open. The toolbar and tab carry their own darker
+             create-mode dashes (see kview.css). -->
+        <BorderPane styleClass="window-body-frame">
+            <top>
+                <Label fx:id="createModeHintLabel" styleClass="create-mode-hint"
+                       maxWidth="1.7976931348623157E308" visible="false" managed="false">
+                    <graphic>
+                        <!-- info icon: outlined circle + dot + stem, one even-odd path -->
+                        <SVGPath styleClass="create-mode-hint-icon" fillRule="EVEN_ODD"
+                                 content="M6.5 0 A6.5 6.5 0 1 0 6.5 13 A6.5 6.5 0 1 0 6.5 0 Z M6.5 1.2 A5.3 5.3 0 1 1 6.5 11.8 A5.3 5.3 0 1 1 6.5 1.2 Z M6.5 2.95 A0.95 0.95 0 1 0 6.5 4.85 A0.95 0.95 0 1 0 6.5 2.95 Z M5.85 5.9 H7.15 V10.1 H5.85 Z"/>
+                    </graphic>
+                </Label>
             </top>
             <right>
                 <HBox styleClass="main-right-container" BorderPane.alignment="CENTER">
@@ -71,12 +64,15 @@
                         </VBox>
                     </center>
                     <top>
-                        <BorderPane prefHeight="120.0" prefWidth="894.0" styleClass="concept-detail-banner-background"
+                        <BorderPane prefWidth="894.0" styleClass="concept-detail-banner-background"
                                     BorderPane.alignment="CENTER">
                             <center>
                                 <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
-                                          prefHeight="84.0" prefWidth="510.0"
-                                          styleClass="concept-detail-banner-background">
+                                          prefWidth="510.0">
+                                    <styleClass>
+                                        <String fx:value="concept-detail-banner-background"/>
+                                        <String fx:value="window-banner-grid"/>
+                                    </styleClass>
                                     <columnConstraints>
                                         <ColumnConstraints halignment="LEFT" maxWidth="586.0" minWidth="-Infinity"
                                                            prefWidth="42.0"/>
@@ -85,9 +81,8 @@
                                         <ColumnConstraints/>
                                     </columnConstraints>
                                     <rowConstraints>
-                                        <RowConstraints maxHeight="51.0" prefHeight="30.0"
-                                                        vgrow="ALWAYS"/>
-                                        <RowConstraints maxHeight="77.0" minHeight="0.0" prefHeight="66.0"
+                                        <RowConstraints vgrow="NEVER"/>
+                                        <RowConstraints maxHeight="77.0" minHeight="0.0"
                                                         vgrow="SOMETIMES"/>
                                     </rowConstraints>
                                     <children>
@@ -97,7 +92,7 @@
                                                              GridPane.halignment="LEFT" GridPane.rowIndex="1"
                                                              GridPane.valignment="TOP"/>
                                         <ComponentItemNode fx:id="windowConceptTitle"
-                                                           maxHeight="1.7976931348623157E308" prefHeight="49.0" prefWidth="416.0"
+                                                           maxHeight="1.7976931348623157E308" prefWidth="416.0"
                                                            styleClass="window-main-title"
                                                            wrapText="true" GridPane.columnIndex="0">
                                             <tooltip>
@@ -105,13 +100,10 @@
                                             </tooltip>
                                         </ComponentItemNode>
                                     </children>
-                                    <padding>
-                                        <Insets bottom="8.0" left="12.0" right="8.0" top="8.0"/>
-                                    </padding>
                                 </GridPane>
                             </center>
                             <right>
-                                <StackPane prefHeight="128.0" prefWidth="210.0" BorderPane.alignment="CENTER">
+                                <StackPane prefWidth="210.0" BorderPane.alignment="CENTER">
                                     <BorderPane.margin>
                                         <Insets bottom="5" right="5" top="5"/>
                                     </BorderPane.margin>
@@ -121,6 +113,8 @@
                         </BorderPane>
                     </top>
                 </BorderPane>
+            </center>
+        </BorderPane>
             </center>
         </BorderPane>
     </center>

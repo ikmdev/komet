@@ -37,14 +37,8 @@ public class SupplementalAreaViewControl extends GridBaseControl {
     }
 
     @Override
-    protected void layoutChildren() {
-        double leftInsets = snappedLeftInset();
-        double rightInsets = snappedRightInset();
-        double topInsets = snappedTopInset();
-        double bottomInsets = snappedBottomInset();
-
-        container.resizeRelocate(leftInsets, topInsets,
-                getWidth() - leftInsets - rightInsets, getHeight() - topInsets - bottomInsets);
+    protected void layoutContent(double contentX, double contentY, double contentWidth, double contentHeight) {
+        container.resizeRelocate(contentX, contentY, contentWidth, contentHeight);
     }
 
     // -- parent section

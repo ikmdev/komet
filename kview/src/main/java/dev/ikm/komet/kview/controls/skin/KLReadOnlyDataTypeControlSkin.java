@@ -4,6 +4,7 @@ import dev.ikm.komet.kview.NodeUtils;
 import dev.ikm.komet.kview.controls.KLReadOnlyDataTypeControl;
 import dev.ikm.komet.kview.controls.KometIcon.IconValue;
 import javafx.beans.binding.ObjectBinding;
+import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Label;
 import javafx.scene.control.SeparatorMenuItem;
@@ -11,6 +12,13 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 public class KLReadOnlyDataTypeControlSkin<T> extends KLReadOnlyBaseControlSkin<KLReadOnlyDataTypeControl<T>> {
+
+    /**
+     * Pseudo-class set on the text label while it displays the infinity symbol, so CSS can
+     * switch to a font that contains the glyph (the default Noto Sans doesn't, and the
+     * fallback system font renders it small and faded).
+     */
+    private static final PseudoClass INFINITY_PSEUDO_CLASS = PseudoClass.getPseudoClass("infinity");
 
     private final VBox textContainer = new VBox();
     private final Label textLabel = new Label();
@@ -33,11 +41,16 @@ public class KLReadOnlyDataTypeControlSkin<T> extends KLReadOnlyBaseControlSkin<
             protected String computeValue() {
                 if (control.getValue() == null || (control.getValue() instanceof String string && string.isEmpty())) {
                     return "";
+                } else if (control.getValue() instanceof Float floatValue && floatValue.isInfinite()) {
+                    return floatValue > 0 ? "∞" : "-∞";
                 } else {
                     return String.valueOf(control.getValue());
                 }
             }
         });
+
+        control.valueProperty().subscribe(nv -> textLabel.pseudoClassStateChanged(INFINITY_PSEUDO_CLASS,
+                nv instanceof Float floatValue && floatValue.isInfinite()));
 
         initTexts(control);
 

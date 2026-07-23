@@ -31,6 +31,8 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.PARENT_VIEW_COORDINATES;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_STANDARD_WINDOWS_DIR;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_USER_WINDOWS_DIR;
 import static javafx.scene.layout.Region.USE_COMPUTED_SIZE;
 import dev.ikm.komet.framework.KometNodeFactory;
 import dev.ikm.komet.framework.preferences.PrefX;
@@ -364,12 +366,17 @@ public class AppPages {
      * Launchs a new KL Editor Window
      *
      * @param klWindowSettings if present will give the size and positioning of the journal window
+     * @param standardWindow whether the window to load is a standard (application-provided) window
+     *                       from the standard-windows folder rather than a user-created one
      */
-    void launchKLEditorViewPage(PrefX klWindowSettings, ConceptFacade loggedInUser, String windowToLoad) {
+    void launchKLEditorViewPage(PrefX klWindowSettings, ConceptFacade loggedInUser, String windowToLoad,
+                                boolean standardWindow) {
         Objects.requireNonNull(klWindowSettings, "klWindowSettings cannot be null");
 
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
+        final KometPreferences windowsPreferences = klEditorAppPreferences.node(
+                standardWindow ? KL_STANDARD_WINDOWS_DIR : KL_USER_WINDOWS_DIR);
         final WindowSettings windowSettings = new WindowSettings(klEditorAppPreferences);
 
 //        final UUID klTopic = klWindowSettings.getValue(KL_TOPIC);
@@ -387,7 +394,7 @@ public class AppPages {
         }
         KLEditorMainScreenController klEditorMainScreenController = loader.getController();
 
-        klEditorMainScreenController.init(klEditorAppPreferences, windowSettings, windowToLoad);
+        klEditorMainScreenController.init(windowsPreferences, windowSettings, windowToLoad, standardWindow);
 
         Scene sourceScene = new Scene(root, DEFAULT_JOURNAL_WIDTH, DEFAULT_JOURNAL_HEIGHT);
         addStylesheets(sourceScene, KLEDITOR_CSS, KLCORE_CSS, KLEDITOR_WINDOW_CSS, ICONS);

@@ -23,6 +23,8 @@ module dev.ikm.komet.layout {
     exports dev.ikm.komet.layout.orchestration;
     exports dev.ikm.komet.layout.orchestration.process;
     exports dev.ikm.komet.layout.preferences;
+    exports dev.ikm.komet.layout.settings;
+    exports dev.ikm.komet.layout.expand;
     exports dev.ikm.komet.layout.selection;
     exports dev.ikm.komet.layout.selection.element;
     exports dev.ikm.komet.layout.version.field;

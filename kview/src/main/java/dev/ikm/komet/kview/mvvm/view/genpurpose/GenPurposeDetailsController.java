@@ -28,10 +28,7 @@ import static dev.ikm.komet.layout_engine.window.DraggableSupport.addDraggableNo
 import static dev.ikm.komet.layout_engine.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
-import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.IS_CONFIRMED_OR_SUBMITTED;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
@@ -55,12 +52,13 @@ import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.controls.SectionEditPopup;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
-import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl.Tab;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SectionSemanticsComboBoxCell;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard.SemanticStandardControl;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
+import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.FormMode;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
 import dev.ikm.komet.layout.KlPatternSemanticsFactory;
 import dev.ikm.komet.layout.PatternSemanticsPresenter;
@@ -68,6 +66,8 @@ import dev.ikm.komet.layout.editor.EditorWindowManager;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
+import dev.ikm.komet.layout.editor.model.EditorWindowType;
+import dev.ikm.komet.layout_engine.window.WindowSupport;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
@@ -88,32 +88,28 @@ import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
+import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import dev.ikm.komet.layout_engine.host.SupplementalAreaRenderer;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.text.Text;
-import org.carlfx.cognitive.loader.Config;
-import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.InjectViewModel;
-import org.carlfx.cognitive.loader.JFXNode;
-import org.carlfx.cognitive.loader.NamedVm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -122,6 +118,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
@@ -129,6 +126,19 @@ import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
 public class GenPurposeDetailsController {
 
     private static final Logger LOG = LoggerFactory.getLogger(GenPurposeDetailsController.class);
+
+    /**
+     * Active while the window is in create mode, i.e. framing a component that doesn't exist yet.
+     * Drives the "ghost window" styling in kview.css (dimmed blue chrome, dashed frame, dimmed STAMP).
+     */
+    private static final PseudoClass CREATE_MODE = PseudoClass.getPseudoClass("create-mode");
+
+    /**
+     * Active while the window "has focus": the mouse was pressed inside it or any of its controls
+     * holds keyboard focus. Drives the enlarged drop shadow in kview.css that makes the window
+     * read as sitting closer to the screen.
+     */
+    private static final PseudoClass WINDOW_FOCUSED = PseudoClass.getPseudoClass("window-focused");
 
     /**
      * Given a Pattern what is the Section that has it as its Reference Component.
@@ -188,13 +198,10 @@ public class GenPurposeDetailsController {
     @FXML
     private PublicIDListControl identifierControl;
     @FXML
-    private HBox tabHeader;
-    @FXML
-    private Text windowTitleLabel;
+    private Label createModeHintLabel;
     private BorderPane propertiesBorderPane;
     private GenPurposePropertiesController propertiesController;
     private EditorWindowModel editorWindowModel;
-    private boolean isUpdatingStampSelection = false;
     private ViewProperties viewProperties;
     @InjectViewModel
     private GenPurposeViewModel genPurposeViewModel;
@@ -217,52 +224,43 @@ public class GenPurposeDetailsController {
         // reacts to the toggle's selected state (driven by user clicks or setPropertiesSelected).
         windowControlToolbar.setOnCloseAction(this::closeConceptWindow);
         windowControlToolbar.propertiesSelectedProperty()
-                .subscribe((wasSelected, isSelected) -> openPropertiesPanel(isSelected));
+                .subscribe((w) -> onPropertiesToggleChanged(windowControlToolbar.isPropertiesSelected()));
 
-        stampViewControl.selectedProperty().subscribe(this::onStampSelectionChanged);
+        // The header STAMP is view-only in this window — clicking it must not select it or open
+        // the STAMP form.
+        stampViewControl.setSelectable(false);
+
+        // Ghost-window styling while in create mode: the window frames a component that doesn't
+        // exist yet, so the chrome dims and the frame dashes (see :create-mode in kview.css) and
+        // the DRAFT chip + hint appear. Submitting flips the mode to EDIT, which clears all of it.
+        genPurposeViewModel.modeProperty().subscribe(mode -> {
+            boolean creating = mode == FormMode.CREATE;
+            detailsOuterBorderPane.pseudoClassStateChanged(CREATE_MODE, creating);
+            windowControlToolbar.setDraftVisible(creating);
+            createModeHintLabel.setVisible(creating);
+            createModeHintLabel.setManaged(creating);
+            updateRequiredChips();
+        });
 
         // Setup Properties Bump out view
         setupProperties();
 
-        // When the user submits an edited STAMP from the properties panel, refresh the header STAMP.
-        propertiesController.getStampFormViewModel().getBooleanProperty(IS_CONFIRMED_OR_SUBMITTED)
-                .subscribe(isConfirmed -> onStampConfirmedOrSubmitted(isConfirmed));
-
         Subscriber<GenPurposeEvent> refreshSubscriber = evt -> {
-            //Set up the Listener to refresh the details area (After user hits submit button on the right side)
-//            ObjectProperty<EntityFacade> semanticProperty = genEditingViewModel.getProperty(SEMANTIC);
-//            if (semanticProperty.isNull().get()) {
-//                // If the window is in creation mode ignore the refresh event
-//                return;
-//            }
-//            if (genEditingViewModel.getPropertyValue(MODE).equals(EDIT)) {
-//                observableSemanticSnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
-//                // populate the semantic and its observable fields once saved
-//                semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemantic.getSnapshot(getViewProperties().calculator()));
-//            }
-            // TODO update identicon and identifier fields.
-
             SemanticEntity<SemanticEntityVersion> semantic = evt.getSemantic();
 
             if (evt.getEventType() == GenPurposeEvent.PUBLISH) {
-//                if (genEditingViewModel.getPropertyValue(MODE).equals(CREATE)) {
-//                    // get the latest value for the semantic created.
-//                    observableSemantic = ObservableEntityHandle.getSemanticOrThrow(finalSemantic);
-//                    // populate the semantic and its observable fields once saved
-//                    semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemantic.getSnapshot(getViewProperties().calculator()));
-//                    // clear out the temporary placeholders
-//                    semanticDetailsVBox.getChildren().clear();
-//                    nodes.clear();
-//                    // set up the real observables now that the semantic has been created
-//                    populateSemanticDetails();
-//                    // change the mode from CREATE to EDIT
-//                    genEditingViewModel.setPropertyValue(MODE, EDIT);
-//                    // Update STAMP control and STAMP form
-//                    StampFormViewModelBase stampFormViewModelBase = propertiesController.getStampFormViewModel();
-//                    stampFormViewModelBase.update(semanticEntityVersionLatest.get().entity(),
-//                            genEditingViewModel.getPropertyValue(WINDOW_TOPIC), genEditingViewModel.getViewProperties());
-//                    updateUIStamp(stampFormViewModelBase);
-//                }
+                // In create mode the component only truly gets created once every required
+                // pattern has at least one semantic. Until then, skip the commit — the submitted
+                // semantic stays uncommitted in the composer's open transaction (alongside the
+                // lazily created reference concept) and commits together with it later. The details
+                // area still refreshes so the submitted (still uncommitted) field values show.
+                if (genPurposeViewModel.getMode() == FormMode.CREATE && !allRequiredPatternsSatisfied()) {
+                    reloadSemanticViews(semantic);
+                    // The submitted semantic now shows in the details area — flip its section's
+                    // chip to MET.
+                    updateRequiredChips();
+                    return;
+                }
 
                 // Commit transaction, finalizing all impending changes
                 composer.commit();
@@ -270,21 +268,42 @@ public class GenPurposeDetailsController {
                 composer = null;
                 initializeComposer();
 
+                // In create mode that commit also finalized the window's lazily created reference
+                // component (see createUncommitedReferenceComponent) — the window is now editing a
+                // real component, so refresh the banner/identifier/STAMP from the committed entity.
+                if (genPurposeViewModel.getMode() == FormMode.CREATE) {
+                    genPurposeViewModel.setMode(FormMode.EDIT);
+                    updateView();
+                }
+
                 reloadSemanticViews(semantic);
             }
-
-//            semanticEntityVersionLatest = retrieveCommittedLatestVersion(observableSemanticSnapshot);
-//            //Set and Update STAMP values
-//            semanticEntityVersionLatest.ifPresent(semanticEntityVersion -> {
-//                updateUIStamp(semanticEntityVersion.stamp().lastVersion());
-//            });
         };
-//        subscriberList.add(refreshSubscriber);
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
                 GenPurposeEvent.class, refreshSubscriber);
 
-        // Setup window support with explicit draggable nodes
-        addDraggableNodes(detailsOuterBorderPane, tabHeader, windowControlToolbar);
+        // This window opts out of WindowSupport's hover/resize outline: the edge resize cursors
+        // are the resize affordance. Must be set before addDraggableNodes below creates the
+        // window support.
+        detailsOuterBorderPane.getProperties().put(WindowSupport.HIGHLIGHT_DISABLED_KEY, Boolean.TRUE);
+
+        // Setup window support with explicit draggable nodes. The toolbar's own title tab is
+        // part of the toolbar control, so it drags the window through the toolbar handle.
+        addDraggableNodes(detailsOuterBorderPane, windowControlToolbar);
+
+        // Window focus shadow: the window counts as focused while keyboard focus is anywhere
+        // inside it (focus-within). A mouse press anywhere in the window routes focus to the
+        // window root first — the filter runs before the pressed control claims focus for
+        // itself — so clicking non-focusable areas also focuses the window. Focus moving into
+        // another window clears it. Drives :window-focused in kview.css.
+        detailsOuterBorderPane.focusWithinProperty().subscribe(() ->
+                detailsOuterBorderPane.pseudoClassStateChanged(WINDOW_FOCUSED,
+                        detailsOuterBorderPane.isFocusWithin()));
+        detailsOuterBorderPane.addEventFilter(MouseEvent.MOUSE_PRESSED, _ -> {
+            if (!detailsOuterBorderPane.isFocusWithin()) {
+                detailsOuterBorderPane.requestFocus();
+            }
+        });
 
         // if the user clicks the Close Properties Button from the Edit Descriptions panel
         // in that state, the properties bump out will be slid out, therefore toggling will perform a slide in
@@ -305,19 +324,14 @@ public class GenPurposeDetailsController {
     }
 
     /**
-     * Runs when the user toggles the Properties switch to open or close the Properties bump out.
+     * Runs when the user toggles the Properties switch. Publishes the matching open/close event, which the
+     * {@code KLPropertyPanelEvent} subscriber turns into the actual slide-out / slide-in (including updating
+     * the draggable nodes), so this method does not perform the slide itself.
      *
      * @param selected the new selected state of the properties toggle
      */
-    private void openPropertiesPanel(boolean selected) {
+    private void onPropertiesToggleChanged(boolean selected) {
         EvtType<KLPropertyPanelEvent> eventEvtType = selected ? KLPropertyPanelEvent.OPEN_PANEL : KLPropertyPanelEvent.CLOSE_PANEL;
-
-        updateDraggableNodesForPropertiesPanel(selected);
-
-        // Keep the header STAMP control's selected state in sync with the properties panel toggle.
-        isUpdatingStampSelection = true;
-        stampViewControl.setSelected(selected);
-        isUpdatingStampSelection = false;
 
         EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), new KLPropertyPanelEvent(windowControlToolbar, eventEvtType));
     }
@@ -341,27 +355,6 @@ public class GenPurposeDetailsController {
         // so that when we resize the window the content in the slide out pane
         // aligns with the details view
         contentRegion.prefHeightProperty().bind(slideoutTrayPane.heightProperty());
-    }
-
-    private void onStampSelectionChanged() {
-        if (isUpdatingStampSelection) {
-            return;
-        }
-
-        if (stampViewControl.isSelected()) {
-            windowControlToolbar.setPropertiesSelected(true);
-
-            // The reference component always exists in a Knowledge Layout window, so editing its STAMP
-            // always adds a new version (ADD_STAMP). Guard against a window opened without one.
-            EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
-            if (refComponent != null) {
-                EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
-                        new StampEvent(stampViewControl, StampEvent.ADD_STAMP));
-            }
-        } else {
-            EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
-                    new ClosePropertiesPanelEvent(stampViewControl, CLOSE_PROPERTIES));
-        }
     }
 
     /// Show the public ID
@@ -424,6 +417,27 @@ public class GenPurposeDetailsController {
         });
     }
 
+    /**
+     * Populates the header STAMP control from the edit coordinate — the author, module and path a
+     * newly created component will be committed with, and the Active status it will be committed
+     * as. Used in create mode, where no committed STAMP exists yet to read those values from.
+     */
+    private void populateStampFromEditCoordinate() {
+        var editCoordinate = getViewProperties().nodeView().editCoordinate();
+
+        stampViewControl.setStatus(getViewProperties().calculator()
+                .getPreferredDescriptionTextWithFallbackOrNid(State.ACTIVE.nid()));
+
+        ConceptFacade author = editCoordinate.getAuthorForChanges();
+        stampViewControl.setAuthor(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(author, getViewProperties()));
+
+        ConceptFacade module = editCoordinate.defaultModuleProperty().get();
+        stampViewControl.setModule(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(module, getViewProperties()));
+
+        ConceptFacade path = editCoordinate.defaultPathProperty().get();
+        stampViewControl.setPath(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(path, getViewProperties()));
+    }
+
     private void updateWindowTitle(EntityFacade refConcept) {
         // Follow the view coordinate's description-type preference (FQN vs preferred), like the axiom
         // badges, so the header tracks the coordinate too (ike-issues#660).
@@ -475,14 +489,33 @@ public class GenPurposeDetailsController {
         return newSemantic.get();
     }
 
-    private void setupProperties() {
-        URL genpurposePropertiesFXML = GenPurposeDetailsController.class.getResource("genpurpose-properties.fxml");
-        Config config = new Config(genpurposePropertiesFXML)
-                .addNamedViewModel(new NamedVm("genPurposeViewModel", genPurposeViewModel));
+    /**
+     * Creates the window's reference component as a new, uncommitted entity — used in create mode,
+     * where the window was opened without one. The component kind follows the authored window type:
+     * the standard Pattern window creates a Pattern, all others create a Concept. The new component
+     * joins the composer's current transaction, so it gets committed together with the semantic
+     * whose creation triggered it.
+     *
+     * @return the new uncommitted component, already set as the window's reference component
+     */
+    private EntityFacade createUncommitedReferenceComponent() {
+        initializeComposer();
 
-        JFXNode<BorderPane, GenPurposePropertiesController> propsFXMLLoader = FXMLMvvmLoader.make(config);
-        this.propertiesBorderPane = propsFXMLLoader.node();
-        this.propertiesController = propsFXMLLoader.controller();
+        ObservableComposer.EntityComposer<?, ?> entityComposer =
+                editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN
+                        ? composer.composePattern(PublicIds.newRandom())
+                        : composer.composeConcept(PublicIds.newRandom());
+
+        entityComposer.save(); // Save to create an uncommitted version
+
+        EntityFacade newComponent = entityComposer.getEntity();
+        genPurposeViewModel.setPropertyValue(ViewModelKey.REF_COMPONENT, newComponent);
+        return newComponent;
+    }
+
+    private void setupProperties() {
+        this.propertiesController = new GenPurposePropertiesController(genPurposeViewModel);
+        this.propertiesBorderPane = this.propertiesController.getNode();
         attachPropertiesViewSlideoutTray(this.propertiesBorderPane);
 
         // open the panel, allow the state machine to determine which panel to show
@@ -510,19 +543,6 @@ public class GenPurposeDetailsController {
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), KLPropertyPanelEvent.class, propertiesEventSubscriber);
     }
 
-    private void onStampConfirmedOrSubmitted(boolean isSubmittedOrConfirmed) {
-        if (!isSubmittedOrConfirmed) {
-            return;
-        }
-
-        // A new STAMP version was committed for the reference component; refresh the header from the
-        // committed latest version. The control stays enabled so the STAMP can be edited again.
-        EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
-        if (refComponent != null) {
-            updateStampControl(refComponent);
-        }
-    }
-
     public ViewProperties getViewProperties() {
         return viewProperties;
     }
@@ -547,12 +567,12 @@ public class GenPurposeDetailsController {
      * @param isOpen {@code true} to add draggable nodes, {@code false} to remove them
      */
     private void updateDraggableNodesForPropertiesPanel(boolean isOpen) {
-        if (propertiesController != null && propertiesController.getPropertiesTabsPane() != null) {
+        if (propertiesController != null && propertiesController.getPropertiesTabs() != null) {
             if (isOpen) {
-                addDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
+                addDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabs());
                 LOG.debug("Added properties nodes as draggable");
             } else {
-                removeDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabsPane());
+                removeDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabs());
                 LOG.debug("Removed properties nodes from draggable");
             }
         }
@@ -567,9 +587,27 @@ public class GenPurposeDetailsController {
         Path path = Paths.get(absolutePath);
         String lastDirName = path.getFileName().toString();
         String windowTitle = lastDirName;
-        windowTitleLabel.setText(lastDirName.substring(0, 1).toUpperCase() + lastDirName.substring(1));
+        windowControlToolbar.setTitle(lastDirName.substring(0, 1).toUpperCase() + lastDirName.substring(1));
 
         editorWindowModel = EditorWindowManager.loadWindowModel(editorWindowPreferences, viewCalculator, windowTitle);
+
+        // The standard Concept window gets the classic concept window's blue chrome (see
+        // .concept-window-theme in kview.css) and its own set of properties tabs. User-created
+        // Semantics Windows and the other standard windows keep the default grey chrome and tabs.
+        if (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_CONCEPT) {
+            detailsOuterBorderPane.getStyleClass().add("concept-window-theme");
+            propertiesController.getPropertiesTabs().getTabs().setAll(
+                    Tab.ADD_EDIT, Tab.HIERARCHY, Tab.HISTORY, Tab.COMMENTS);
+        }
+
+        // The create-mode hint names the kind of component this window will create.
+        String componentKind = switch (editorWindowModel.getWindowType()) {
+            case STANDARD_CONCEPT -> "Concept";
+            case STANDARD_PATTERN -> "Pattern";
+            case STANDARD_SEMANTIC, SEMANTICS -> "Semantic";
+        };
+        createModeHintLabel.setText("This " + componentKind
+                + " doesn't exist yet - it's created when you fill out the required semantics and submit.");
 
         // Apply the Window settings authored in the KL editor (this window shares the same model).
         applyEditorWindowSettings();
@@ -597,6 +635,13 @@ public class GenPurposeDetailsController {
 
         // Initial view update
         updateView();
+
+        if (genPurposeViewModel.getMode() == FormMode.CREATE) {
+            populateStampFromEditCoordinate();
+        }
+
+        // Sections exist now — show the required-pattern chips (create mode only).
+        updateRequiredChips();
     }
 
     /**
@@ -721,35 +766,45 @@ public class GenPurposeDetailsController {
             refComponent = sectionTitledPane.getSelectedReferenceComponent();
         }
 
-        if (refComponent == null) {
+        // In create mode the standard Concept/Pattern window has no reference component yet — the
+        // new component is created lazily when the user authors the first semantic (see
+        // onCreateSemantic), so the popup still opens, offering only "Create Semantic".
+        boolean canCreateReferenceComponent = sectionModel.getReferenceComponent() == null
+                && genPurposeViewModel.getMode() == FormMode.CREATE
+                && (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_CONCEPT
+                        || editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN);
+
+        if (refComponent == null && !canCreateReferenceComponent) {
             // No reference concept to edit against — nothing to populate.
             return;
         }
 
-        // Populate the Popup
-        EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(),
-                sectionModel.getPatterns().getFirst().getNid(), (semantic) -> {
-                    KometLabel semanticLabel = new KometLabel(semantic, viewProperties);
-                    semanticLabel.setShowTooltip(true);
+        if (refComponent != null) {
+            // Populate the Popup
+            EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(),
+                    sectionModel.getPatterns().getFirst().getNid(), (semantic) -> {
+                        KometLabel semanticLabel = new KometLabel(semantic, viewProperties);
+                        semanticLabel.setShowTooltip(true);
 
-                    semanticLabel.setOnMouseClicked(_ -> {
-                        initializeComposer();
-                        showEditSemanticFieldsPanel(actionEvent, semantic);
-                        popup.hide();
+                        semanticLabel.setOnMouseClicked(_ -> {
+                            initializeComposer();
+                            showEditSemanticFieldsPanel(actionEvent, semantic);
+                            popup.hide();
+                        });
+
+                        semanticLabel.hoverProperty().subscribe(() -> {
+                            PatternSemanticsPresenter patternSemanticsPresenter = semanticEntityToPatternSemanticsPresenter.get(semantic);
+
+                            if (semanticLabel.isHover()) {
+                                patternSemanticsPresenter.setPreviewingSemantic(semantic);
+                            } else {
+                                patternSemanticsPresenter.setPreviewingSemantic(null);
+                            }
+                        });
+
+                        popup.getItems().add(semanticLabel);
                     });
-
-                    semanticLabel.hoverProperty().subscribe(() -> {
-                        PatternSemanticsPresenter patternSemanticsPresenter = semanticEntityToPatternSemanticsPresenter.get(semantic);
-
-                        if (semanticLabel.isHover()) {
-                            patternSemanticsPresenter.setPreviewingSemantic(semantic);
-                        } else {
-                            patternSemanticsPresenter.setPreviewingSemantic(null);
-                        }
-                    });
-
-                    popup.getItems().add(semanticLabel);
-                });
+        }
 
         popup.setOnCreateSemanticAction(() -> {
             initializeComposer();
@@ -766,7 +821,12 @@ public class GenPurposeDetailsController {
     }
 
     private void onCreateSemantic(ActionEvent actionEvent, EditorSectionModel sectionModelOfPattern, EntityFacade refComponent) {
-        genPurposeViewModel.setPropertyValue(ViewModelKey.MODE, CREATE);
+        // Lazy reference-component creation: in create mode the window has no component yet — the
+        // first semantic the user authors brings the new component into existence with it. Both
+        // join the composer's transaction, so submitting the semantic commits them together.
+        if (refComponent == null) {
+            refComponent = createUncommitedReferenceComponent();
+        }
 
         EditorPatternModel editorPatternModel = sectionModelOfPattern.getPatterns().getFirst();
         PatternFacade patternFacade = PatternFacade.make(editorPatternModel.getNid());
@@ -1028,12 +1088,52 @@ public class GenPurposeDetailsController {
     /**
      * Visits every section in this window (the main section and all additional sections).
      */
-    private void forEachSection(Consumer<EditorSectionModel> action) {
+    private void forEachSectionInWindow(Consumer<EditorSectionModel> action) {
         if (editorWindowModel == null) {
             return;
         }
         action.accept(editorWindowModel.getMainSection());
         editorWindowModel.getAdditionalSections().forEach(action);
+    }
+
+    /**
+     * Refreshes each section's required-pattern chip (see the REQUIRED / "✓ REQUIREMENT MET"
+     * chip in the section title bar): shown in create mode on sections hosting a required
+     * pattern, flipping
+     * to satisfied once every required pattern in the section has at least one semantic — the
+     * same check that gates the component's creation on submit.
+     */
+    private void updateRequiredChips() {
+        boolean createMode = genPurposeViewModel.getMode() == FormMode.CREATE;
+        sectionModelToTitledPane.forEach((section, titledPane) -> {
+            List<EditorPatternModel> requiredPatterns = section.getPatterns().stream()
+                    .filter(EditorPatternModel::isRequired)
+                    .toList();
+            boolean chipVisible = createMode && !requiredPatterns.isEmpty();
+            titledPane.setRequiredChipVisible(chipVisible);
+            if (chipVisible) {
+                titledPane.setRequiredSatisfied(requiredPatterns.stream()
+                        .noneMatch(pattern -> getSemanticsOfPattern(pattern).isEmpty()));
+            }
+        });
+    }
+
+    /**
+     * Whether every pattern marked Required in the KL editor has at least one semantic against
+     * its section's resolved reference component. In create mode this gates the actual creation
+     * (commit) of the window's component: uncommitted semantics count, since they are found by
+     * the entity service once saved.
+     */
+    private boolean allRequiredPatternsSatisfied() {
+        AtomicBoolean satisfied = new AtomicBoolean(true);
+        forEachSectionInWindow(section -> {
+            for (EditorPatternModel pattern : section.getPatterns()) {
+                if (pattern.isRequired() && getSemanticsOfPattern(pattern).isEmpty()) {
+                    satisfied.set(false);
+                }
+            }
+        });
+        return satisfied.get();
     }
 
     /**
@@ -1043,7 +1143,7 @@ public class GenPurposeDetailsController {
      * depth (see komet-desktop #3).
      */
     private void refreshSectionsAnchoredOn(EditorSectionModel changedSection) {
-        forEachSection(section -> {
+        forEachSectionInWindow(section -> {
             EditorPatternModel referencePattern = section.getReferenceComponent();
             if (referencePattern != null && referencePattern.getParentSection() == changedSection) {
                 refreshSectionReferenceComponents(section);
@@ -1104,6 +1204,7 @@ public class GenPurposeDetailsController {
 
                     mainContent.getItems().add(titledPane);
                 }
+                updateRequiredChips();
             }
         }
     }

@@ -6,6 +6,8 @@ import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.kview.mvvm.view.concept.ConceptNode;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.GenPurposeDetailsController;
+import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.FormMode;
+import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.ObjectProperty;
@@ -44,18 +46,24 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
                            ViewProperties viewProperties, KometPreferences preferences) {
         super(journalTopic, entityFacade, viewProperties, preferences);
 
+        // No component to open means the window was launched from the Journal's "+" button to create a
+        // new one; a supplied component means it was opened ("Open as ...") to edit that component.
+        final FormMode mode = entityFacade == null ? FormMode.CREATE : FormMode.EDIT;
+
         // Prefetch modules and paths for view to populate radio buttons in form. Populate from database
         Config patternConfig = new Config(GenPurposeDetailsController.class.getResource("genpurpose-details.fxml"))
-                .updateViewModel("genPurposeViewModel", genPurposeViewModel ->
-                        genPurposeViewModel.setPropertyValue(VIEW_PROPERTIES, getViewProperties())
-                                .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
-                                .setPropertyValue(WINDOW_TOPIC, getWindowTopic())
+                .updateViewModel("genPurposeViewModel", (GenPurposeViewModel genPurposeViewModel) -> {
+                    genPurposeViewModel.setPropertyValue(VIEW_PROPERTIES, getViewProperties())
+                            .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
+                            .setPropertyValue(WINDOW_TOPIC, getWindowTopic())
 //                                .setPropertyValue(STAMP_VIEW_MODEL, stampViewModel)
-                                .setPropertyValue(FIELDS_COLLECTION, new ArrayList<String>()) // Ordered collection of Fields
-                                .setPropertyValue(REF_COMPONENT, entityFacade)
+                            .setPropertyValue(FIELDS_COLLECTION, new ArrayList<String>()) // Ordered collection of Fields
+                            .setPropertyValue(REF_COMPONENT, entityFacade)
 //                                .setPropertyValue(SEMANTIC, semanticComponent)
 //                                .setPropertyValue(PATTERN, patternFacade))
-                );
+                    ;
+                    genPurposeViewModel.setMode(mode);
+                });
 
         // Create pattern window
         jfxNode = FXMLMvvmLoader.make(patternConfig);

@@ -60,6 +60,8 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_COUNT;
 import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_NAMES;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_WINDOWS;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_STANDARD_WINDOWS_DIR;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_USER_WINDOWS_DIR;
 import static dev.ikm.komet.preferences.NidTextEnum.NID_TEXT;
 import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 import static dev.ikm.tinkar.events.FrameworkTopics.PROGRESS_TOPIC;
@@ -82,8 +84,10 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewMenuTask;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.layout.expand.KlExpansionHost;
 import dev.ikm.komet.layout.KlPeerable;
 import dev.ikm.komet.layout.area.KlToolArea;
+import dev.ikm.komet.layout.editor.StandardEditorWindows;
 import dev.ikm.komet.layout_engine.host.KlCardProvider;
 import dev.ikm.komet.layout.controls.FilterOptionsPopup;
 import dev.ikm.komet.layout.controls.ViewOptionsPopupHelper;
@@ -389,6 +393,12 @@ public class JournalController {
 
         journalRootPane.getProperties().put(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic);
 
+        // The journal window is the top rung of every figure's expansion ladder. Stamping it here — the
+        // same properties-map idiom the topic above uses — is what lets knowledge-layout offer the window
+        // as an expansion target without depending on kview. Only a window has OS full screen beyond it;
+        // whether a given figure may step out there is that figure's own choice.
+        KlExpansionHost.mark(journalRootPane, () -> "Journal window", true);
+
         // Initialize the journal window view, which is provided in the WindowSettings
         windowView = journalViewModel.getPropertyValue(JournalViewModel.PARENT_VIEW_COORDINATES);
         journalViewProperties = windowView.makeOverridableViewProperties("JournalController.filterOptionsPopup");
@@ -531,7 +541,12 @@ public class JournalController {
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
 
-        List<String> editorWindows = klEditorAppPreferences.getList(KL_EDITOR_WINDOWS);
+        // Seed the standard windows (e.g. "Concept (2)") so their definitions exist on disk before
+        // any of their static "+"-menu entries is used.
+        StandardEditorWindows.ensureStandardWindows(klEditorAppPreferences.node(KL_STANDARD_WINDOWS_DIR),
+                journalViewProperties.calculator());
+
+        List<String> editorWindows = klEditorAppPreferences.node(KL_USER_WINDOWS_DIR).getList(KL_EDITOR_WINDOWS);
 
         addContextMenuSeparator.setVisible(!editorWindows.isEmpty());
         for (String windowTitle : editorWindows) {
@@ -1334,9 +1349,19 @@ public class JournalController {
 
         ViewProperties viewProperties = journalViewProperties;
 
-        AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.CONCEPT,
-                journalTopic, conceptFacade, viewProperties, preferences);
-        setupWorkspaceWindow(chapterKlWindow);
+        // Deferred out of the originating mouse-click/context-menu event handler: building this
+        // window's whole subtree (createWindow()) and attaching it (setupWorkspaceWindow()) in the
+        // SAME synchronous frame as the context-menu's own close and the tree cell's own
+        // hover/selected pseudo-class transitions trips a reentrancy bug in
+        // CssStyleHelper.transitionToState()/.lookup() (confirmed via jdb) that corrupts -fx-lookup
+        // color resolution app-wide. Running it on a fresh pulse, once the originating event has
+        // fully finished dispatching, decouples this window's first CSS pass from that concurrent
+        // pseudo-class churn. See IKE-Network/ike-komet-wsr#4.
+        Platform.runLater(() -> {
+            AbstractEntityChapterKlWindow chapterKlWindow = createWindow(EntityKlWindowTypes.CONCEPT,
+                    journalTopic, conceptFacade, viewProperties, preferences);
+            setupWorkspaceWindow(chapterKlWindow);
+        });
     }
 
     private void createGenPurposeKLWindow(EntityFacade entityFacade, KometPreferences klEditorWindowPreferences) {
@@ -1871,11 +1896,53 @@ public class JournalController {
         createConceptWindow(null, NID_TEXT, null);
     }
 
+    /**
+     * Opens the standard "Concept (2)" window in create mode when triggered from the menu.
+     * <p>
+     * "Concept (2)" is a standard (application-provided) KL window definition stored under
+     * kl-editor-app/standard-windows.
+     *
+     * @param actionEvent The event triggered by selecting the menu item
+     */
+    @FXML
+    public void newCreateConcept2Window(ActionEvent actionEvent) {
+        newCreateStandardKLWindow(StandardEditorWindows.CONCEPT_WINDOW_2);
+    }
+
+    /**
+     * Opens the standard "Pattern (2)" window in create mode when triggered from the menu.
+     * <p>
+     * "Pattern (2)" is a standard (application-provided) KL window definition stored under
+     * kl-editor-app/standard-windows.
+     *
+     * @param actionEvent The event triggered by selecting the menu item
+     */
+    @FXML
+    public void newCreatePattern2Window(ActionEvent actionEvent) {
+        newCreateStandardKLWindow(StandardEditorWindows.PATTERN_WINDOW_2);
+    }
+
+    /**
+     * Opens the named standard (application-provided) KL window in create mode, seeding the
+     * standard window definitions first so the named definition exists on disk.
+     *
+     * @param windowTitle the title of the standard window (e.g. {@link StandardEditorWindows#CONCEPT_WINDOW_2})
+     */
+    private void newCreateStandardKLWindow(String windowTitle) {
+        final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
+        final KometPreferences standardWindowsPreferences =
+                appPreferences.node(KL_EDITOR_APP).node(KL_STANDARD_WINDOWS_DIR);
+
+        StandardEditorWindows.ensureStandardWindows(standardWindowsPreferences, journalViewProperties.calculator());
+
+        createGenPurposeKLWindow(null, standardWindowsPreferences.node(windowTitle));
+    }
+
     public void newCreateGenPurposeKLWindow(EntityFacade entityFacade, String windowTitle) {
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
+        final KometPreferences userWindowsPreferences = appPreferences.node(KL_EDITOR_APP).node(KL_USER_WINDOWS_DIR);
 
-        final KometPreferences editorWindowPreferences = klEditorAppPreferences.node(windowTitle);
+        final KometPreferences editorWindowPreferences = userWindowsPreferences.node(windowTitle);
 
         createGenPurposeKLWindow(entityFacade, editorWindowPreferences);
     }
@@ -1905,8 +1972,8 @@ public class JournalController {
      */
     public void newCreateDynamicCardWindow(EntityFacade entityFacade, String windowTitle) {
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
-        final KometPreferences editorWindowPreferences = klEditorAppPreferences.node(windowTitle);
+        final KometPreferences userWindowsPreferences = appPreferences.node(KL_EDITOR_APP).node(KL_USER_WINDOWS_DIR);
+        final KometPreferences editorWindowPreferences = userWindowsPreferences.node(windowTitle);
         createDynamicCardWindow(entityFacade, editorWindowPreferences, windowTitle, false);
     }
 
@@ -1919,8 +1986,8 @@ public class JournalController {
      */
     public void newCreateDynamicComponentCardWindow(EntityFacade entityFacade, String windowTitle) {
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
-        final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
-        final KometPreferences editorWindowPreferences = klEditorAppPreferences.node(windowTitle);
+        final KometPreferences userWindowsPreferences = appPreferences.node(KL_EDITOR_APP).node(KL_USER_WINDOWS_DIR);
+        final KometPreferences editorWindowPreferences = userWindowsPreferences.node(windowTitle);
         createDynamicCardWindow(entityFacade, editorWindowPreferences, windowTitle, true);
     }
 

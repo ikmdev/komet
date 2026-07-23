@@ -7,6 +7,7 @@ import dev.ikm.komet.layout.KlArea;
 import dev.ikm.komet.layout.KlToolbarItem;
 import dev.ikm.komet.layout.KlView;
 import dev.ikm.komet.layout.controls.KlDrawer;
+import dev.ikm.komet.layout.expand.KlExpansionHost;
 import dev.ikm.komet.layout.selection.KlSelectionContext;
 import dev.ikm.komet.layout.selection.KlSelectionContextFactory;
 import dev.ikm.komet.layout_engine.toolbar.NodeToolbarItem;
@@ -176,6 +177,14 @@ public abstract class AbstractHostCard extends CardBlueprint {
         }
 
         fxObject().setCenter(body);
+
+        // The card is a rung on every enclosed figure's expansion ladder. The ROOT, not `body`: the
+        // card's floating tab (title + drag handle) is the root's TOP, a sibling of body, so an overlay
+        // filling body would leave the card draggable by its tab during a modal takeover. Filling the
+        // root also covers WindowSupport's resize handles — a card cannot be moved or resized while a
+        // figure inside it is expanded, which is what the takeover means. The name is a supplier because
+        // cardTitle() is abstract and the subclass constructor has not run yet.
+        KlExpansionHost.mark(fxObject(), this::cardTitle, false);
     }
 
     /*******************************************************************************

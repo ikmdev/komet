@@ -5,7 +5,7 @@
  <parent>
         <groupId>network.ike.platform</groupId>
         <artifactId>ike-parent</artifactId>
-        <version>131</version>
+        <version>134</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
@@ -54,6 +54,7 @@
     <subprojects>
         <subproject>komet-terms</subproject>
         <subproject>preferences</subproject>
+        <subproject>artifact-resolution</subproject>
         <subproject>framework</subproject>
         <subproject>artifact</subproject>
         <subproject>builder</subproject>

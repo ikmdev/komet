@@ -42,3 +42,10 @@
 
     -fx-border-color: derive(highlight-border-color, -5%);
 }
+
+/* A view-only (non-selectable) stamp gives no hover feedback. */
+.stamp-view-control:view-only:hover .stamp-container {
+    -fx-background-color: transparent;
+
+    -fx-border-color: transparent;
+}

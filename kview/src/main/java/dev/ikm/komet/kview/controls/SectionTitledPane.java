@@ -41,6 +41,27 @@ public class SectionTitledPane<T> extends TitledPane {
     public BooleanProperty editEnabledProperty() { return editEnabled; }
     public void setEditEnabled(boolean editEnabled) { this.editEnabled.set(editEnabled); }
 
+    // -- required chip visible
+    /**
+     * Whether the title bar shows the required-pattern chip.
+     * The window controller turns this on while the window is in create mode for sections
+     * hosting at least one required pattern.
+     */
+    private final BooleanProperty requiredChipVisible = new SimpleBooleanProperty(false);
+    public boolean isRequiredChipVisible() { return requiredChipVisible.get(); }
+    public BooleanProperty requiredChipVisibleProperty() { return requiredChipVisible; }
+    public void setRequiredChipVisible(boolean visible) { requiredChipVisible.set(visible); }
+
+    // -- required satisfied
+    /**
+     * Whether the section's required condition has been met.
+     * Dashed amber REQUIRED while unsatisfied, green "✓ REQUIREMENT MET" once satisfied.
+     */
+    private final BooleanProperty requiredSatisfied = new SimpleBooleanProperty(false);
+    public boolean isRequiredSatisfied() { return requiredSatisfied.get(); }
+    public BooleanProperty requiredSatisfiedProperty() { return requiredSatisfied; }
+    public void setRequiredSatisfied(boolean satisfied) { requiredSatisfied.set(satisfied); }
+
     // -- number columns
     private final IntegerProperty numberColumns = new SimpleIntegerProperty();
     public int getNumberColumns() { return numberColumns.get(); }

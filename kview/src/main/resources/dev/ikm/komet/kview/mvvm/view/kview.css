@@ -1298,18 +1298,92 @@ selected(active) - dark black
     -fx-max-width: 5000;
 }
 
-/*
- * Knowledge Layout window control bar (KlWindowControlToolbar)
- */
-.kl-window-control-toolbar > .concept-header-control {
-    -fx-background-color: -Natural-Grey-Main;
-    -fx-padding: 0 5 0 5;
+/*******************************************************************************
+ * Knowledge Layout Window Toolbar                                             *
+ ******************************************************************************/
+
+.kl-window-control-toolbar .concept-header-control {
+    /* The bar's fill goes through -bar-color (themes override just the color) so the
+       :drag-hover tint below can derive from whichever theme is active. */
+    -bar-color: -Natural-Grey-Main;
+    -fx-background-color: -bar-color;
+    -fx-padding: 0 5 0 12;
 }
 
 .kl-window-control-toolbar .properties-toggle {
     -fx-fill: -Grey-White;
     -fx-font-family: "Open Sans SemiBold";
     -fx-font-size: 13px;
+}
+
+.kl-window-control-toolbar .concept-header-control .leading-buttons-container {
+    -fx-spacing: 12px;
+    -fx-alignment: center-left;
+}
+
+/* The coordinate button is shaped as its own glyph (-fx-shape), so its backplate lives on
+   this plate wrapper, sized to match the other 28px button boxes. */
+.kl-window-control-toolbar .concept-header-control .coordinate-plate {
+    -plate-size: 28px;
+    -fx-min-width: -plate-size;
+    -fx-pref-width: -plate-size;
+    -fx-max-width: -plate-size;
+    -fx-min-height: -plate-size;
+    -fx-pref-height: -plate-size;
+    -fx-max-height: -plate-size;
+}
+
+.kl-window-control-toolbar .concept-header-control .coordinate-plate:hover,
+.kl-window-control-toolbar .concept-header-control .button:hover,
+.kl-window-control-toolbar .concept-header-control .toggle-button.timeline:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.16);
+    -fx-background-radius: 5;
+}
+
+.kl-window-control-toolbar .concept-header-control .coordinate-plate:pressed,
+.kl-window-control-toolbar .concept-header-control .button:armed,
+.kl-window-control-toolbar .concept-header-control .toggle-button.timeline:armed {
+    -fx-background-color: rgba(255, 255, 255, 0.28);
+    -fx-background-radius: 5;
+}
+
+/* The properties switch graphic outgrows its button box, so a backplate would sit behind
+   only part of it — it gets a soft halo instead. */
+.kl-window-control-toolbar .concept-header-control .properties-toggle-button:hover {
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.45), 7, 0.5, 0, 0);
+}
+
+.kl-window-control-toolbar .concept-header-control {
+    -fx-cursor: open-hand;
+}
+
+.kl-window-control-toolbar .concept-header-control:pressed {
+    -fx-cursor: closed-hand;
+}
+
+.kl-window-control-toolbar .concept-header-control:drag-hover {
+    -fx-background-color: derive(-bar-color, 5%);
+}
+
+/* Buttons keep the arrow cursor, masking the bar's hand cursor while over them. */
+.kl-window-control-toolbar .concept-header-control .coordinate-plate,
+.kl-window-control-toolbar .concept-header-control .button,
+.kl-window-control-toolbar .concept-header-control .toggle-button {
+    -fx-cursor: default;
+}
+
+/* The title tab is the other drag surface; -tab-color is themed further down (window blue,
+   create-mode dim) the same way -bar-color is. */
+.kl-window-control-toolbar .lidr-rounded-tab {
+    -fx-cursor: open-hand;
+}
+
+.kl-window-control-toolbar .lidr-rounded-tab:pressed {
+    -fx-cursor: closed-hand;
+}
+
+.kl-window-control-toolbar .lidr-rounded-tab:drag-hover {
+    -fx-background-color: derive(-tab-color, 10%);
 }
 
 .concept-header-control .spacer1  {
@@ -6392,6 +6466,207 @@ Styling a context menu for kview ui/ux controls
  *                                                                             *
  ******************************************************************************/
 
+/* Soft light shadow lifting the window off the desktop. */
+.gen-purpose-window {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 12, 0.0, 0, 3);
+}
+
+/* While the window has focus (the mouse was pressed inside it or one of its controls
+   holds keyboard focus — the :window-focused pseudo-class toggled in
+   GenPurposeDetailsController) the shadow grows and drops further, so the window reads
+   as sitting closer to the screen than its unfocused siblings. */
+.gen-purpose-window:window-focused {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.30), 28, 0.0, 0, 10);
+}
+
+/* Window chrome: darker tab chip with rounder top corners; the drag-dots icon and the
+   window title are centered on the same line, with breathing room around them. */
+.gen-purpose-window .lidr-rounded-tab {
+    /* Like the toolbar's -bar-color: the fill goes through -tab-color so the hover tint
+       (drag affordance) derives from whichever theme is active. */
+    -tab-color: #4A4A4C;
+    -fx-background-color: -tab-color;
+    -fx-background-radius: 8 8 0 0;
+    -fx-border-radius: 8 8 0 0;
+    -fx-alignment: center-left;
+    -fx-spacing: 8;
+    -fx-padding: 7 16 7 12;
+}
+
+/* Blue theme for the standard Concept window: the toolbar takes the classic concept
+   window's blue and the tab chip a darker shade of it — the same darker-tab relationship
+   the default grey chrome has. GenPurposeDetailsController adds the theme class when the
+   layout's authored type (EditorWindowType) is STANDARD_CONCEPT; the other standard
+   windows and user-created Semantics Windows keep the default grey chrome. */
+.gen-purpose-window.concept-window-theme .lidr-rounded-tab {
+    -tab-color: derive(-Secondary-06, -25%);
+}
+
+.gen-purpose-window.concept-window-theme .kl-window-control-toolbar .concept-header-control {
+    -bar-color: -Secondary-06;
+}
+
+/*******************************************************************************
+ * Create Mode                                                                 *
+ ******************************************************************************/
+
+/* Ghost window while in create mode: the window frames a component that doesn't exist yet
+   (it's committed when the user submits, which flips the window back to edit mode). The
+   chrome dims to a washed-out version of the window blue and the window's outside edges get
+   a dashed outline: dark-blue stitching on the tab and toolbar (a light dash reads as a
+   white fringe against their blue fills), light stitching around the white body frame —
+   which also wraps the slideout trays, so an open properties bumpout stays inside the
+   dashes. The header STAMP fades to read as tentative, and a DRAFT chip + hint line name
+   the state. Driven by the :create-mode pseudo-class toggled from the mode property in
+   GenPurposeDetailsController. */
+.gen-purpose-window.concept-window-theme:create-mode .lidr-rounded-tab {
+    -tab-color: #5C74A0; /* dimmed derive(-Secondary-06, -25%), hue kept */
+}
+
+.gen-purpose-window.concept-window-theme:create-mode .kl-window-control-toolbar .concept-header-control {
+    -bar-color: #7E95BC; /* dimmed -Secondary-06, hue kept */
+}
+
+.gen-purpose-window:create-mode .lidr-rounded-tab {
+    /* midway between the window blue and the body frame's #97A6C0: dark enough not to read
+       as a white fringe on the blue chrome, light enough to sit with the body dashes */
+    -fx-border-color: #6881AD;
+    -fx-border-width: 2 2 0 2;
+    /* negative insets draw the border just outside the bounds, so toggling create mode
+       contributes no layout insets and the tab content doesn't shift */
+    -fx-border-insets: -2 -2 0 -2;
+    -fx-border-style: segments(6, 5);
+}
+
+/* Dark dashes around the toolbar: top edge (visible to the right of the tab — the tab row
+   paints above via -fx-view-order and covers the rest) and the sides, with the top-right
+   corner following the toolbar's rounded-upper-right-only radius. */
+.gen-purpose-window:create-mode .kl-window-control-toolbar .concept-header-control {
+    -fx-border-color: #6881AD; /* same midway blue as the tab's dashes */
+    -fx-border-width: 2 2 0 2;
+    -fx-border-insets: -2 -2 0 -2; /* drawn outside: no layout shift */
+    -fx-border-style: segments(6, 5);
+    -fx-border-radius: 0 10 0 0;
+}
+
+/* Paint the tab row above the toolbar's control row (both live inside the
+   KlWindowControlToolbar skin) so the tab covers the control row's outside-top dash
+   running underneath it. */
+.gen-purpose-window:create-mode .kl-window-control-toolbar .rounded-top {
+    -fx-view-order: -1;
+}
+
+.gen-purpose-window:create-mode .window-body-frame {
+    -fx-border-color: transparent #97A6C0 #97A6C0 #97A6C0;
+    -fx-border-width: 0 2 2 2;
+    /* MUST stay layout-neutral (negative insets = drawn outside the bounds): the slideout
+       tray content's prefHeight is bound to the tray's actual height (addPaneToTray), so
+       this pane's pref height derives from its own height. Border insets inside that cycle
+       compound with pixel snapping and make the window grow indefinitely. */
+    -fx-border-insets: 0 -2 -2 -2;
+    -fx-border-style: segments(6, 5);
+    -fx-border-radius: 0 0 10px 10px;
+}
+
+/* Tentative STAMP: the values are the edit coordinate's defaults, not a committed STAMP.
+   Lightened via explicit text colors rather than -fx-opacity so the glyphs stay crisp. */
+.gen-purpose-window:create-mode .stamp-view-control .stamp-container .stamp-label {
+    -fx-text-fill: #9B9573;
+}
+
+.gen-purpose-window:create-mode .stamp-view-control .stamp-container .stamp-text {
+    -fx-text-fill: #A8A28B;
+}
+
+.gen-purpose-window .lidr-rounded-tab .draft-chip {
+    -fx-text-fill: white;
+    -fx-font-family: "Noto Sans Bold";
+    -fx-font-size: 9px;
+    -fx-border-color: #FFFFFFBF;
+    -fx-border-style: segments(3, 2);
+    -fx-border-radius: 4;
+    -fx-padding: 0 5 0 5;
+}
+
+.gen-purpose-window .create-mode-hint {
+    -fx-background-color: #F4F6FA;
+    -fx-text-fill: #5D6B84;
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 12px;
+    -fx-padding: 6 14 6 14;
+    -fx-graphic-text-gap: 8;
+    /* solid hairline closing the strip below; the dashed frame is on .window-lower-frame */
+    -fx-border-color: transparent transparent #E6EAF1 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.gen-purpose-window .create-mode-hint .create-mode-hint-icon {
+    -fx-fill: #5D6B84;
+}
+
+/***********************  Required Chip  ******************************/
+
+/* Required-pattern chip after the section title (create mode only): dashed amber REQUIRED
+   while the section's required pattern has no semantic yet, echoing the window's DRAFT chip
+   language; flips to a solid green "✓ REQUIREMENT MET" once the requirement is satisfied. */
+.gen-purpose-window .section-titled-pane .required-chip {
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #C05621;
+    -fx-border-color: #C05621;
+    -fx-border-width: 1;
+    -fx-border-style: segments(3, 2);
+    -fx-border-radius: 3;
+    -fx-padding: 1 5 1 5;
+}
+
+.gen-purpose-window .section-titled-pane .required-chip:satisfied {
+    -fx-text-fill: #2F855A;
+    -fx-border-color: #2F855A;
+    -fx-border-style: solid;
+}
+
+/******************************************************************************/
+
+.gen-purpose-window .lidr-rounded-tab .nine-dots-icon {
+    icon-width: 11px;
+    icon-height: 10px;
+
+    -fx-min-width: icon-width;
+    -fx-min-height: icon-height;
+    -fx-pref-width: icon-width;
+    -fx-pref-height: icon-height;
+    -fx-max-width: icon-width;
+    -fx-max-height: icon-height;
+
+    -fx-background-color: #ddd;
+}
+
+/* Frameless white body: no grey border around the content, rounded bottom corners.
+   The bottom padding is the strip the container paints itself, so the rounded corners
+   are not overpainted by the square-cornered content above. */
+.gen-purpose-window.concept-detail-pane .main-center-container {
+    -fx-background-color: white;
+    -fx-background-radius: 0 0 10px 10px;
+    -fx-padding: 0 0 10px 0;
+}
+
+/* No border line between the header banner and the sections. */
+.gen-purpose-window.concept-detail-pane .main-center-container .section-titled-pane {
+    -fx-border-width: 0;
+}
+
+/* Header banner grid (identicon + title + Komet ID): left inset is the shared 12px content
+   gutter that the section titles, field content and toolbar crosshair align to. */
+.gen-purpose-window .window-banner-grid {
+    -fx-padding: 14 8 8 12;
+    -fx-vgap: 8;
+}
+
+.gen-purpose-window .public-id .public-id-label {
+    -fx-text-fill: -Grey-8;
+}
+
  .window-main-title .label {
      -fx-font-family: "Noto Sans";
      -fx-font-size: 18px;
@@ -6420,7 +6695,31 @@ Styling a context menu for kview ui/ux controls
 
 /* Sections */
 .gen-purpose-window .section-titled-pane .section-titled-pane-container {
-    -fx-padding: 10px 8px 4 8px;
+    /* 12px sides = the shared content gutter (same inset as the banner title / Komet ID) */
+    -fx-padding: 8px 12px 8px 12px;
+}
+
+/* Section header: a smaller, muted expand/collapse chevron, kept off the window edge,
+   with a clear gap between it and the title text. */
+.gen-purpose-window.concept-detail-pane .main-center-container .section-titled-pane > .title {
+    -fx-padding: 8 4 8 6;
+    -fx-pref-height: 36;
+}
+
+.gen-purpose-window .section-titled-pane > .title > .arrow-button {
+    -fx-padding: 0 5 0 0;
+}
+
+/* Edit affordance in the section header: the pencil centers vertically in the title bar;
+   the separator before it stretches the bar's full height (HBox fill-height). */
+.gen-purpose-window .section-titled-pane .section-edit-area {
+    -fx-alignment: center;
+}
+
+.gen-purpose-window .section-titled-pane > .title > .arrow-button .arrow {
+    -width-size: 9px;
+    -height-size: 5px;
+    -fx-background-color: -Grey-7;
 }
 
 .gen-purpose-window .gen-purpose-pattern-title {
@@ -6429,7 +6728,10 @@ Styling a context menu for kview ui/ux controls
     -fx-padding: 0 0 3px 0;
 }
 
-/* Pattern container */
+/*******************************************************************************
+ * Pattern Semantics Standard View                                             *
+ ******************************************************************************/
+
 .gen-purpose-window .pattern-container {
     -fx-padding: 0 0 10px 0;
 }
@@ -6442,11 +6744,63 @@ Styling a context menu for kview ui/ux controls
     -fx-spacing: 10px;
 }
 
+/* Empty pattern placeholder: a pattern with no semantic shows one muted line where its
+   semantic's fields would render, so the section reads as deliberately empty. */
+.gen-purpose-window .pattern-container .semantics-container .no-semantic-label {
+    -fx-text-fill: -Grey-7;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+}
+
 .gen-purpose-window .pattern-container .semantics-container > .separator  > .line {
     -fx-border-width: 0, 0 0 1px 0;
     -fx-border-style: solid, solid;
     -fx-border-insets: 0, 0 3px 0 3px;
     -fx-border-color: transparent, transparent transparent #ddd transparent;
+}
+
+/* Field value text: grey instead of the control's default near-black */
+.gen-purpose-window .pattern-container .read-only-data-control .text-container > .text {
+    -fx-text-fill: -Grey-10;
+}
+
+/* Standard pattern view content scrollbar: slim rounded thumb over a transparent track,
+   matching the concept window's content scrollbar */
+.gen-purpose-window .pattern-container > .scroll-pane > .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 8;
+    -fx-padding: 0 0 0 2;
+}
+
+.gen-purpose-window .pattern-container > .scroll-pane > .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+}
+
+.gen-purpose-window .pattern-container > .scroll-pane > .scroll-bar .thumb {
+    -fx-background-color: -Grey-1, rgba(0, 0, 0, 0.4);
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 6px;
+    -fx-padding: 0;
+}
+
+.gen-purpose-window .pattern-container > .scroll-pane > .scroll-bar:hover .thumb {
+    -fx-background-color: -Grey-1, rgba(0, 0, 0, 0.5);
+}
+
+.gen-purpose-window .pattern-container > .scroll-pane > .scroll-bar .increment-button,
+.gen-purpose-window .pattern-container > .scroll-pane > .scroll-bar .decrement-button {
+    -fx-background-insets: 0;
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-min-height: 0;
+    -fx-pref-height: 0;
+    -fx-padding: 0;
+}
+
+.gen-purpose-window .pattern-container > .scroll-pane > .scroll-bar .increment-arrow,
+.gen-purpose-window .pattern-container > .scroll-pane > .scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
 }
 
 /*******************  Section Semantics ComboBox  **************************/
@@ -6492,6 +6846,126 @@ Styling a context menu for kview ui/ux controls
 .gen-purpose-window .section-titled-pane > .section-combo-box > .list-cell .komet-label > .label {
     -fx-text-fill: #111;
 }
+
+/*******************************************************************************
+ * Properties bump out (right panel)                                           *
+ ******************************************************************************/
+
+/* White panel flush with the window; the tray paints the rounded bottom-right corner
+   strip itself (same trick as the main content), and the hairline divider against the
+   details area sits on the panel's left edge. */
+.gen-purpose-window .main-right-container {
+    -fx-background-color: white;
+    -fx-background-radius: 0 0 10px 0;
+}
+
+.gen-purpose-window .main-right-container .properties-tab-outer-container {
+    -fx-padding: 0 0 10px 0;
+    -fx-border-color: transparent transparent transparent -Grey-3;
+    -fx-border-width: 0 0 0 1;
+}
+
+.gen-purpose-window .properties-tabs {
+    -fx-background-color: white;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent transparent -Grey-3 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.gen-purpose-window.concept-detail-pane .main-right-container .properties-tab-container-content {
+    -fx-background-color: white;
+    -fx-border-width: 0;
+}
+
+/* Tabs: quiet icon-over-label toggles; the active tab is blue with a 2px underline. */
+.gen-purpose-window .properties-tab.toggle-button {
+    -fx-background-color: transparent;
+    -fx-font-size: 10px;
+    -fx-text-fill: -Grey-8;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 2 0;
+}
+
+.gen-purpose-window .properties-tab.toggle-button .svg-tab {
+    -fx-fill: -Grey-8;
+    -fx-background-color: transparent;
+}
+
+.gen-purpose-window .properties-tab.toggle-button:hover {
+    -fx-background-color: #4A7AD215;
+    -fx-text-fill: -Secondary-05;
+}
+
+.gen-purpose-window .properties-tab.toggle-button:hover .svg-tab {
+    -fx-fill: -Secondary-05;
+    -fx-background-color: transparent;
+}
+
+.gen-purpose-window .properties-tab.toggle-button:selected {
+    -fx-background-color: transparent;
+    -fx-text-fill: -Secondary-05;
+    -fx-border-color: transparent transparent -Secondary-05 transparent;
+}
+
+.gen-purpose-window .properties-tab.toggle-button:selected .svg-tab {
+    -fx-fill: -Secondary-05;
+    -fx-background-color: transparent;
+}
+
+/* Edit-fields form chrome (title bar + footer); the field controls themselves keep
+   their existing styling. */
+.gen-purpose-window .sub-container {
+    -fx-background-color: white;
+}
+
+.gen-purpose-window .fields-title-bar {
+    -fx-alignment: center-left;
+    /* left inset 12 = the form content's inset (the ScrollPane margin), so the title
+       lines up with the field labels below */
+    -fx-padding: 14 12 0 12;
+}
+
+/* Same voice as the section headers on the left ("Data Type Test"). */
+.gen-purpose-window .fields-title-bar .lidr-device-title-label {
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 16px;
+    -fx-text-fill: -Grey-11;
+}
+
+.gen-purpose-window .sub-container .button-bar {
+    -fx-alignment: center-left;
+    -fx-spacing: 8;
+    -fx-padding: 12 16 12 16;
+    -fx-border-color: -Grey-3 transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+
+.gen-purpose-window .sub-container .button-bar .button {
+    -fx-background-color: white;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-border-color: -Grey-5;
+    -fx-text-fill: -Grey-10;
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+    -fx-padding: 7 14 7 14;
+}
+
+.gen-purpose-window .sub-container .button-bar .button:hover {
+    -fx-background-color: -Grey-1;
+}
+
+.gen-purpose-window .sub-container .button-bar .primary.button {
+    -fx-background-color: -Secondary-05;
+    -fx-border-color: -Secondary-05;
+    -fx-text-fill: white;
+}
+
+.gen-purpose-window .sub-container .button-bar .primary.button:hover {
+    -fx-background-color: derive(-Secondary-05, -10%);
+}
+
+/********************************************************************/
 
 /* ComboBox popup */
 .gen-purpose-window .combo-box-popup > .list-view {

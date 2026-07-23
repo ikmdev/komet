@@ -16,44 +16,85 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.KlWindowControlToolbar;
+import javafx.css.PseudoClass;
 import javafx.geometry.Orientation;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.Separator;
 import javafx.scene.control.SkinBase;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Text;
 
 /**
- * Default skin for {@link KlWindowControlToolbar}. Builds the whole control bar — the coordinate menu
- * and timeline toggle on the leading edge, a growing spacer, then the {@code PROPERTY} label, properties
- * toggle, a vertical separator and the close button on the trailing edge — and binds each piece to the
- * control's state and action hooks.
+ * Default skin for {@link KlWindowControlToolbar}. Builds the whole control bar as two stacked rows:
+ * the title tab on top (the drag-dots icon, the window title and the DRAFT chip), and below it the
+ * control row — the coordinate menu and timeline toggle on the leading edge, a growing spacer, then
+ * the {@code PROPERTY} label, properties toggle, a vertical separator and the close button on the
+ * trailing edge — and binds each piece to the control's state and action hooks.
  * <p>
- * All visuals come from CSS (see the {@code .kl-window-control-toolbar} and {@code .concept-header-control}
- * rules in {@code kview.css}); the skin sets only style classes and layout constraints, never inline style.
+ * All visuals come from CSS (see the {@code .kl-window-control-toolbar}, {@code .lidr-rounded-tab} and
+ * {@code .concept-header-control} rules in {@code kview.css}); the skin sets only style classes and
+ * layout constraints, never inline style.
  */
 public class KlWindowControlToolbarSkin extends SkinBase<KlWindowControlToolbar> {
+
+    /**
+     * Active on the title tab and the control row while the pointer is over either drag surface —
+     * the tab, or the control row's empty area (not one of its buttons, whose own hover backplate
+     * takes over). Dragging either surface moves the window, so both tint together. Drives the
+     * drag-surface tint in kview.css; the open/closed-hand cursors come from CSS too.
+     */
+    private static final PseudoClass DRAG_HOVER = PseudoClass.getPseudoClass("drag-hover");
 
     public KlWindowControlToolbarSkin(KlWindowControlToolbar control) {
         super(control);
 
-        // Coordinate menu button
+        // Title tab: drag-dots icon, window title and DRAFT chip. The tab sizes to its content
+        // (the FlowPane row keeps it from stretching across the full width) and doubles as the
+        // window's drag handle (hover tint + hand cursors in kview.css).
+        Region nineDotsIcon = new Region();
+        nineDotsIcon.getStyleClass().add("nine-dots-icon");
+
+        Text titleText = new Text();
+        titleText.setStrokeType(StrokeType.OUTSIDE);
+        titleText.setStrokeWidth(0.0);
+        titleText.getStyleClass().add("lidr-tab-text");
+        titleText.textProperty().bind(control.titleProperty());
+
+        Label draftChip = new Label("DRAFT");
+        draftChip.getStyleClass().add("draft-chip");
+        draftChip.visibleProperty().bind(control.draftVisibleProperty());
+        draftChip.managedProperty().bind(control.draftVisibleProperty());
+
+        HBox tab = new HBox(nineDotsIcon, titleText, draftChip);
+        tab.getStyleClass().add("lidr-rounded-tab");
+
+        FlowPane tabRow = new FlowPane(tab);
+        tabRow.getStyleClass().add("rounded-top");
+
+        // Coordinate menu button.
         MenuButton coordinatesMenuButton = control.getCoordinatesMenuButton();
         coordinatesMenuButton.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
         coordinatesMenuButton.getStyleClass().add("coordinate");
         coordinatesMenuButton.setTooltip(new Tooltip("Coordinates"));
-        coordinatesMenuButton.visibleProperty().bind(control.coordinateVisibleProperty());
-        coordinatesMenuButton.managedProperty().bind(control.coordinateVisibleProperty());
+
+        StackPane coordinatePlate = new StackPane(coordinatesMenuButton);
+        coordinatePlate.getStyleClass().add("coordinate-plate");
+        coordinatePlate.visibleProperty().bind(control.coordinateVisibleProperty());
+        coordinatePlate.managedProperty().bind(control.coordinateVisibleProperty());
 
         // Timeline (time travel) toggle.
         ToggleButton timelineToggleButton = new ToggleButton();
@@ -67,17 +108,23 @@ public class KlWindowControlToolbarSkin extends SkinBase<KlWindowControlToolbar>
         timelineToggleButton.managedProperty().bind(control.timelineVisibleProperty());
         timelineToggleButton.selectedProperty().bindBidirectional(control.timelineSelectedProperty());
 
+        // The leading buttons get their own container so the gap between them can be styled
+        // (via -fx-spacing) independently of the bar's own spacing.
+        HBox leadingButtonsContainer = new HBox(coordinatePlate, timelineToggleButton);
+        leadingButtonsContainer.getStyleClass().add("leading-buttons-container");
+
         Region spacer = new Region();
         spacer.setMinWidth(10);
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Text propertyLabel = new Text("PROPERTY");
+        Text propertyLabel = new Text("PROPERTIES");
         propertyLabel.setStrokeType(StrokeType.OUTSIDE);
         propertyLabel.setStrokeWidth(0.0);
         propertyLabel.getStyleClass().add("properties-toggle");
 
         // Properties toggle, drawn as a toggle switch (body + knob).
         ToggleButton propertiesToggleButton = new ToggleButton();
+        propertiesToggleButton.getStyleClass().add("properties-toggle-button");
         propertiesToggleButton.setMnemonicParsing(false);
         Rectangle toggleBody = new Rectangle(32, 20);
         toggleBody.setArcWidth(5);
@@ -108,14 +155,34 @@ public class KlWindowControlToolbarSkin extends SkinBase<KlWindowControlToolbar>
         HBox container = new HBox();
         container.getStyleClass().addAll("concept-header-control", "rounded-upper-right-only");
         container.getChildren().addAll(
-                coordinatesMenuButton,
-                timelineToggleButton,
+                leadingButtonsContainer,
                 spacer,
                 propertyLabel,
                 propertiesToggleButton,
                 separator,
                 closeButton);
 
-        getChildren().add(container);
+        // Drag-surface affordance: :drag-hover tints the title tab and the control row together
+        // while the pointer is over either drag surface — dragging either one moves the window,
+        // so they light up as one. Hovering a button drops both back to their resting colors, so
+        // exactly one affordance — the button's backplate or the drag tint — shows at a time.
+        Runnable updateDragHover = () -> {
+            boolean dragHover = tab.isHover()
+                    || (container.isHover()
+                            && !coordinatePlate.isHover()
+                            && !timelineToggleButton.isHover()
+                            && !propertiesToggleButton.isHover()
+                            && !closeButton.isHover());
+            tab.pseudoClassStateChanged(DRAG_HOVER, dragHover);
+            container.pseudoClassStateChanged(DRAG_HOVER, dragHover);
+        };
+        tab.hoverProperty().subscribe(updateDragHover);
+        container.hoverProperty().subscribe(updateDragHover);
+        coordinatePlate.hoverProperty().subscribe(updateDragHover);
+        timelineToggleButton.hoverProperty().subscribe(updateDragHover);
+        propertiesToggleButton.hoverProperty().subscribe(updateDragHover);
+        closeButton.hoverProperty().subscribe(updateDragHover);
+
+        getChildren().add(new VBox(tabRow, container));
     }
 }

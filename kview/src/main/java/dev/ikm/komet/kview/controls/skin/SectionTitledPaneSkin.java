@@ -3,9 +3,11 @@ package dev.ikm.komet.kview.controls.skin;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
+import javafx.css.PseudoClass;
 import javafx.geometry.Orientation;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.skin.TitledPaneSkin;
@@ -24,6 +26,10 @@ import java.util.List;
 public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
     private static final int SPACE_BETWEEN_SEMANTIC_CB_AND_EDIT_BUTTON = 4;
     private static final int SPACE_BETWEEN_TITLE_AND_SEMANTIC_CB = 4;
+    private static final int SPACE_BETWEEN_TITLE_AND_REQUIRED_CHIP = 8;
+
+    /** Active on the required chip once the section's required pattern(s) have a semantic. */
+    private static final PseudoClass SATISFIED = PseudoClass.getPseudoClass("satisfied");
 
     private EditButton editButton;
     private StackPane titleRegion;
@@ -32,6 +38,8 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
     private GridPane contentContainer;
 
     private ComboBox<T> referenceComponentSemanticsCB;
+
+    private Label requiredChip;
 
     /**
      * Creates a new TitledPaneSkin instance, installing the necessary child
@@ -49,14 +57,35 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
         editButton.disableProperty().bind(control.editEnabledProperty().not());
 
         createReferenceComponentCB(control);
+        createRequiredChip(control);
 
         titleRegion = (StackPane) control.lookup(".title");
         titleRegionText = (Text) titleRegion.lookup(".text");
 
         getChildren().addAll(
                 editButton,
-                referenceComponentSemanticsCB
+                referenceComponentSemanticsCB,
+                requiredChip
         );
+    }
+
+    /**
+     * Creates the required-pattern chip shown after the section title (see
+     * {@link SectionTitledPane#requiredChipVisibleProperty()}): a dashed REQUIRED chip while the
+     * section's required pattern still has no semantic, flipping to a green "✓ REQUIREMENT MET"
+     * once it does (styled by .required-chip in kview.css).
+     */
+    private void createRequiredChip(SectionTitledPane<T> control) {
+        requiredChip = new Label();
+        requiredChip.getStyleClass().add("required-chip");
+
+        requiredChip.textProperty().bind(control.requiredSatisfiedProperty()
+                .map(satisfied -> satisfied ? "✓ REQUIREMENT MET" : "REQUIRED"));
+        control.requiredSatisfiedProperty().subscribe(satisfied ->
+                requiredChip.pseudoClassStateChanged(SATISFIED, satisfied));
+
+        requiredChip.visibleProperty().bind(control.requiredChipVisibleProperty());
+        requiredChip.managedProperty().bind(control.requiredChipVisibleProperty());
     }
 
     /**
@@ -120,10 +149,22 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
         editButton.setLayoutX(editButtonX);
         editButton.setLayoutY(titleRegion.getLayoutY());
 
+        // Required chip, right after the section title text
+        double titleRightEdge = titleRegionTextX + titleRegionTextWidth;
+        if (requiredChip.isVisible()) {
+            final double chipWidth = requiredChip.prefWidth(-1);
+            final double chipHeight = requiredChip.prefHeight(chipWidth);
+            final double chipX = titleRightEdge + SPACE_BETWEEN_TITLE_AND_REQUIRED_CHIP;
+            requiredChip.resize(chipWidth, chipHeight);
+            requiredChip.setLayoutX(chipX);
+            requiredChip.setLayoutY(titleRegion.getLayoutY() + (titleRegionHeight - chipHeight) / 2d);
+            titleRightEdge = chipX + chipWidth;
+        }
+
         // Reference Component Semantics Combobox
         double cbPrefWidth = referenceComponentSemanticsCB.prefWidth(-1);
         double cbMaxWidth =  editButtonX - SPACE_BETWEEN_SEMANTIC_CB_AND_EDIT_BUTTON
-                - (titleRegionTextX + titleRegionTextWidth + SPACE_BETWEEN_TITLE_AND_SEMANTIC_CB);
+                - (titleRightEdge + SPACE_BETWEEN_TITLE_AND_SEMANTIC_CB);
         double cbWidth = Math.min(cbPrefWidth, cbMaxWidth);
 
         double cbX = titleRegionX + titleRegionWidth - titleRegionRightInset
@@ -149,7 +190,6 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
         private final Tooltip tooltip = new Tooltip();
 
         public EditButton(SectionTitledPane titledPane) {
-            separator.setPrefHeight(10);
             separator.setOrientation(Orientation.VERTICAL);
 
             button.getStyleClass().add("add-pencil-button");
@@ -162,6 +202,11 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
 
             tooltip.setText("Edit Fields");
             button.setTooltip(tooltip);
+
+            mainContainer.getStyleClass().add("section-edit-area");
+            // Fill this pane's height (the full title-bar height set by layoutChildren), so the
+            // separator spans top to bottom and the button centers within the title bar.
+            mainContainer.prefHeightProperty().bind(heightProperty());
 
             mainContainer.getChildren().addAll(separator, button);
             getChildren().add(mainContainer);

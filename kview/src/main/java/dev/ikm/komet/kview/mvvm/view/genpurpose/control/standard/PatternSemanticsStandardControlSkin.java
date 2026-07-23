@@ -1,12 +1,20 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard;
 
 import javafx.collections.ListChangeListener;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
 import javafx.scene.control.SkinBase;
 import javafx.scene.layout.VBox;
 
 public class PatternSemanticsStandardControlSkin extends SkinBase<PatternSemanticsStandardControl> {
     private final VBox semanticsContainer = new VBox();
+
+    // Hosting the semantics in a ScrollPane keeps the view's min height small, so the user can
+    // shrink the section/window below the content height and scroll instead — matching the
+    // table view, whose TableView scrolls internally.
+    private final ScrollPane scrollPane = new ScrollPane(semanticsContainer);
 
     private SemanticStandardControl previousSemanticControlInEditMode;
     private SemanticStandardControl previousSemanticControlInPreviewMode;
@@ -19,7 +27,22 @@ public class PatternSemanticsStandardControlSkin extends SkinBase<PatternSemanti
     public PatternSemanticsStandardControlSkin(PatternSemanticsStandardControl control) {
         super(control);
 
-        getChildren().add(semanticsContainer);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.getStyleClass().add("transparent-scroll");
+        getChildren().add(scrollPane);
+
+        // ScrollPane's skin caches its viewport as a bitmap, which drops LCD subpixel
+        // antialiasing and makes the field text render bolder. Uncache it so the text renders
+        // the same as it did without the ScrollPane.
+        scrollPane.skinProperty().subscribe(skin -> {
+            if (skin != null) {
+                Node viewport = scrollPane.lookup(".viewport");
+                if (viewport != null) {
+                    viewport.setCache(false);
+                }
+            }
+        });
 
         // listen to semantics ObservableList
         control.getSemantics().addListener(this::onSemanticsChanged);
@@ -65,6 +88,14 @@ public class PatternSemanticsStandardControlSkin extends SkinBase<PatternSemanti
         semanticsContainer.getChildren().clear();
 
         var semantics = getSkinnable().getSemantics();
+        if (semantics.isEmpty()) {
+            // A pattern with no semantic shows a single muted placeholder line where its
+            // semantic's fields would render.
+            Label noSemanticLabel = new Label("No semantic");
+            noSemanticLabel.getStyleClass().add("no-semantic-label");
+            semanticsContainer.getChildren().add(noSemanticLabel);
+            return;
+        }
         for (int i = 0; i < semantics.size(); i++) {
             if (i > 0) {
                 semanticsContainer.getChildren().add(new Separator());

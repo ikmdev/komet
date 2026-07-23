@@ -45,6 +45,7 @@ import static dev.ikm.komet.layout_engine.window.CursorMappings.getDirection;
 import static dev.ikm.komet.layout_engine.window.CursorMappings.handleResize;
 import static dev.ikm.komet.layout_engine.window.SubscriptionUtils.createConsumerSubscription;
 import static dev.ikm.komet.layout_engine.window.SubscriptionUtils.createContextEventSubscription;
+import static dev.ikm.komet.layout_engine.window.SubscriptionUtils.createFilterSubscription;
 import static dev.ikm.komet.layout_engine.window.SubscriptionUtils.createListSubscription;
 import static dev.ikm.komet.layout_engine.window.SubscriptionUtils.createMultiPropertySubscription;
 import static dev.ikm.komet.layout_engine.window.SubscriptionUtils.createPropertySubscription;
@@ -80,6 +81,14 @@ public class WindowSupport {
      * The property key used to store WindowSupport instance in container properties.
      */
     public static final String WINDOW_SUPPORT_KEY = "windowSupport";
+
+    /**
+     * Container-property key a window can set to {@code Boolean.TRUE} to opt out of the highlight
+     * outline (the hover/resize border). Must be set before window support is created for the
+     * container. The key lives on the pane's properties (rather than on this instance) so the
+     * opt-out survives the WindowSupport being cleaned up and recreated for the same pane.
+     */
+    public static final String HIGHLIGHT_DISABLED_KEY = "windowSupportHighlightDisabled";
 
     /**
      * When true, renders resize handles with visible colors for debugging UI interactions.
@@ -134,6 +143,13 @@ public class WindowSupport {
     // Visual elements
     private Rectangle outlineRect;
 
+    /**
+     * Whether the outline highlight (hover and resize feedback) is shown for this window.
+     * Windows opt out via {@link #HIGHLIGHT_DISABLED_KEY} — e.g. the gen-purpose window,
+     * which relies on the edge resize cursors alone.
+     */
+    private final boolean highlightEnabled;
+
     // Core components
     private final Pane pane;
     private final MutableList<Node> draggableNodes = Lists.mutable.empty();
@@ -170,6 +186,7 @@ public class WindowSupport {
      */
     private WindowSupport(final Pane container) {
         this.pane = container;
+        this.highlightEnabled = !Boolean.TRUE.equals(container.getProperties().get(HIGHLIGHT_DISABLED_KEY));
 
         initializePrimaryFields();
         initializeDefaultHandlersAndPaneEvents();
@@ -321,8 +338,17 @@ public class WindowSupport {
      */
     private Subscription createWindowBaseSubscriptions() {
         return Subscription.combine(
-                createConsumerSubscription(pane, MouseEvent.MOUSE_PRESSED, _ -> pane.toFront()),
-                createConsumerSubscription(pane, MouseEvent.MOUSE_ENTERED, _ -> outlineRect.setStroke(HIGHLIGHT_COLOR)),
+                // Bring-to-front must be a filter (capturing phase): most controls inside a
+                // window consume MOUSE_PRESSED for their own semantics (text fields, cells,
+                // titled-pane titles, ...), so a bubbling handler on the pane never fires when
+                // one of them is clicked. Windows whose bodies are dense with such controls
+                // (e.g. the gen-purpose window) would then never come to the front.
+                createFilterSubscription(pane, MouseEvent.MOUSE_PRESSED, _ -> pane.toFront()),
+                createConsumerSubscription(pane, MouseEvent.MOUSE_ENTERED, _ -> {
+                    if (highlightEnabled) {
+                        outlineRect.setStroke(HIGHLIGHT_COLOR);
+                    }
+                }),
                 createConsumerSubscription(pane, MouseEvent.MOUSE_EXITED, _ -> {
                     if (windowState == WindowState.IDLE) {
                         outlineRect.setStroke(TRANSPARENT);
@@ -616,7 +642,9 @@ public class WindowSupport {
             windowState = WindowState.RESIZING;
 
             // Show the highlight border to provide visual feedback during resize
-            outlineRect.setStroke(HIGHLIGHT_COLOR);
+            if (highlightEnabled) {
+                outlineRect.setStroke(HIGHLIGHT_COLOR);
+            }
         } catch (Exception e) {
             LOG.error("Error in mouse press handler", e);
             resetWindowState();

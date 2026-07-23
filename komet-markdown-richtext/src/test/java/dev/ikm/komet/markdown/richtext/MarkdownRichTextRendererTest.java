@@ -38,9 +38,13 @@ class MarkdownRichTextRendererTest {
     }
 
     private static Rendered render(String markdown) {
+        return render(markdown, null);
+    }
+
+    private static Rendered render(String markdown, BlockRenderer blockRenderer) {
         List<RichParagraph> out = new ArrayList<>();
         List<String> plain = new ArrayList<>();
-        new MarkdownRichTextRenderer(13, null).render(markdown, StyleAttributeMap.EMPTY, out, plain);
+        new MarkdownRichTextRenderer(13, null, blockRenderer).render(markdown, StyleAttributeMap.EMPTY, out, plain);
         return new Rendered(out, plain);
     }
 
@@ -84,6 +88,49 @@ class MarkdownRichTextRendererTest {
         assertEquals(2, r.paragraphs().size());
         assertEquals("Title", r.plain().get(0));
         assertEquals("A paragraph.", r.plain().get(1));
+    }
+
+    @Test
+    void fencedBlockFallsThroughToPreformattedWithoutBlockRenderer() {
+        // With BlockRenderer.NONE (the 2-arg constructor), a fenced block renders as
+        // preformatted text: one paragraph per line, projecting the raw code lines.
+        String md = "```koncept-tree\nk:sctid=772222008[Medical devices]\n  k:sctid=118956008[Microbiology device]\n```";
+        Rendered r = render(md);
+        assertEquals(2, r.paragraphs().size(), "each code line is its own preformatted paragraph");
+        assertEquals("k:sctid=772222008[Medical devices]", r.plain().get(0));
+        assertEquals("  k:sctid=118956008[Microbiology device]", r.plain().get(1));
+    }
+
+    @Test
+    void recognisedFenceDispatchesToBlockRenderer() {
+        // A renderer that recognises "koncept-tree" turns the whole block into a single atomic
+        // paragraph carrying its plain-text projection (the raw source, so copy round-trips).
+        List<String> seenInfo = new ArrayList<>();
+        BlockRenderer treeOnly = (info, literal, style) -> {
+            seenInfo.add(info);
+            if (!"koncept-tree".equals(info)) {
+                return List.of();
+            }
+            return List.of(new BlockPiece(javafx.scene.control.Label::new, literal.stripTrailing()));
+        };
+        String md = "```koncept-tree\nk:sctid=772222008[Medical devices]\n```";
+        Rendered r = render(md, treeOnly);
+
+        assertEquals(List.of("koncept-tree"), seenInfo, "info string handed to the block renderer");
+        assertEquals(1, r.paragraphs().size(), "recognised block collapses to one atomic paragraph");
+        assertEquals("k:sctid=772222008[Medical devices]", r.plain().get(0),
+                "block plain projection is the renderer-supplied source");
+    }
+
+    @Test
+    void unrecognisedFenceFallsThroughDespiteBlockRenderer() {
+        // A block renderer that declines (empty list) must not swallow the block: it falls
+        // through to preformatted text exactly as if no renderer were present.
+        BlockRenderer declines = (info, literal, style) -> List.of();
+        String md = "```java\nint x = 1;\n```";
+        Rendered r = render(md, declines);
+        assertEquals(1, r.paragraphs().size());
+        assertEquals("int x = 1;", r.plain().get(0), "declined block renders as preformatted code");
     }
 
     @Test

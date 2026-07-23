@@ -33,7 +33,9 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -75,8 +77,24 @@ public class Identicon {
      * so an identicon that was once on screen and scrolled back to comes back
      * instantly without a transparent flash.
      */
+    /**
+     * The publicIds whose cached image has finished filling — so a caller that needs pixels
+     * <em>now</em> ({@link #generateIdenticonSync}, for a drag image) can reuse the shared filled
+     * image instead of regenerating, and generate synchronously only on a genuine cold miss.
+     * Declared before {@link #IMAGE_CACHE} so the cache's removal listener may reference it.
+     */
+    private static final Set<PublicId> FILLED = ConcurrentHashMap.newKeySet();
+
     private static final Cache<PublicId, Image> IMAGE_CACHE = Caffeine.newBuilder()
             .maximumSize(CACHE_MAX_SIZE)
+            // When an image is evicted, drop its "filled" flag too, so FILLED never outlives the
+            // cached image (else a later sync lookup would trust FILLED and return an evicted-and-
+            // re-created blank placeholder) and never grows unbounded past the cache.
+            .removalListener((PublicId key, Image image, com.github.benmanes.caffeine.cache.RemovalCause cause) -> {
+                if (key != null) {
+                    FILLED.remove(key);
+                }
+            })
             .build();
 
     /*
@@ -109,6 +127,45 @@ public class Identicon {
         finalImageView.setFitHeight(image_height);
 
         return finalImageView;
+    }
+
+    /**
+     * An identicon whose pixels are present <em>immediately</em> — for a caller that snapshots the
+     * node at once (a drag glyph, whose image the OS captures at drag-start and will not let update
+     * mid-drag), where {@link #generateIdenticon}'s first-lookup async placeholder would snapshot
+     * blank. It stays on the async cache in the common case: when the concept's image has already
+     * filled (rendered anywhere, or a prior drag), the shared cached instance is reused with no work;
+     * only a genuine cold miss generates on the calling thread — once per concept, then cached for
+     * every caller. Never use it for a list of many identicons.
+     *
+     * @param publicId     the concept id
+     * @param image_width  the fit width (px)
+     * @param image_height the fit height (px)
+     * @return an image view whose identicon pixels are already present
+     */
+    public static ImageView generateIdenticonSync(PublicId publicId, int image_width, int image_height) {
+        ImageView view = new ImageView(identiconImageNow(publicId));
+        view.setFitWidth(image_width);
+        view.setFitHeight(image_height);
+        return view;
+    }
+
+    /**
+     * The filled identicon image for {@code publicId}, ready now: the shared cached image when it has
+     * finished filling, else generated synchronously and cached (so it is produced at most once per
+     * concept across the app, and every later async or sync lookup returns it filled).
+     */
+    private static Image identiconImageNow(PublicId publicId) {
+        if (FILLED.contains(publicId)) {
+            Image cached = IMAGE_CACHE.getIfPresent(publicId);
+            if (cached != null) {
+                return cached;
+            }
+        }
+        Image image = generateIdenticonImageLifeHash(publicId, LifeHashVersion.VERSION2);
+        IMAGE_CACHE.put(publicId, image);
+        FILLED.add(publicId);
+        return image;
     }
 
     /**
@@ -145,6 +202,10 @@ public class Identicon {
      * {@link WritableImage}).
      */
     private static Image createAndFillAsync(PublicId publicId) {
+        // This runs on a cache miss (unseen or evicted): the new placeholder is transparent until the
+        // async fill completes, so clear any stale "filled" flag now (the removalListener is async, so
+        // an evict-then-re-request could otherwise still see FILLED true against this blank placeholder).
+        FILLED.remove(publicId);
         int size = 128;
         WritableImage progressiveImage = new WritableImage(size, size);
         CompletableFuture.runAsync(() -> {
@@ -161,10 +222,13 @@ public class Identicon {
                     scaledPixels[y * size + x] = reader.getArgb(sourceX, sourceY);
                 }
             }
-            Platform.runLater(() -> progressiveImage.getPixelWriter().setPixels(
-                    0, 0, size, size,
-                    PixelFormat.getIntArgbInstance(),
-                    scaledPixels, 0, size));
+            Platform.runLater(() -> {
+                progressiveImage.getPixelWriter().setPixels(
+                        0, 0, size, size,
+                        PixelFormat.getIntArgbInstance(),
+                        scaledPixels, 0, size);
+                FILLED.add(publicId);
+            });
         }, generationExecutor);
         return progressiveImage;
     }

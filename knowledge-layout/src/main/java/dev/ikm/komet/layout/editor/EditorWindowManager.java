@@ -28,11 +28,14 @@ public class EditorWindowManager {
         String windowTitle = title;
 
         if (title == null) {
+            // Null title then create new window
             editorWindowModel = new EditorWindowModel();
             windowTitle = editorWindowModel.getTitle();
         } else {
+            // Load already existing window. First check if it already exists in cache.
             editorWindowModel = titleToWindowModel.get(title);
             if (editorWindowModel == null) {
+                // Doesn't exist in cache so load from preferences (from disk)
                 editorWindowModel = EditorWindowModel.load(klEditorWindowPreferences, viewCalculator, title);
             }
         }
