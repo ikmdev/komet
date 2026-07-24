@@ -20,6 +20,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Tooltip;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import network.ike.docs.konceptcore.KonceptKind;
 
@@ -81,9 +82,12 @@ public final class KonceptSigils {
         Text glyph = new Text(kind.glyph());
         glyph.getStyleClass().add(StyleClasses.KONCEPT_SIGIL.toString());
         glyph.setFill(Color.web(kind.colorHex()));
-        if (letterSizePx > 0) {
-            glyph.setFont(Font.font(glyph.getFont().getFamily(), letterSizePx));
-        }
+        // Bold always: the normative koncept.css (koncept-asciidoc-extension — the stylesheet that
+        // renders the written badge spec) declares the sigil {@code font-weight: bold}, mirroring
+        // the styles the doc renderer emits inline. Weight, like glyph and colour, is data every
+        // medium agrees on, so it is set in code rather than left to whichever stylesheet loads.
+        glyph.setFont(Font.font(glyph.getFont().getFamily(), FontWeight.BOLD,
+                letterSizePx > 0 ? letterSizePx : glyph.getFont().getSize()));
         return glyph;
     }
 }

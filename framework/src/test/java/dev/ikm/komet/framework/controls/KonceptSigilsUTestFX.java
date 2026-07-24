@@ -97,6 +97,21 @@ class KonceptSigilsUTestFX {
     }
 
     @Test
+    void theSigilIsBoldPerTheNormativeKonceptCss() {
+        // koncept-asciidoc-extension's koncept.css — the stylesheet that renders the written badge
+        // spec — declares the sigil font-weight: bold. Weight is data every medium agrees on.
+        Text styled = assertInstanceOf(Text.class,
+                KonceptSigils.create(KonceptKind.PATTERN, STAMP_SIZE, 0).orElseThrow());
+        Text sized = assertInstanceOf(Text.class,
+                KonceptSigils.create(KonceptKind.PATTERN, STAMP_SIZE, 15).orElseThrow());
+
+        assertTrue(styled.getFont().getStyle().toLowerCase().contains("bold"),
+                "stylesheet-sized sigil is bold");
+        assertTrue(sized.getFont().getStyle().toLowerCase().contains("bold"),
+                "explicitly-sized sigil is bold");
+    }
+
+    @Test
     void theAccessibleKindNameRidesAlongAsTheNonColourAffordance() {
         Node sigil = KonceptSigils.create(KonceptKind.PATTERN, STAMP_SIZE, 0).orElseThrow();
 

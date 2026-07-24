@@ -19,6 +19,7 @@ import network.ike.docs.konceptcore.KonceptKind;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.StyleClasses;
 import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
 import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.framework.graphics.SmallCapsFonts;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -39,6 +40,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
@@ -250,7 +253,22 @@ public class KonceptBadge extends HBox {
         pseudoClassStateChanged(INACTIVE, inactive);
 
         if (nid != UNKNOWN_NID) {
-            KonceptDragSource.install(this, nid);
+            // The canonical GENERATED glyph, not a snapshot of this badge (ikmdev/komet#882).
+            // The snapshot path rescales whatever width the host stretched the badge to and wears
+            // kview's 4px -Primary-05 drag-affordance border (.draggable-node:snapshot) — the wide,
+            // green-framed, soft drag image reported from the pattern navigator. The glyph is
+            // tight, 1:1, and carries the kind sigil. Installed on the badge itself, reading its
+            // CURRENT kind/name/retired state at gesture time, so every badge drags identically —
+            // including hosts whose own drag handler this badge's press shadows.
+            setOnDragDetected(event -> {
+                if (getScene() == null) {
+                    return;
+                }
+                Dragboard dragboard = startDragAndDrop(TransferMode.COPY);
+                KonceptDragGlyph.setDragView(dragboard, kind, publicId, conceptName, inactive);
+                dragboard.setContent(KometClipboard.forComponent(nid));
+                event.consume();
+            });
         }
         installTooltip();
     }
