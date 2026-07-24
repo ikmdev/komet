@@ -34,6 +34,8 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.css.PseudoClass;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
@@ -106,13 +108,34 @@ public class KonceptBadge extends HBox {
     /** Name font size (px) for the shrunken all-caps fallback — the pre-#855 rendering. */
     private static final double FALLBACK_FONT_SIZE = 11;
 
+    /** Name size as a fraction of the ambient font, in the true small-caps family. */
+    private static final double NAME_SCALE = 0.9;
+
+    /** Name size as a fraction of the ambient font in the shrunken all-caps fallback. */
+    private static final double NAME_SCALE_FALLBACK = 0.8;
+
+    /** Identicon edge as a fraction of the ambient font, so it sits on the name's midline. */
+    private static final double ICON_SCALE = 0.92;
+
+    /** Inline pill used when no stylesheet reaches the badge — the koncept palette of komet.css. */
+    private static final String STANDALONE_PILL_STYLE =
+            "-fx-background-color: #e9eff6; -fx-background-radius: 6; -fx-padding: 1 5 1 4;";
+
+    /** Inline active label colour, matching {@code .koncept-label}. */
+    private static final String LABEL_ACTIVE = "#2a5a8a";
+
+    /** Inline retired label colour, matching {@code .koncept-label:inactive}. */
+    private static final String LABEL_INACTIVE = "#b00020";
+
     /** Sentinel nid for a presentation-only badge built without a populated store/view. */
     private static final int UNKNOWN_NID = Integer.MIN_VALUE;
 
     private final int nid;
     private final PublicId publicId;
     private final ViewProperties viewProperties;
-    private final boolean inactive;
+    private boolean inactive;
+    /** Whether {@link #setStandaloneStyling} is in effect, so a state change repaints inline. */
+    private boolean standalone;
 
     private final HBox sigilBox = new HBox();
     private final HBox statusBox = new HBox();
@@ -124,6 +147,8 @@ public class KonceptBadge extends HBox {
     private PremiseType premiseType = PremiseType.INFERRED;
     private KonceptStatus status = KonceptStatus.NONE;
     private KonceptKind kind = KonceptKind.CONCEPT;
+    /** Letter-sigil size (px); 0 leaves it to the stylesheet. Set by {@link #setAmbientFontSize}. */
+    private double letterSigilSize = 0;
     private boolean conceptExpected = false;
 
     /**
@@ -180,6 +205,12 @@ public class KonceptBadge extends HBox {
         this.inactive = computeInactive(nid, viewProperties);
 
         getStyleClass().add(StyleClasses.KONCEPT_CHIP.toString());
+        // An HBox defaults to TOP_LEFT, which pinned the small sigil and status glyphs to the top
+        // while the taller identicon set the row height — the sigil sat visibly above the name
+        // instead of on its midline (ikmdev/komet#883). Centre everything on the name's line.
+        setAlignment(Pos.CENTER_LEFT);
+        sigilBox.setAlignment(Pos.CENTER);
+        statusBox.setAlignment(Pos.CENTER);
 
         this.identicon = (publicId != null)
                 ? Identicon.generateIdenticon(publicId, (int) Math.round(DEFAULT_ICON_SIZE),
@@ -278,7 +309,7 @@ public class KonceptBadge extends HBox {
         // The sigil node comes from the shared factory, so the badge and the drag glyph cannot
         // disagree about what a kind looks like (ikmdev/komet#883). Size 0: the stylesheet reaches
         // this control and sizes the letter.
-        KonceptSigils.create(this.kind, STAMP_SIGIL_SIZE, 0)
+        KonceptSigils.create(this.kind, STAMP_SIGIL_SIZE, letterSigilSize)
                 .ifPresent(sigil -> sigilBox.getChildren().add(sigil));
         // Every kind keeps its identicon — for a stamp the pentagon precedes the STAMP's own
         // identicon (a sigil is never bare; the identicon tells one STAMP from another at a
@@ -354,6 +385,120 @@ public class KonceptBadge extends HBox {
      *
      * @param pixels the identicon width and height in pixels
      */
+    /**
+     * Scales the whole badge from an ambient body font size — the name, the identicon, and the kind
+     * sigil together — for a host whose text size is not fixed (ikmdev/komet#742). Without this the
+     * badge renders at its built-in size, so a surface with its own font control could not adopt it.
+     *
+     * <p>The ratios are the ones the assistant's inline chip established: the name at
+     * {@value #NAME_SCALE} of the ambient size (or {@value #NAME_SCALE_FALLBACK} in the shrunken
+     * all-caps fallback, whose glyphs are full height), and the identicon at
+     * {@value #ICON_SCALE} so it sits on the name's midline.
+     *
+     * @param basePx the ambient body font size in px; values {@code <= 0} are ignored
+     */
+    public void setAmbientFontSize(double basePx) {
+        if (basePx <= 0) {
+            return;
+        }
+        String scFamily = SmallCapsFonts.family();
+        nameNode.setFont(scFamily != null
+                ? Font.font(scFamily, basePx * NAME_SCALE)
+                : Font.font(basePx * NAME_SCALE_FALLBACK));
+        setIconSize(Math.round(basePx * ICON_SCALE));
+        // Rebuild the sigil at the scaled size: a sigil that stayed at the stylesheet's size would
+        // dwarf or vanish beside a scaled name.
+        this.letterSigilSize = basePx * NAME_SCALE;
+        setKind(this.kind);
+    }
+
+    /**
+     * Styles the badge inline instead of relying on a stylesheet reaching it — for a host whose
+     * scene does not load {@code komet.css}, or a node snapshotted off-stage (ikmdev/komet#742).
+     *
+     * <p>The badge is normally CSS-driven, which is right when it sits in a Komet window. It is
+     * wrong wherever CSS does not arrive: the pill loses its fill and the name its colour, silently.
+     * This paints both directly, so the badge is safe to embed anywhere.
+     *
+     * @param standalone {@code true} to paint the pill and label inline
+     */
+    public void setStandaloneStyling(boolean standalone) {
+        this.standalone = standalone;
+        if (!standalone) {
+            setStyle(null);
+            nameNode.textNode().setFill(null);
+            return;
+        }
+        setStyle(STANDALONE_PILL_STYLE);
+        nameNode.textNode().setFill(Color.web(isInactive() ? LABEL_INACTIVE : LABEL_ACTIVE));
+        nameNode.textNode().setStrikethrough(isInactive());
+    }
+
+    /**
+     * The text baseline of the badge's name, so a host that seats content on a text line — a
+     * {@code RichTextArea} line, a table row — aligns the badge with the surrounding text rather
+     * than to its box (ikmdev/komet#742). A plain {@link HBox} reports its own layout baseline,
+     * which sits the pill visibly off the line.
+     *
+     * @return the name's baseline offset within this badge
+     */
+    @Override
+    public double getBaselineOffset() {
+        Insets in = getInsets();
+        double contentHeight = prefHeight(-1) - in.getTop() - in.getBottom();
+        Text text = nameNode.textNode();
+        double textTop = in.getTop()
+                + Math.max(0, (contentHeight - text.getLayoutBounds().getHeight()) / 2);
+        return textTop + text.getBaselineOffset();
+    }
+
+    /**
+     * Marks the component retired, for a host that resolved the state itself — a badge built
+     * without a view cannot compute it, and would otherwise always render as active.
+     *
+     * @param retired {@code true} if the component's latest version is inactive
+     */
+    public void setInactive(boolean retired) {
+        this.inactive = retired;
+        pseudoClassStateChanged(INACTIVE, retired);
+        if (standalone) {
+            setStandaloneStyling(true);
+        }
+    }
+
+    /**
+     * The name's current font size in px. Package-private: an observation point for the embedding
+     * tests, not part of the control's contract.
+     *
+     * @return the name font size
+     */
+    double getNameFontSize() {
+        return nameNode.textNode().getFont().getSize();
+    }
+
+    /**
+     * The kind sigil's current font size in px, or {@code 0} when the badge carries no letter sigil.
+     *
+     * @return the sigil font size
+     */
+    double getSigilFontSize() {
+        return sigilBox.getChildren().stream()
+                .filter(Text.class::isInstance)
+                .map(Text.class::cast)
+                .mapToDouble(text -> text.getFont().getSize())
+                .findFirst()
+                .orElse(0);
+    }
+
+    /**
+     * The name's current fill, or {@code null} when the stylesheet owns it.
+     *
+     * @return the name fill
+     */
+    Object getNameFill() {
+        return nameNode.textNode().getFill();
+    }
+
     public void setIconSize(double pixels) {
         identicon.setFitWidth(pixels);
         identicon.setFitHeight(pixels);
@@ -372,7 +517,14 @@ public class KonceptBadge extends HBox {
         return inactive;
     }
 
-    private void setConceptName(String name) {
+    /**
+     * Overrides the displayed name, for a host whose own resolution is better than the badge's
+     * default — a pattern navigator that says "No description available" where the badge would
+     * fall back to the raw nid, for instance. The full name still rides on the identity tooltip.
+     *
+     * @param name the name to display
+     */
+    public void setConceptName(String name) {
         this.conceptName = name;
         // The retired strikethrough needs nothing here: the name is a Text node, and komet.css
         // strikes it (with the retired colour) under the inactive pseudo-class.

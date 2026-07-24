@@ -54,6 +54,12 @@ public class PatternNavEntryController {
     @FXML
     private VBox mainVBox;
 
+    /**
+     * Ambient font size (px) the pattern row renders its koncept atom at — the row is a navigation
+     * list line, not body text, so it sizes well above the badge's inline default.
+     */
+    private static final double PATTERN_ROW_FONT_SIZE = 16;
+
     /** Slot for the koncept atom — see {@code pattern-nav-entry.fxml}. */
     @FXML
     private HBox patternBadgeBox;
@@ -129,6 +135,14 @@ public class PatternNavEntryController {
         // identicon + label this replaces asked for none of it, which is why no P ever appeared.
         // It carries its own identity tooltip, so the separate name tooltip is gone with it.
         KonceptBadge patternBadge = new KonceptBadge(patternFacade.nid(), vProperties);
+        // The pattern navigator's own name resolution, not the badge's default: a pattern with
+        // neither a regular description nor an FQN says so, where the badge alone would fall back
+        // to the raw nid and the row would read "-2147477853".
+        patternBadge.setConceptName(
+                ViewCalculatorUtils.retrieveDisplayName((PatternFacade) patternFacade, vProperties));
+        // Sized to this row rather than the badge's inline default, which is scaled for sitting
+        // beside body text and renders far too small in a navigation list.
+        patternBadge.setAmbientFontSize(PATTERN_ROW_FONT_SIZE);
         HBox.setHgrow(patternBadge, Priority.ALWAYS);
         patternBadgeBox.getChildren().setAll(patternBadge);
 

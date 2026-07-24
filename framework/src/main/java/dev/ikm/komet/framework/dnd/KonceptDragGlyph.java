@@ -140,7 +140,10 @@ public final class KonceptDragGlyph {
             }
             try {
                 double[] cursorX = new double[1];
-                Image image = render(glyph(publicId, name, inactive), cursorX);
+                // Resolve the kind from the nid this installer already has, so a dragged pattern
+                // keeps its sigil. Without it the glyph was built from the PublicId alone and every
+                // drag came out bare, whatever the source rendered (ikmdev/komet#883).
+                Image image = render(glyph(kind(nid), publicId, name, inactive), cursorX);
                 Dragboard dragboard = source.startDragAndDrop(TransferMode.COPY);
                 dragboard.setDragView(image, cursorX[0], image.getHeight());
                 dragboard.setContent(KometClipboard.forComponent(nid));
@@ -209,6 +212,18 @@ public final class KonceptDragGlyph {
      * @param viewCalc the view used to resolve the kind
      * @return the resolved kind, never {@code null}
      */
+    /**
+     * The component kind for {@code nid} without a view — a concept, pattern, or stamp follows from
+     * the entity type alone; a semantic degrades to {@link KonceptKind#SEMANTIC} rather than being
+     * distinguished as a description.
+     *
+     * @param nid the component nid
+     * @return the resolved kind, never {@code null}
+     */
+    private static KonceptKind kind(int nid) {
+        return kind(nid, null);
+    }
+
     private static KonceptKind kind(int nid, ViewCalculator viewCalc) {
         try {
             return KonceptKindResolver.resolve(nid, viewCalc);
