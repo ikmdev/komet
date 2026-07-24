@@ -126,6 +126,21 @@ class KonceptBadgeEmbeddingUTestFX {
     }
 
     @Test
+    void anIdentityBearingPresentationBadgeIsADragSource() {
+        // The regression this pins: the chip moved to the badge's own drag handling, but built
+        // through the two-argument presentation constructor — UNKNOWN_NID, so no handler was
+        // installed and every assistant chip silently stopped dragging. A known nid must yield a
+        // drag source even without a view; without a nid there is no payload, so no handler.
+        KonceptBadge identityBearing = new KonceptBadge(42, PublicIds.newRandom(), "Chronic disease");
+        KonceptBadge presentationOnly = badge();
+
+        assertTrue(identityBearing.getOnDragDetected() != null,
+                "a known component drags even without a view");
+        assertTrue(presentationOnly.getOnDragDetected() == null,
+                "no nid, no payload, no drag handler");
+    }
+
+    @Test
     void theBaselineIsTheNamesBaselineNotTheBoxes() {
         KonceptBadge badge = badge();
         badge.setAmbientFontSize(14);

@@ -154,32 +154,50 @@ public class ConceptTile extends HBox {
         selectPane.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> treeViewSkin.setDraggingAllowed(true));
         selectPane.addEventFilter(MouseEvent.DRAG_DETECTED, e -> {
             if (e.getButton() == MouseButton.PRIMARY && !cell.isEmpty()) {
-                Dragboard dragboard = startDragAndDrop(TransferMode.COPY_OR_MOVE);
-                ClipboardContent clipboardContent = new ClipboardContent();
-                ConceptNavigatorTreeItem treeItem = (ConceptNavigatorTreeItem) cell.getTreeItem();
-                if (treeItem.getValue() != null && treeItem.getValue().publicId() != null) {
-                    clipboardContent.put(CONCEPT_NAVIGATOR_DRAG_FORMAT,
-                            List.<UUID[]>of(treeItem.getValue().publicId().asUuidArray()));
-                    // Also advertise the standard component proxies (ike-issues#638) so a navigator
-                    // concept drops on any standard target — not only the navigator's own format.
-                    clipboardContent.putAll(KometClipboard.forComponent(treeItem.getValue().nid()));
-                }
-                clipboardContent.putString(treeItem.toString());
-                dragboard.setContent(clipboardContent);
-                // The canonical concept drag glyph, built from the concept's identity (identicon +
-                // small-caps name) rather than a snapshot of this tile — which has no identicon, so a
-                // snapshot could never be the pill (ike-issues#854). Built off a throwaway scene, so
-                // it needs no attached-scene guard.
-                if (treeItem.getValue() != null) {
-                    KonceptDragGlyph.setDragView(dragboard, treeItem.getValue().nid(),
-                            treeView.getNavigator().getViewCalculator());
-                }
+                beginConceptDrag();
                 cell.pseudoClassStateChanged(DRAG_SELECTED_PSEUDO_CLASS, false);
                 treeViewSkin.setDraggingAllowed(true);
             }
             e.consume();
         });
         selectPane.setOnDragDone(e -> treeViewSkin.setDraggingAllowed(true));
+        // The whole tile is a drag source, not only the hover select affordance: a pattern row
+        // drags from anywhere on the row (its badge is the drag source), and a concept row must
+        // feel the same (ikmdev/komet#882). Ordering keeps the existing gestures intact — the
+        // skin's tree-level filter consumes a multi-selection drag before this fires, and the
+        // select affordance's own filter consumes its gesture — so this handles exactly the plain
+        // row press that previously started nothing.
+        setOnDragDetected(e -> {
+            if (e.getButton() == MouseButton.PRIMARY && !cell.isEmpty()) {
+                beginConceptDrag();
+                e.consume();
+            }
+        });
+    }
+
+    /**
+     * Starts the canonical concept drag from this tile: the navigator's own format plus the
+     * standard component proxies (ike-issues#638) on the dragboard, and the generated
+     * {@link KonceptDragGlyph} as the drag image — built from the concept's identity rather than a
+     * snapshot of this tile, which has no identicon and so could never be the pill
+     * (ike-issues#854). Shared by the select affordance and the whole-tile drag source so the two
+     * gestures cannot drift apart.
+     */
+    private void beginConceptDrag() {
+        Dragboard dragboard = startDragAndDrop(TransferMode.COPY_OR_MOVE);
+        ClipboardContent clipboardContent = new ClipboardContent();
+        ConceptNavigatorTreeItem treeItem = (ConceptNavigatorTreeItem) cell.getTreeItem();
+        if (treeItem.getValue() != null && treeItem.getValue().publicId() != null) {
+            clipboardContent.put(CONCEPT_NAVIGATOR_DRAG_FORMAT,
+                    List.<UUID[]>of(treeItem.getValue().publicId().asUuidArray()));
+            clipboardContent.putAll(KometClipboard.forComponent(treeItem.getValue().nid()));
+        }
+        clipboardContent.putString(treeItem.toString());
+        dragboard.setContent(clipboardContent);
+        if (treeItem.getValue() != null) {
+            KonceptDragGlyph.setDragView(dragboard, treeItem.getValue().nid(),
+                    treeView.getNavigator().getViewCalculator());
+        }
     }
 
     /**

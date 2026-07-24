@@ -200,6 +200,22 @@ public class KonceptBadge extends HBox {
         this(UNKNOWN_NID, publicId, name, null, false);
     }
 
+    /**
+     * Creates a presentation badge for a <em>known</em> component without a view: the caller
+     * supplies the name and state (resolved through its own calculator), and the badge is a full
+     * drag source, since the nid is known. This is the assistant chip's case — the two-argument
+     * form is presentation-only ({@link #UNKNOWN_NID}) and installs no drag handler, which
+     * silently made every chip undraggable when the chip stopped installing its own
+     * (ikmdev/komet#742).
+     *
+     * @param nid      the component nid; the drag payload
+     * @param publicId the component identifier driving the identicon and tooltip
+     * @param name     the concept name to display (not truncated); may be {@code null}
+     */
+    public KonceptBadge(int nid, PublicId publicId, String name) {
+        this(nid, publicId, name, null, false);
+    }
+
     private KonceptBadge(int nid, PublicId publicId, String explicitName, ViewProperties viewProperties,
                          boolean showStatus) {
         this.nid = nid;
