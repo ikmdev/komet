@@ -41,6 +41,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.transform.Affine;
+import dev.ikm.komet.framework.controls.KonceptKindResolver;
+import dev.ikm.komet.framework.controls.KonceptSigils;
+import network.ike.docs.konceptcore.KonceptKind;
 
 import java.util.Locale;
 
@@ -84,6 +87,12 @@ public final class KonceptDragGlyph {
     private static final int MAX_LABEL_WIDTH = 260;
     /** Gap placed to the right of the identicon before the cursor (px). */
     private static final double CURSOR_GAP = 4.0;
+    /** Component-kind letter sigil size (px) — set explicitly; no stylesheet reaches the snapshot. */
+    private static final double SIGIL_FONT = 15;
+    /** Edge length (px) of the STAMP pentagon sigil, matched to the identicon. */
+    private static final double SIGIL_STAMP = ICON;
+    /** Key marking the identicon within the pill, so the cursor anchor survives a leading sigil. */
+    private static final Object IDENTICON_KEY = new Object();
     /** Active label colour. */
     private static final String LABEL_ACTIVE = "#2a5a8a";
     /** Inactive/retired label colour. */
@@ -167,7 +176,29 @@ public final class KonceptDragGlyph {
      * @param viewCalc  the view for resolving the name and active state
      */
     public static void setDragView(Dragboard dragboard, int nid, ViewCalculator viewCalc) {
-        setDragView(dragboard, PrimitiveData.publicId(nid), name(nid, viewCalc), isInactive(nid, viewCalc));
+        // Resolve the kind here: this overload has the nid and the view, which is everything the
+        // sigil needs. A pattern therefore drags with its sigil (ikmdev/komet#883); the PublicId
+        // overloads cannot know the kind and stay bare, as before.
+        double[] cursorX = new double[1];
+        Image image = render(glyph(kind(nid, viewCalc), PrimitiveData.publicId(nid),
+                name(nid, viewCalc), isInactive(nid, viewCalc)), cursorX);
+        dragboard.setDragView(image, cursorX[0], image.getHeight());
+    }
+
+    /**
+     * The component kind for {@code nid}, or {@link KonceptKind#CONCEPT} when it cannot be resolved
+     * — a drag must never fail because the sigil could not be determined.
+     *
+     * @param nid      the component nid
+     * @param viewCalc the view used to resolve the kind
+     * @return the resolved kind, never {@code null}
+     */
+    private static KonceptKind kind(int nid, ViewCalculator viewCalc) {
+        try {
+            return KonceptKindResolver.resolve(nid, viewCalc);
+        } catch (RuntimeException e) {
+            return KonceptKind.CONCEPT;
+        }
     }
 
     /**
@@ -199,8 +230,16 @@ public final class KonceptDragGlyph {
      * @param count     the total number of concepts being dragged (badge shown when {@code > 1})
      */
     public static void setMultiDragView(Dragboard dragboard, int leadNid, ViewCalculator viewCalc, int count) {
-        setMultiDragView(dragboard, PrimitiveData.publicId(leadNid),
-                name(leadNid, viewCalc), isInactive(leadNid, viewCalc), count);
+        // As the single-glyph nid overload: the lead component's kind is resolvable here, so the
+        // lead pill carries its sigil (ikmdev/komet#883).
+        double[] cursorX = new double[1];
+        HBox glyph = glyph(kind(leadNid, viewCalc), PrimitiveData.publicId(leadNid),
+                name(leadNid, viewCalc), isInactive(leadNid, viewCalc));
+        if (count > 1) {
+            glyph.getChildren().add(countBadge(count));
+        }
+        Image image = render(glyph, cursorX);
+        dragboard.setDragView(image, cursorX[0], image.getHeight());
     }
 
     /**
@@ -287,6 +326,19 @@ public final class KonceptDragGlyph {
 
     /** Builds the pill: identicon + width-bounded, ellipsising small-caps name in a bordered pill. */
     private static HBox glyph(PublicId publicId, String name, boolean inactive) {
+        return glyph(KonceptKind.CONCEPT, publicId, name, inactive);
+    }
+
+    /**
+     * Builds the pill, leading with {@code kind}'s sigil when it carries one — so the drag image is
+     * as honest about the component kind as the badge is (ikmdev/komet#883). The sigil composites
+     * into the same fixed integer geometry; nothing is rescaled.
+     *
+     * <p>The letter is sized explicitly rather than by style class: {@link #render} snapshots in a
+     * throwaway scene with no stylesheet attached, so a CSS-sized glyph would fall back to the
+     * default font here and render at the wrong size.
+     */
+    private static HBox glyph(KonceptKind kind, PublicId publicId, String name, boolean inactive) {
         // Synchronous identicon: the glyph is snapshotted immediately, so the async placeholder that
         // generateIdenticon returns on first lookup would snapshot blank (ike-issues#854 — a concept
         // whose identicon a navigator row never rendered dragged with no identicon).
@@ -312,9 +364,14 @@ public final class KonceptDragGlyph {
         nameText.setStrikethrough(inactive);
 
         HBox glyph = new HBox(GAP, icon, nameText);
+        KonceptSigils.create(kind, SIGIL_STAMP, SIGIL_FONT)
+                .ifPresent(sigil -> glyph.getChildren().add(0, sigil));
         glyph.setAlignment(Pos.CENTER_LEFT);
         glyph.setPadding(new Insets(V_PAD, PAD_RIGHT, V_PAD, PAD_LEFT));
         glyph.setStyle(glyphStyle());
+        // The cursor anchors just right of the IDENTICON, which is no longer necessarily the first
+        // child once a sigil leads the pill.
+        glyph.getProperties().put(IDENTICON_KEY, icon);
         return glyph;
     }
 
@@ -362,8 +419,12 @@ public final class KonceptDragGlyph {
         glyph.layout();
 
         Bounds visual = glyph.getBoundsInLocal();
-        double iconRight = glyph.getChildren().isEmpty()
-                ? 0 : glyph.getChildren().get(0).getBoundsInParent().getMaxX();
+        // The identicon, not "the first child": a sigil leads the pill for every non-concept kind,
+        // and anchoring the cursor to it would drift the grab point (ikmdev/komet#883).
+        Object marked = glyph.getProperties().get(IDENTICON_KEY);
+        Node identicon = marked instanceof Node node ? node
+                : (glyph.getChildren().isEmpty() ? null : glyph.getChildren().get(0));
+        double iconRight = identicon == null ? 0 : identicon.getBoundsInParent().getMaxX();
         cursorX[0] = Math.max(0, iconRight) + CURSOR_GAP;
 
         Affine transform = new Affine();

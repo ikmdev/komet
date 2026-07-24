@@ -275,11 +275,11 @@ public class KonceptBadge extends HBox {
         boolean visible = this.kind.hasSigil();
         sigilBox.setManaged(visible);
         sigilBox.setVisible(visible);
-        if (visible) {
-            Node sigil = this.kind.isStamp() ? new StampSigil(STAMP_SIGIL_SIZE) : letterSigil(this.kind);
-            Tooltip.install(sigil, new Tooltip(this.kind.accessibleName()));
-            sigilBox.getChildren().add(sigil);
-        }
+        // The sigil node comes from the shared factory, so the badge and the drag glyph cannot
+        // disagree about what a kind looks like (ikmdev/komet#883). Size 0: the stylesheet reaches
+        // this control and sizes the letter.
+        KonceptSigils.create(this.kind, STAMP_SIGIL_SIZE, 0)
+                .ifPresent(sigil -> sigilBox.getChildren().add(sigil));
         // Every kind keeps its identicon — for a stamp the pentagon precedes the STAMP's own
         // identicon (a sigil is never bare; the identicon tells one STAMP from another at a
         // glance), with the compact provenance text in place of a name (revised ike-issues#638).
@@ -321,13 +321,6 @@ public class KonceptBadge extends HBox {
 
     private void refreshAlarm() {
         pseudoClassStateChanged(ALARM, conceptExpected && kind.hasSigil());
-    }
-
-    private static Text letterSigil(KonceptKind kind) {
-        Text glyph = new Text(kind.glyph());
-        glyph.getStyleClass().add(StyleClasses.KONCEPT_SIGIL.toString());
-        glyph.setFill(Color.web(kind.colorHex()));
-        return glyph;
     }
 
     /**
