@@ -162,8 +162,24 @@ public final class KonceptDragGlyph {
      * @param inactive  whether the concept is retired
      */
     public static void setDragView(Dragboard dragboard, PublicId publicId, String name, boolean inactive) {
+        setDragView(dragboard, KonceptKind.CONCEPT, publicId, name, inactive);
+    }
+
+    /**
+     * Places the canonical single-component drag view, leading with {@code kind}'s sigil — for a
+     * drag source that knows the component kind but has no {@link ViewCalculator} to resolve it
+     * from (ikmdev/komet#883).
+     *
+     * @param dragboard the active dragboard
+     * @param kind      the component kind; {@link KonceptKind#CONCEPT} draws the bare pill
+     * @param publicId  the component id (drives the identicon)
+     * @param name      the store-resolved name
+     * @param inactive  whether the component is retired
+     */
+    public static void setDragView(Dragboard dragboard, KonceptKind kind, PublicId publicId,
+                                   String name, boolean inactive) {
         double[] cursorX = new double[1];
-        Image image = render(glyph(publicId, name, inactive), cursorX);
+        Image image = render(glyph(kind, publicId, name, inactive), cursorX);
         dragboard.setDragView(image, cursorX[0], image.getHeight());
     }
 
