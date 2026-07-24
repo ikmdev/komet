@@ -98,8 +98,18 @@ public class KonceptBadge extends HBox {
     /** Default identicon edge length in pixels, sized to sit beside body text. */
     private static final double DEFAULT_ICON_SIZE = 14;
 
-    /** Inline edge length (px) of the {@link KonceptKind#STAMP} pentagon sigil. */
-    private static final double STAMP_SIGIL_SIZE = 14;
+    /**
+     * Letter-sigil size as a fraction of the name font — the normative ratio, read from the
+     * anatomy renderer that draws the badge-spec figures (KonceptFigureRenderer: sigil bold 15
+     * over name 12). The sigil is a quarter LARGER than the name, and bold.
+     */
+    private static final double SIGIL_TO_NAME = 15.0 / 12.0;
+
+    /**
+     * Pentagon edge as a fraction of the identicon edge — normative, from the same source
+     * (pentagonBox 20 over identiconSize 32).
+     */
+    private static final double PENTAGON_TO_ICON = 20.0 / 32.0;
 
     /**
      * Name font size (px) in the true small-caps family. Slightly larger than the fallback because
@@ -150,8 +160,10 @@ public class KonceptBadge extends HBox {
     private PremiseType premiseType = PremiseType.INFERRED;
     private KonceptStatus status = KonceptStatus.NONE;
     private KonceptKind kind = KonceptKind.CONCEPT;
-    /** Letter-sigil size (px); 0 leaves it to the stylesheet. Set by {@link #setAmbientFontSize}. */
-    private double letterSigilSize = 0;
+    /** Letter-sigil size (px), {@link #SIGIL_TO_NAME} of the current name font. */
+    private double letterSigilSize = SC_FONT_SIZE * SIGIL_TO_NAME;
+    /** Pentagon edge (px), {@link #PENTAGON_TO_ICON} of the current identicon edge. */
+    private double stampSigilSize = DEFAULT_ICON_SIZE * PENTAGON_TO_ICON;
     private boolean conceptExpected = false;
 
     /**
@@ -246,6 +258,8 @@ public class KonceptBadge extends HBox {
         this.nameNode.setFont(scFamily != null
                 ? Font.font(scFamily, SC_FONT_SIZE)
                 : Font.font(FALLBACK_FONT_SIZE));
+        // The sigil rides the name it sits beside — spec ratio, whichever family resolved.
+        this.letterSigilSize = (scFamily != null ? SC_FONT_SIZE : FALLBACK_FONT_SIZE) * SIGIL_TO_NAME;
         // Let the name shrink and ellipsize (with the full name on the identity tooltip) so the
         // badge fits a fixed-width container without forcing a horizontal scrollbar.
         HBox.setHgrow(this.nameNode, Priority.ALWAYS);
@@ -343,7 +357,7 @@ public class KonceptBadge extends HBox {
         // The sigil node comes from the shared factory, so the badge and the drag glyph cannot
         // disagree about what a kind looks like (ikmdev/komet#883). Size 0: the stylesheet reaches
         // this control and sizes the letter.
-        KonceptSigils.create(this.kind, STAMP_SIGIL_SIZE, letterSigilSize)
+        KonceptSigils.create(this.kind, stampSigilSize, letterSigilSize)
                 .ifPresent(sigil -> sigilBox.getChildren().add(sigil));
         // Every kind keeps its identicon — for a stamp the pentagon precedes the STAMP's own
         // identicon (a sigil is never bare; the identicon tells one STAMP from another at a
@@ -436,13 +450,16 @@ public class KonceptBadge extends HBox {
             return;
         }
         String scFamily = SmallCapsFonts.family();
+        double nameSize = basePx * (scFamily != null ? NAME_SCALE : NAME_SCALE_FALLBACK);
         nameNode.setFont(scFamily != null
-                ? Font.font(scFamily, basePx * NAME_SCALE)
-                : Font.font(basePx * NAME_SCALE_FALLBACK));
-        setIconSize(Math.round(basePx * ICON_SCALE));
-        // Rebuild the sigil at the scaled size: a sigil that stayed at the stylesheet's size would
-        // dwarf or vanish beside a scaled name.
-        this.letterSigilSize = basePx * NAME_SCALE;
+                ? Font.font(scFamily, nameSize)
+                : Font.font(nameSize));
+        double iconSize = Math.round(basePx * ICON_SCALE);
+        setIconSize(iconSize);
+        // Rebuild the sigil at the scaled size, holding the spec ratios: letter a quarter larger
+        // than the name, pentagon five-eighths of the identicon (KonceptFigureRenderer).
+        this.letterSigilSize = nameSize * SIGIL_TO_NAME;
+        this.stampSigilSize = iconSize * PENTAGON_TO_ICON;
         setKind(this.kind);
     }
 

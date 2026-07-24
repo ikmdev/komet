@@ -87,10 +87,14 @@ public final class KonceptDragGlyph {
     private static final int MAX_LABEL_WIDTH = 260;
     /** Gap placed to the right of the identicon before the cursor (px). */
     private static final double CURSOR_GAP = 4.0;
-    /** Component-kind letter sigil size (px) — set explicitly; no stylesheet reaches the snapshot. */
-    private static final double SIGIL_FONT = 15;
-    /** Edge length (px) of the STAMP pentagon sigil, matched to the identicon. */
-    private static final double SIGIL_STAMP = ICON;
+    /**
+     * Component-kind letter sigil size (px) — set explicitly; no stylesheet reaches the snapshot.
+     * The normative ratio is 15:12 of the name font (KonceptFigureRenderer, the renderer that
+     * draws the badge-spec anatomy figures): a quarter larger than the name, bold.
+     */
+    private static final double SIGIL_FONT = FONT * 15.0 / 12.0;
+    /** Edge length (px) of the STAMP pentagon sigil: 20:32 of the identicon, same source. */
+    private static final double SIGIL_STAMP = ICON * 20.0 / 32.0;
     /** Key marking the identicon within the pill, so the cursor anchor survives a leading sigil. */
     private static final Object IDENTICON_KEY = new Object();
     /** Active label colour. */

@@ -126,6 +126,18 @@ class KonceptBadgeEmbeddingUTestFX {
     }
 
     @Test
+    void theSigilHoldsTheNormativeRatioToTheName() {
+        // KonceptFigureRenderer — the renderer that draws the badge-spec anatomy figures — sets
+        // the sigil at bold 15 over a name at 12: a quarter larger, at every ambient size.
+        KonceptBadge badge = badge();
+        badge.setKind(KonceptKind.PATTERN);
+        badge.setAmbientFontSize(16);
+
+        assertEquals(15.0 / 12.0, badge.getSigilFontSize() / badge.getNameFontSize(), 0.001,
+                "sigil : name = 15 : 12, from the anatomy renderer");
+    }
+
+    @Test
     void anIdentityBearingPresentationBadgeIsADragSource() {
         // The regression this pins: the chip moved to the badge's own drag handling, but built
         // through the two-argument presentation constructor — UNKNOWN_NID, so no handler was
