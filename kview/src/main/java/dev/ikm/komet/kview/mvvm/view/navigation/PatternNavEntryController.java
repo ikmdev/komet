@@ -18,6 +18,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import dev.ikm.komet.framework.controls.KonceptBadge;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -52,11 +54,9 @@ public class PatternNavEntryController {
     @FXML
     private VBox mainVBox;
 
+    /** Slot for the koncept atom — see {@code pattern-nav-entry.fxml}. */
     @FXML
-    private ImageView identicon;
-
-    @FXML
-    private Label patternName;
+    private HBox patternBadgeBox;
 
     @FXML
     private StackPane dragHandleAffordance;
@@ -121,18 +121,16 @@ public class PatternNavEntryController {
             LOG.info("TODO: Verify if the Pattern needs to be removed. "+patternFacade.description());
         });
 
-        // set identicon
-        Image identiconImage = Identicon.generateIdenticonImage(patternFacade.publicId());
-        identicon.setImage(identiconImage);
-
         ViewProperties vProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
-        var patternNameText = ViewCalculatorUtils.retrieveDisplayName((PatternFacade)patternFacade, vProperties);
 
-        // set the pattern's name
-        patternName.setText(patternNameText);
-
-        // set the pattern name label Tooltip
-        Tooltip.install(patternName, new Tooltip(patternNameText));
+        // One koncept atom renders the row: identicon, name, and — the point of the change —
+        // the component-kind sigil, so a pattern row states that it is a pattern (ikmdev/komet#882,
+        // #883). The badge resolves all three from the nid and the view; the hand-rolled
+        // identicon + label this replaces asked for none of it, which is why no P ever appeared.
+        // It carries its own identity tooltip, so the separate name tooltip is gone with it.
+        KonceptBadge patternBadge = new KonceptBadge(patternFacade.nid(), vProperties);
+        HBox.setHgrow(patternBadge, Priority.ALWAYS);
+        patternBadgeBox.getChildren().setAll(patternBadge);
 
         // add listener for double click to summon the pattern into the journal view
         patternEntryHBox.setOnMouseClicked(mouseEvent -> {

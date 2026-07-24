@@ -16,8 +16,12 @@
          <children>
             <HBox fx:id="semanticElementHBox" styleClass="pattern-title-container" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="24.0" prefHeight="40.0" prefWidth="332.0" spacing="11.0" VBox.vgrow="NEVER">
                <children>
-                  <ImageView fx:id="identicon" fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true" />
-                  <Label fx:id="patternName" maxWidth="1.7976931348623157E308" styleClass="search-entry-text" text="Diagnostic Device Pattern" HBox.hgrow="ALWAYS" />
+                  <!-- The koncept atom fills this slot: one renderer supplies the identicon, the
+                       name, and the component-kind sigil, so a pattern row cannot show an identicon
+                       without its P (ikmdev/komet#882, #883, under the #742 appearance spec). The
+                       hand-rolled ImageView + Label that used to sit here could never carry a
+                       kind. -->
+                  <HBox fx:id="patternBadgeBox" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
                   <StackPane fx:id="dragHandleAffordance">
                      <styleClass>
                         <String fx:value="drag-handle-affordance" />
