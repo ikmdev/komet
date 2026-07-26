@@ -41,12 +41,35 @@ class KonceptDragGlyphUTestFX {
     private static final int MAX_LABEL_WIDTH = 260;
 
     @Test
+    void cornersAreOpaqueWhileDragViewAlphaIsFlattened() {
+        // INTERIM assertion (ikmdev/komet#885). With a transparent fill, the four corners were
+        // verified alpha-0 in the produced image — proving the white notches are manufactured
+        // downstream, where the drag-view-to-native conversion flattens alpha. The interim keeps
+        // the pill rounded and colour-treats the rectangle's corners (CORNER_TINT), so the image
+        // is opaque edge to edge. When #885 resolves, restore Color.TRANSPARENT as the snapshot
+        // fill and flip this test back to asserting transparent corners — the form that proves
+        // the pipeline's alpha is correct.
+        Image image = KonceptDragGlyph.image(PublicIds.newRandom(), "Chronic disease (disorder)", false);
+
+        int w = (int) image.getWidth() - 1;
+        int h = (int) image.getHeight() - 1;
+        var reader = image.getPixelReader();
+        assertTrue((reader.getArgb(0, 0) >>> 24) != 0, "top-left corner painted, no notch");
+        assertTrue((reader.getArgb(w, 0) >>> 24) != 0, "top-right corner painted, no notch");
+        assertTrue((reader.getArgb(0, h) >>> 24) != 0, "bottom-left corner painted, no notch");
+        assertTrue((reader.getArgb(w, h) >>> 24) != 0, "bottom-right corner painted, no notch");
+    }
+
+    @Test
     void singleGlyphIsBuiltAtTheFixedPillHeight() {
         Image image = KonceptDragGlyph.image(PublicIds.newRandom(), "Chronic disease (disorder)", false);
 
         assertNotNull(image, "the glyph must always build");
-        assertTrue(image.getHeight() >= 28 && image.getHeight() <= 40,
-                "fixed pill geometry: identicon(22) + symmetric padding + border, got " + image.getHeight());
+        // Pill (identicon 22 + symmetric padding + border) plus the 3px outset frame on each side
+        // (2px bevel + 1px reveal, ikmdev/komet#885 interim) — drop the frame from this window
+        // when #885 resolves.
+        assertTrue(image.getHeight() >= 36 && image.getHeight() <= 46,
+                "fixed pill geometry in the outset frame, got " + image.getHeight());
         assertTrue(image.getWidth() > ICON, "the pill is wider than the identicon alone");
     }
 
@@ -81,7 +104,53 @@ class KonceptDragGlyphUTestFX {
         // Changing the border must never break the builder (the appearance is revisable).
         KonceptDragGlyph.setBorder(Color.web("#2F5FA6"), 2.0);
         assertNotNull(KonceptDragGlyph.image(PublicIds.newRandom(), "Body mass index", false));
-        KonceptDragGlyph.setBorder(Color.web("#6E9BD1"), 1.5); // restore default subtle blue
+        // Restore the SPEC default (the shared floating border, #861) — restoring anything else
+        // would poison order-dependent parity assertions in this class.
+        network.ike.docs.konceptcore.KonceptAppearance spec =
+                network.ike.docs.konceptcore.KonceptAppearance.defaults();
+        KonceptDragGlyph.setBorder(Color.web(spec.floatingBorderHex()), spec.floatingBorderWidthPx());
+    }
+
+    @Test
+    void glyphEmbedsTheSharedAppearanceGoldenValues() {
+        // The #865 parity gate for the drag medium: the rendered image carries the spec's pill
+        // fill, floating border, and label colours — active and retired — pixel-verified.
+        network.ike.docs.konceptcore.KonceptAppearance spec =
+                network.ike.docs.konceptcore.KonceptAppearance.defaults();
+        Image active = KonceptDragGlyph.image(
+                network.ike.docs.konceptcore.KonceptKind.CONCEPT,
+                dev.ikm.komet.framework.controls.KonceptStatus.PRIMITIVE,
+                PublicIds.newRandom(), "Chronic disease (disorder)", false);
+        assertTrue(hasColorNear(active, spec.pillFillHex(), 10), "spec pill fill");
+        assertTrue(hasColorNear(active, spec.floatingBorderHex(), 20), "spec floating border");
+        assertTrue(hasColorNear(active, spec.labelColorHex(), 60), "spec label colour");
+
+        Image retired = KonceptDragGlyph.image(
+                network.ike.docs.konceptcore.KonceptKind.CONCEPT,
+                dev.ikm.komet.framework.controls.KonceptStatus.PRIMITIVE,
+                PublicIds.newRandom(), "Chronic disease (disorder)", true);
+        assertTrue(hasColorNear(retired, spec.labelColorInactiveHex(), 60),
+                "the retired label colour (#742 parity)");
+    }
+
+    private static boolean hasColorNear(Image image, String hex, int tolerance) {
+        Color target = Color.web(hex);
+        int tr = (int) Math.round(target.getRed() * 255);
+        int tg = (int) Math.round(target.getGreen() * 255);
+        int tb = (int) Math.round(target.getBlue() * 255);
+        var reader = image.getPixelReader();
+        for (int y = 0; y < (int) image.getHeight(); y++) {
+            for (int x = 0; x < (int) image.getWidth(); x++) {
+                int argb = reader.getArgb(x, y);
+                if ((argb >>> 24) > 30
+                        && Math.abs(((argb >> 16) & 0xFF) - tr) <= tolerance
+                        && Math.abs(((argb >> 8) & 0xFF) - tg) <= tolerance
+                        && Math.abs((argb & 0xFF) - tb) <= tolerance) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     // Small-caps rendering (the bundled Alegreya Sans SC family) is NOT asserted headless: Monocle's

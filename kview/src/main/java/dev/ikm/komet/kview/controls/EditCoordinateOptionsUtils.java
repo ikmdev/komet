@@ -663,7 +663,7 @@ public class EditCoordinateOptionsUtils {
 //        SortedSet<ZonedDateTime> sortedSet = new TreeSet<>(Comparator.reverseOrder());
 //        PrimitiveData.get().forEachStampNid(nid -> {
 //            long time = EntityHandle.get(nid).expectStamp().time();
-//            if (time != PREMUNDANE_TIME) {
+//            if (time != PRE_INCEPTION_TIME) {
 //                sortedSet.add(Instant.ofEpochMilli(time).atZone(ZoneOffset.systemDefault()));
 //            }
 //        });

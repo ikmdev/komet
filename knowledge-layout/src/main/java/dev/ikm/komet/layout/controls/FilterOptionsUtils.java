@@ -1,6 +1,6 @@
 package dev.ikm.komet.layout.controls;
 
-import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
+import static dev.ikm.tinkar.common.service.PrimitiveData.PRE_INCEPTION_TIME;
 import dev.ikm.komet.framework.view.ObservableCoordinate;
 import dev.ikm.komet.framework.view.ObservableLanguageCoordinate;
 import dev.ikm.komet.framework.view.ObservableNavigationCoordinate;
@@ -323,6 +323,15 @@ public class FilterOptionsUtils {
         } finally {
             fromFilter = false;
         }
+        // Coordinate-persistence diagnostic (ike-issues#945): the delta captures persist a stratum's
+        // pins only when its view answers hasOverrides() — this line names which view an Apply
+        // actually committed to and whether it now carries pins.
+        LOG.info("View Options Apply committed to {}@{}: hasOverrides={}, desc-type order={}",
+                committedNodeView.getClass().getSimpleName(), System.identityHashCode(committedNodeView),
+                committedNodeView.hasOverrides(),
+                committedNodeView.languageCoordinates().isEmpty() ? "n/a"
+                        : committedNodeView.languageCoordinates().getFirst()
+                                .descriptionTypePreferenceListProperty().getValue());
     }
 
     /// Projects the window's nodeView (its resolved coordinate — inherited values plus applied overrides) into the
@@ -417,7 +426,7 @@ public class FilterOptionsUtils {
                 return;
             }
             long time = handle.expectStamp().time();
-            if (time != PREMUNDANE_TIME) {
+            if (time != PRE_INCEPTION_TIME) {
                 sortedSet.add(Instant.ofEpochMilli(time).atZone(ZoneOffset.systemDefault()));
             }
         });

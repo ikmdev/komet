@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.view;
 
+import dev.ikm.tinkar.coordinate.language.LanguageCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinate;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import javafx.beans.property.ListProperty;
@@ -22,6 +23,9 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ObservableViewWithOverride extends ObservableViewBase {
 
@@ -112,9 +116,20 @@ public class ObservableViewWithOverride extends ObservableViewBase {
 
     @Override
     public ViewCoordinateRecord getOriginalValue() {
+        // The baseline must be PIN-FREE. Passing the live child language coordinates into
+        // ViewCoordinateRecord.make snapshots each via toLanguageCoordinateRecord() — the child's
+        // CURRENT record, pins included — so a pinned language dimension (e.g. the
+        // description-type order) leaked into the baseline, the captured delta (resolved vs
+        // baseline) computed empty for it, and setOverridesFromDelta re-pinned nothing: the pin
+        // was lost on every restore (IKE-Network/ike-issues#945). Every constituent must
+        // contribute its own getOriginalValue(), the language coordinates included.
+        List<LanguageCoordinateRecord> originalLanguageRecords = new ArrayList<>();
+        for (ObservableLanguageCoordinateBase languageCoordinate : languageCoordinates().getOriginalValue()) {
+            originalLanguageRecords.add(languageCoordinate.getOriginalValue());
+        }
         return ViewCoordinateRecord.make(
                 this.stampCoordinate().getOriginalValue(),
-                this.languageCoordinates().getOriginalValue(),
+                originalLanguageRecords,
                 this.logicCoordinate().getOriginalValue(),
                 this.navigationCoordinate().getOriginalValue(),
                 this.editCoordinate().getOriginalValue());

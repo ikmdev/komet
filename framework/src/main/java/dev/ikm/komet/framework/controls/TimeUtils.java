@@ -21,8 +21,8 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
-import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
+import static dev.ikm.tinkar.common.service.PrimitiveData.PRE_INCEPTION_TIME;
+import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PRE_INCEPTION;
 
 /**
  * @deprecated Use {@link DateTimeUtil} instead
@@ -88,11 +88,11 @@ public class TimeUtils {
      */
     @Deprecated
     public static String toDateString(long stampTime) {
-        if (!(stampTime == PREMUNDANE_TIME)) {
+        if (!(stampTime == PRE_INCEPTION_TIME)) {
             Instant stampInstance = Instant.ofEpochSecond(stampTime / 1000);
             return DATE_TIME_FORMATTER.format(stampInstance);
         } else {
-            return PREMUNDANE;
+            return PRE_INCEPTION;
         }
     }
 
@@ -104,11 +104,11 @@ public class TimeUtils {
      * @return a human-readable String
      */
     public static String toShortDateString(long stampTime) {
-        if (!(stampTime == PREMUNDANE_TIME)) {
+        if (!(stampTime == PRE_INCEPTION_TIME)) {
             Instant stampInstance = Instant.ofEpochSecond(stampTime / 1000);
             return SHORT_DATE_TIME_FORMATTER.format(stampInstance);
         } else {
-            return PREMUNDANE;
+            return PRE_INCEPTION;
         }
     }
 }

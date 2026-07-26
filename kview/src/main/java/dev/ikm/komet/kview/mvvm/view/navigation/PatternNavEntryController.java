@@ -17,7 +17,10 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
+import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import dev.ikm.komet.framework.controls.KonceptBadge;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -52,11 +55,15 @@ public class PatternNavEntryController {
     @FXML
     private VBox mainVBox;
 
-    @FXML
-    private ImageView identicon;
+    /**
+     * Ambient font size (px) the pattern row renders its koncept atom at — the row is a navigation
+     * list line, not body text, so it sizes well above the badge's inline default.
+     */
+    private static final double PATTERN_ROW_FONT_SIZE = 16;
 
+    /** Slot for the koncept atom — see {@code pattern-nav-entry.fxml}. */
     @FXML
-    private Label patternName;
+    private HBox patternBadgeBox;
 
     @FXML
     private StackPane dragHandleAffordance;
@@ -121,18 +128,29 @@ public class PatternNavEntryController {
             LOG.info("TODO: Verify if the Pattern needs to be removed. "+patternFacade.description());
         });
 
-        // set identicon
-        Image identiconImage = Identicon.generateIdenticonImage(patternFacade.publicId());
-        identicon.setImage(identiconImage);
-
         ViewProperties vProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
-        var patternNameText = ViewCalculatorUtils.retrieveDisplayName((PatternFacade)patternFacade, vProperties);
 
-        // set the pattern's name
-        patternName.setText(patternNameText);
-
-        // set the pattern name label Tooltip
-        Tooltip.install(patternName, new Tooltip(patternNameText));
+        // One koncept atom renders the row: identicon, name, and — the point of the change —
+        // the component-kind sigil, so a pattern row states that it is a pattern (ikmdev/komet#882,
+        // #883). The badge resolves all three from the nid and the view; the hand-rolled
+        // identicon + label this replaces asked for none of it, which is why no P ever appeared.
+        // It carries its own identity tooltip, so the separate name tooltip is gone with it.
+        KonceptBadge patternBadge = new KonceptBadge(patternFacade.nid(), vProperties);
+        // The pattern navigator's own name resolution, not the badge's default: a pattern with
+        // neither a regular description nor an FQN says so, where the badge alone would fall back
+        // to the raw nid and the row would read "-2147477853".
+        patternBadge.setConceptName(
+                ViewCalculatorUtils.retrieveDisplayName((PatternFacade) patternFacade, vProperties));
+        // Sized to this row rather than the badge's inline default, which is scaled for sitting
+        // beside body text and renders far too small in a navigation list.
+        patternBadge.setAmbientFontSize(PATTERN_ROW_FONT_SIZE);
+        // The pill hugs its content — sigil, identicon, name — exactly like the inline chips,
+        // instead of stretching to the row card (the badge's default max sizes are MAX_VALUE, and
+        // an HBox fills its children's height). The white card supplies the margins above and
+        // below, so a navigator row presents a koncept the same way every other surface does.
+        patternBadge.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        patternBadgeBox.setAlignment(Pos.CENTER_LEFT);
+        patternBadgeBox.getChildren().setAll(patternBadge);
 
         // add listener for double click to summon the pattern into the journal view
         patternEntryHBox.setOnMouseClicked(mouseEvent -> {

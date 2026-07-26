@@ -54,6 +54,10 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_LAST_EDIT;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_SCROLL_H;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_SCROLL_V;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_VIEW_BASELINE;
+import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_VIEW_OVERRIDE;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_COUNT;
@@ -81,6 +85,7 @@ import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.framework.tabs.DetachableTab;
 import dev.ikm.komet.framework.tabs.TabGroup;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
+import dev.ikm.komet.framework.view.ObservableViewWithOverride;
 import dev.ikm.komet.framework.view.ViewMenuTask;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
@@ -148,6 +153,7 @@ import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.uuid.UuidT5Generator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
+import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -1757,6 +1763,31 @@ public class JournalController {
         journalWindowPreferences.putDouble(JOURNAL_HEIGHT, stage.getHeight());
         journalWindowPreferences.putDouble(JOURNAL_XPOS, stage.getX());
         journalWindowPreferences.putDouble(JOURNAL_YPOS, stage.getY());
+        // The workspace's equivalent place — which region of the desktop was showing — so the
+        // journal reopens exactly where it was left (ike-issues#943).
+        journalWindowPreferences.putDouble(JOURNAL_SCROLL_H, workspace.getViewportHvalue());
+        journalWindowPreferences.putDouble(JOURNAL_SCROLL_V, workspace.getViewportVvalue());
+        // The journal's own coordinate pins persist as a delta pair — resolved coordinate plus
+        // the inherited KB baseline — the #745 card pattern lifted one stratum (ike-issues#945).
+        // No pins → drop any stale persisted pair, so a cleared pin does not resurrect.
+        if (journalViewProperties != null
+                && journalViewProperties.nodeView() instanceof ObservableViewWithOverride overrideView
+                && overrideView.hasOverrides()) {
+            LOG.info("Journal '{}' save: view {}@{} carries pins — persisting delta (#945)",
+                    getTitle(), overrideView.getClass().getSimpleName(),
+                    System.identityHashCode(overrideView));
+            journalWindowPreferences.putObject(JOURNAL_VIEW_OVERRIDE, overrideView.getValue());
+            journalWindowPreferences.putObject(JOURNAL_VIEW_BASELINE, overrideView.getOriginalValue());
+        } else {
+            LOG.info("Journal '{}' save: view {}@{} carries NO pins — no delta persisted (#945)",
+                    getTitle(),
+                    journalViewProperties == null ? "null"
+                            : journalViewProperties.nodeView().getClass().getSimpleName(),
+                    journalViewProperties == null ? 0
+                            : System.identityHashCode(journalViewProperties.nodeView()));
+            journalWindowPreferences.remove(JOURNAL_VIEW_OVERRIDE);
+            journalWindowPreferences.remove(JOURNAL_VIEW_BASELINE);
+        }
         journalWindowPreferences.put(JOURNAL_AUTHOR, DEMO_AUTHOR);
         journalWindowPreferences.putLong(JOURNAL_LAST_EDIT, (LocalDateTime.now())
                 .atZone(ZoneId.systemDefault()).toEpochSecond());
@@ -1789,6 +1820,24 @@ public class JournalController {
             if (journalPreferences == null) {
                 LOG.info("No saved windows found for journal '{}'", journalName);
                 return;
+            }
+
+            // Re-apply this journal's own coordinate pins as a DELTA against the current KB
+            // parent, before the windows restore under it (ike-issues#945): only genuinely-pinned
+            // dimensions re-pin; a journal with no pins keeps tracking the live KB view, so the
+            // #666 cascade is untouched. A pair persisted without its baseline (should not occur)
+            // falls back to the whole-value re-apply, mirroring the #745 legacy path.
+            final Optional<ViewCoordinateRecord> savedViewOverride =
+                    journalPreferences.getObject(JOURNAL_VIEW_OVERRIDE);
+            if (savedViewOverride.isPresent()
+                    && journalViewProperties.nodeView() instanceof ObservableViewWithOverride overrideView) {
+                final Optional<ViewCoordinateRecord> savedViewBaseline =
+                        journalPreferences.getObject(JOURNAL_VIEW_BASELINE);
+                if (savedViewBaseline.isPresent()) {
+                    overrideView.setOverridesFromDelta(savedViewOverride.get(), savedViewBaseline.get());
+                } else {
+                    overrideView.setOverrides(savedViewOverride.get());
+                }
             }
 
             // Looping through each window in each journal
@@ -1828,6 +1877,19 @@ public class JournalController {
                 } catch (Exception e) {
                     LOG.error("Error restoring window: {}", windowId, e);
                 }
+            }
+
+            // Return to the equivalent place: the desktop region that was showing when the
+            // journal was last saved (ike-issues#943). The desktop pane is fixed-size, so the
+            // saved h/v values are stable coordinates; deferred two pulses so the workspace
+            // skin and the freshly restored windows have joined layout.
+            final double scrollH = journalPreferences.getDouble(JOURNAL_SCROLL_H, -1);
+            final double scrollV = journalPreferences.getDouble(JOURNAL_SCROLL_V, -1);
+            if (scrollH >= 0 && scrollV >= 0) {
+                Platform.runLater(() -> Platform.runLater(() -> {
+                    workspace.setViewportHvalue(scrollH);
+                    workspace.setViewportVvalue(scrollV);
+                }));
             }
         } catch (Exception e) {
             LOG.error("Error recreating concept windows for journal '{}'", journalName, e);

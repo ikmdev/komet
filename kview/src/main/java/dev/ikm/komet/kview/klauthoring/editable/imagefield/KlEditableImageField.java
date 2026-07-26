@@ -7,6 +7,7 @@ import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.kview.controls.KLImageControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
+import javafx.scene.image.Image;
 import javafx.util.Subscription;
 
 import java.io.ByteArrayOutputStream;
@@ -113,9 +114,10 @@ public class KlEditableImageField extends BaseDefaultKlField<byte[]> {
             }
             isUpdatingProperty = true;
 
-            byte[] newByteArray = imageControl.getImage() == null
-                    ? new ByteArrayOutputStream().toByteArray()
-                    : KlFieldHelper.newByteArrayFromImage(imageControl.getImage());
+            Image controlImage = imageControl.getImage();
+            byte[] newByteArray = controlImage == null || controlImage.isError()
+                    ? new byte[0]
+                    : KlFieldHelper.newByteArrayFromImage(controlImage);
 
             fieldEditable().setValue(newByteArray);
             isUpdatingProperty = false;

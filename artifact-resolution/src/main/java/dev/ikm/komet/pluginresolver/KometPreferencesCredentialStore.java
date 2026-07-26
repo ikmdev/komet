@@ -18,6 +18,10 @@ package dev.ikm.komet.pluginresolver;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.PreferencesService;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.prefs.BackingStoreException;
@@ -40,6 +44,15 @@ public final class KometPreferencesCredentialStore implements RepositoryCredenti
     private static final String CREDENTIALS_NODE_NAME = "dev.ikm.komet.pluginresolver.repositoryCredentials";
     private static final String USERNAME_KEY = "username";
     private static final String PASSWORD_KEY = "password";
+
+    /**
+     * Longest readable prefix kept in a derived node name. {@link java.util.prefs.Preferences}
+     * caps a node name at 80 characters; this leaves room for the separator and digest below.
+     */
+    private static final int READABLE_PREFIX_LIMIT = 40;
+
+    /** Hex characters of the repository id's digest appended to every derived node name. */
+    private static final int DIGEST_LENGTH = 16;
 
     private final KometPreferences credentialsNode;
 
@@ -73,7 +86,7 @@ public final class KometPreferencesCredentialStore implements RepositoryCredenti
     @Override
     public Optional<Credentials> get(String repositoryId) {
         Objects.requireNonNull(repositoryId, "repositoryId");
-        KometPreferences repositoryNode = credentialsNode.node(repositoryId);
+        KometPreferences repositoryNode = credentialsNode.node(nodeName(repositoryId));
         Optional<String> username = repositoryNode.get(USERNAME_KEY);
         if (username.isEmpty()) {
             return Optional.empty();
@@ -94,7 +107,7 @@ public final class KometPreferencesCredentialStore implements RepositoryCredenti
     public void put(String repositoryId, Credentials credentials) {
         Objects.requireNonNull(repositoryId, "repositoryId");
         Objects.requireNonNull(credentials, "credentials");
-        KometPreferences repositoryNode = credentialsNode.node(repositoryId);
+        KometPreferences repositoryNode = credentialsNode.node(nodeName(repositoryId));
         repositoryNode.put(USERNAME_KEY, credentials.username());
         repositoryNode.putPassword(PASSWORD_KEY, credentials.password());
         try {
@@ -114,12 +127,60 @@ public final class KometPreferencesCredentialStore implements RepositoryCredenti
     @Override
     public void remove(String repositoryId) {
         Objects.requireNonNull(repositoryId, "repositoryId");
-        KometPreferences repositoryNode = credentialsNode.node(repositoryId);
+        KometPreferences repositoryNode = credentialsNode.node(nodeName(repositoryId));
         try {
             repositoryNode.removeNode();
             credentialsNode.sync();
         } catch (BackingStoreException e) {
             throw new CredentialStoreException("Failed to remove credentials for repository " + repositoryId, e);
+        }
+    }
+
+    /**
+     * Derives the preferences node name holding {@code repositoryId}'s credentials.
+     *
+     * <p>A repository id is routinely a URL — {@code https://nexus.example.org/repository/public/}
+     * — but {@link java.util.prefs.Preferences#node(String)} reads its argument as a <em>path</em>:
+     * a name containing {@code /} is interpreted as node nesting, and {@code //} is rejected
+     * outright with {@code IllegalArgumentException: Consecutive slashes in path}
+     * (ikmdev/komet#881). A node name is also capped at 80 characters. This store owns that
+     * invariant so every caller can pass whatever identifies a repository.
+     *
+     * <p>The derived name keeps a bounded, readable prefix — so a preferences browser still shows
+     * which repository a node belongs to — and appends a digest of the <em>whole</em> id. The
+     * digest is what makes the mapping injective: two ids sharing a prefix, or differing only past
+     * the truncation point (a trailing slash, a long path tail), still land on distinct nodes.
+     *
+     * @param repositoryId the repository id, in any form
+     * @return a valid, stable, single-segment preferences node name
+     */
+    static String nodeName(String repositoryId) {
+        StringBuilder readable = new StringBuilder(READABLE_PREFIX_LIMIT);
+        for (int i = 0; i < repositoryId.length() && readable.length() < READABLE_PREFIX_LIMIT; i++) {
+            char character = repositoryId.charAt(i);
+            boolean retained = (character >= 'a' && character <= 'z')
+                    || (character >= 'A' && character <= 'Z')
+                    || (character >= '0' && character <= '9')
+                    || character == '.' || character == '-' || character == '_';
+            readable.append(retained ? character : '_');
+        }
+        return readable + "_" + digest(repositoryId);
+    }
+
+    /**
+     * Hex-encodes the leading {@link #DIGEST_LENGTH} characters of {@code value}'s SHA-256 digest.
+     *
+     * @param value the value to digest
+     * @return the truncated hex digest
+     * @throws IllegalStateException if SHA-256 is unavailable, which every conformant JRE provides
+     */
+    private static String digest(String value) {
+        try {
+            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+            byte[] hash = sha256.digest(value.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(hash).substring(0, DIGEST_LENGTH);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 is required to derive a credential node name", e);
         }
     }
 }

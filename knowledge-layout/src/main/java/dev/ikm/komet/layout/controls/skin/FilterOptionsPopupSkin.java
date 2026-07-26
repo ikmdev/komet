@@ -593,7 +593,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
                 return "Latest";
             }
             if (epochMillis == Long.MIN_VALUE) {
-                return "Premundane";
+                return "Pre-inception";
             }
             return DateTimeUtil.format(epochMillis);
         } catch (NumberFormatException e) {

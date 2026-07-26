@@ -777,23 +777,11 @@ public class ClauseView {
     }
 
     private void showPopup(int conceptNid, MouseEvent mouseEvent) {
-        Optional<ObservableSemanticSnapshot> optionalAxiomSnapshot =
-                ObservableSemantic.getAxiomSnapshot(conceptNid, this.axiomView.premiseType, viewProperties().calculator());
-
-        optionalAxiomSnapshot.ifPresent(observableAxiomSnapshot -> {
-            observableAxiomSnapshot.getLatestVersion().ifPresent(observableSemanticVersion -> {
-                PopOver popover = new PopOver();
-                AxiomView axiomView = AxiomView.createWithCommitPanel(observableSemanticVersion,
-                        this.axiomView.premiseType,
-                        viewProperties());
-                popover.setContentNode(axiomView.getEditor());
-                popover.setCloseButtonEnabled(true);
-                popover.setHeaderAlwaysVisible(false);
-                popover.setTitle("");
-                popover.show(openConceptButton, mouseEvent.getScreenX(), mouseEvent.getScreenY());
-                mouseEvent.consume();
-            });
-        });
+        // Shared with every at-rest KonceptBadge's popout (ike-issues#941): one popover
+        // implementation, so the clause affordance and the badge affordance cannot drift.
+        AxiomPopover.show(conceptNid, this.axiomView.premiseType, viewProperties(),
+                openConceptButton, mouseEvent.getScreenX(), mouseEvent.getScreenY());
+        mouseEvent.consume();
     }
 
     private ViewCalculator calculator() {

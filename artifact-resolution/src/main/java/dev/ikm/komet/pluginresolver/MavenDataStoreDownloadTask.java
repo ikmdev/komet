@@ -38,6 +38,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CancellationException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -111,6 +113,16 @@ public final class MavenDataStoreDownloadTask extends TrackingCallable<Path> {
     }
 
     private static final int BUFFER_SIZE = 8192;
+
+    /**
+     * Maven's resolved-snapshot version form: a base version, the UTC deploy timestamp
+     * {@code yyyyMMdd.HHmmss}, and the build number — {@code 1.0.0-20260724.000852-12}. Group 1 is
+     * the base version, from which the {@code -SNAPSHOT} directory name is rebuilt. Anchoring the
+     * timestamp's shape keeps a date-based release version (SOLOR's {@code 20250827}) from
+     * matching.
+     */
+    private static final Pattern RESOLVED_SNAPSHOT_VERSION =
+            Pattern.compile("^(.+)-(\\d{8}\\.\\d{6})-(\\d+)$");
 
     /**
      * How much of the overall [0,1] progress bar the download phase gets when a fresh download
@@ -269,6 +281,28 @@ public final class MavenDataStoreDownloadTask extends TrackingCallable<Path> {
     public static MavenDataStoreDownloadTask localPlaceAsFileTask(Path localRepositoryCacheFile, Path destinationFile) {
         return new MavenDataStoreDownloadTask(null, Optional.empty(), localRepositoryCacheFile, Mode.PLACE_AS_FILE,
                 destinationFile, Optional.empty(), AssetVerification.NONE);
+    }
+
+    /**
+     * The version <em>directory</em> a published artifact lives under, given any concrete version.
+     *
+     * <p>Maven publishes a snapshot build under the base {@code -SNAPSHOT} directory while the
+     * filename carries the resolved timestamp: build
+     * {@code 1.0.0-20260724.000852-12} is served from {@code 1.0.0-SNAPSHOT/}. A repository search
+     * answers with the resolved build, so using that answer as the directory too requests a path
+     * that does not exist — a 404 on an artifact that is present (ikmdev/komet-desktop#116).
+     *
+     * <p>Only Maven's resolved-snapshot form {@code <base>-<yyyyMMdd.HHmmss>-<buildNumber>} is
+     * rewritten. A release — including a date-based one such as {@code 20250827} — is its own
+     * directory and is returned unchanged.
+     *
+     * @param version a concrete version: a resolved snapshot build, a {@code -SNAPSHOT}, or a release
+     * @return the version directory segment to request that version under
+     */
+    public static String directoryVersion(String version) {
+        Objects.requireNonNull(version, "version");
+        Matcher resolvedSnapshot = RESOLVED_SNAPSHOT_VERSION.matcher(version);
+        return resolvedSnapshot.matches() ? resolvedSnapshot.group(1) + "-SNAPSHOT" : version;
     }
 
     /**

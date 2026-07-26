@@ -583,6 +583,47 @@ class MavenDataStoreDownloadTaskTest {
         assertEquals(repoRoot.resolve("network/ike/komet/example-plugin/1.0.0/example-plugin-1.0.0-sa.zip"), path);
     }
 
+    // The version directory a build lives under. A repository search answers with the RESOLVED
+    // snapshot build; using that as the directory too requests a path that does not exist — the
+    // 404-on-a-present-artifact of ikmdev/komet-desktop#116.
+
+    @Test
+    void directoryVersionRewritesAResolvedSnapshotBuildToItsSnapshotDirectory() {
+        assertEquals("1.0.0-SNAPSHOT", MavenDataStoreDownloadTask.directoryVersion("1.0.0-20260714.135548-4"));
+        assertEquals("1-chronology-builder-SNAPSHOT",
+                MavenDataStoreDownloadTask.directoryVersion("1-chronology-builder-20260724.000852-12"));
+    }
+
+    @Test
+    void directoryVersionLeavesASnapshotVersionUnchanged() {
+        assertEquals("1.0.0-SNAPSHOT", MavenDataStoreDownloadTask.directoryVersion("1.0.0-SNAPSHOT"));
+    }
+
+    @Test
+    void directoryVersionLeavesAReleaseUnchanged() {
+        assertEquals("1.0.0", MavenDataStoreDownloadTask.directoryVersion("1.0.0"));
+    }
+
+    @Test
+    void directoryVersionLeavesADateBasedReleaseUnchanged() {
+        // SOLOR publishes date-based release versions; they must not read as a build timestamp.
+        assertEquals("20250827", MavenDataStoreDownloadTask.directoryVersion("20250827"));
+        assertEquals("2024-04-10+1.0.0", MavenDataStoreDownloadTask.directoryVersion("2024-04-10+1.0.0"));
+    }
+
+    @Test
+    void directoryVersionRewritesAResolvedSnapshotOfADateQualifiedVersion() {
+        // The rxnorm shape: a date-qualified base version with a resolved snapshot build appended.
+        assertEquals("2024-04-10+1.0.0-SNAPSHOT",
+                MavenDataStoreDownloadTask.directoryVersion("2024-04-10+1.0.0-20260714.140246-2"));
+    }
+
+    @Test
+    void directoryVersionIsIdempotent() {
+        String resolved = MavenDataStoreDownloadTask.directoryVersion("1.0.0-20260714.135548-4");
+        assertEquals(resolved, MavenDataStoreDownloadTask.directoryVersion(resolved));
+    }
+
     @Test
     void downloadUriForSnapshotUsesSnapshotDirectoryButResolvedFileVersion() {
         ArtifactCoordinates coordinates = new ArtifactCoordinates("network.ike.komet", "example-plugin");

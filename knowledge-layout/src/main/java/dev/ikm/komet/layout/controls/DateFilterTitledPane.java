@@ -10,7 +10,7 @@ public class DateFilterTitledPane extends FilterTitledPane {
     public enum MODE {
         LATEST,
         SINGLE_DATE,
-        PREMUNDANE,
+        PRE_INCEPTION,
         DATE_RANGE_LIST
     }
 
