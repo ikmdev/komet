@@ -229,6 +229,17 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     public void setOnKLDynamicCardAction(BiConsumer<ConceptFacade, String> consumer) { onKLDynamicCardAction.set(consumer); }
 
     /**
+     * Action to perform when the user shift + double-clicks a concept in the navigator, to open it
+     * in the KL-driven general-purpose concept window. The Consumer receives the concept that was
+     * double-clicked. A plain double-click still goes through
+     * {@link #onActionProperty()} with {@link CONTEXT_MENU_ACTION#OPEN_IN_WORKSPACE}.
+     */
+    private final ObjectProperty<Consumer<ConceptFacade>> onKLConceptWindowAction = new SimpleObjectProperty<>();
+    public Consumer<ConceptFacade> getOnKLConceptWindowAction() { return onKLConceptWindowAction.get(); }
+    public ObjectProperty<Consumer<ConceptFacade>> onKLConceptWindowActionProperty() { return onKLConceptWindowAction; }
+    public void setOnKLConceptWindowAction(Consumer<ConceptFacade> consumer) { onKLConceptWindowAction.set(consumer); }
+
+    /**
      * Action to perform when a concept cannot be displayed in this navigator, for example when a retired
      * (inactive) concept is dragged into a navigator that shows only active concepts. The BiConsumer receives
      * the {@link ConceptFacade} that could not be shown (which may be {@code null} if the concept does not exist)

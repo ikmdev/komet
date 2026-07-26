@@ -15,6 +15,7 @@ import javafx.scene.input.TransferMode;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
 
 import java.util.function.Supplier;
@@ -29,6 +30,8 @@ public class ComponentItemNode extends Region {
     private Circle circleClip;
 
     private ContextMenu contextMenu;
+
+    private StackPane dragHandleIcon;
 
     /*=========================================================================*
      *                                                                         *
@@ -137,6 +140,14 @@ public class ComponentItemNode extends Region {
         double labelWidth = Math.max(textLabel.prefWidth(-1), contentWidth);
         layoutInArea(textLabel, snappedLeftInset(), snappedTopInset(), labelWidth, contentHeight,
                 -1, HPos.LEFT, VPos.CENTER);
+        if (dragHandleIcon != null) {
+            // Overlay the drag handle inside the label's right edge, in the space reserved by the
+            // .show-drag-handle label padding.
+            double gripWidth = dragHandleIcon.prefWidth(-1);
+            double gripX = snappedLeftInset() + labelWidth - gripWidth - DRAG_HANDLE_RIGHT_INSET;
+            layoutInArea(dragHandleIcon, gripX, snappedTopInset(), gripWidth, contentHeight,
+                    -1, HPos.LEFT, VPos.CENTER);
+        }
     }
 
     /*=========================================================================*
@@ -171,6 +182,43 @@ public class ComponentItemNode extends Region {
     public ComponentItem getComponentItem() { return componentItem.get(); }
     public ObjectProperty<ComponentItem> componentItemProperty() { return componentItem; }
     public void setComponentItem(ComponentItem componentItem) { this.componentItem.set(componentItem); }
+
+    // -- show drag handle on hover
+    private static final double DRAG_HANDLE_WIDTH = 7;
+    private static final double DRAG_HANDLE_HEIGHT = 13;
+    private static final double DRAG_HANDLE_RIGHT_INSET = 6;
+
+    /**
+     * When true, hovering this node reveals a six-dot drag handle at its right edge — the same
+     * affordance {@code KLComponentControl} shows for its selected component — signalling that the
+     * component can be dragged. Off by default; purely visual, drag-and-drop works either way.
+     * The hosting control should reserve space for the handle by styling the label of the
+     * {@code .component-item.show-drag-handle} node with extra right padding.
+     */
+    private final BooleanProperty showDragHandleOnHover = new SimpleBooleanProperty(false) {
+        @Override
+        protected void invalidated() {
+            if (get()) {
+                if (dragHandleIcon == null) {
+                    dragHandleIcon = new StackPane();
+                    dragHandleIcon.getStyleClass().add("drag-handle-icon");
+                    dragHandleIcon.setPrefSize(DRAG_HANDLE_WIDTH, DRAG_HANDLE_HEIGHT);
+                    dragHandleIcon.setMinSize(DRAG_HANDLE_WIDTH, DRAG_HANDLE_HEIGHT);
+                    dragHandleIcon.setMaxSize(DRAG_HANDLE_WIDTH, DRAG_HANDLE_HEIGHT);
+                    dragHandleIcon.setManaged(false);
+                    dragHandleIcon.setMouseTransparent(true);
+                    dragHandleIcon.visibleProperty().bind(hoverProperty().and(showDragHandleOnHover));
+                    getChildren().add(dragHandleIcon);
+                }
+                getStyleClass().add("show-drag-handle");
+            } else {
+                getStyleClass().remove("show-drag-handle");
+            }
+        }
+    };
+    public boolean isShowDragHandleOnHover() { return showDragHandleOnHover.get(); }
+    public BooleanProperty showDragHandleOnHoverProperty() { return showDragHandleOnHover; }
+    public void setShowDragHandleOnHover(boolean value) { showDragHandleOnHover.set(value); }
 
     // -- drag image supplier
     private final ObjectProperty<Supplier<Image>> dragImageSupplier = new SimpleObjectProperty<>();

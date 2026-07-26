@@ -1,0 +1,132 @@
+.read-only-ditree-control .main-container .title {
+    -fx-border-width: 1px;
+    -fx-border-color: transparent;
+
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-text-fill: #5d5d5d;
+}
+
+.read-only-ditree-control .main-container {
+    -fx-spacing: 4px;
+}
+
+.read-only-ditree-control .main-container .prompt-text {
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 13px;
+}
+
+.read-only-ditree-control .ditree-container {
+    -fx-spacing: 2px;
+    -fx-padding: 2 0 0 0;
+}
+
+/* Children of a clause indent below its header, with a subtle guide line. */
+.read-only-ditree-control .ditree-children {
+    -fx-spacing: 2px;
+    -fx-padding: 2 0 2 12;
+    -fx-border-width: 0 0 0 1;
+    -fx-border-color: #E1E8F1;
+    -fx-border-insets: 0 0 0 5;
+}
+
+.read-only-ditree-control .ditree-node {
+    -fx-spacing: 2px;
+}
+
+.read-only-ditree-control .ditree-clause-header {
+    -fx-spacing: 7px;
+    -fx-padding: 3 6 3 0;
+}
+
+/* The clause accent bar keeps the historic EL++ semantics colors, as a slim 3px bar instead of a
+   border around the whole clause box. */
+.read-only-ditree-control .ditree-clause-bar {
+    -fx-min-width: 3px;
+    -fx-max-width: 3px;
+    -fx-background-radius: 2px;
+}
+.read-only-ditree-control .ditree-clause-bar.necessary-set {
+    -fx-background-color: #FF4E08;
+}
+.read-only-ditree-control .ditree-clause-bar.sufficient-set,
+.read-only-ditree-control .ditree-clause-bar.inclusion-set {
+    -fx-background-color: #5EC200;
+}
+.read-only-ditree-control .ditree-clause-bar.role-group {
+    -fx-background-color: #009BFF;
+}
+.read-only-ditree-control .ditree-clause-bar.role {
+    -fx-background-color: #FF9100;
+}
+.read-only-ditree-control .ditree-clause-bar.feature {
+    -fx-background-color: #956AFF;
+}
+
+.read-only-ditree-control .ditree-toggle {
+    -fx-text-fill: #8a97a4;
+    -fx-font-size: 10px;
+    -fx-cursor: hand;
+}
+
+.read-only-ditree-control .ditree-clause-label {
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 11px;
+    -fx-text-fill: #5a6675;
+}
+
+.read-only-ditree-control .ditree-concept-row {
+    -fx-padding: 1 0 1 0;
+}
+
+.read-only-ditree-control .ditree-role-row {
+    -fx-spacing: 5px;
+    -fx-padding: 2 6 2 0;
+}
+
+.read-only-ditree-control .ditree-op {
+    -fx-text-fill: #8a97a4;
+    -fx-font-size: 13px;
+}
+
+/* Every concept in the tree renders as a component chip: identicon + name in a white box with the
+   same geometry as the selected state of KLComponentControl, so the editable control can replace
+   it later without layout shift. */
+.read-only-ditree-control .component-item > .label {
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 13px;
+    -fx-text-fill: #2E3240;
+    -fx-graphic-text-gap: 7px;
+    -fx-cursor: hand;
+
+    -fx-background-color: white;
+    -fx-background-radius: 3px;
+    -fx-border-width: 1px;
+    -fx-border-color: #b8c1d0;
+    -fx-border-radius: 3px;
+
+    -fx-padding: 2 6 2 4;
+}
+
+.read-only-ditree-control .component-item > .label:hover {
+    -fx-background-color: #f4f4f4;
+    -fx-border-color: #dfdfdf;
+}
+
+/* Space is always reserved at the chip's right edge for the hover drag handle, so revealing it
+   does not shift the layout. */
+.read-only-ditree-control .component-item.show-drag-handle > .label {
+    -fx-padding: 2 19 2 4;
+}
+
+/* The six-dot drag handle revealed on hover — same glyph and color as KLComponentControl's. */
+.read-only-ditree-control .component-item > .drag-handle-icon {
+    -fx-background-color: #9A9DA0;
+    -fx-shape: "M0 2a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 2a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M0 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M0 16a2 2 0 1 0 4 0a2 2 0 1 0 -4 0 M7 16a2 2 0 1 0 4 0a2 2 0 1 0 -4 0";
+}
+
+/* While a chip's context menu is showing, ComponentItemNode sets the edit-mode pseudo-class on
+   itself: highlight the target chip like the other read-only component controls. */
+.read-only-ditree-control .component-item:edit-mode > .label {
+    -fx-background-color: #f4fbf0;
+    -fx-border-color: #66bb38;
+}

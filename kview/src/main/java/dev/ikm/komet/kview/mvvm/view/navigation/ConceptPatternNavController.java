@@ -18,6 +18,7 @@ import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
+import dev.ikm.komet.layout.editor.StandardEditorWindows;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternNavViewModel;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
@@ -293,6 +294,8 @@ public class ConceptPatternNavController {
         conceptNavigatorControl.setOnKLDynamicCardAction((conceptFacade, windowTitle) -> {
             journalController.newCreateDynamicComponentCardWindow(conceptFacade, windowTitle);
         });
+        conceptNavigatorControl.setOnKLConceptWindowAction(conceptFacade ->
+                journalController.newCreateStandardKLWindow(conceptFacade, StandardEditorWindows.CONCEPT_WINDOW_2));
         conceptNavigatorControl.setOnConceptNavigationFailed((conceptFacade, message) -> {
             Toast toast = JournalController.toast();
             if (toast != null) {

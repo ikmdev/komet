@@ -110,7 +110,8 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
      * <p>The default disclosure node of the {@link TreeCell} is removed, since the
      * conceptTile provides a custom one.
      * <p>A double click event on this cell is processed passing its concept to the
-     * {@link KLConceptNavigatorControl#onActionProperty()}.
+     * {@link KLConceptNavigatorControl#onActionProperty()}, while a shift + double click passes it
+     * to the {@link KLConceptNavigatorControl#onKLConceptWindowActionProperty()}.
      * @param treeView the {@link KLConceptNavigatorControl} that holds this cell
      */
     public KLConceptNavigatorTreeCell(KLConceptNavigatorControl treeView) {
@@ -130,7 +131,13 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
 
         addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2 && !isEmpty() && !isViewLineage()) {
-                if (treeView.getOnAction() != null) {
+                if (e.isShiftDown()) {
+                    // Shift + double-click opens the concept in the KL-driven general-purpose
+                    // concept window instead of the classic concept window.
+                    if (treeView.getOnKLConceptWindowAction() != null) {
+                        treeView.getOnKLConceptWindowAction().accept(getItem());
+                    }
+                } else if (treeView.getOnAction() != null) {
                     Consumer<ConceptFacade> consumer = treeView.getOnAction().apply(KLConceptNavigatorControl.CONTEXT_MENU_ACTION.OPEN_IN_WORKSPACE);
                     if (consumer != null) {
                         consumer.accept(getItem());

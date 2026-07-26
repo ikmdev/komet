@@ -1991,13 +1991,24 @@ public class JournalController {
      * @param windowTitle the title of the standard window (e.g. {@link StandardEditorWindows#CONCEPT_WINDOW_2})
      */
     private void newCreateStandardKLWindow(String windowTitle) {
+        newCreateStandardKLWindow(null, windowTitle);
+    }
+
+    /**
+     * Opens the named standard (application-provided) KL window for the given entity, seeding the
+     * standard window definitions first so the named definition exists on disk.
+     *
+     * @param entityFacade the entity the window is about, or {@code null} to open in create mode
+     * @param windowTitle  the title of the standard window (e.g. {@link StandardEditorWindows#CONCEPT_WINDOW_2})
+     */
+    public void newCreateStandardKLWindow(EntityFacade entityFacade, String windowTitle) {
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         final KometPreferences standardWindowsPreferences =
                 appPreferences.node(KL_EDITOR_APP).node(KL_STANDARD_WINDOWS_DIR);
 
         StandardEditorWindows.ensureStandardWindows(standardWindowsPreferences, journalViewProperties.calculator());
 
-        createGenPurposeKLWindow(null, standardWindowsPreferences.node(windowTitle));
+        createGenPurposeKLWindow(entityFacade, standardWindowsPreferences.node(windowTitle));
     }
 
     public void newCreateGenPurposeKLWindow(EntityFacade entityFacade, String windowTitle) {

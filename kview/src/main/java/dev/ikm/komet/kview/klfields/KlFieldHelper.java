@@ -50,6 +50,7 @@ import dev.ikm.komet.kview.klauthoring.readonly.booleanfield.KlReadOnlyBooleanFi
 import dev.ikm.komet.kview.klauthoring.readonly.componentfield.KlReadOnlyComponentFieldFactory;
 import dev.ikm.komet.kview.klauthoring.readonly.componentlistfield.KlReadOnlyComponentListFieldFactory;
 import dev.ikm.komet.kview.klauthoring.readonly.componentsetfield.KlReadOnlyComponentSetFieldFactory;
+import dev.ikm.komet.kview.klauthoring.readonly.ditreefield.KlReadOnlyDiTreeFieldFactory;
 import dev.ikm.komet.kview.klauthoring.readonly.floatfield.KlReadOnlyFloatFieldFactory;
 import dev.ikm.komet.kview.klauthoring.readonly.imagefield.KlReadOnlyImageFieldFactory;
 import dev.ikm.komet.kview.klauthoring.readonly.integerfield.KlReadOnlyIntegerFieldFactory;
@@ -235,6 +236,10 @@ public class KlFieldHelper {
             //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
             //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
             factory = new KlReadOnlyImageFieldFactory();
+        } else if (dataTypeNid == DITREE_FIELD.nid()) {
+            // Logical definitions (e.g. the EL++ stated/inferred terminological axiom patterns)
+            // render as an axiom tree of component chips instead of the read-only string fallback.
+            factory = new KlReadOnlyDiTreeFieldFactory();
         } else {
             // This fixes the exceptions the user experiences when a semantic (GenEditWindow) is summoned. The exception
             // happens when a datatype field that doesn't have a JavaFX custom control created yet.
@@ -286,6 +291,10 @@ public class KlFieldHelper {
             factory = new KlEditableImageFieldFactory();
         } else if (dataTypeNid == STRING_FIELD.nid() || dataTypeNid == STRING.nid()) {
             factory = new KlEditableStringFieldFactory();
+        } else if (dataTypeNid == DITREE_FIELD.nid()) {
+            // Axiom editing is not supported yet: show the same read-only axiom tree in edit mode
+            // (the factory's Editable overload returns the read-only field).
+            factory = new KlReadOnlyDiTreeFieldFactory();
         } else {
             // This fixes the exceptions the user experiences when a semantic (GenEditWindow) is summoned. The exception
             // happens when a datatype field that doesn't have a JavaFX custom control created yet.
