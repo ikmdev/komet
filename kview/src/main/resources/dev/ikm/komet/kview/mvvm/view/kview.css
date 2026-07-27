@@ -6697,6 +6697,10 @@ Styling a context menu for kview ui/ux controls
 .gen-purpose-window .section-titled-pane .section-titled-pane-container {
     /* 12px sides = the shared content gutter (same inset as the banner title / Komet ID) */
     -fx-padding: 8px 12px 8px 12px;
+
+    /* Gaps between patterns laid out in this Section's grid */
+    -fx-hgap: 10px;
+    -fx-vgap: 0px;
 }
 
 /* Section header: a smaller, muted expand/collapse chevron, kept off the window edge,

@@ -24,8 +24,6 @@ public class PatternStandardEditorControl extends PatternEditorControlBase {
         fields.addListener(this::onFieldsChanged);
 
         gridPane.numberColumnsProperty().bind(numberColumns);
-        gridPane.setHgap(5);
-        gridPane.setVgap(0);
         gridPane.setOnShouldDragAndDropRearrange(gridBaseControl -> gridBaseControl instanceof FieldViewControl);
 
         setContent(gridPane);
