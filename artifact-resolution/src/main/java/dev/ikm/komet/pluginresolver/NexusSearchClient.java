@@ -469,7 +469,7 @@ public final class NexusSearchClient {
     /**
      * Every published version of one exact groupId:artifactId that carries at least one of
      * {@code classifierCandidates} as a {@code .zip} — i.e. every version that actually has a
-     * downloadable variant for the flow being browsed, newest last. This is what the version
+     * downloadable variant for the flow being browsed. This is what the version
      * picker should offer: a version with no compatible classified zip (SOLOR's POM-only
      * {@code 1.0.0-SNAPSHOT}, a version whose only variant is a {@code .xml}, etc.) must never be
      * presented, since selecting it can only dead-end (per IKE-Network/ike-issues#882: don't
@@ -477,16 +477,19 @@ public final class NexusSearchClient {
      *
      * <p>Derived from the live asset index via the {@code maven.classifier} filter (one request
      * per candidate classifier, run concurrently) — <em>not</em> from {@code maven-metadata.xml},
-     * whose version list can be incomplete or list versions that publish no usable asset. Ordered
-     * by each version's newest matching asset's own resolved version, ascending, so the most
-     * recent sorts last (matching the picker's "select the last" default). Distinct.
+     * whose version list can be incomplete or list versions that publish no usable asset.
+     * Distinct, ordered lexicographically ascending. Within one version line that puts the most
+     * recent last, but resolved builds of <em>different</em> {@code -SNAPSHOT} lines interleave
+     * alphabetically ({@code 1-chronology-builder-20260724.000852-12} sorts after
+     * {@code 1-20260727.032644-5}) — a caller wanting "most recent" must compare the embedded
+     * snapshot stamps rather than trust list position (ikmdev/komet-desktop#121).
      *
      * @param httpClient the HTTP client to search with
      * @param repositoryBaseUrl the configured repository URL
      * @param coordinates the exact groupId:artifactId
      * @param classifierCandidates the classifiers a version must publish at least one of
      * @param credentials the credentials to authenticate with, or {@code null} for none
-     * @return the distinct compatible versions, newest last; empty if none
+     * @return the distinct compatible versions, lexicographically ascending; empty if none
      * @throws IOException if {@code repositoryBaseUrl} isn't a Nexus repository URL, any request
      *         fails, or a response isn't the expected shape
      * @throws InterruptedException if a request is interrupted
