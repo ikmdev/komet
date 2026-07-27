@@ -62,6 +62,13 @@ class KonceptAppearanceMirrorTest {
     }
 
     @Test
+    void kometCssMirrorsTheGlyphFamily() throws IOException {
+        assertTrue(komet_css().contains(
+                        "-fx-font-family: \"" + KonceptAppearance.defaults().glyphFamilyName() + "\";"),
+                ".koncept-status family mirrors the spec's bundled glyph face (ike-issues#953)");
+    }
+
+    @Test
     void kometCssMirrorsTheStatusVocabulary() throws IOException {
         String css = komet_css();
         assertTrue(css.contains(KonceptStatus.DEFINED.core().colorHex()),

@@ -44,6 +44,17 @@ public class LoadFonts {
         // is non-standard, so JavaFX registers it under family "Alegreya Sans SC Medium".
         loadFont("AlegreyaSansSC-Regular.ttf");
         loadFont("AlegreyaSansSC-Medium.ttf");
+        // IKE Koncept Glyphs — the spec-owned symbol face (ike-issues#953), streamed from the
+        // koncept-core jar so every consumer loads the one file: no bundled text family covers
+        // the Koncept symbols, and OS fallback answers differ per base font and platform (Apple
+        // SD Gothic Neo draws the ⋎ fork upside-down). KonceptGlyphFonts resolves the family.
+        try (InputStream in = network.ike.docs.konceptcore.KonceptAppearance.glyphFont()) {
+            if (in != null) {
+                Font.loadFont(in, 10);
+            }
+        } catch (IOException e) {
+            // A missing or unreadable bundled font must never break startup; the UI falls back.
+        }
         return true;
     }
 

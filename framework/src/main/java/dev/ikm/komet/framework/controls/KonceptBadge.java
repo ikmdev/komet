@@ -24,6 +24,7 @@ import dev.ikm.komet.framework.panel.axiom.AxiomPopover;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
 import dev.ikm.komet.framework.dnd.KonceptDragSource;
+import dev.ikm.komet.framework.graphics.KonceptGlyphFonts;
 import dev.ikm.komet.framework.graphics.SmallCapsFonts;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdList;
@@ -121,6 +122,12 @@ public class KonceptBadge extends HBox {
      * (pentagonBox 20 over identiconSize 32).
      */
     private static final double PENTAGON_TO_ICON = 20.0 / 32.0;
+
+    /**
+     * Status-cluster size as a fraction of the name font — the komet.css normative ratio
+     * ({@code .koncept-status} 10px against the badge's 12px name).
+     */
+    private static final double STATUS_TO_NAME = 10.0 / 12.0;
 
     /**
      * Name font size (px) in the true small-caps family. Slightly larger than the fallback because
@@ -402,9 +409,30 @@ public class KonceptBadge extends HBox {
                         StyleClasses.KONCEPT_MULTIPARENT.toString());
                 statusBox.getChildren().add(fork);
             }
+            applyStatusFont();
             // The non-colour, non-glyph accessibility channel (ike-issues#861): the cluster is
             // always visible; the tooltip only explains it — parity with the adoc renderer's title.
             Tooltip.install(statusBox, new Tooltip(this.status.accessibleText()));
+        }
+    }
+
+    /**
+     * Applies the bundled glyph face to the status cluster's texts (ike-issues#953): a
+     * programmatic font, so a host no stylesheet reaches (the standalone chip, an off-stage
+     * snapshot) never resolves the cluster through OS font fallback. Where komet.css does reach
+     * the badge, its {@code .koncept-status} rule restates the same family at its fixed 10px and
+     * wins, so the two renderings agree by construction ({@code KonceptAppearanceMirrorTest}).
+     */
+    private void applyStatusFont() {
+        double size = nameNode.textNode().getFont().getSize() * STATUS_TO_NAME;
+        String glyphFamily = KonceptGlyphFonts.family();
+        Font statusFont = glyphFamily != null
+                ? Font.font(glyphFamily, size)
+                : Font.font(size);
+        for (Node child : statusBox.getChildren()) {
+            if (child instanceof Text text) {
+                text.setFont(statusFont);
+            }
         }
     }
 
@@ -617,6 +645,9 @@ public class KonceptBadge extends HBox {
         this.letterSigilSize = nameSize * SIGIL_TO_NAME;
         this.stampSigilSize = iconSize * PENTAGON_TO_ICON;
         setKind(this.kind);
+        // The status cluster follows the rescaled name in a stylesheet-free host (#953); under
+        // komet.css the .koncept-status rule keeps governing.
+        applyStatusFont();
     }
 
     /**

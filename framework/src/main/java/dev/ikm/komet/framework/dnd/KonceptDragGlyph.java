@@ -54,6 +54,7 @@ import dev.ikm.komet.framework.controls.KonceptBadge;
 import dev.ikm.komet.framework.controls.KonceptKindResolver;
 import dev.ikm.komet.framework.controls.KonceptSigils;
 import dev.ikm.komet.framework.controls.KonceptStatus;
+import dev.ikm.komet.framework.graphics.KonceptGlyphFonts;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import network.ike.docs.konceptcore.KonceptKind;
 
@@ -583,13 +584,21 @@ public final class KonceptDragGlyph {
      * set inline, exactly as the adoc renderer does.
      */
     private static HBox statusCluster(KonceptStatus status) {
+        // The bundled glyph face (ike-issues#953): this snapshot scene has no stylesheet, so the
+        // family is set in code — the cluster must never resolve through OS font fallback, whose
+        // answer differs per base font and platform (the ⋎ fork drew upside-down via Apple SD
+        // Gothic Neo). Absent the face, the default family's fallback keeps the glyph alive.
+        String glyphFamily = KonceptGlyphFonts.family();
+        Font statusFont = glyphFamily != null
+                ? Font.font(glyphFamily, STATUS_FONT)
+                : Font.font(STATUS_FONT);
         Text copula = new Text(status.glyph());
-        copula.setFont(Font.font(STATUS_FONT));
+        copula.setFont(statusFont);
         copula.setFill(Color.web(status.core().colorHex()));
         HBox cluster = new HBox(copula);
         if (status.isMultiParent()) {
             Text fork = new Text(KonceptStatus.MULTI_PARENT_GLYPH);
-            fork.setFont(Font.font(STATUS_FONT));
+            fork.setFont(statusFont);
             fork.setFill(Color.web(
                     network.ike.docs.konceptcore.KonceptStatus.MULTI_PARENT_COLOR_HEX));
             cluster.getChildren().add(fork);

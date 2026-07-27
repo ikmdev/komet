@@ -1410,8 +1410,13 @@ modena.css is the default css.
 /* Koncept logical-status cluster. The colour values MIRROR the single-sourced vocabulary in
    koncept-core's KonceptStatus (ike-issues#742 amendment / #861) — change them there first;
    these rules restate the hexes because CSS cannot read the enum. Stylesheet-free renderers
-   (the drag glyph snapshot, adoc, PNG) read the enum directly. */
+   (the drag glyph snapshot, adoc, PNG) read the enum directly.
+   The family MIRRORS KonceptAppearance.glyphFamilyName() (ike-issues#953): the bundled
+   IKE Koncept Glyphs face LoadFonts registers, so the cluster never resolves through OS
+   font fallback (which draws the ⋎ fork upside-down via Apple SD Gothic Neo on macOS).
+   KonceptAppearanceMirrorTest fails the build on drift. */
 .koncept-status {
+    -fx-font-family: "IKE Koncept Glyphs";
     -fx-font-size: 10px;
 }
 
