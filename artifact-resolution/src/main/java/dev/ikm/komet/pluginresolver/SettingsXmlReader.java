@@ -36,8 +36,8 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Structural-only reader for a Maven {@code settings.xml} file: mirrors, repositories, and
- * server credentials whose password is stored in plain text.
+ * Structural-only reader for a Maven {@code settings.xml} file: mirrors, repositories,
+ * proxies, and server credentials whose password is stored in plain text.
  *
  * <p>Deliberately does <strong>not</strong> decrypt server passwords wrapped in Maven's
  * {@code {...}} encrypted-value marker — doing so would require depending on whichever
@@ -84,6 +84,26 @@ public final class SettingsXmlReader {
     }
 
     /**
+     * A {@code <proxy>} entry. Absent optional elements take Maven's own defaults:
+     * {@code active} true, {@code protocol} {@code "http"}, {@code port} 8080.
+     * {@code plaintextPassword} is {@code null} when the entry has no password, or when its
+     * password is Maven-encrypted (see class Javadoc).
+     *
+     * @param id the proxy id, or {@code null} if absent
+     * @param active whether the proxy is declared active
+     * @param protocol the proxy's own protocol (e.g. {@code "http"})
+     * @param host the proxy host, or {@code null} if absent
+     * @param port the proxy port
+     * @param username the username, or {@code null} if absent
+     * @param plaintextPassword the password, or {@code null} if absent or encrypted
+     * @param nonProxyHosts the {@code |}-separated direct-connection host patterns, or
+     *         {@code null} if absent
+     */
+    public record Proxy(String id, boolean active, String protocol, String host, int port,
+                        String username, String plaintextPassword, String nonProxyHosts) {
+    }
+
+    /**
      * The structural contents of a {@code settings.xml} file.
      *
      * @param localRepository the {@code <localRepository>} override, if present
@@ -91,9 +111,11 @@ public final class SettingsXmlReader {
      * @param repositories all {@code <repository>} entries from the top level and from
      *         active profiles (default-active, or listed in {@code <activeProfiles>})
      * @param servers all {@code <server>} entries
+     * @param proxies all {@code <proxy>} entries
      */
     public record Settings(Optional<Path> localRepository, List<Mirror> mirrors,
-                            List<RemoteRepositoryDescriptor> repositories, List<ServerCredential> servers) {
+                            List<RemoteRepositoryDescriptor> repositories, List<ServerCredential> servers,
+                            List<Proxy> proxies) {
     }
 
     /**
@@ -113,8 +135,9 @@ public final class SettingsXmlReader {
         List<Mirror> mirrors = readMirrors(root);
         List<ServerCredential> servers = readServers(root);
         List<RemoteRepositoryDescriptor> repositories = readActiveRepositories(root);
+        List<Proxy> proxies = readProxies(root);
 
-        return new Settings(localRepository, mirrors, repositories, servers);
+        return new Settings(localRepository, mirrors, repositories, servers, proxies);
     }
 
     private static Document parse(Path settingsXmlPath) throws IOException {
@@ -155,6 +178,31 @@ public final class SettingsXmlReader {
             servers.add(new ServerCredential(id, username, isEncrypted(password) ? null : password));
         }
         return List.copyOf(servers);
+    }
+
+    private static List<Proxy> readProxies(Element root) {
+        List<Proxy> proxies = new ArrayList<>();
+        for (Element proxy : childElements(firstChildElement(root, "proxies"), "proxy")) {
+            String password = firstChildText(proxy, "password").orElse(null);
+            proxies.add(new Proxy(
+                    firstChildText(proxy, "id").orElse(null),
+                    firstChildText(proxy, "active").map(Boolean::parseBoolean).orElse(true),
+                    firstChildText(proxy, "protocol").orElse("http"),
+                    firstChildText(proxy, "host").orElse(null),
+                    firstChildText(proxy, "port").flatMap(SettingsXmlReader::parsePort).orElse(8080),
+                    firstChildText(proxy, "username").orElse(null),
+                    isEncrypted(password) ? null : password,
+                    firstChildText(proxy, "nonProxyHosts").orElse(null)));
+        }
+        return List.copyOf(proxies);
+    }
+
+    private static Optional<Integer> parsePort(String text) {
+        try {
+            return Optional.of(Integer.parseInt(text.trim()));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
     }
 
     private static boolean isEncrypted(String password) {

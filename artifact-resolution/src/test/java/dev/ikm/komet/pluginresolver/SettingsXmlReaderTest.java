@@ -101,6 +101,44 @@ class SettingsXmlReaderTest {
         assertTrue(settings.mirrors().isEmpty());
         assertTrue(settings.servers().isEmpty());
         assertTrue(settings.repositories().isEmpty());
+        assertTrue(settings.proxies().isEmpty());
+    }
+
+    @Test
+    void parsesProxiesWithMavenDefaultsAndEncryptedPasswordHandling(@TempDir Path dir) throws IOException {
+        Path settingsXml = writeSettings(dir, """
+                <settings>
+                    <proxies>
+                        <proxy>
+                            <id>bare-defaults</id>
+                            <host>proxy.example.com</host>
+                        </proxy>
+                        <proxy>
+                            <id>full</id>
+                            <active>false</active>
+                            <protocol>https</protocol>
+                            <host>other-proxy.example.com</host>
+                            <port>3128</port>
+                            <username>proxy-user</username>
+                            <password>{COQLCE6DU6GtcS5P=}</password>
+                            <nonProxyHosts>localhost|*.internal</nonProxyHosts>
+                        </proxy>
+                    </proxies>
+                </settings>
+                """);
+
+        SettingsXmlReader.Settings settings = SettingsXmlReader.read(settingsXml);
+
+        assertEquals(2, settings.proxies().size());
+        SettingsXmlReader.Proxy bareDefaults = settings.proxies().getFirst();
+        assertTrue(bareDefaults.active(), "active defaults to true");
+        assertEquals("http", bareDefaults.protocol());
+        assertEquals(8080, bareDefaults.port());
+        assertNull(bareDefaults.nonProxyHosts());
+
+        SettingsXmlReader.Proxy full = settings.proxies().getLast();
+        assertEquals(new SettingsXmlReader.Proxy("full", false, "https", "other-proxy.example.com", 3128,
+                "proxy-user", null, "localhost|*.internal"), full);
     }
 
     @Test
