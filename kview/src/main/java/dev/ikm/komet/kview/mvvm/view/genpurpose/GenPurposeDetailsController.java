@@ -99,6 +99,7 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import dev.ikm.komet.layout_engine.host.SupplementalAreaRenderer;
@@ -131,6 +132,13 @@ public class GenPurposeDetailsController {
      * Drives the "ghost window" styling in kview.css (dimmed blue chrome, dashed frame, dimmed STAMP).
      */
     private static final PseudoClass CREATE_MODE = PseudoClass.getPseudoClass("create-mode");
+
+    /**
+     * Active while the window "has focus": the mouse was pressed inside it or any of its controls
+     * holds keyboard focus. Drives the enlarged drop shadow in kview.css that makes the window
+     * read as sitting closer to the screen.
+     */
+    private static final PseudoClass WINDOW_FOCUSED = PseudoClass.getPseudoClass("window-focused");
 
     /**
      * Given a Pattern what is the Section that has it as its Reference Component.
@@ -282,6 +290,20 @@ public class GenPurposeDetailsController {
         // Setup window support with explicit draggable nodes. The toolbar's own title tab is
         // part of the toolbar control, so it drags the window through the toolbar handle.
         addDraggableNodes(detailsOuterBorderPane, windowControlToolbar);
+
+        // Window focus shadow: the window counts as focused while keyboard focus is anywhere
+        // inside it (focus-within). A mouse press anywhere in the window routes focus to the
+        // window root first — the filter runs before the pressed control claims focus for
+        // itself — so clicking non-focusable areas also focuses the window. Focus moving into
+        // another window clears it. Drives :window-focused in kview.css.
+        detailsOuterBorderPane.focusWithinProperty().subscribe(() ->
+                detailsOuterBorderPane.pseudoClassStateChanged(WINDOW_FOCUSED,
+                        detailsOuterBorderPane.isFocusWithin()));
+        detailsOuterBorderPane.addEventFilter(MouseEvent.MOUSE_PRESSED, _ -> {
+            if (!detailsOuterBorderPane.isFocusWithin()) {
+                detailsOuterBorderPane.requestFocus();
+            }
+        });
 
         // if the user clicks the Close Properties Button from the Edit Descriptions panel
         // in that state, the properties bump out will be slid out, therefore toggling will perform a slide in

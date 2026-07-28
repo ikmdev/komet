@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.klwindows.genpurpose;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
+import dev.ikm.komet.kview.klwindows.EntityKlWindowState;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.kview.mvvm.view.concept.ConceptNode;
@@ -19,6 +20,8 @@ import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.carlfx.cognitive.viewmodel.ViewModel;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.Optional;
@@ -32,7 +35,25 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.PATTERN;
 
 public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
+
+    /** Preference key holding the title of the KL-editor window definition this window realizes. */
+    public static final String KL_EDITOR_WINDOW_TITLE = "KL_EDITOR_WINDOW_TITLE";
+
+    /**
+     * Preference key holding the kl-editor-app folder the definition lives in:
+     * {@code user-windows} or {@code standard-windows}.
+     */
+    public static final String KL_EDITOR_WINDOW_DIR = "KL_EDITOR_WINDOW_DIR";
+
     private final JFXNode<Pane, GenPurposeDetailsController> jfxNode;
+
+    /**
+     * The {@code kl-editor-app/{user,standard}-windows/<title>} node of the KL-editor window
+     * definition this window realizes, wired in by {@link #initKLWindowPreferences}. Persisted by
+     * {@link #captureAdditionalState} so the definition can be re-resolved and re-initialized when
+     * the journal is reopened (komet-desktop#20).
+     */
+    private KometPreferences klEditorWindowPreferences;
 
     /**
      * Constructs a new {@code ConceptKlWindow}.
@@ -85,6 +106,7 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
     }
 
     public void initKLWindowPreferences(KometPreferences klWindowPreferences, ViewProperties viewProperties) {
+        this.klEditorWindowPreferences = klWindowPreferences;
         // Initialize the controller with the window's derived coordinate (#660), not the raw arg.
         jfxNode.controller().init(klWindowPreferences, getViewProperties());
     }
@@ -101,6 +123,18 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
     @Override
     public EntityKlWindowType getWindowType() {
         return EntityKlWindowTypes.GEN_PURPOSE_KL;
+    }
+
+    @Override
+    protected void captureAdditionalState(EntityKlWindowState state) {
+        super.captureAdditionalState(state);
+        // Persist which KL-editor window definition this window realizes (title + folder), so the
+        // factory can re-resolve and re-initialize it on restore (komet-desktop#20).
+        if (klEditorWindowPreferences != null) {
+            Path path = Paths.get(klEditorWindowPreferences.absolutePath());
+            state.addProperty(KL_EDITOR_WINDOW_TITLE, path.getFileName().toString());
+            state.addProperty(KL_EDITOR_WINDOW_DIR, path.getParent().getFileName().toString());
+        }
     }
 
     @Override

@@ -74,6 +74,7 @@ import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
+import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.events.Evt;
@@ -134,6 +135,10 @@ import java.util.regex.*;
 public class LandingPageController implements BasicController {
 
     private static final Logger LOG = LoggerFactory.getLogger(LandingPageController.class);
+
+    /** Preference key (on the {@code main-komet-window} node) holding the persisted KB working
+     *  view — the landing page's effective coordinate, restored whole-value at init (#945). */
+    private static final String KB_WORKING_VIEW_KEY = "landingPage.kbWorkingView";
     @FXML
     private SplitPane homePage;
 
@@ -354,6 +359,12 @@ public class LandingPageController implements BasicController {
         viewCoordinates = windowSettings.getView();
 
         viewCoordinatesForFilterOptionsPopup = new ObservableViewNoOverride(viewCoordinates);
+        // The KB working view is the ROOT coordinate stratum — there is no parent to keep
+        // tracking, so it restores whole-value: the landing comes back exactly as it was left
+        // (ike-issues#945). Absent a persisted value, the WindowSettings seed above stands.
+        final Optional<ViewCoordinateRecord> persistedKbView = windowPreferences.getObject(KB_WORKING_VIEW_KEY);
+        persistedKbView.ifPresent(record -> viewCoordinatesForFilterOptionsPopup.setValue(record));
+
         ViewProperties landingViewProperties = viewCoordinatesForFilterOptionsPopup.makeOverridableViewProperties("LandingController.filterOptionsPopup");
 
         // Hand journals a live child basis: a NoOverride that mirrors the landing's EFFECTIVE view, so a
@@ -362,6 +373,18 @@ public class LandingPageController implements BasicController {
                 landingViewProperties.nodeView().toViewCoordinateRecord(), "Journal parent view");
         landingViewProperties.nodeView().addListener(
                 (obs, oldView, newView) -> journalParentCoordinates.setValue(newView));
+
+        // Write-through persistence (ike-issues#945): every change to the landing's effective
+        // view persists immediately — coordinate edits are rare user actions, and writing at the
+        // moment of change means the KB view's memory never depends on shutdown ordering (#944).
+        landingViewProperties.nodeView().addListener((obs, oldView, newView) -> {
+            windowPreferences.putObject(KB_WORKING_VIEW_KEY, newView);
+            try {
+                windowPreferences.flush();
+            } catch (BackingStoreException e) {
+                LOG.warn("Could not persist the KB working view", e);
+            }
+        });
 
         // One shared View Options control everywhere (ike-issues#681): the landing page differs only in its
         // navigator (graph) and anchor (to the side of the toggle button); commit-on-Apply and the rest come from

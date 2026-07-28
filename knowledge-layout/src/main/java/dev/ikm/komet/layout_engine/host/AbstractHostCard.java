@@ -899,9 +899,15 @@ public abstract class AbstractHostCard extends CardBlueprint {
      */
     private void captureViewOverride() {
         if (cardView instanceof ObservableViewWithOverride overrideView && overrideView.hasOverrides()) {
+            LOG.info("Card '{}' save: view {}@{} carries pins — capturing delta (#745)",
+                    cardTitle(), overrideView.getClass().getSimpleName(),
+                    System.identityHashCode(overrideView));
             this.pendingViewOverride = overrideView.getValue();
             this.pendingViewBaseline = overrideView.getOriginalValue();
         } else if (cardView != null) {
+            LOG.info("Card '{}' save: view {}@{} carries NO pins — no delta captured (#745)",
+                    cardTitle(), cardView.getClass().getSimpleName(),
+                    System.identityHashCode(cardView));
             this.pendingViewOverride = null;
             this.pendingViewBaseline = null;
         }

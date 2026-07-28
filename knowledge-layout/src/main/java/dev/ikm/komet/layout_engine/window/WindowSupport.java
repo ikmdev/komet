@@ -45,6 +45,7 @@ import static dev.ikm.komet.layout_engine.window.CursorMappings.getDirection;
 import static dev.ikm.komet.layout_engine.window.CursorMappings.handleResize;
 import static dev.ikm.komet.layout_engine.window.SubscriptionUtils.createConsumerSubscription;
 import static dev.ikm.komet.layout_engine.window.SubscriptionUtils.createContextEventSubscription;
+import static dev.ikm.komet.layout_engine.window.SubscriptionUtils.createFilterSubscription;
 import static dev.ikm.komet.layout_engine.window.SubscriptionUtils.createListSubscription;
 import static dev.ikm.komet.layout_engine.window.SubscriptionUtils.createMultiPropertySubscription;
 import static dev.ikm.komet.layout_engine.window.SubscriptionUtils.createPropertySubscription;
@@ -337,7 +338,12 @@ public class WindowSupport {
      */
     private Subscription createWindowBaseSubscriptions() {
         return Subscription.combine(
-                createConsumerSubscription(pane, MouseEvent.MOUSE_PRESSED, _ -> pane.toFront()),
+                // Bring-to-front must be a filter (capturing phase): most controls inside a
+                // window consume MOUSE_PRESSED for their own semantics (text fields, cells,
+                // titled-pane titles, ...), so a bubbling handler on the pane never fires when
+                // one of them is clicked. Windows whose bodies are dense with such controls
+                // (e.g. the gen-purpose window) would then never come to the front.
+                createFilterSubscription(pane, MouseEvent.MOUSE_PRESSED, _ -> pane.toFront()),
                 createConsumerSubscription(pane, MouseEvent.MOUSE_ENTERED, _ -> {
                     if (highlightEnabled) {
                         outlineRect.setStroke(HIGHLIGHT_COLOR);

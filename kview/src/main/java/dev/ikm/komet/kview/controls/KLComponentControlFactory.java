@@ -9,9 +9,6 @@ import dev.ikm.tinkar.coordinate.navigation.calculator.NavigationCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityHandle;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
-import dev.ikm.tinkar.provider.search.Searcher;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
@@ -139,8 +136,10 @@ public class KLComponentControlFactory {
             } else {
                 try {
                     ImmutableList<LatestVersionSearchResult> inlineResults = navigationCalculator.search(newSearchText, MAX_INLINE_SEARCH_RESULTS);
-                    inlineResults.forEach(latestVersionSearchResult ->
-                            latestVersionSearchResult.latestVersion().ifPresent(matchedSemantic ->
+                    inlineResults
+                            .toSortedList((o1, o2) -> Float.compare(o2.score(), o1.score()))
+                            .forEach(latestVersionSearchResult ->
+                                    latestVersionSearchResult.latestVersion().ifPresent(matchedSemantic ->
                                     EntityHandle.get(matchedSemantic.referencedComponentNid())
                                             .ifPresent(entity -> entityProxyResults.add(entity.toProxy()))));
 
@@ -148,21 +147,20 @@ public class KLComponentControlFactory {
                     throw new RuntimeException(e);
                 }
             }
-            return entityProxyResults;
+            return entityProxyResults.stream().distinct().toList();
         };
     }
 
     private static Function<EntityProxy, String> createComponentNameRenderer(ViewCalculator viewCalculator) {
         return (entityProxy) ->
-            viewCalculator.languageCalculator()
-                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
+            viewCalculator.languageCalculator().getDescriptionTextOrNid(entityProxy.nid());
     }
 
     private static StringConverter<EntityProxy> createStringToEntityProxyConverter(NavigationCalculator navigationCalculator) {
         return new StringConverter<>() {
             @Override
             public String toString(EntityProxy conceptFacade) {
-                return navigationCalculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(conceptFacade.nid());
+                return navigationCalculator.getDescriptionTextOrNid(conceptFacade.nid());
             }
 
             @Override

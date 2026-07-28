@@ -19,6 +19,7 @@ import dev.ikm.komet.kview.controls.skin.KLWorkspaceSkin;
 import dev.ikm.komet.kview.klwindows.ChapterKlWindow;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -158,6 +159,75 @@ public class KLWorkspace extends Control {
 
     private void initialize() {
         getStyleClass().add(DEFAULT_STYLE_CLASS);
+    }
+
+    // -----------------------------------------------------------------------------------------
+    // Desktop viewport scroll (ike-issues#943)
+    // -----------------------------------------------------------------------------------------
+
+    /**
+     * The horizontal scroll position of the desktop viewport, in {@code ScrollPane} hvalue
+     * coordinates [0, 1]. The skin binds this bidirectionally to its desktop scroll pane, so a
+     * host can persist which region of the desktop was showing and restore the workspace to its
+     * equivalent place on reopen (ike-issues#943).
+     */
+    private final DoubleProperty viewportHvalue = new SimpleDoubleProperty(this, "viewportHvalue", 0);
+
+    /** The vertical counterpart of {@link #viewportHvalueProperty()}. */
+    private final DoubleProperty viewportVvalue = new SimpleDoubleProperty(this, "viewportVvalue", 0);
+
+    /**
+     * The horizontal desktop-viewport scroll position property.
+     *
+     * @return the hvalue property, mirroring the desktop scroll pane
+     */
+    public final DoubleProperty viewportHvalueProperty() {
+        return viewportHvalue;
+    }
+
+    /**
+     * Gets the horizontal desktop-viewport scroll position.
+     *
+     * @return the hvalue, in [0, 1]
+     */
+    public final double getViewportHvalue() {
+        return viewportHvalue.get();
+    }
+
+    /**
+     * Sets the horizontal desktop-viewport scroll position.
+     *
+     * @param hvalue the hvalue, in [0, 1]
+     */
+    public final void setViewportHvalue(double hvalue) {
+        viewportHvalue.set(hvalue);
+    }
+
+    /**
+     * The vertical desktop-viewport scroll position property.
+     *
+     * @return the vvalue property, mirroring the desktop scroll pane
+     */
+    public final DoubleProperty viewportVvalueProperty() {
+        return viewportVvalue;
+    }
+
+    /**
+     * Gets the vertical desktop-viewport scroll position.
+     *
+     * @return the vvalue, in [0, 1]
+     */
+    public final double getViewportVvalue() {
+        return viewportVvalue.get();
+    }
+
+    /**
+     * Sets the vertical desktop-viewport scroll position.
+     *
+     * @param vvalue the vvalue, in [0, 1]
+     */
+    public final void setViewportVvalue(double vvalue) {
+        viewportVvalue.set(vvalue);
     }
 
     // -----------------------------------------------------------------------------------------

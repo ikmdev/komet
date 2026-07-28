@@ -14,8 +14,10 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
+import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
+import javafx.scene.layout.Border;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.PopupControl;
@@ -136,16 +138,20 @@ public class AutoCompleteTextFieldSkin<T> extends FXTextFieldSkin {
 
         if (!autoCompletePopup.isShowing()) {
             autoCompletePopup.setSelectedItemIndex(-1); // When showing popup we initially don't want any suggestion selected
-            double x = textFieldScreenCoords.getX() + autoCompleteTextField.getBorder().getInsets().getLeft();
+            double x = textFieldScreenCoords.getX() + getBorderInsets(autoCompleteTextField).getLeft();
             autoCompletePopup.show(autoCompleteTextField.getScene().getWindow(), x, textFieldScreenCoords.getY());
         }
     }
 
     protected double getPopupWidth() {
         AutoCompleteTextField<T> autoCompleteTextField = (AutoCompleteTextField<T>) getSkinnable();
-        double borderLeft = autoCompleteTextField.getBorder().getInsets().getLeft();
-        double borderRight = autoCompleteTextField.getBorder().getInsets().getRight();
-        return autoCompleteTextField.getBoundsInLocal().getWidth() - borderLeft - borderRight;
+        Insets borderInsets = getBorderInsets(autoCompleteTextField);
+        return autoCompleteTextField.getBoundsInLocal().getWidth() - borderInsets.getLeft() - borderInsets.getRight();
+    }
+
+    private static Insets getBorderInsets(AutoCompleteTextField<?> autoCompleteTextField) {
+        Border border = autoCompleteTextField.getBorder();
+        return border == null ? Insets.EMPTY : border.getInsets();
     }
 
     /***************************************************************************
@@ -246,8 +252,10 @@ public class AutoCompleteTextFieldSkin<T> extends FXTextFieldSkin {
 
                 @Override
                 protected double computeValue() {
+                    // exact content height; any breathing room below the last cell comes from
+                    // the main-container padding in CSS
                     double cellHeight = autoCompleteTextField.getSuggestionsNodeHeight();
-                    return Math.min(autoCompleteTextField.getMaxNumberOfSuggestions(), control.getItems().size()) * cellHeight + 8;
+                    return Math.min(autoCompleteTextField.getMaxNumberOfSuggestions(), control.getItems().size()) * cellHeight;
                 }
             };
 

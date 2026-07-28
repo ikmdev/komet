@@ -33,14 +33,30 @@ import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.PixelReader;
+import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.transform.Affine;
+import javafx.stage.Screen;
+
+import javax.imageio.ImageIO;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import dev.ikm.komet.framework.controls.KonceptBadge;
+import dev.ikm.komet.framework.controls.KonceptKindResolver;
+import dev.ikm.komet.framework.controls.KonceptSigils;
+import dev.ikm.komet.framework.controls.KonceptStatus;
+import dev.ikm.komet.framework.graphics.KonceptGlyphFonts;
+import dev.ikm.tinkar.coordinate.logic.PremiseType;
+import network.ike.docs.konceptcore.KonceptKind;
 
 import java.util.Locale;
 
@@ -59,7 +75,8 @@ import java.util.Locale;
  * assistant's original {@code KonceptDragImage}, now the shared canonical builder.
  *
  * <p>The drag-affordance border is {@linkplain #setBorder(Color, double) configurable} so the
- * appearance can be revised without re-touching the builder; it defaults to a subtle blue.
+ * appearance can be revised without re-touching the builder; it defaults to the shared floating
+ * grey of the #742 appearance spec (the #861 settled border policy for floating media).
  *
  * <p>All methods build live JavaFX nodes and must be called on the JavaFX application thread.
  */
@@ -84,17 +101,108 @@ public final class KonceptDragGlyph {
     private static final int MAX_LABEL_WIDTH = 260;
     /** Gap placed to the right of the identicon before the cursor (px). */
     private static final double CURSOR_GAP = 4.0;
-    /** Active label colour. */
-    private static final String LABEL_ACTIVE = "#2a5a8a";
-    /** Inactive/retired label colour. */
-    private static final String LABEL_INACTIVE = "#b00020";
-    /** Pill fill (koncept palette). */
-    private static final String PILL_FILL = "#e9eff6";
+    /**
+     * Component-kind letter sigil size (px) — set explicitly; no stylesheet reaches the snapshot.
+     * The normative ratio is 15:12 of the name font (KonceptFigureRenderer, the renderer that
+     * draws the badge-spec anatomy figures): a quarter larger than the name, bold.
+     */
+    private static final double SIGIL_FONT = FONT * 15.0 / 12.0;
+    /** Edge length (px) of the STAMP pentagon sigil: 20:32 of the identicon, same source. */
+    private static final double SIGIL_STAMP = ICON * 20.0 / 32.0;
+    /**
+     * Logical-status glyph size (px) — the normative 10:12 ratio of the name font from
+     * komet.css ({@code .koncept-status} 10px against the badge's 12px name), applied to this
+     * glyph's name font. Set explicitly; no stylesheet reaches the snapshot.
+     */
+    private static final double STATUS_FONT = FONT * 10.0 / 12.0;
+    /** Key marking the identicon within the pill, so the cursor anchor survives a leading sigil. */
+    private static final Object IDENTICON_KEY = new Object();
+    /** The one shared badge appearance (ike-issues#742/#860) the palette below reads from. */
+    private static final network.ike.docs.konceptcore.KonceptAppearance SPEC =
+            network.ike.docs.konceptcore.KonceptAppearance.defaults();
+    /** Active label colour, from the spec. */
+    private static final String LABEL_ACTIVE = SPEC.labelColorHex();
+    /** Inactive/retired label colour, from the spec. */
+    private static final String LABEL_INACTIVE = SPEC.labelColorInactiveHex();
+    /** Pill fill, from the spec. */
+    private static final String PILL_FILL = SPEC.pillFillHex();
+    /** Pill corner radius, from the spec. */
+    private static final int PILL_RADIUS = (int) SPEC.cornerRadiusPx();
 
-    /** The configurable drag-affordance border colour; a subtle blue by default. */
-    private static Color borderColor = Color.web("#6E9BD1");
-    /** The configurable drag-affordance border width (px). */
-    private static double borderWidth = 1.5;
+    /**
+     * Outset-bevel treatment (ikmdev/komet#885 interim). The drag-view-to-native conversion
+     * flattens alpha, so the image must be opaque edge to edge; blurred shadows and flat corner
+     * tints both read as careless at drag-image size. This frames the pill in a crisp CSS-style
+     * {@code outset} bevel instead: an asymmetric border — {@value #OUTSET_LIT}px of highlight on
+     * top and left, {@value #OUTSET_SHADOW}px of shade on bottom and right (KEC 2026-07-24: the
+     * lit edge trimmed to a pixel; a raised object shows a thin lit edge and a thicker shadowed
+     * one) — around a {@value #OUTSET_PAD}px card reveal. Every width is an integer and nothing
+     * is blurred, so the frame is pixel-exact by construction; the pill inside keeps its rounded
+     * 6. Restore {@code Color.TRANSPARENT} as the snapshot fill (and drop the frame) when #885
+     * resolves.
+     */
+    private static final int OUTSET_LIT = 1;
+
+    /** Bevel width (px) of the shadowed bottom and right edges. */
+    private static final int OUTSET_SHADOW = 2;
+
+    /** Card reveal (px) between the bevel and the pill. */
+    private static final int OUTSET_PAD = 1;
+
+    /** Left-side frame inset (lit bevel plus reveal) — the cursor anchor's offset. */
+    private static final int OUTSET_INSET = OUTSET_LIT + OUTSET_PAD;
+
+    /** The card tone inside the bevel — light and cool, in the pill's family. */
+    private static final String CARD_FILL = "#eef1f7";
+
+    /**
+     * The ONE bevel dial (per the 2026-07-24 drag-rendering handoff): both bevel tones derive
+     * from this single base — classic CSS outset semantics, where highlight and shade are a
+     * lighten and a darken of one colour. The base is the spec's shared floating border grey
+     * (the #742/#861 floating-context colour), so the frame and the pill border sit in one
+     * family. Retune the frame by moving the spec's colour alone.
+     */
+    private static final Color OUTSET_BASE = Color.web(SPEC.floatingBorderHex());
+
+    /** Bevel highlight (top and left) — the base lifted 85% toward white: the lit edge. */
+    private static final Color OUTSET_LIGHT = OUTSET_BASE.interpolate(Color.WHITE, 0.85);
+
+    /** Bevel shade (bottom and right) — the base deepened (sat ×1.6, brightness ×0.82): the shadowed edge. */
+    private static final Color OUTSET_SHADE = OUTSET_BASE.deriveColor(0, 1.6, 0.82, 1);
+
+    /**
+     * Supersample factor: the card is laid out and snapshotted at this scale. For a dragboard on
+     * a HiDPI screen the oversampled raster is delivered <em>as the display density</em> (see
+     * {@link #hiDpiDragImage}); everywhere else it is box-downsampled exactly
+     * {@value #SUPERSAMPLE}:1 back to the fixed 1× geometry. Every frame width is an integer at
+     * 1×, so axis-aligned edges land on whole {@value #SUPERSAMPLE}×{@value #SUPERSAMPLE} blocks
+     * and stay pixel-crisp, while text and the pill's rounded corners keep the supersampled
+     * smoothing.
+     */
+    private static final int SUPERSAMPLE = 2;
+
+    /**
+     * Whether a dragboard on a HiDPI screen receives the full-density drag image via the
+     * {@code @2x} variant convention (KEC 2026-07-24: detect the display and provide the best
+     * image for it). The screen scale is read from {@link Screen#getOutputScaleX()}; delivery
+     * writes the raster pair to temp files and reloads through the JavaFX {@code name@2x.png}
+     * resolution-variant loader, which is the one public route to an {@link Image} that carries
+     * a pixel density. VALIDATED 2026-07-24 by pixel forensics on a full-resolution retina
+     * capture of a live drag: the glyph occupied its correct point size at exactly 2× device
+     * density with single-device-pixel edge transitions — the platform pipeline preserves the
+     * density. The 1× supersampled path remains the fallback and is used whenever delivery
+     * fails (and by every non-dragboard consumer).
+     */
+    private static final boolean HIDPI_DRAG_VIEW = true;
+
+    /**
+     * The configurable drag-affordance border colour — the shared floating border the #742
+     * appearance spec assigns to floating media (drag, Zulip/email, HTML email), reconciled
+     * from the earlier subtle blue per the #861 settled border policy.
+     */
+    private static Color borderColor = Color.web(SPEC.floatingBorderHex());
+    /** The configurable drag-affordance border width (px) — the spec's floating width. */
+    private static double borderWidth = SPEC.floatingBorderWidthPx();
 
     private KonceptDragGlyph() {
     }
@@ -131,7 +239,10 @@ public final class KonceptDragGlyph {
             }
             try {
                 double[] cursorX = new double[1];
-                Image image = render(glyph(publicId, name, inactive), cursorX);
+                // Resolve the kind from the nid this installer already has, so a dragged pattern
+                // keeps its sigil. Without it the glyph was built from the PublicId alone and every
+                // drag came out bare, whatever the source rendered (ikmdev/komet#883).
+                Image image = render(glyph(kind(nid), publicId, name, inactive), cursorX, true);
                 Dragboard dragboard = source.startDragAndDrop(TransferMode.COPY);
                 dragboard.setDragView(image, cursorX[0], image.getHeight());
                 dragboard.setContent(KometClipboard.forComponent(nid));
@@ -153,8 +264,42 @@ public final class KonceptDragGlyph {
      * @param inactive  whether the concept is retired
      */
     public static void setDragView(Dragboard dragboard, PublicId publicId, String name, boolean inactive) {
+        setDragView(dragboard, KonceptKind.CONCEPT, publicId, name, inactive);
+    }
+
+    /**
+     * Places the canonical single-component drag view, leading with {@code kind}'s sigil — for a
+     * drag source that knows the component kind but has no {@link ViewCalculator} to resolve it
+     * from (ikmdev/komet#883).
+     *
+     * @param dragboard the active dragboard
+     * @param kind      the component kind; {@link KonceptKind#CONCEPT} draws the bare pill
+     * @param publicId  the component id (drives the identicon)
+     * @param name      the store-resolved name
+     * @param inactive  whether the component is retired
+     */
+    public static void setDragView(Dragboard dragboard, KonceptKind kind, PublicId publicId,
+                                   String name, boolean inactive) {
+        setDragView(dragboard, kind, KonceptStatus.NONE, publicId, name, inactive);
+    }
+
+    /**
+     * Places the canonical single-component drag view, leading with {@code kind}'s sigil or — for
+     * a bare Koncept — the logical-status copula cluster (ike-issues#861): the drag image carries
+     * the same one leading mark as the on-screen badge. For a drag source that already resolved
+     * the status (a {@code KonceptBadge} passes its live status at gesture time).
+     *
+     * @param dragboard the active dragboard
+     * @param kind      the component kind; {@link KonceptKind#CONCEPT} draws the status cluster
+     * @param status    the concept's logical-definition status; {@link KonceptStatus#NONE} stays bare
+     * @param publicId  the component id (drives the identicon)
+     * @param name      the store-resolved name
+     * @param inactive  whether the component is retired
+     */
+    public static void setDragView(Dragboard dragboard, KonceptKind kind, KonceptStatus status,
+                                   PublicId publicId, String name, boolean inactive) {
         double[] cursorX = new double[1];
-        Image image = render(glyph(publicId, name, inactive), cursorX);
+        Image image = render(glyph(kind, status, publicId, name, inactive), cursorX, true);
         dragboard.setDragView(image, cursorX[0], image.getHeight());
     }
 
@@ -167,7 +312,62 @@ public final class KonceptDragGlyph {
      * @param viewCalc  the view for resolving the name and active state
      */
     public static void setDragView(Dragboard dragboard, int nid, ViewCalculator viewCalc) {
-        setDragView(dragboard, PrimitiveData.publicId(nid), name(nid, viewCalc), isInactive(nid, viewCalc));
+        // Resolve the kind AND the status here: this overload has the nid and the view, which is
+        // everything both marks need. A pattern therefore drags with its sigil (ikmdev/komet#883)
+        // and a concept with its copula cluster (ike-issues#861); the PublicId overloads cannot
+        // know either and stay bare, as before.
+        double[] cursorX = new double[1];
+        Image image = render(glyph(kind(nid, viewCalc), status(nid, viewCalc),
+                PrimitiveData.publicId(nid), name(nid, viewCalc), isInactive(nid, viewCalc)),
+                cursorX, true);
+        dragboard.setDragView(image, cursorX[0], image.getHeight());
+    }
+
+    /**
+     * The logical-status classification for {@code nid}, or {@link KonceptStatus#NONE} when it
+     * cannot be resolved — a drag must never fail because the status could not be determined.
+     *
+     * @param nid      the component nid
+     * @param viewCalc the view used to classify; {@code null} yields {@link KonceptStatus#NONE}
+     * @return the resolved status, never {@code null}
+     */
+    private static KonceptStatus status(int nid, ViewCalculator viewCalc) {
+        if (viewCalc == null) {
+            return KonceptStatus.NONE;
+        }
+        try {
+            return KonceptBadge.computeStatus(nid, viewCalc, PremiseType.INFERRED);
+        } catch (RuntimeException e) {
+            return KonceptStatus.NONE;
+        }
+    }
+
+    /**
+     * The component kind for {@code nid}, or {@link KonceptKind#CONCEPT} when it cannot be resolved
+     * — a drag must never fail because the sigil could not be determined.
+     *
+     * @param nid      the component nid
+     * @param viewCalc the view used to resolve the kind
+     * @return the resolved kind, never {@code null}
+     */
+    /**
+     * The component kind for {@code nid} without a view — a concept, pattern, or stamp follows from
+     * the entity type alone; a semantic degrades to {@link KonceptKind#SEMANTIC} rather than being
+     * distinguished as a description.
+     *
+     * @param nid the component nid
+     * @return the resolved kind, never {@code null}
+     */
+    private static KonceptKind kind(int nid) {
+        return kind(nid, null);
+    }
+
+    private static KonceptKind kind(int nid, ViewCalculator viewCalc) {
+        try {
+            return KonceptKindResolver.resolve(nid, viewCalc);
+        } catch (RuntimeException e) {
+            return KonceptKind.CONCEPT;
+        }
     }
 
     /**
@@ -184,7 +384,7 @@ public final class KonceptDragGlyph {
     public static void setMultiDragView(Dragboard dragboard, PublicId leadPublicId, String leadName,
                                         boolean leadInactive, int count) {
         double[] cursorX = new double[1];
-        Image image = renderMulti(leadPublicId, leadName, leadInactive, count, cursorX);
+        Image image = renderMulti(leadPublicId, leadName, leadInactive, count, cursorX, true);
         dragboard.setDragView(image, cursorX[0], image.getHeight());
     }
 
@@ -199,8 +399,17 @@ public final class KonceptDragGlyph {
      * @param count     the total number of concepts being dragged (badge shown when {@code > 1})
      */
     public static void setMultiDragView(Dragboard dragboard, int leadNid, ViewCalculator viewCalc, int count) {
-        setMultiDragView(dragboard, PrimitiveData.publicId(leadNid),
-                name(leadNid, viewCalc), isInactive(leadNid, viewCalc), count);
+        // As the single-glyph nid overload: the lead component's kind and status are resolvable
+        // here, so the lead pill carries its one leading mark (ikmdev/komet#883, ike-issues#861).
+        double[] cursorX = new double[1];
+        HBox glyph = glyph(kind(leadNid, viewCalc), status(leadNid, viewCalc),
+                PrimitiveData.publicId(leadNid),
+                name(leadNid, viewCalc), isInactive(leadNid, viewCalc));
+        if (count > 1) {
+            glyph.getChildren().add(countBadge(count));
+        }
+        Image image = render(glyph, cursorX, true);
+        dragboard.setDragView(image, cursorX[0], image.getHeight());
     }
 
     /**
@@ -214,16 +423,16 @@ public final class KonceptDragGlyph {
      * @return the multi-concept drag image
      */
     public static Image multiImage(PublicId leadPublicId, String leadName, boolean leadInactive, int count) {
-        return renderMulti(leadPublicId, leadName, leadInactive, count, new double[1]);
+        return renderMulti(leadPublicId, leadName, leadInactive, count, new double[1], false);
     }
 
     private static Image renderMulti(PublicId leadPublicId, String leadName, boolean leadInactive,
-                                     int count, double[] cursorX) {
+                                     int count, double[] cursorX, boolean forDragboard) {
         HBox glyph = glyph(leadPublicId, leadName, leadInactive);
         if (count > 1) {
             glyph.getChildren().add(countBadge(count));
         }
-        return render(glyph, cursorX);
+        return render(glyph, cursorX, forDragboard);
     }
 
     /**
@@ -251,8 +460,27 @@ public final class KonceptDragGlyph {
     }
 
     /**
-     * The store name for {@code nid}: the fully-qualified name, else the preferred description,
-     * else the nid — the same recipe the on-screen chip uses, so the drag name matches the chip.
+     * The canonical drag image with an explicit kind and status — the full one-leading-mark form
+     * (kind sigil for a marked kind, status copula cluster for a bare Koncept; ike-issues#861) —
+     * for a caller that wants the {@link Image} directly.
+     *
+     * @param kind     the component kind; {@link KonceptKind#CONCEPT} draws the status cluster
+     * @param status   the concept's logical-definition status; {@link KonceptStatus#NONE} stays bare
+     * @param publicId the component id (drives the identicon)
+     * @param name     the store-resolved name
+     * @param inactive whether the component is retired
+     * @return the drag image
+     */
+    public static Image image(KonceptKind kind, KonceptStatus status, PublicId publicId,
+                              String name, boolean inactive) {
+        return render(glyph(kind, status, publicId, name, inactive), new double[1]);
+    }
+
+    /**
+     * The store name for {@code nid}: the view's coordinate-preferred description (the language
+     * coordinate's description-type priority), else the nid — the same resolution the on-screen
+     * badge uses ({@code KonceptBadge}), so the drag name matches the chip it left
+     * (ike-issues#942).
      *
      * @param nid      the concept nid
      * @param viewCalc the resolving view; {@code null} yields an empty name (icon-only glyph)
@@ -262,8 +490,7 @@ public final class KonceptDragGlyph {
         if (viewCalc == null) {
             return "";
         }
-        return viewCalc.getFullyQualifiedNameText(nid)
-                .orElseGet(() -> viewCalc.getPreferredDescriptionTextWithFallbackOrNid(nid));
+        return viewCalc.getDescriptionTextOrNid(nid);
     }
 
     /**
@@ -287,6 +514,28 @@ public final class KonceptDragGlyph {
 
     /** Builds the pill: identicon + width-bounded, ellipsising small-caps name in a bordered pill. */
     private static HBox glyph(PublicId publicId, String name, boolean inactive) {
+        return glyph(KonceptKind.CONCEPT, KonceptStatus.NONE, publicId, name, inactive);
+    }
+
+    /** Builds the pill with a kind sigil and no status — the pre-#861 shape, for bare callers. */
+    private static HBox glyph(KonceptKind kind, PublicId publicId, String name, boolean inactive) {
+        return glyph(kind, KonceptStatus.NONE, publicId, name, inactive);
+    }
+
+    /**
+     * Builds the pill, leading with its one mark — {@code kind}'s sigil when it carries one, or a
+     * bare Koncept's logical-status copula cluster ({@code ≡}/{@code ⊑}/{@code ⊤} with the
+     * {@code ⋎} fork appended for multi-parent) — so the drag image is as honest about the
+     * component as the badge is (ikmdev/komet#883, ike-issues#861). Kind sigils and status marks
+     * never co-occur; both composite into the same fixed integer geometry; nothing is rescaled.
+     *
+     * <p>The marks are sized and coloured explicitly rather than by style class: {@link #render}
+     * snapshots in a throwaway scene with no stylesheet attached, so a CSS-sized glyph would fall
+     * back to the default font here and render at the wrong size. The status colours come straight
+     * from the single-sourced koncept-core vocabulary ({@code KonceptStatus.core()}).
+     */
+    private static HBox glyph(KonceptKind kind, KonceptStatus status, PublicId publicId,
+                              String name, boolean inactive) {
         // Synchronous identicon: the glyph is snapshotted immediately, so the async placeholder that
         // generateIdenticon returns on first lookup would snapshot blank (ike-issues#854 — a concept
         // whose identicon a navigator row never rendered dragged with no identicon).
@@ -312,10 +561,50 @@ public final class KonceptDragGlyph {
         nameText.setStrikethrough(inactive);
 
         HBox glyph = new HBox(GAP, icon, nameText);
+        KonceptSigils.create(kind, SIGIL_STAMP, SIGIL_FONT)
+                .ifPresent(sigil -> glyph.getChildren().add(0, sigil));
+        // The one-mark rule (ike-issues#742/#861): only a bare Koncept leads with its status
+        // cluster; a kind sigil and a status mark never co-occur.
+        if (kind == KonceptKind.CONCEPT && status != null && status.hasGlyph()) {
+            glyph.getChildren().add(0, statusCluster(status));
+        }
         glyph.setAlignment(Pos.CENTER_LEFT);
         glyph.setPadding(new Insets(V_PAD, PAD_RIGHT, V_PAD, PAD_LEFT));
         glyph.setStyle(glyphStyle());
+        // The cursor anchors just right of the IDENTICON, which is no longer necessarily the first
+        // child once a sigil leads the pill.
+        glyph.getProperties().put(IDENTICON_KEY, icon);
         return glyph;
+    }
+
+    /**
+     * The leading logical-status cluster for a bare Koncept (ike-issues#861): the copula glyph in
+     * its status colour with the fork appended for multi-parent, coloured straight from the
+     * single-sourced koncept-core vocabulary — the snapshot has no stylesheet, so the colours are
+     * set inline, exactly as the adoc renderer does.
+     */
+    private static HBox statusCluster(KonceptStatus status) {
+        // The bundled glyph face (ike-issues#953): this snapshot scene has no stylesheet, so the
+        // family is set in code — the cluster must never resolve through OS font fallback, whose
+        // answer differs per base font and platform (the ⋎ fork drew upside-down via Apple SD
+        // Gothic Neo). Absent the face, the default family's fallback keeps the glyph alive.
+        String glyphFamily = KonceptGlyphFonts.family();
+        Font statusFont = glyphFamily != null
+                ? Font.font(glyphFamily, STATUS_FONT)
+                : Font.font(STATUS_FONT);
+        Text copula = new Text(status.glyph());
+        copula.setFont(statusFont);
+        copula.setFill(Color.web(status.core().colorHex()));
+        HBox cluster = new HBox(copula);
+        if (status.isMultiParent()) {
+            Text fork = new Text(KonceptStatus.MULTI_PARENT_GLYPH);
+            fork.setFont(statusFont);
+            fork.setFill(Color.web(
+                    network.ike.docs.konceptcore.KonceptStatus.MULTI_PARENT_COLOR_HEX));
+            cluster.getChildren().add(fork);
+        }
+        cluster.setAlignment(Pos.CENTER);
+        return cluster;
     }
 
     /** The trailing count badge for a multi-concept drag: a small accent pill showing the total. */
@@ -332,12 +621,16 @@ public final class KonceptDragGlyph {
         return badge;
     }
 
-    /** The pill style, built from the configurable border. */
+    /**
+     * The pill style, built from the configurable border. The pill keeps its rounded 6; the
+     * rectangle's corners outside it are colour-treated via {@link #CORNER_TINT}
+     * (ikmdev/komet#885 interim), so the image is opaque edge to edge without squaring the pill.
+     */
     private static String glyphStyle() {
-        return "-fx-background-color: " + PILL_FILL + "; -fx-background-radius: 6;"
+        return "-fx-background-color: " + PILL_FILL + "; -fx-background-radius: " + PILL_RADIUS + ";"
                 + " -fx-border-color: " + web(borderColor) + ";"
                 + " -fx-border-width: " + borderWidth + ";"
-                + " -fx-border-radius: 6;";
+                + " -fx-border-radius: " + PILL_RADIUS + ";";
     }
 
     /** The {@code #RRGGBB} form of a colour, for a JavaFX inline style. */
@@ -354,26 +647,144 @@ public final class KonceptDragGlyph {
      * {@code cursorX}.
      */
     private static Image render(HBox glyph, double[] cursorX) {
+        return render(glyph, cursorX, false);
+    }
+
+    private static Image render(HBox glyph, double[] cursorX, boolean forDragboard) {
+        // The outset-bevel frame (ikmdev/komet#885): per-side border colours and widths are how
+        // CSS outset is defined — a thin lit top/left, a thicker shaded bottom/right — and JavaFX
+        // takes them directly. All integer widths, no blur: crisp by construction, opaque edge to
+        // edge.
+        StackPane card = new StackPane(glyph);
+        card.setPadding(new Insets(OUTSET_PAD));
+        card.setStyle("-fx-background-color: " + CARD_FILL + ";"
+                + " -fx-border-width: " + OUTSET_LIT + " " + OUTSET_SHADOW + " "
+                + OUTSET_SHADOW + " " + OUTSET_LIT + ";"
+                + " -fx-border-color: " + web(OUTSET_LIGHT) + " " + web(OUTSET_SHADE) + " "
+                + web(OUTSET_SHADE) + " " + web(OUTSET_LIGHT) + ";");
+
         // A throwaway scene applies CSS and enables layout; it is never shown (no Stage). Off-stage
-        // there is no layout pulse, so the glyph must be resized to its preferred size explicitly.
-        new Scene(new Group(glyph));
-        glyph.applyCss();
-        glyph.resize(glyph.prefWidth(-1), glyph.prefHeight(-1));
-        glyph.layout();
+        // there is no layout pulse, so the card must be resized to its preferred size explicitly.
+        new Scene(new Group(card));
+        card.applyCss();
+        card.resize(card.prefWidth(-1), card.prefHeight(-1));
+        card.layout();
 
-        Bounds visual = glyph.getBoundsInLocal();
-        double iconRight = glyph.getChildren().isEmpty()
-                ? 0 : glyph.getChildren().get(0).getBoundsInParent().getMaxX();
-        cursorX[0] = Math.max(0, iconRight) + CURSOR_GAP;
+        // The identicon, not "the first child": a sigil or status cluster leads the pill, and
+        // anchoring the cursor to it would drift the grab point (ikmdev/komet#883). The anchor
+        // is expressed in card coordinates, so the margin shifts it too.
+        Object marked = glyph.getProperties().get(IDENTICON_KEY);
+        Node identicon = marked instanceof Node node ? node
+                : (glyph.getChildren().isEmpty() ? null : glyph.getChildren().get(0));
+        double iconRight = identicon == null ? 0 : identicon.getBoundsInParent().getMaxX();
+        cursorX[0] = OUTSET_INSET + Math.max(0, iconRight) + CURSOR_GAP;
 
+        Bounds visual = card.getLayoutBounds();
+        int width = (int) Math.max(1, Math.ceil(visual.getWidth()));
+        int height = (int) Math.max(1, Math.ceil(visual.getHeight()));
+
+        // Supersample: snapshot at SUPERSAMPLE×, then box-downsample exactly back to the 1×
+        // geometry (see the SUPERSAMPLE constant for why edges stay crisp while curves and text
+        // gain smoothing). The scale is appended before the translation so the transform reads
+        // scale∘translate — points translate in unscaled coordinates first.
         Affine transform = new Affine();
+        transform.appendScale(SUPERSAMPLE, SUPERSAMPLE);
         transform.appendTranslation(-visual.getMinX(), -visual.getMinY());
         SnapshotParameters params = new SnapshotParameters();
         params.setTransform(transform);
-        params.setFill(Color.TRANSPARENT);
+        params.setFill(Color.web(CARD_FILL));
 
-        int width = (int) Math.max(1, Math.ceil(visual.getWidth()));
-        int height = (int) Math.max(1, Math.ceil(visual.getHeight()));
-        return glyph.snapshot(params, new WritableImage(width, height));
+        WritableImage oversampled = card.snapshot(params,
+                new WritableImage(width * SUPERSAMPLE, height * SUPERSAMPLE));
+
+        // A dragboard on a HiDPI screen gets the full-density raster (KEC 2026-07-24); every
+        // other consumer — and any failed delivery — gets the crisp 1× supersampled image.
+        if (forDragboard && HIDPI_DRAG_VIEW && SUPERSAMPLE == 2 && outputScale() > 1.5) {
+            Image hiDpi = hiDpiDragImage(oversampled, width, height);
+            if (hiDpi != null) {
+                return hiDpi;
+            }
+        }
+        return downsample(oversampled, width, height, SUPERSAMPLE);
+    }
+
+    /** The largest output scale across the attached screens, or 1 when it cannot be read. */
+    private static double outputScale() {
+        try {
+            return Screen.getScreens().stream()
+                    .mapToDouble(Screen::getOutputScaleX).max().orElse(1.0);
+        } catch (RuntimeException e) {
+            return 1.0;
+        }
+    }
+
+    /**
+     * Delivers the oversampled raster as a density-carrying {@link Image} through the JavaFX
+     * {@code name@2x.png} resolution-variant convention — the one public route to an image whose
+     * backing pixels exceed its logical size: the 1× and 2× rasters are written to a temp pair
+     * and reloaded by the variant-aware loader, which on a HiDPI screen picks the {@code @2x}
+     * file and reports the logical {@code width}×{@code height}.
+     *
+     * @param oversampled the 2× snapshot
+     * @param width       the logical (1×) width
+     * @param height      the logical (1×) height
+     * @return the density-carrying image, or {@code null} when delivery fails (the caller falls
+     *         back to the 1× downsample; a drag must never fail for image quality)
+     */
+    private static Image hiDpiDragImage(WritableImage oversampled, int width, int height) {
+        try {
+            Path dir = Files.createTempDirectory("koncept-drag");
+            dir.toFile().deleteOnExit();
+            Path base = dir.resolve("glyph.png");
+            Path twoX = dir.resolve("glyph@2x.png");
+            ImageIO.write(SwingFXUtils.fromFXImage(
+                    downsample(oversampled, width, height, SUPERSAMPLE), null), "png", base.toFile());
+            ImageIO.write(SwingFXUtils.fromFXImage(oversampled, null), "png", twoX.toFile());
+            base.toFile().deleteOnExit();
+            twoX.toFile().deleteOnExit();
+            Image image = new Image(base.toUri().toString());
+            return image.isError() || image.getWidth() != width ? null : image;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Exact {@code factor}:1 box downsample: every destination pixel is the plain average of its
+     * {@code factor}×{@code factor} source block. Because the card's geometry is integer at 1×,
+     * every axis-aligned edge lands on a block boundary and survives untouched; only antialiased
+     * detail (text, the pill's rounded corners) blends — supersampling without edge softening.
+     *
+     * @param source the oversampled snapshot ({@code width*factor} × {@code height*factor})
+     * @param width  the destination width (the 1× geometry)
+     * @param height the destination height
+     * @param factor the supersample factor
+     * @return the downsampled image
+     */
+    private static WritableImage downsample(WritableImage source, int width, int height, int factor) {
+        PixelReader reader = source.getPixelReader();
+        WritableImage out = new WritableImage(width, height);
+        PixelWriter writer = out.getPixelWriter();
+        int samples = factor * factor;
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int a = 0;
+                int r = 0;
+                int g = 0;
+                int b = 0;
+                for (int dy = 0; dy < factor; dy++) {
+                    for (int dx = 0; dx < factor; dx++) {
+                        int argb = reader.getArgb(x * factor + dx, y * factor + dy);
+                        a += argb >>> 24;
+                        r += (argb >> 16) & 0xFF;
+                        g += (argb >> 8) & 0xFF;
+                        b += argb & 0xFF;
+                    }
+                }
+                writer.setArgb(x, y, (a / samples << 24) | (r / samples << 16)
+                        | (g / samples << 8) | (b / samples));
+            }
+        }
+        return out;
     }
 }

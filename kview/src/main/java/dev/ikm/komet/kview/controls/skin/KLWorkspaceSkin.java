@@ -210,6 +210,11 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         // Place the ScrollPane into this skin's children
         getChildren().add(desktopScrollPane);
 
+        // The control's viewport-scroll properties mirror the desktop scroll pane, so hosts can
+        // persist which desktop region was showing and restore it on reopen (ike-issues#943).
+        desktopScrollPane.hvalueProperty().bindBidirectional(workspace.viewportHvalueProperty());
+        desktopScrollPane.vvalueProperty().bindBidirectional(workspace.viewportVvalueProperty());
+
         // --------------------------------------------------------------------
         // 3) Listen for windows being added/removed
         // --------------------------------------------------------------------

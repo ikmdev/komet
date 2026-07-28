@@ -27,5 +27,14 @@ public enum JournalWindowSettings {
     WINDOW_NAMES,
     WINDOW_COUNT,
     CAN_DELETE,
-    PARENT_VIEW_COORDINATES;
+    PARENT_VIEW_COORDINATES,
+    /** Horizontal desktop-viewport scroll (ScrollPane hvalue), the workspace's equivalent place (#943). */
+    JOURNAL_SCROLL_H,
+    /** Vertical desktop-viewport scroll (ScrollPane vvalue), the workspace's equivalent place (#943). */
+    JOURNAL_SCROLL_V,
+    /** The journal view's resolved coordinate when it carries pins — half of the #745-style delta pair (#945). */
+    JOURNAL_VIEW_OVERRIDE,
+    /** The inherited KB baseline captured with {@link #JOURNAL_VIEW_OVERRIDE}; together they identify exactly
+     *  the pinned dimensions, so inherited ones keep tracking the live KB view on restore (#945). */
+    JOURNAL_VIEW_BASELINE;
 }

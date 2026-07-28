@@ -1,24 +1,14 @@
 package dev.ikm.komet.kview.controls;
 
-import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
-import dev.ikm.komet.framework.dnd.KonceptDragSource;
-import dev.ikm.tinkar.common.service.PrimitiveData;
-import dev.ikm.tinkar.coordinate.Calculators;
-import dev.ikm.komet.kview.mvvm.view.JournalNavigationUtils;
-import dev.ikm.komet.kview.mvvm.view.common.SVGConstants;
-import dev.ikm.tinkar.common.id.PublicId;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
@@ -27,19 +17,8 @@ import javafx.geometry.VPos;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.shape.FillRule;
-import javafx.scene.shape.SVGPath;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.util.Base64;
 import java.util.function.Supplier;
-
-import static dev.ikm.komet.framework.dnd.KometClipboard.COMPONENT_DRAG_FORMAT;
-import static dev.ikm.komet.framework.dnd.KometClipboard.encodePublicId;
-import static dev.ikm.komet.kview.controls.KometIcon.IconValue.POPULATE;
 
 /**
  * A Node used to render a Component (icon + text)
@@ -51,6 +30,8 @@ public class ComponentItemNode extends Region {
     private Circle circleClip;
 
     private ContextMenu contextMenu;
+
+    private StackPane dragHandleIcon;
 
     /*=========================================================================*
      *                                                                         *
@@ -111,7 +92,7 @@ public class ComponentItemNode extends Region {
 
     private void onContextMenuRequested(ContextMenuEvent contextMenuEvent) {
         if (contextMenu == null) {
-            contextMenu = buildDefaultContextMenu();
+            contextMenu = ComponentItemActions.buildContextMenu(this, componentItem.get());
         }
 
         pseudoClassStateChanged(KLReadOnlyMultiComponentControl.EDIT_MODE_PSEUDO_CLASS, true);
@@ -120,86 +101,11 @@ public class ComponentItemNode extends Region {
         contextMenu.show(this, contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
     }
 
-    private ContextMenu buildDefaultContextMenu() {
-        ContextMenu menu = new ContextMenu();
-        menu.getStyleClass().add("klcontext-menu");
-
-        if (componentItem.get().getPublicId() != null) {
-            if (componentItem.get().isConcept()) {
-                MenuItem openInConceptNavigatorItem = new MenuItem("Open in Concept Navigator", KometIcon.create(POPULATE, "icon-klcontext-menu"));
-                openInConceptNavigatorItem.setOnAction(_ ->
-                        JournalNavigationUtils.openConceptInNavigatorForContainingJournal(
-                                this,
-                                this,
-                                componentItem.get().getPublicId()
-                        )
-                );
-
-                menu.getItems().add(openInConceptNavigatorItem);
-            }
-
-            MenuItem openInJournalItem = new MenuItem("Open in Journal", KometIcon.create(POPULATE, "icon-klcontext-menu"));
-            openInJournalItem.setOnAction(_ ->
-                    JournalNavigationUtils.openEntityInJournalForContainingJournal(
-                            this,
-                            this,
-                            componentItem.get().getPublicId()
-                    )
-            );
-
-            menu.getItems().add(openInJournalItem);
-        }
-
-        // the SVG graphic for the copy to clipboard icon
-        var svgPath = new SVGPath();
-        svgPath.setContent(SVGConstants.COPY_TO_CLIPBOARD_SVG_PATH);
-        svgPath.setFillRule(FillRule.EVEN_ODD);
-        svgPath.getStyleClass().addAll(
-                "copy-to-clipboard-svg",
-                "icon-klcontext-menu"
-        );
-
-        StackPane svgIcon = new StackPane(svgPath);
-        svgIcon.getStyleClass().addAll("copy-to-clipboard-icon", "icon");
-
-        MenuItem copyItem = new MenuItem("Copy to clipboard", svgIcon);
-        copyItem.setOnAction(e -> copyToClipboard());
-
-        menu.getItems().add(copyItem);
-        return menu;
-    }
-
-    private void copyToClipboard() {
-        ClipboardContent content = buildClipboardContent();
-        if (!content.isEmpty()) {
-            Clipboard.getSystemClipboard().setContent(content);
-        }
-    }
-
-    private ClipboardContent buildClipboardContent() {
-        ClipboardContent content = new ClipboardContent();
-
-        PublicId publicId = componentItem.get().getPublicId();
-        content.put(COMPONENT_DRAG_FORMAT, encodePublicId(publicId));
-
-        String title = componentItem.get().getText();
-        if (title != null && !title.isBlank()) {
-            content.putString(title);
-        }
-
-        String html = buildHtmlPayload(componentItem.get().getIcon(), title);
-        if (html != null) {
-            content.putHtml(html);
-        }
-
-        return content;
-    }
-
     private void setupDragAndDrop() {
         setOnDragDetected(event -> {
             Dragboard dragboard = startDragAndDrop(TransferMode.COPY);
 
-            dragboard.setContent(buildClipboardContent());
+            dragboard.setContent(ComponentItemActions.buildClipboardContent(componentItem.get()));
 
             // Drag Image
             String previousStyle = textLabel.getStyle();
@@ -208,17 +114,7 @@ public class ComponentItemNode extends Region {
             if (dragImageSupplier.get() != null) {
                 dragboard.setDragView(dragImageSupplier.get().get());
             } else if (getScene() != null) {
-                // A concept drags as the canonical koncept pill, built from its identity
-                // (ike-issues#854); a non-concept component keeps the node snapshot.
-                ComponentItem item = componentItem.get();
-                if (item != null && item.isConcept() && item.getPublicId() != null) {
-                    // Resolve name (fully-qualified first) and inactive through the default view — the
-                    // same overload the navigators use — so the glyph is identical from every source.
-                    KonceptDragGlyph.setDragView(dragboard,
-                            PrimitiveData.nid(item.getPublicId()), Calculators.View.Default());
-                } else {
-                    KonceptDragSource.setDragView(dragboard, this);
-                }
+                ComponentItemActions.setDragView(dragboard, componentItem.get(), this);
             }
 
             textLabel.setStyle(previousStyle);
@@ -226,61 +122,6 @@ public class ComponentItemNode extends Region {
             event.consume();
         });
     }
-
-    /**
-     * Builds an HTML fragment containing the identicon as a base64-encoded PNG
-     * and the entity title side by side. Returns null if both inputs are absent.
-     */
-    private String buildHtmlPayload(Image identiconImage, String title) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<span style=\"display:inline-flex;align-items:center;gap:6px;font-family:sans-serif;\">");
-
-        if (identiconImage != null) {
-            String base64 = toBase64Png(identiconImage);
-            if (base64 != null) {
-                sb.append("<img src=\"data:image/png;base64,")
-                        .append(base64)
-                        .append("\" width=\"24\" height=\"24\" style=\"vertical-align:middle;\"/>");
-            }
-        }
-
-        if (title != null && !title.isBlank()) {
-            sb.append("<span>").append(escapeHtml(title)).append("</span>");
-        }
-
-        sb.append("</span>");
-
-        // Return null if nothing meaningful was added
-        boolean hasImage = identiconImage != null;
-        boolean hasTitle = title != null && !title.isBlank();
-        return (hasImage || hasTitle) ? sb.toString() : null;
-    }
-
-    /**
-     * Converts a JavaFX Image to a base64-encoded PNG string.
-     * Returns null if conversion fails.
-     */
-    private String toBase64Png(Image image) {
-        try {
-            BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(bufferedImage, "png", baos);
-            return Base64.getEncoder().encodeToString(baos.toByteArray());
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    /**
-     * Minimal HTML escaping to prevent title text from breaking the markup.
-     **/
-    private String escapeHtml(String text) {
-        return text.replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;");
-    }
-
 
     @Override
     protected double computeMinHeight(double width) {
@@ -299,6 +140,14 @@ public class ComponentItemNode extends Region {
         double labelWidth = Math.max(textLabel.prefWidth(-1), contentWidth);
         layoutInArea(textLabel, snappedLeftInset(), snappedTopInset(), labelWidth, contentHeight,
                 -1, HPos.LEFT, VPos.CENTER);
+        if (dragHandleIcon != null) {
+            // Overlay the drag handle inside the label's right edge, in the space reserved by the
+            // .show-drag-handle label padding.
+            double gripWidth = dragHandleIcon.prefWidth(-1);
+            double gripX = snappedLeftInset() + labelWidth - gripWidth - DRAG_HANDLE_RIGHT_INSET;
+            layoutInArea(dragHandleIcon, gripX, snappedTopInset(), gripWidth, contentHeight,
+                    -1, HPos.LEFT, VPos.CENTER);
+        }
     }
 
     /*=========================================================================*
@@ -333,6 +182,43 @@ public class ComponentItemNode extends Region {
     public ComponentItem getComponentItem() { return componentItem.get(); }
     public ObjectProperty<ComponentItem> componentItemProperty() { return componentItem; }
     public void setComponentItem(ComponentItem componentItem) { this.componentItem.set(componentItem); }
+
+    // -- show drag handle on hover
+    private static final double DRAG_HANDLE_WIDTH = 7;
+    private static final double DRAG_HANDLE_HEIGHT = 13;
+    private static final double DRAG_HANDLE_RIGHT_INSET = 6;
+
+    /**
+     * When true, hovering this node reveals a six-dot drag handle at its right edge — the same
+     * affordance {@code KLComponentControl} shows for its selected component — signalling that the
+     * component can be dragged. Off by default; purely visual, drag-and-drop works either way.
+     * The hosting control should reserve space for the handle by styling the label of the
+     * {@code .component-item.show-drag-handle} node with extra right padding.
+     */
+    private final BooleanProperty showDragHandleOnHover = new SimpleBooleanProperty(false) {
+        @Override
+        protected void invalidated() {
+            if (get()) {
+                if (dragHandleIcon == null) {
+                    dragHandleIcon = new StackPane();
+                    dragHandleIcon.getStyleClass().add("drag-handle-icon");
+                    dragHandleIcon.setPrefSize(DRAG_HANDLE_WIDTH, DRAG_HANDLE_HEIGHT);
+                    dragHandleIcon.setMinSize(DRAG_HANDLE_WIDTH, DRAG_HANDLE_HEIGHT);
+                    dragHandleIcon.setMaxSize(DRAG_HANDLE_WIDTH, DRAG_HANDLE_HEIGHT);
+                    dragHandleIcon.setManaged(false);
+                    dragHandleIcon.setMouseTransparent(true);
+                    dragHandleIcon.visibleProperty().bind(hoverProperty().and(showDragHandleOnHover));
+                    getChildren().add(dragHandleIcon);
+                }
+                getStyleClass().add("show-drag-handle");
+            } else {
+                getStyleClass().remove("show-drag-handle");
+            }
+        }
+    };
+    public boolean isShowDragHandleOnHover() { return showDragHandleOnHover.get(); }
+    public BooleanProperty showDragHandleOnHoverProperty() { return showDragHandleOnHover; }
+    public void setShowDragHandleOnHover(boolean value) { showDragHandleOnHover.set(value); }
 
     // -- drag image supplier
     private final ObjectProperty<Supplier<Image>> dragImageSupplier = new SimpleObjectProperty<>();

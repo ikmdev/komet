@@ -2,7 +2,9 @@ package dev.ikm.komet.kview.mvvm.view.navigation;
 
 
 import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
 import dev.ikm.komet.framework.dnd.KonceptDragSource;
+import dev.ikm.komet.framework.controls.KonceptKindResolver;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -16,6 +18,7 @@ import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
+import dev.ikm.komet.layout.editor.StandardEditorWindows;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternNavViewModel;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
@@ -291,6 +294,8 @@ public class ConceptPatternNavController {
         conceptNavigatorControl.setOnKLDynamicCardAction((conceptFacade, windowTitle) -> {
             journalController.newCreateDynamicComponentCardWindow(conceptFacade, windowTitle);
         });
+        conceptNavigatorControl.setOnKLConceptWindowAction(conceptFacade ->
+                journalController.newCreateStandardKLWindow(conceptFacade, StandardEditorWindows.CONCEPT_WINDOW_2));
         conceptNavigatorControl.setOnConceptNavigationFailed((conceptFacade, message) -> {
             Toast toast = JournalController.toast();
             if (toast != null) {
@@ -347,8 +352,15 @@ public class ConceptPatternNavController {
             // Here, KometClipboard is used to encapsulate the entity's unique identifier (nid)
             KometClipboard content = new KometClipboard(EntityFacade.make(entity.nid()));
 
-            // Standard-size drag image with canonical cursor placement (right of the identicon).
-            KonceptDragSource.setDragView(dragboard, node);
+            // The canonical GENERATED glyph, not a snapshot of this row (ikmdev/komet#882).
+            // Snapshotting dragged the row's own border and geometry, rescaled to the standard
+            // height — soft and off-magnification — and could never carry a kind sigil, so a
+            // pattern dragged without its P. Resolving from the nid supplies the sigil
+            // (ikmdev/komet#883); a null calculator is enough, since a pattern's kind follows
+            // from the entity type.
+            KonceptDragGlyph.setDragView(dragboard,
+                    KonceptKindResolver.resolve(entity.nid(), null),
+                    entity.publicId(), PrimitiveData.text(entity.nid()), false);
 
             // Place the content on the dragboard
             dragboard.setContent(content);

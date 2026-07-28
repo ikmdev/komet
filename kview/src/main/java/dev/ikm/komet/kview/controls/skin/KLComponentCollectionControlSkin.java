@@ -11,7 +11,6 @@ import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.css.PseudoClass;
 import javafx.event.Event;
 import javafx.geometry.Insets;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
 import javafx.scene.input.DragEvent;
@@ -27,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ResourceBundle;
 
 /**
  * Default skin implementation for the {@link KLComponentCollectionControl} control
@@ -116,10 +114,17 @@ public class KLComponentCollectionControlSkin<T extends IntIdCollection> extends
         if (previousDropLine != null) {
             previousDropLine.setVisible(false);
         }
+
+        // Outside the collection the drag acts as a copy of the component rather than a
+        // rearrange, so the row being dragged shows again in place.
+        if (dragEvent.getGestureSource() instanceof KLComponentControl componentControl) {
+            componentControl.setVisible(true);
+            componentControl.pseudoClassStateChanged(DRAGGING_TO_SAME, false);
+        }
     }
 
     private void onDragOver(DragEvent dragEvent) {
-        if (dragEvent.getDragboard().hasContent(KLComponentControlSkin.COMPONENT_CONTROL_DRAG_FORMAT)) {
+        if (dragEvent.getDragboard().hasContent(KLComponentControlSkin.COMPONENT_CONTROL_DRAG_REORDER_FORMAT)) {
             dragEvent.acceptTransferModes(TransferMode.MOVE);
         }
 

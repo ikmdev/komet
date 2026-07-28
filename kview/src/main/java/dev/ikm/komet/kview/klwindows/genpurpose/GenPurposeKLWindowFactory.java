@@ -15,7 +15,10 @@ import dev.ikm.komet.layout.LayoutComputer;
 import dev.ikm.komet.layout.area.AreaGridSettings;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.preferences.NidTextEnum;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_USER_WINDOWS_DIR;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import org.slf4j.Logger;
@@ -79,10 +82,25 @@ public class GenPurposeKLWindowFactory implements EntityKlWindowFactory {
                 // Create the window with the extracted parameters
                 GenPurposeKLWindow window = create(journalTopic, entityFacade, viewProperties, preferences);
 
-                // Restore the window state
+                // Reconnect the KL-editor window definition (title, sections, fields) that
+                // initKLWindowPreferences wired at creation — without this the restored window is an
+                // empty shell (komet-desktop#20). The definition node is resolved from the persisted
+                // title + folder; the journal seeds the standard-window definitions before restoring.
+                final String editorWindowTitle =
+                        windowState.getStringProperty(GenPurposeKLWindow.KL_EDITOR_WINDOW_TITLE, null);
+                if (editorWindowTitle != null) {
+                    final String editorWindowDir = windowState.getStringProperty(
+                            GenPurposeKLWindow.KL_EDITOR_WINDOW_DIR, KL_USER_WINDOWS_DIR);
+                    final KometPreferences editorWindowPreferences =
+                            KometPreferencesImpl.getConfigurationRootPreferences()
+                                    .node(KL_EDITOR_APP).node(editorWindowDir).node(editorWindowTitle);
+                    window.initKLWindowPreferences(editorWindowPreferences, viewProperties);
+                }
+
+                // Restore the window state (geometry) after content init so the saved size/position wins.
                 window.revert();
 
-                LOG.info("Successfully restored concept window: {}", window.getWindowTopic());
+                LOG.info("Successfully restored general-purpose KL window: {}", window.getWindowTopic());
                 return window;
             }
             return null;

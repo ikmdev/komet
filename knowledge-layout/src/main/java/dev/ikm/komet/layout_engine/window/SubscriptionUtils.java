@@ -72,6 +72,29 @@ public interface SubscriptionUtils {
     }
 
     /**
+     * Creates a subscription for a JavaFX event <em>filter</em> (capturing phase) using a
+     * consumer function. Unlike {@link #createConsumerSubscription}, the filter sees every
+     * event dispatched through the node — including those a descendant control later
+     * consumes — so use this for observers that must not be vetoed by children.
+     *
+     * @param <T>       The type of event
+     * @param node      The node to attach the filter to
+     * @param eventType The type of event to filter
+     * @param filter    The consumer function to handle the event
+     * @return A subscription that cleans up the filter when unsubscribed
+     */
+    static <T extends Event> Subscription createFilterSubscription(
+            Node node,
+            EventType<T> eventType,
+            Consumer<T> filter) {
+        EventHandler<T> eventFilter = filter::accept;
+        return createSubscription(
+                () -> node.addEventFilter(eventType, eventFilter),
+                () -> node.removeEventFilter(eventType, eventFilter)
+        );
+    }
+
+    /**
      * Creates a subscription for context-aware JavaFX event handlers.
      * Automatically passes the specified context to the handler.
      *

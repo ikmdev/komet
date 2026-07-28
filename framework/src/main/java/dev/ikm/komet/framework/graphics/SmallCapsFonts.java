@@ -50,8 +50,13 @@ public final class SmallCapsFonts {
         if (!resolved) {
             resolved = true;
             List<String> families = Font.getFamilies();
-            if (families.contains("Alegreya Sans SC Medium")) {
-                family = "Alegreya Sans SC Medium";
+            // The preferred face is named by the shared appearance spec (#860/#861) — the same
+            // family whose TTF koncept-core ships for the raster media — with the Regular family
+            // as this framework's own registered fallback.
+            String preferred = network.ike.docs.konceptcore.KonceptAppearance.defaults()
+                    .smallCapsFamilyName();
+            if (families.contains(preferred)) {
+                family = preferred;
             } else if (families.contains("Alegreya Sans SC")) {
                 family = "Alegreya Sans SC";
             }

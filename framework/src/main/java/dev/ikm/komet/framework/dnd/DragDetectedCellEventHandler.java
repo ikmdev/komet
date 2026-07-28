@@ -31,6 +31,8 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.komet.framework.controls.KonceptKindResolver;
+import dev.ikm.tinkar.common.service.PrimitiveData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,13 +129,25 @@ public class DragDetectedCellEventHandler
 
             Dragboard db = eventNode.startDragAndDrop(TransferMode.COPY);
 
-            // Snapshot the cell's graphic when present (trims the tree indent / disclosure area);
-            // otherwise the node itself. Canonical placement — standard size, cursor just right of
-            // the identicon on the image's bottom border — replacing the old grab-point-relative
-            // centered offset so a tree/list drag looks like every other concept drag.
-            Node imageNode = (eventNode instanceof Cell<?> cell && cell.getGraphic() != null)
-                    ? cell.getGraphic() : eventNode;
-            KonceptDragSource.setDragView(db, imageNode);
+            // The canonical generated glyph, NOT a snapshot of the row (ikmdev/komet#882). Snapshotting
+            // dragged the cell's own border and geometry, rescaled by DragImageMaker to the standard
+            // height — the wrong border and soft, off-magnification image reported from the pattern
+            // navigator — and it could never show a kind sigil, because the row carries none.
+            //
+            // A null calculator is deliberate and sufficient here: this handler has no view, and the
+            // kind of a concept, pattern, or stamp follows from the entity type alone. Only the
+            // description-vs-plain-semantic distinction needs a view, and it degrades to SEMANTIC.
+            if (entityHandle != null && entityHandle.entity().isPresent()) {
+                int nid = entityHandle.expectEntity().nid();
+                KonceptDragGlyph.setDragView(db, KonceptKindResolver.resolve(nid, null),
+                        PrimitiveData.publicId(nid), PrimitiveData.text(nid), false);
+            } else {
+                // No component behind the gesture — keep the snapshot rather than dropping the
+                // drag view entirely.
+                Node imageNode = (eventNode instanceof Cell<?> cell && cell.getGraphic() != null)
+                        ? cell.getGraphic() : eventNode;
+                KonceptDragSource.setDragView(db, imageNode);
+            }
 
             /* Put a string on a dragboard */
             if (entityHandle.isPresent()) {

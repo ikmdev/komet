@@ -16,10 +16,21 @@ public abstract class KLDebounceControlSkin<C extends Control> extends SkinBase<
      * @param control The control for which this Skin should attach to.
      */
     protected KLDebounceControlSkin(C control) {
+        this(control, new TextField());
+    }
+
+    /**
+     * Constructor that allows subclasses to supply their own text field
+     * implementation (e.g. an {@code AutoCompleteTextField}).
+     *
+     * @param control The control for which this Skin should attach to.
+     * @param textField The text field to use as the editing area of this skin.
+     */
+    protected KLDebounceControlSkin(C control, TextField textField) {
         super(control);
         control.setFocusTraversable(false);
 
-        this.textField = new TextField();
+        this.textField = textField;
         Timeline timeline = new Timeline();
         KeyFrame keyFrame1 = new KeyFrame(Duration.millis(3000), (evt) -> {});
 

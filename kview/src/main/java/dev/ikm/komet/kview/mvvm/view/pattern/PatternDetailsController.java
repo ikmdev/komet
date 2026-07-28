@@ -75,8 +75,8 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Pr
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
-import static dev.ikm.tinkar.common.service.PrimitiveData.PREMUNDANE_TIME;
-import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PREMUNDANE;
+import static dev.ikm.tinkar.common.service.PrimitiveData.PRE_INCEPTION_TIME;
+import static dev.ikm.tinkar.common.util.time.DateTimeUtil.PRE_INCEPTION;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.dnd.KonceptDragSource;
@@ -512,8 +512,8 @@ public class PatternDetailsController {
                 semanticVersionLatest.ifPresent(entityVersion -> {
                     long rawTime = entityVersion.time();
                     String dateText = null;
-                    if (rawTime == PREMUNDANE_TIME) {
-                        dateText = PREMUNDANE;
+                    if (rawTime == PRE_INCEPTION_TIME) {
+                        dateText = PRE_INCEPTION;
                     } else {
                         Locale userLocale = Locale.getDefault();
                         LocalDate localDate = Instant.ofEpochMilli(rawTime).atZone(ZoneId.systemDefault()).toLocalDate();
@@ -809,8 +809,8 @@ public class PatternDetailsController {
             semanticVersionLatest.ifPresent(entityVersion -> {
                 long rawTime = entityVersion.time();
                 String dateText = null;
-                if (rawTime == PREMUNDANE_TIME) {
-                    dateText = PREMUNDANE;
+                if (rawTime == PRE_INCEPTION_TIME) {
+                    dateText = PRE_INCEPTION;
                 } else {
                     Locale userLocale = Locale.getDefault();
                     LocalDate localDate = Instant.ofEpochMilli(rawTime).atZone(ZoneId.systemDefault()).toLocalDate();
