@@ -10,6 +10,12 @@ public class MakeKLWindowEvent extends Evt {
 
     public static final EvtType<MakeConceptWindowEvent> OPEN_ENTITY_FROM_ENTITY = new EvtType<>(Evt.ANY, "OPEN_ENTITY_FROM_ENTITY");
 
+    /**
+     * Opens the entity in the named standard (application-provided) KL window, e.g.
+     * {@code StandardEditorWindows.CONCEPT_WINDOW_2}, rather than a user-defined window.
+     */
+    public static final EvtType<MakeKLWindowEvent> OPEN_STANDARD_WINDOW = new EvtType<>(Evt.ANY, "OPEN_STANDARD_WINDOW");
+
     private final EntityFacade entityFacade;
 
     private final String windowTitle;

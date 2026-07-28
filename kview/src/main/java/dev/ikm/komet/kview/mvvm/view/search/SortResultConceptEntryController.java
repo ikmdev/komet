@@ -29,6 +29,7 @@ import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
+import dev.ikm.komet.layout.editor.StandardEditorWindows;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
@@ -103,14 +104,25 @@ public class SortResultConceptEntryController extends AbstractBasicController {
         searchEntryContainer.setOnMouseExited(mouseEvent -> dragIndicator.setVisible(false));
 
         searchEntryContainer.setOnMouseClicked(mouseEvent -> {
-            // double left click creates the concept window
+            // double left click creates the concept window; shift + double left click opens the
+            // KL-driven general-purpose window instead of the classic one
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                 if (mouseEvent.getClickCount() == 2) {
                     if (entity instanceof ConceptEntity conceptEntity) {
-                        eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new MakeConceptWindowEvent(this, MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT,
-                                conceptEntity));
+                        if (mouseEvent.isShiftDown()) {
+                            eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new MakeKLWindowEvent(this, MakeKLWindowEvent.OPEN_STANDARD_WINDOW,
+                                    conceptEntity, StandardEditorWindows.CONCEPT_WINDOW_2));
+                        } else {
+                            eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new MakeConceptWindowEvent(this, MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT,
+                                    conceptEntity));
+                        }
                     } else if (entity instanceof PatternEntity patternEntity) {
-                        eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new MakePatternWindowEvent(this, MakePatternWindowEvent.OPEN_PATTERN, patternEntity, getViewProperties()));
+                        if (mouseEvent.isShiftDown()) {
+                            eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new MakeKLWindowEvent(this, MakeKLWindowEvent.OPEN_STANDARD_WINDOW,
+                                    patternEntity, StandardEditorWindows.PATTERN_WINDOW_2));
+                        } else {
+                            eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new MakePatternWindowEvent(this, MakePatternWindowEvent.OPEN_PATTERN, patternEntity, getViewProperties()));
+                        }
                     }
                 }
             }

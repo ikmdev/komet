@@ -482,7 +482,11 @@ public class JournalController {
         journalEventBus.subscribe(journalTopic, MakeConceptWindowEvent.class, makeComponentWindowEventSubscriber);
 
         makeKLWindowEventSubscriber = evt -> {
-            newCreateGenPurposeKLWindow(evt.getEntityFacade(), evt.getWindowTitle());
+            if (evt.getEventType() == MakeKLWindowEvent.OPEN_STANDARD_WINDOW) {
+                newCreateStandardKLWindow(evt.getEntityFacade(), evt.getWindowTitle());
+            } else {
+                newCreateGenPurposeKLWindow(evt.getEntityFacade(), evt.getWindowTitle());
+            }
         };
         journalEventBus.subscribe(journalTopic, MakeKLWindowEvent.class, makeKLWindowEventSubscriber);
 
