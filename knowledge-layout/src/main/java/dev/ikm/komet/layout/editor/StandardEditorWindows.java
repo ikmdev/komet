@@ -1,6 +1,7 @@
 package dev.ikm.komet.layout.editor;
 
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
+import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowType;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -47,8 +48,9 @@ public final class StandardEditorWindows {
     }
 
     /**
-     * The standard Concept window: a single section containing the Description pattern, required
-     * when the window is opened in the Journal in create mode.
+     * The standard Concept window: a main section containing the Description pattern, required
+     * when the window is opened in the Journal in create mode, plus an "Axiom" section with the
+     * Inferred definition pattern on top and the Stated definition pattern below it.
      */
     private static void saveConceptWindow2(KometPreferences standardWindowsPreferences,
                                            ViewCalculator viewCalculator) {
@@ -61,6 +63,18 @@ public final class StandardEditorWindows {
                 new EditorPatternModel(viewCalculator, TinkarTerm.DESCRIPTION_PATTERN.nid());
         descriptionPattern.setRequired(true);
         window.getMainSection().getPatterns().add(descriptionPattern);
+
+        EditorSectionModel axiomSection = new EditorSectionModel();
+        axiomSection.setName("Axiom");
+
+        EditorPatternModel inferredDefinitionPattern = new EditorPatternModel(viewCalculator,
+                TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid());
+        EditorPatternModel statedDefinitionPattern = new EditorPatternModel(viewCalculator,
+                TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid());
+        statedDefinitionPattern.setRowIndex(1);
+        axiomSection.getPatterns().addAll(inferredDefinitionPattern, statedDefinitionPattern);
+
+        window.getAdditionalSections().add(axiomSection);
 
         window.save(standardWindowsPreferences);
     }
