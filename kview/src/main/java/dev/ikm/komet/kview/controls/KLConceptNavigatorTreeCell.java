@@ -132,16 +132,16 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
         addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2 && !isEmpty() && !isViewLineage()) {
                 if (e.isShiftDown()) {
-                    // Shift + double-click opens the concept in the KL-driven general-purpose
-                    // concept window instead of the classic concept window.
-                    if (treeView.getOnKLConceptWindowAction() != null) {
-                        treeView.getOnKLConceptWindowAction().accept(getItem());
+                    // Shift + double-click opens the concept in the classic concept window
+                    // instead of the KL-driven general-purpose concept window.
+                    if (treeView.getOnAction() != null) {
+                        Consumer<ConceptFacade> consumer = treeView.getOnAction().apply(KLConceptNavigatorControl.CONTEXT_MENU_ACTION.OPEN_IN_WORKSPACE);
+                        if (consumer != null) {
+                            consumer.accept(getItem());
+                        }
                     }
-                } else if (treeView.getOnAction() != null) {
-                    Consumer<ConceptFacade> consumer = treeView.getOnAction().apply(KLConceptNavigatorControl.CONTEXT_MENU_ACTION.OPEN_IN_WORKSPACE);
-                    if (consumer != null) {
-                        consumer.accept(getItem());
-                    }
+                } else if (treeView.getOnKLConceptWindowAction() != null) {
+                    treeView.getOnKLConceptWindowAction().accept(getItem());
                 }
                 e.consume();
             }

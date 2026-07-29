@@ -104,24 +104,24 @@ public class SortResultConceptEntryController extends AbstractBasicController {
         searchEntryContainer.setOnMouseExited(mouseEvent -> dragIndicator.setVisible(false));
 
         searchEntryContainer.setOnMouseClicked(mouseEvent -> {
-            // double left click creates the concept window; shift + double left click opens the
-            // KL-driven general-purpose window instead of the classic one
+            // double left click opens the KL-driven general-purpose window; shift + double left
+            // click opens the classic window instead
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                 if (mouseEvent.getClickCount() == 2) {
                     if (entity instanceof ConceptEntity conceptEntity) {
                         if (mouseEvent.isShiftDown()) {
-                            eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new MakeKLWindowEvent(this, MakeKLWindowEvent.OPEN_STANDARD_WINDOW,
-                                    conceptEntity, StandardEditorWindows.CONCEPT_WINDOW_2));
-                        } else {
                             eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new MakeConceptWindowEvent(this, MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT,
                                     conceptEntity));
+                        } else {
+                            eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new MakeKLWindowEvent(this, MakeKLWindowEvent.OPEN_STANDARD_WINDOW,
+                                    conceptEntity, StandardEditorWindows.CONCEPT_WINDOW_2));
                         }
                     } else if (entity instanceof PatternEntity patternEntity) {
                         if (mouseEvent.isShiftDown()) {
+                            eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new MakePatternWindowEvent(this, MakePatternWindowEvent.OPEN_PATTERN, patternEntity, getViewProperties()));
+                        } else {
                             eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new MakeKLWindowEvent(this, MakeKLWindowEvent.OPEN_STANDARD_WINDOW,
                                     patternEntity, StandardEditorWindows.PATTERN_WINDOW_2));
-                        } else {
-                            eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new MakePatternWindowEvent(this, MakePatternWindowEvent.OPEN_PATTERN, patternEntity, getViewProperties()));
                         }
                     }
                 }

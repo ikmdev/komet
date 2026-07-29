@@ -154,24 +154,23 @@ public class PatternNavEntryController {
         patternBadgeBox.setAlignment(Pos.CENTER_LEFT);
         patternBadgeBox.getChildren().setAll(patternBadge);
 
-        // add listener for double click to summon the pattern into the journal view; shift +
-        // double click opens the KL-driven general-purpose pattern window instead
+        // add listener for double click to open the KL-driven general-purpose pattern window;
+        // shift + double click summons the classic pattern window into the journal view instead
         patternEntryHBox.setOnMouseClicked(mouseEvent -> {
-            // double left click creates the concept window
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                 if (mouseEvent.getClickCount() == 2) {
                     if (mouseEvent.isShiftDown()) {
+                        ViewProperties viewProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
+                        var newViewProperties = viewProperties.parentView().makeOverridableViewProperties("PatternNavEntryController.initialize.patternEntryHBoxOnMouseClicked");
+
                         EvtBusFactory.getDefaultEvtBus().publish(instancesViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
-                                new MakeKLWindowEvent(this, MakeKLWindowEvent.OPEN_STANDARD_WINDOW,
-                                        instancesViewModel.getPropertyValue(PATTERN_FACADE), StandardEditorWindows.PATTERN_WINDOW_2));
+                                new MakePatternWindowEvent(this,
+                                        MakePatternWindowEvent.OPEN_PATTERN, instancesViewModel.getPropertyValue(PATTERN_FACADE), newViewProperties));
                         return;
                     }
-                    ViewProperties viewProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
-                    var newViewProperties = viewProperties.parentView().makeOverridableViewProperties("PatternNavEntryController.initialize.patternEntryHBoxOnMouseClicked");
-
                     EvtBusFactory.getDefaultEvtBus().publish(instancesViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
-                            new MakePatternWindowEvent(this,
-                                    MakePatternWindowEvent.OPEN_PATTERN, instancesViewModel.getPropertyValue(PATTERN_FACADE), newViewProperties));
+                            new MakeKLWindowEvent(this, MakeKLWindowEvent.OPEN_STANDARD_WINDOW,
+                                    instancesViewModel.getPropertyValue(PATTERN_FACADE), StandardEditorWindows.PATTERN_WINDOW_2));
                 }
             }
         });
