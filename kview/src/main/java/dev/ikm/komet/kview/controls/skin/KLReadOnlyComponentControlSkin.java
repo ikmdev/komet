@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.NodeUtils;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
+import dev.ikm.komet.kview.controls.ComponentItemNodeFactory;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -9,7 +10,7 @@ import javafx.scene.layout.Priority;
 public class KLReadOnlyComponentControlSkin extends KLReadOnlyBaseControlSkin<KLReadOnlyComponentControl> {
 
     private final HBox textContainer = new HBox();
-    private final ComponentItemNode componentItemNode = new ComponentItemNode();
+    private final ComponentItemNode componentItemNode = ComponentItemNodeFactory.create();
 
     /**
      * @param control The control for which this Skin should attach to.

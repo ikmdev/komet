@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
+import dev.ikm.komet.kview.controls.ComponentItemNodeFactory;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
 import javafx.collections.ListChangeListener;
 import javafx.scene.control.Label;
@@ -47,7 +48,7 @@ public class KLReadOnlyComponentListControlSkin extends KLReadOnlyMultiComponent
         numberLabel.getStyleClass().add("number-label");
 
         // Component (Icon + Text)
-        ComponentItemNode componentUIItem = new ComponentItemNode(componentItem);
+        ComponentItemNode componentUIItem = ComponentItemNodeFactory.create(componentItem);
 
         componentRow.getChildren().addAll(
             numberLabel,

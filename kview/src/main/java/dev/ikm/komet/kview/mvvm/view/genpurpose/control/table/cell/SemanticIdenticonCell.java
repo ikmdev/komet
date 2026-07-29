@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell;
 
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
+import dev.ikm.komet.kview.controls.ComponentItemNodeFactory;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.SemanticRow;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.TableCell;
@@ -18,7 +19,7 @@ public class SemanticIdenticonCell extends TableCell<SemanticRow, Integer> {
     public SemanticIdenticonCell(Function<Integer, ComponentItem> nidToComponentItem) {
         this.nidToComponentItem = nidToComponentItem;
 
-        componentItemNode = new ComponentItemNode();
+        componentItemNode = ComponentItemNodeFactory.create();
 
         componentItemNode.setDragImageSupplier(() -> {
             if (currentComponentItem == null) {

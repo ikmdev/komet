@@ -51,6 +51,7 @@ import dev.ikm.komet.kview.controls.SectionTitledPane;
 import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.controls.SectionEditPopup;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
+import dev.ikm.komet.kview.controls.ComponentItemNodeFactory;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
@@ -213,6 +214,10 @@ public class GenPurposeDetailsController {
 
     @FXML
     private void initialize() {
+
+        // The FXML loader instantiates the title node, so the factory cannot; attach its
+        // glyph resolution here instead.
+        ComponentItemNodeFactory.attachGlyphResolution(windowConceptTitle);
 
         // Drive the coordinates menu from the relocated FilterOptionsPopup (ike-issues#661); the popup
         // writes the window's nodeView override, which the window's KL context + areas resolve through.
