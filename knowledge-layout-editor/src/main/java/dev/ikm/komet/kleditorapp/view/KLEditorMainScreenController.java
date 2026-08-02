@@ -7,6 +7,7 @@ import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
 import dev.ikm.komet.kleditorapp.view.control.ControlBrowserCell;
 import dev.ikm.komet.kleditorapp.view.control.PatternBrowserCell;
 import dev.ikm.komet.kleditorapp.view.propertiespane.PropertiesPane;
+import dev.ikm.komet.layout.PatternDefinitionSeeder;
 import dev.ikm.komet.layout.area.KlSupplementalArea;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
 import dev.ikm.komet.layout.editor.StandardEditorWindows;
@@ -106,6 +107,11 @@ public class KLEditorMainScreenController {
         this.windowViewCoordinates = windowSettings.getView();
 
         viewCalculator = ViewCalculatorWithCache.getCalculator(windowViewCoordinates.toViewCoordinateRecord());
+
+        // Make sure the pattern-definition patterns exist before the pattern browser is populated
+        // (so they are offered like any other pattern) and before the standard windows are seeded
+        // (the standard Pattern window is composed from them).
+        PatternDefinitionSeeder.ensureSeeded(viewCalculator);
 
         // When editing a standard view, make sure its definition exists before loading it.
         if (standardWindows) {

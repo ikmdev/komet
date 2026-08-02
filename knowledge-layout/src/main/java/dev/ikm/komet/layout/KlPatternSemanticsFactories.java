@@ -14,6 +14,22 @@ import java.util.ServiceLoader;
  */
 public final class KlPatternSemanticsFactories {
 
+    /**
+     * Fully qualified name of the Standard display factory. Referenced by name (not type) because
+     * the factory implementations live in the downstream knowledge-layout-editor module; depending
+     * on them directly would create a cycle. Resolve with {@link #byClassName(String)}.
+     */
+    public static final String STANDARD_FACTORY_CLASS_NAME =
+            "dev.ikm.komet.kleditorapp.factory.KlPatternSemanticsStandardFactory";
+
+    /**
+     * Fully qualified name of the Table display factory. Referenced by name (not type) because
+     * the factory implementations live in the downstream knowledge-layout-editor module; depending
+     * on them directly would create a cycle. Resolve with {@link #byClassName(String)}.
+     */
+    public static final String TABLE_FACTORY_CLASS_NAME =
+            "dev.ikm.komet.kleditorapp.factory.KlPatternSemanticsTableFactory";
+
     private static final List<KlPatternSemanticsFactory> FACTORIES =
             ServiceLoader.load(KlPatternSemanticsFactory.class).stream()
                     .map(ServiceLoader.Provider::get)
