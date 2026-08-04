@@ -164,6 +164,12 @@
     -fx-padding: 2px;
 }
 
+/* Gaps between patterns (grid tiles) within a Section */
+.window .section-view .content > .editor-grid-pane {
+    -hgap: 5px;
+    -vgap: 5px;
+}
+
 .window .section-view .content > .editor-grid-pane > GridPane > .grid-tile {
     -fx-border-color: #7ac257;
     -fx-border-width: 1px;
@@ -270,6 +276,12 @@
 }
 
 /*************************  GridTile's inside Pattern  ************************/
+
+/* Gaps between fields (grid tiles) within a Pattern */
+.window .section-view .content .pattern-container > .editor-grid-pane {
+    -hgap: 5px;
+    -vgap: 0px;
+}
 
 .window .section-view .content .pattern-container > .editor-grid-pane > GridPane > .grid-tile {
     -fx-border-color: #ccc #ccc transparent #ccc;

@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell;
 
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
+import dev.ikm.komet.kview.controls.ComponentItemNodeFactory;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.SemanticRow;
 import dev.ikm.tinkar.common.id.IntIdCollection;
 import javafx.scene.control.ContentDisplay;
@@ -37,7 +38,7 @@ public class SemanticComponentCollectionCell extends TableCell<SemanticRow, IntI
         intIdCollection.forEach(nid -> {
             ComponentItem componentItem = nidToComponentItem.apply(nid);
 
-            ComponentItemNode componentItemNode = new ComponentItemNode(componentItem);
+            ComponentItemNode componentItemNode = ComponentItemNodeFactory.create(componentItem);
             componentContainer.getChildren().add(componentItemNode);
         });
 

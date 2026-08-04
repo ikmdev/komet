@@ -58,9 +58,6 @@ public class SectionViewControl extends EditorWindowBaseControl {
 
         gridPane.numberColumnsProperty().bind(numberColumns);
 
-        gridPane.setHgap(5);
-        gridPane.setVgap(5);
-
         gridPane.onDragDroppedIntoTileProperty().bind(onDragDroppedIntoTileProperty());
         gridPane.onDragOverIntoTileProperty().bind(onDragOverIntoTileProperty());
         gridPane.setOnShouldDragAndDropRearrange(gridBaseControl ->

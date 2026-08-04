@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.NodeUtils;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
+import dev.ikm.komet.kview.controls.ComponentItemNodeFactory;
 import dev.ikm.komet.kview.controls.KLReadOnlyDiTreeControl;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
@@ -198,7 +199,7 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
     }
 
     private ComponentItemNode chip(int nid) {
-        ComponentItemNode itemNode = new ComponentItemNode(getSkinnable().getComponentItemResolver().apply(nid));
+        ComponentItemNode itemNode = ComponentItemNodeFactory.create(getSkinnable().getComponentItemResolver().apply(nid));
         itemNode.setShowDragHandleOnHover(true);
         return itemNode;
     }

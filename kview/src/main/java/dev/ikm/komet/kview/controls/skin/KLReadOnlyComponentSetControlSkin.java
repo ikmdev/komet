@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
+import dev.ikm.komet.kview.controls.ComponentItemNodeFactory;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentSetControl;
 import javafx.collections.ListChangeListener;
 
@@ -38,7 +39,7 @@ public class KLReadOnlyComponentSetControlSkin extends KLReadOnlyMultiComponentC
     }
 
     private void addNewUIItem(ComponentItem componentItem) {
-        ComponentItemNode componentItemNode = new ComponentItemNode(componentItem);
+        ComponentItemNode componentItemNode = ComponentItemNodeFactory.create(componentItem);
         componentsContainer.getChildren().add(componentItemNode);
         componentUIItems.put(componentItem, componentItemNode);
 

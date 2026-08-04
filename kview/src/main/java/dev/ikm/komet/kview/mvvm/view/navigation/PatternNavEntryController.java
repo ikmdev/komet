@@ -4,8 +4,10 @@ import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.KometIcon;
+import dev.ikm.komet.kview.events.MakeKLWindowEvent;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
+import dev.ikm.komet.layout.editor.StandardEditorWindows;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -152,17 +154,23 @@ public class PatternNavEntryController {
         patternBadgeBox.setAlignment(Pos.CENTER_LEFT);
         patternBadgeBox.getChildren().setAll(patternBadge);
 
-        // add listener for double click to summon the pattern into the journal view
+        // add listener for double click to open the KL-driven general-purpose pattern window;
+        // shift + double click summons the classic pattern window into the journal view instead
         patternEntryHBox.setOnMouseClicked(mouseEvent -> {
-            // double left click creates the concept window
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                 if (mouseEvent.getClickCount() == 2) {
-                    ViewProperties viewProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
-                    var newViewProperties = viewProperties.parentView().makeOverridableViewProperties("PatternNavEntryController.initialize.patternEntryHBoxOnMouseClicked");
+                    if (mouseEvent.isShiftDown()) {
+                        ViewProperties viewProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
+                        var newViewProperties = viewProperties.parentView().makeOverridableViewProperties("PatternNavEntryController.initialize.patternEntryHBoxOnMouseClicked");
 
+                        EvtBusFactory.getDefaultEvtBus().publish(instancesViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                                new MakePatternWindowEvent(this,
+                                        MakePatternWindowEvent.OPEN_PATTERN, instancesViewModel.getPropertyValue(PATTERN_FACADE), newViewProperties));
+                        return;
+                    }
                     EvtBusFactory.getDefaultEvtBus().publish(instancesViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
-                            new MakePatternWindowEvent(this,
-                                    MakePatternWindowEvent.OPEN_PATTERN, instancesViewModel.getPropertyValue(PATTERN_FACADE), newViewProperties));
+                            new MakeKLWindowEvent(this, MakeKLWindowEvent.OPEN_STANDARD_WINDOW,
+                                    instancesViewModel.getPropertyValue(PATTERN_FACADE), StandardEditorWindows.PATTERN_WINDOW_2));
                 }
             }
         });
