@@ -1,0 +1,133 @@
+/* Editing affordances of KLDiTreeControl, layered on top of read-only-ditree-control.css. */
+
+/* Editable clause headers highlight on hover, signalling the + button and the structure
+   context menu. */
+.ditree-control .ditree-clause-header:hover {
+    -fx-background-color: #eef2f7;
+    -fx-background-radius: 4px;
+}
+
+/* The + button on clause headers: space is always reserved; the button fades in on header hover
+   (same reserve-and-reveal pattern as the chips' drag handle). */
+.ditree-control .ditree-add-button {
+    -fx-opacity: 0;
+    -fx-padding: 2 5 2 5;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+}
+.ditree-control .ditree-clause-header:hover .ditree-add-button,
+.ditree-control .ditree-concept-row:hover .ditree-add-button,
+.ditree-control .ditree-role-row:hover .ditree-add-button,
+.ditree-control .ditree-add-button:hover {
+    -fx-opacity: 1;
+}
+
+/* Editable leaf rows tint on hover, matching the mockup's role-row hover. */
+.ditree-control .ditree-role-row:hover {
+    -fx-background-color: #f7fafc;
+    -fx-background-radius: 4px;
+}
+.ditree-control .ditree-add-button:hover {
+    -fx-background-color: #deebff;
+}
+
+/* The plus glyph itself — self-contained shape, no icon-font or menu-scoped styling. */
+.ditree-control .ditree-plus-icon {
+    -fx-background-color: #4A7AD2;
+    -fx-shape: "M4 0 H6 V4 H10 V6 H6 V10 H4 V6 H0 V4 H4 Z";
+    -fx-min-width: 10px;
+    -fx-max-width: 10px;
+    -fx-min-height: 10px;
+    -fx-max-height: 10px;
+}
+
+/* Inline search slots (KLComponentControl instances) mounted in place of a chip or inside a
+   template row. Restyled to the chip's own geometry — no grey container box, chip-sized white
+   search pill, chip-sized text — so swapping a chip for its slot isn't an abrupt change. */
+.ditree-control .ditree-slot {
+    -fx-min-width: 220px;
+}
+.ditree-control .ditree-slot > .concept-container {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+    -fx-background-radius: 3px;
+}
+.ditree-control .ditree-slot > .concept-container > .concept-search-box {
+    -fx-padding: 1 2 1 4;
+}
+/* Match the bump-out component control's search text exactly — the full font is set (not just
+   family/size) because a family-only rule keeps an inherited bold weight from the hosting
+   section's styling. The padding nudges the text up and right within the compact pill. */
+.ditree-control .ditree-slot > .concept-container > .concept-search-box > .search-field-container > .concept-text-field {
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: normal;
+    -fx-font-style: normal;
+    -fx-font-size: 14px;
+    -fx-padding: 0 0 2 3;
+}
+.ditree-control .ditree-slot > .concept-container > .concept-search-box > .search-field-container > .search-prompt {
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: normal;
+    -fx-font-style: normal;
+    -fx-font-size: 13px;
+}
+
+/* Editable chips reserve space for both hover affordances at the right edge: the drag grip and
+   the ✕ button ([ … text … grip ✕ ]). */
+.ditree-control .component-item.show-drag-handle.show-discard-button > .label {
+    -fx-padding: 2 38 2 4;
+}
+
+/* The ✕ button revealed on chip hover — same glyph and color as KLComponentControl's discard
+   button, scaled down to sit inside the chip; pressing it swaps the chip for the inline search
+   slot. The 15px button keeps a comfortable click target around the 9px glyph. */
+.ditree-control .component-item .component-item-discard-button {
+    -fx-cursor: hand;
+    -fx-background-radius: 3px;
+    -fx-pref-width: 15px;
+    -fx-pref-height: 15px;
+    -fx-min-width: 15px;
+    -fx-min-height: 15px;
+    -fx-max-width: 15px;
+    -fx-max-height: 15px;
+}
+.ditree-control .component-item .component-item-discard-button:hover {
+    -fx-background-color: #f4f4f4;
+}
+.ditree-control .component-item .component-item-discard-icon {
+    -fx-background-color: #4A7AD2;
+    -fx-shape: "M15.8337 5.34199L14.6587 4.16699L10.0003 8.82533L5.34199 4.16699L4.16699 5.34199L8.82533 10.0003L4.16699 14.6587L5.34199 15.8337L10.0003 11.1753L14.6587 15.8337L15.8337 14.6587L11.1753 10.0003L15.8337 5.34199Z";
+    -fx-min-width: 9px;
+    -fx-max-width: 9px;
+    -fx-min-height: 9px;
+    -fx-max-height: 9px;
+}
+
+/* A chip accepting a dragged concept shows the same drop hint as KLComponentControl's
+   drag-and-drop area in the properties bump-out (.concept-drop-area). */
+.ditree-control .component-item:drop-target > .label {
+    -fx-background-color: #F1F3F8;
+    -fx-background-radius: 4px;
+    -fx-border-color: #5DCF16;
+    -fx-border-width: 2px;
+    -fx-border-radius: 4px;
+    -fx-border-style: dashed;
+    -fx-text-fill: #6E7989;
+}
+
+/* Border width counts into the label's layout insets, so the thicker drop border trades 1px of
+   padding on every side — the chip's footprint stays identical while the hint shows. */
+.ditree-control .component-item.show-drag-handle.show-discard-button:drop-target > .label {
+    -fx-padding: 1 37 1 8;
+}
+
+/* The hint replaces the identicon with the bump-out drop area's drag-and-drop icon
+   (.concept-drag-and-drop-icon), scaled to the chip's 16px content height. */
+.ditree-control .component-item .component-item-drop-hint-icon {
+    -fx-background-color: #6E7989;
+    -fx-shape: "M27 22.5V27H9V22.5H6V27C6 28.65 7.35 30 9 30H27C28.65 30 30 28.65 30 27V22.5H27ZM25.5 16.5L23.385 14.385L19.5 18.255V6H16.5V18.255L12.615 14.385L10.5 16.5L18 24L25.5 16.5Z";
+    -fx-min-width: 11px;
+    -fx-max-width: 11px;
+    -fx-min-height: 11px;
+    -fx-max-height: 11px;
+}

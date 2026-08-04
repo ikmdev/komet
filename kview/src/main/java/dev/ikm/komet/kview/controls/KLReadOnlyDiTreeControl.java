@@ -2,7 +2,9 @@ package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLReadOnlyDiTreeControlSkin;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Skin;
 
@@ -38,6 +40,17 @@ public class KLReadOnlyDiTreeControl extends KLReadOnlyBaseSingleValueControl<Di
     public final IntFunction<ComponentItem> getComponentItemResolver() { return componentItemResolver.get(); }
     public final ObjectProperty<IntFunction<ComponentItem>> componentItemResolverProperty() { return componentItemResolver; }
     public final void setComponentItemResolver(IntFunction<ComponentItem> resolver) { componentItemResolver.set(resolver); }
+
+    // -- root concept nid
+    /**
+     * The concept the definition is about (the axiom semantic's referenced component). When set
+     * (non-zero), the tree renders a root row with this concept's chip and indents the definition
+     * below it, like the classic axiom control; when unset the definition renders flat.
+     */
+    private final IntegerProperty rootConceptNid = new SimpleIntegerProperty(this, "rootConceptNid");
+    public final int getRootConceptNid() { return rootConceptNid.get(); }
+    public final IntegerProperty rootConceptNidProperty() { return rootConceptNid; }
+    public final void setRootConceptNid(int nid) { rootConceptNid.set(nid); }
 
     // -- description resolver
     /**

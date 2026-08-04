@@ -42,6 +42,7 @@ import dev.ikm.komet.kview.klauthoring.editable.booleanfield.KlEditableBooleanFi
 import dev.ikm.komet.kview.klauthoring.editable.componentfield.KlEditableComponentFieldFactory;
 import dev.ikm.komet.kview.klauthoring.editable.componentlistfield.KlEditableComponentListFieldFactory;
 import dev.ikm.komet.kview.klauthoring.editable.componentsetfield.KlEditableComponentSetFieldFactory;
+import dev.ikm.komet.kview.klauthoring.editable.ditreefield.KlStatedAxiomDiTreeFieldFactory;
 import dev.ikm.komet.kview.klauthoring.editable.floatfield.KlEditableFloatFieldFactory;
 import dev.ikm.komet.kview.klauthoring.editable.imagefield.KlEditableImageFieldFactory;
 import dev.ikm.komet.kview.klauthoring.editable.integerfield.KlEditableIntegerFieldFactory;
@@ -237,9 +238,17 @@ public class KlFieldHelper {
             //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
             factory = new KlReadOnlyImageFieldFactory();
         } else if (dataTypeNid == DITREE_FIELD.nid()) {
-            // Logical definitions (e.g. the EL++ stated/inferred terminological axiom patterns)
-            // render as an axiom tree of component chips instead of the read-only string fallback.
-            factory = new KlReadOnlyDiTreeFieldFactory();
+            // Logical definitions render as an axiom tree of component chips. The stated
+            // definition (per the view's logic coordinate) edits inline in the window body —
+            // each applied edit commits a new semantic version, the classic axiom editor
+            // precedent — while the inferred definition (and any other DiTree) stays read-only.
+            int statedAxiomsPatternNid = viewProperties.calculator().viewCoordinateRecord()
+                    .logicCoordinate().statedAxiomsPatternNid();
+            if (fieldRecord.patternNid() == statedAxiomsPatternNid) {
+                factory = new KlStatedAxiomDiTreeFieldFactory();
+            } else {
+                factory = new KlReadOnlyDiTreeFieldFactory();
+            }
         } else {
             // This fixes the exceptions the user experiences when a semantic (GenEditWindow) is summoned. The exception
             // happens when a datatype field that doesn't have a JavaFX custom control created yet.
@@ -292,8 +301,9 @@ public class KlFieldHelper {
         } else if (dataTypeNid == STRING_FIELD.nid() || dataTypeNid == STRING.nid()) {
             factory = new KlEditableStringFieldFactory();
         } else if (dataTypeNid == DITREE_FIELD.nid()) {
-            // Axiom editing is not supported yet: show the same read-only axiom tree in edit mode
-            // (the factory's Editable overload returns the read-only field).
+            // Axiom editing happens inline in the window body, like the classic axiom control —
+            // the properties panel shows the definition read-only (the factory's Editable
+            // overload returns the read-only field).
             factory = new KlReadOnlyDiTreeFieldFactory();
         } else {
             // This fixes the exceptions the user experiences when a semantic (GenEditWindow) is summoned. The exception

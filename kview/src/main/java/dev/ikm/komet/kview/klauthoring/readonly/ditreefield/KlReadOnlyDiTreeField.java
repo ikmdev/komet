@@ -9,7 +9,6 @@ import dev.ikm.komet.kview.controls.KLReadOnlyDiTreeControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.layout.version.field.KlDirectedTreeField;
 import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import javafx.scene.image.Image;
@@ -28,13 +27,15 @@ public class KlReadOnlyDiTreeField extends BaseDefaultKlField<DiTreeEntity> impl
 
         control.setComponentItemResolver(nid -> {
             String description = observableView.getDescriptionTextOrNid(nid);
-            PublicId publicId = Entity.getFast(nid).publicId();
+            EntityHandle entityHandle = EntityHandle.get(nid);
+            PublicId publicId = entityHandle.expectEntity().publicId();
             Image identicon = Identicon.generateIdenticonImage(publicId);
-            boolean isConcept = EntityHandle.get(nid).isConcept();
-            return new ComponentItem(description, identicon, publicId, isConcept);
+            return new ComponentItem(description, identicon, publicId, entityHandle.isConcept());
         });
         control.setDescriptionResolver(observableView::getDescriptionTextOrNid);
         control.setTitle(getTitle());
+        int semanticNid = observableDiTreeField.field().nid();
+        control.setRootConceptNid(EntityHandle.getSemanticOrThrow(semanticNid).referencedComponentNid());
         control.valueProperty().bind(observableDiTreeField.editableValueProperty());
     }
 }
