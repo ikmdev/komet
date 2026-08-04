@@ -123,7 +123,15 @@ public class SelectDataSourceController {
         fileListView.getItems().sort(NaturalOrder.getObjectComparator());
         fileListView.getSelectionModel().selectFirst();
         fileListView.getSelectionModel().selectFirst();
-        fileListView.requestFocus();
+        boolean hasOptions = !fileListView.getItems().isEmpty();
+        fileListView.setVisible(hasOptions);
+        fileListView.setManaged(hasOptions);
+        // When there is no file list, move the property sheet up and let it span both rows
+        GridPane.setRowIndex(propertySheet, hasOptions ? 1 : 0);
+        GridPane.setRowSpan(propertySheet, hasOptions ? 1 : 2);
+        if (hasOptions) {
+            fileListView.requestFocus();
+        }
 
         propertySheet.getItems().clear();
         validationSupport = new ValidationSupport();

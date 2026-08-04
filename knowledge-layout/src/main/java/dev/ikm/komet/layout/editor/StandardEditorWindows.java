@@ -5,8 +5,13 @@ import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowType;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.common.service.RemoteConceptSearchService;
+import dev.ikm.tinkar.common.service.ServiceLifecycleManager;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -19,6 +24,8 @@ import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_WINDOWS;
  * user-windows folder).
  */
 public final class StandardEditorWindows {
+
+    private static final Logger LOG = LoggerFactory.getLogger(StandardEditorWindows.class);
 
     /** Title of the standard Concept window. */
     public static final String CONCEPT_WINDOW_2 = "Concept (2)";
@@ -59,6 +66,8 @@ public final class StandardEditorWindows {
         window.setWindowType(EditorWindowType.STANDARD_CONCEPT);
         window.setTimelineVisible(true);
 
+        ensureLocallyResolvable(viewCalculator, TinkarTerm.DESCRIPTION_PATTERN);
+
         EditorPatternModel descriptionPattern =
                 new EditorPatternModel(viewCalculator, TinkarTerm.DESCRIPTION_PATTERN.nid());
         descriptionPattern.setRequired(true);
@@ -77,6 +86,29 @@ public final class StandardEditorWindows {
         window.getAdditionalSections().add(axiomSection);
 
         window.save(standardWindowsPreferences);
+    }
+
+    /**
+     * If {@code concept} has no local description text — e.g. a remote-backed provider whose
+     * local entity store starts empty and only loads entities on demand — fetches its full
+     * entity graph from the active {@link RemoteConceptSearchService} so its name resolves
+     * normally afterward. No-op when the concept already resolves locally, or when no remote
+     * search service is active (plain local providers always have core TinkarTerm concepts
+     * loaded from starter data).
+     */
+    private static void ensureLocallyResolvable(ViewCalculator viewCalculator, EntityFacade concept) {
+        if (viewCalculator.getRegularDescriptionText(concept).isPresent()
+                || viewCalculator.getFullyQualifiedNameText(concept).isPresent()) {
+            return;
+        }
+        ServiceLifecycleManager.get().getRunningService(RemoteConceptSearchService.class)
+                .ifPresent(remote -> {
+                    try {
+                        remote.loadConceptWithSemantics(concept.publicId().asUuidList().toList());
+                    } catch (Exception e) {
+                        LOG.warn("Failed to load {} from remote backend: {}", concept, e.getMessage());
+                    }
+                });
     }
 
     /**

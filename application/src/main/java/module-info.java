@@ -38,6 +38,14 @@ module dev.ikm.komet.application {
     requires dev.ikm.tinkar.provider.ephemeral;
     // End not happy...
 
+    // Plugin modules — must be explicit so the JVM includes them in the module graph
+    // (service binding via transitively-required modules' `uses` is not sufficient).
+    // komet-grpc-plugin's jar retains the module name dev.ikm.tinkar.provider.grpc
+    // (its original name from tinkar-core, before the implementation moved into the
+    // external plugin repo) rather than a komet.* name — no wrapper module needed.
+    requires komet.claude;
+    requires dev.ikm.tinkar.provider.grpc;
+
     // JPro related modules
     requires jpro.webapi;
     requires one.jpro.platform.auth.core;
