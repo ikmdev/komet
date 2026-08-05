@@ -4,6 +4,7 @@ import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.kview.NodeUtils;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
+import dev.ikm.komet.kview.controls.ComponentItemNodeFactory;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLDiTreeControl;
 import dev.ikm.komet.kview.controls.KometIcon;
@@ -53,6 +54,7 @@ import java.util.function.Consumer;
 import static dev.ikm.komet.framework.dnd.KometClipboard.COMPONENT_DRAG_FORMAT;
 import static dev.ikm.komet.framework.dnd.KometClipboard.decodePublicId;
 import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
+import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
 
 /**
  * <p>Skin for {@link KLDiTreeControl}: renders the axiom tree exactly like
@@ -669,6 +671,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
     private HBox roleTemplateRow(BiConsumer<EntityProxy, EntityProxy> onComplete) {
         KLComponentControl typeSlot = newSlot();
         KLComponentControl restrictionSlot = newSlot();
+
         HBox row = new HBox(clauseBar("role"), operator("∃ ("), typeSlot,
                 operator(") → ["), restrictionSlot, operator("]"));
         row.getStyleClass().add("ditree-role-row");
@@ -680,10 +683,41 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
                 onComplete.accept(typeSlot.getEntity(), restrictionSlot.getEntity());
             }
         };
-        typeSlot.entityProperty().subscribe(maybeComplete);
-        restrictionSlot.entityProperty().subscribe(maybeComplete);
+        showPendingChipWhenPicked(row, typeSlot, maybeComplete);
+        showPendingChipWhenPicked(row, restrictionSlot, maybeComplete);
         focusSlot(typeSlot);
         return row;
+    }
+
+    /**
+     * While a template waits for its other concept, a picked slot renders as a regular chip —
+     * clicking it or its ✕ reopens the slot to change the pick. The slot keeps the picked entity
+     * (the template commits from it); the chip is purely presentation.
+     */
+    private void showPendingChipWhenPicked(HBox row, KLComponentControl slot, Runnable maybeComplete) {
+        slot.entityProperty().subscribe((oldEntity, newEntity) -> {
+            if (KLComponentControl.isEmpty(newEntity)) {
+                return;
+            }
+            ComponentItemNode chip = ComponentItemNodeFactory.create(
+                    getSkinnable().getComponentItemResolver().apply(newEntity.nid()));
+            chip.setShowDragHandleOnHover(true);
+            chip.setShowDiscardButtonOnHover(true);
+            Runnable reopenSlot = () -> {
+                slot.setEntity(BLANK_CONCEPT);
+                row.getChildren().set(row.getChildren().indexOf(chip), slot);
+                focusSlot(slot);
+            };
+            chip.setOnDiscardAction(reopenSlot);
+            chip.setOnMouseClicked(e -> {
+                if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 1 && e.isStillSincePress()) {
+                    reopenSlot.run();
+                    e.consume();
+                }
+            });
+            row.getChildren().set(row.getChildren().indexOf(slot), chip);
+            maybeComplete.run();
+        });
     }
 
     /*=========================================================================*
