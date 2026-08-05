@@ -1,10 +1,19 @@
 /* Editing affordances of KLDiTreeControl, layered on top of read-only-ditree-control.css. */
 
-/* Editable clause headers highlight on hover, signalling the + button and the structure
-   context menu. */
-.ditree-control .ditree-clause-header:hover {
+/* Every editable row — clause headers, is-a rows, role rows — highlights as a whole on hover,
+   signalling the + button and the structure context menu. */
+.ditree-control .ditree-clause-header:hover,
+.ditree-control .ditree-concept-row:hover,
+.ditree-control .ditree-role-row:hover {
     -fx-background-color: #eef2f7;
     -fx-background-radius: 4px;
+}
+
+/* Editable leaf rows take the clause headers' padding, so the hover highlight has the same
+   breathing room around the chips on every row. */
+.ditree-control .ditree-concept-row,
+.ditree-control .ditree-role-row {
+    -fx-padding: 3 6 3 0;
 }
 
 /* The + button on clause headers: space is always reserved; the button fades in on header hover
@@ -22,11 +31,6 @@
     -fx-opacity: 1;
 }
 
-/* Editable leaf rows tint on hover, matching the mockup's role-row hover. */
-.ditree-control .ditree-role-row:hover {
-    -fx-background-color: #f7fafc;
-    -fx-background-radius: 4px;
-}
 .ditree-control .ditree-add-button:hover {
     -fx-background-color: #deebff;
 }
