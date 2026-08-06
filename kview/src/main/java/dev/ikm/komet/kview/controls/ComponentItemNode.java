@@ -12,6 +12,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.event.Event;
+import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
@@ -23,6 +24,7 @@ import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.geometry.HPos;
+import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.layout.HBox;
@@ -68,6 +70,17 @@ public class ComponentItemNode extends Region {
     /** The status cluster's explanatory tooltip, installed once; only its text changes. */
     private final Tooltip statusTooltip = new Tooltip();
     private final Label textLabel = new Label();
+    /** The label's graphic: [sigil][status][identicon], leading the name. */
+    private final HBox graphicBox = new HBox(4, sigilBox, statusBox, iconImageView);
+    /** Single-line sample for measuring the label font's descent (wrap-mode graphic alignment). */
+    private final Text lineMeasurer = new Text("Ag");
+
+    /**
+     * Optical fine-tune of the wrap-mode graphic bottom relative to the first line's bottom, in
+     * pixels (negative = up). The geometric line bottom includes the font's descent, which is
+     * empty space on a line without descenders, so flush-with-the-letters sits a touch higher.
+     */
+    private static final double WRAP_GRAPHIC_BOTTOM_NUDGE = -3;
 
     private Circle circleClip;
 
@@ -98,8 +111,6 @@ public class ComponentItemNode extends Region {
         statusBox.setAlignment(Pos.CENTER);
 
         Tooltip.install(statusBox, statusTooltip);
-
-        HBox graphicBox = new HBox(4, sigilBox, statusBox, iconImageView);
 
         graphicBox.setAlignment(Pos.CENTER_LEFT);
         textLabel.setGraphic(graphicBox);
@@ -266,7 +277,23 @@ public class ComponentItemNode extends Region {
     @Override
     protected double computeMinHeight(double width) {
         // Make the min height be the same as the pref height
+        return computePrefHeight(width);
+    }
+
+    @Override
+    protected double computePrefHeight(double width) {
+        if (isWrapText() && width >= 0) {
+            return snappedTopInset() + snappedBottomInset()
+                    + textLabel.prefHeight(width - snappedLeftInset() - snappedRightInset());
+        }
         return super.computePrefHeight(width);
+    }
+
+    @Override
+    public Orientation getContentBias() {
+        // In wrap mode height depends on the width the parent grants, so it must size
+        // width-first for the wrapped lines to be given room.
+        return isWrapText() ? Orientation.HORIZONTAL : super.getContentBias();
     }
 
     @Override
@@ -282,15 +309,41 @@ public class ComponentItemNode extends Region {
         // Stretch the label to fill the available width, so its hover/edit-mode highlight spans
         // the whole row — but never below its preferred width: when a parent squeezes this node,
         // the label keeps its preferred size and overflows (Region's default behavior) instead of
-        // wrapping or truncating.
+        // wrapping or truncating. Except in wrap mode, where the label is held to the available
+        // width precisely so it wraps within it.
         double contentWidth = getWidth() - snappedLeftInset() - snappedRightInset();
         double contentHeight = getHeight() - snappedTopInset() - snappedBottomInset();
         // While a drop hint shows, the label is capped at the locked width so the hint ellipsizes
         // instead of growing the chip.
-        double labelWidth = getDropHintText() != null ? contentWidth
+        double labelWidth = getDropHintText() != null || isWrapText() ? contentWidth
                 : Math.max(textLabel.prefWidth(-1), contentWidth);
         layoutInArea(textLabel, snappedLeftInset(), snappedTopInset(), labelWidth, contentHeight,
                 -1, HPos.LEFT, VPos.CENTER);
+        // The label skin centers its graphic against the whole text block, so on a wrapped
+        // multi-line title the glyphs would float between the lines. Shift them so the graphic's
+        // bottom sits on the bottom of the first text line. Measured off the skin's actual layout —
+        // the label is forced to lay out now (already sized above; the later pass is a no-op) so
+        // the skin-placed text and graphic positions for this pass can be read back.
+        if (isWrapText() && getDropHintText() == null) {
+            textLabel.layout();
+            for (Node child : textLabel.getChildrenUnmodifiable()) {
+                if (child instanceof Text textNode) {
+                    // Top edge in label coords (minY folds away the textOrigin convention), plus
+                    // the first line's ascent, is the baseline; the font's descent below it ends
+                    // the first line.
+                    double baselineY = textNode.getLayoutY() + textNode.getLayoutBounds().getMinY()
+                            + textNode.getBaselineOffset();
+                    lineMeasurer.setFont(textNode.getFont());
+                    double descent = lineMeasurer.getLayoutBounds().getHeight()
+                            - lineMeasurer.getBaselineOffset();
+                    double graphicBottom = graphicBox.getLayoutY() + graphicBox.getLayoutBounds().getHeight();
+                    graphicBox.setTranslateY(baselineY + descent + WRAP_GRAPHIC_BOTTOM_NUDGE - graphicBottom);
+                    break;
+                }
+            }
+        } else {
+            graphicBox.setTranslateY(0);
+        }
         // Overlay the affordances inside the label's right edge, in the space reserved by the
         // .show-drag-handle / .show-discard-button label padding: [ … text … grip ✕ ].
         double nextX = snappedLeftInset() + labelWidth;
