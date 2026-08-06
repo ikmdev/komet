@@ -245,10 +245,13 @@ public class KlFieldHelper {
             int statedAxiomsPatternNid = viewProperties.calculator().viewCoordinateRecord()
                     .logicCoordinate().statedAxiomsPatternNid();
             if (fieldRecord.patternNid() == statedAxiomsPatternNid) {
-                factory = new KlStatedAxiomDiTreeFieldFactory();
-            } else {
-                factory = new KlReadOnlyDiTreeFieldFactory();
+                // The stated axiom field sources its structure menus from the axiom rules engine,
+                // which needs the full ViewProperties — hence the dedicated overload, following
+                // the component set/list factories' extra-parameter precedent.
+                KlStatedAxiomDiTreeFieldFactory statedFactory = new KlStatedAxiomDiTreeFieldFactory();
+                return statedFactory.create(observableField, viewProperties, stamp4field).fxObject();
             }
+            factory = new KlReadOnlyDiTreeFieldFactory();
         } else {
             // This fixes the exceptions the user experiences when a semantic (GenEditWindow) is summoned. The exception
             // happens when a datatype field that doesn't have a JavaFX custom control created yet.

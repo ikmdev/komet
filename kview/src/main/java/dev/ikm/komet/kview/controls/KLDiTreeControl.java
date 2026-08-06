@@ -2,12 +2,15 @@ package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLDiTreeControlSkin;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
+import dev.ikm.tinkar.entity.graph.EntityVertex;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Skin;
 
+import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -47,6 +50,18 @@ public class KLDiTreeControl extends KLReadOnlyDiTreeControl {
             }
         });
     }
+
+    // -- rule actions provider
+    /**
+     * Provides the structure actions for a clause vertex, sourced from the axiom rules engine —
+     * the same rules that drive the classic axiom control's context menu. A null vertex stands
+     * for the definition root (also when no definition exists yet). Wired by the owning field;
+     * while unset the skin falls back to its built-in action catalog.
+     */
+    private final ObjectProperty<Function<EntityVertex, List<AxiomRuleAction>>> ruleActionsProvider = new SimpleObjectProperty<>(this, "ruleActionsProvider");
+    public final Function<EntityVertex, List<AxiomRuleAction>> getRuleActionsProvider() { return ruleActionsProvider.get(); }
+    public final ObjectProperty<Function<EntityVertex, List<AxiomRuleAction>>> ruleActionsProviderProperty() { return ruleActionsProvider; }
+    public final void setRuleActionsProvider(Function<EntityVertex, List<AxiomRuleAction>> provider) { ruleActionsProvider.set(provider); }
 
     // -- property set seed nids
     /**

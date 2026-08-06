@@ -3,6 +3,7 @@ package dev.ikm.komet.kview.controls.skin;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.kview.NodeUtils;
+import dev.ikm.komet.kview.controls.AxiomRuleAction;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.controls.ComponentItemNodeFactory;
 import dev.ikm.komet.kview.controls.KLComponentControl;
@@ -50,6 +51,7 @@ import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static dev.ikm.komet.framework.dnd.KometClipboard.COMPONENT_DRAG_FORMAT;
 import static dev.ikm.komet.framework.dnd.KometClipboard.decodePublicId;
@@ -269,16 +271,14 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
                 || meaning == TinkarTerm.INCLUSION_SET.nid();
         boolean isRoleGroup = meaning == TinkarTerm.ROLE.nid();
         if (!isSet && !isRoleGroup) {
-            // Property sets, features, interval roles, … have no add items yet, but any non-root
-            // axiom can be removed (mirrors AxiomFocusedRules' not-definition-root rule).
+            // Property sets, features, interval roles, … have no add items of their own; the
+            // rules engine supplies their actions (set value, choose interval type, …) plus
+            // removal — mirroring AxiomFocusedRules' per-node-type rules.
             header.setOnContextMenuRequested(e -> {
                 if (e.getTarget() instanceof Node target && isInsideChip(target, header)) {
                     return;
                 }
-                ContextMenu menu = newMenu();
-                menu.getItems().add(createMenuItem("Remove axiom", KometIcon.IconValue.TRASH,
-                        ev -> removeVertex(vertex)));
-                menu.show(header, e.getScreenX(), e.getScreenY());
+                buildFallbackClauseMenu(vertex).show(header, e.getScreenX(), e.getScreenY());
                 e.consume();
             });
             return;
@@ -330,10 +330,20 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
     }
 
     /**
-     * Builds the structure menu of the root row: which sets can be added to the definition,
-     * mirroring {@code AxiomFocusedRules.axiomIsDefinitionRoot}.
+     * Builds the structure menu of the root row: which sets can be added to the definition. The
+     * catalog comes from the rules engine when the provider is wired
+     * ({@code AxiomFocusedRules.axiomIsDefinitionRoot} decides the legal items); the built-in
+     * catalog below is the fallback.
      */
     private ContextMenu buildRootMenu(VBox childrenBox) {
+        List<AxiomRuleAction> ruleActions = getRuleActions(null);
+        if (ruleActions != null) {
+            ContextMenu menu = newMenu();
+            for (AxiomRuleAction ruleAction : ruleActions) {
+                menu.getItems().add(rootMenuItem(ruleAction, childrenBox));
+            }
+            return menu;
+        }
         ContextMenu menu = newMenu();
         MenuItem necessary = createMenuItem("Add necessary set", KometIcon.IconValue.PLUS,
                 e -> addSetTemplate(childrenBox, true));
@@ -360,6 +370,127 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
         intervalPropertySet.setDisable(control().getDataPropertySetSeedNid() == 0);
         menu.getItems().add(intervalPropertySet);
         return menu;
+    }
+
+    /**
+     * Maps one engine-generated root action to its menu item: the set adds use the inline
+     * templates, the property-set adds use the seeded value-flow transforms, anything else runs
+     * the engine action itself.
+     */
+    private MenuItem rootMenuItem(AxiomRuleAction ruleAction, VBox childrenBox) {
+        if (ruleAction instanceof AxiomRuleAction.Command command) {
+            return switch (command.id()) {
+                case "AddNecessarySet" -> createMenuItem(command.text(), KometIcon.IconValue.PLUS,
+                        e -> addSetTemplate(childrenBox, true));
+                case "AddSufficientSet" -> createMenuItem(command.text(), KometIcon.IconValue.PLUS,
+                        e -> addSetTemplate(childrenBox, false));
+                case "AddPropertySet" -> control().getPropertySetSeedNid() == 0
+                        ? engineMenuItem(command)
+                        : createMenuItem(command.text(), KometIcon.IconValue.PLUS,
+                                e -> transform(builder -> builder.PropertySet(builder.And(
+                                        builder.ConceptAxiom(control().getPropertySetSeedNid())))));
+                case "AddDataPropertySet" -> control().getDataPropertySetSeedNid() == 0
+                        ? engineMenuItem(command)
+                        : createMenuItem(command.text(), KometIcon.IconValue.PLUS,
+                                e -> transform(builder -> builder.DataPropertySet(builder.And(
+                                        builder.ConceptAxiom(control().getDataPropertySetSeedNid())))));
+                case "AddIntervalPropertySet" -> control().getDataPropertySetSeedNid() == 0
+                        ? engineMenuItem(command)
+                        : createMenuItem(command.text(), KometIcon.IconValue.PLUS,
+                                e -> transform(builder -> builder.IntervalPropertySet(builder.And(
+                                        builder.ConceptAxiom(control().getDataPropertySetSeedNid())))));
+                default -> engineMenuItem(command);
+            };
+        }
+        return ((AxiomRuleAction.Submenu) ruleAction).menu();
+    }
+
+    /**
+     * Maps one engine-generated clause action (sets, role groups) to its menu item: known adds and
+     * the set-type change use the inline templates and value-flow transforms, anything else runs
+     * the engine action itself.
+     */
+    private MenuItem clauseMenuItem(AxiomRuleAction ruleAction, EntityVertex vertex, VBox childrenBox) {
+        if (ruleAction instanceof AxiomRuleAction.Command command) {
+            return switch (command.id()) {
+                case "AddIsA" -> createMenuItem(command.text(), KometIcon.IconValue.PLUS,
+                        e -> addIsATemplate(childrenBox, vertex));
+                case "AddSomeRole" -> createMenuItem(command.text(), KometIcon.IconValue.PLUS,
+                        e -> addRoleTemplate(childrenBox, vertex));
+                case "AddRoleGroup" -> createMenuItem(command.text(), KometIcon.IconValue.PLUS,
+                        e -> addRoleGroupTemplate(childrenBox, vertex));
+                case "AddIntervalRole" -> createMenuItem(command.text(), KometIcon.IconValue.PLUS,
+                        e -> addIntervalRole(vertex));
+                case "AddFeature" -> createMenuItem(command.text(), KometIcon.IconValue.PLUS,
+                        e -> addConcreteRole(vertex));
+                case "ChangeSetType" -> createMenuItem(command.text(), KometIcon.IconValue.PENCIL,
+                        e -> changeSetType(vertex, command.text().contains("necessary")
+                                ? TinkarTerm.NECESSARY_SET : TinkarTerm.SUFFICIENT_SET));
+                default -> defaultMenuItem(ruleAction, vertex);
+            };
+        }
+        return ((AxiomRuleAction.Submenu) ruleAction).menu();
+    }
+
+    /**
+     * The engine-sourced fallback-clause menu (property sets, features, interval roles, …):
+     * removal maps to the value-flow transform, everything else runs as the engine generated it.
+     */
+    private ContextMenu buildFallbackClauseMenu(EntityVertex vertex) {
+        ContextMenu menu = newMenu();
+        List<AxiomRuleAction> ruleActions = getRuleActions(vertex);
+        if (ruleActions == null) {
+            menu.getItems().add(createMenuItem("Remove axiom", KometIcon.IconValue.TRASH,
+                    e -> removeVertex(vertex)));
+            return menu;
+        }
+        for (AxiomRuleAction ruleAction : ruleActions) {
+            menu.getItems().add(defaultMenuItem(ruleAction, vertex));
+        }
+        return menu;
+    }
+
+    /**
+     * The identity mapping every menu falls back to: removal becomes the value-flow transform,
+     * unknown commands run the engine action, submenus mount unchanged.
+     */
+    private MenuItem defaultMenuItem(AxiomRuleAction ruleAction, EntityVertex vertex) {
+        if (ruleAction instanceof AxiomRuleAction.Command command) {
+            if ("RemoveAxiomAction".equals(command.id())) {
+                return createMenuItem(command.text(), KometIcon.IconValue.TRASH, e -> removeVertex(vertex));
+            }
+            return engineMenuItem(command);
+        }
+        return ((AxiomRuleAction.Submenu) ruleAction).menu();
+    }
+
+    private MenuItem engineMenuItem(AxiomRuleAction.Command command) {
+        return createMenuItem(command.text(), iconFor(command.id()), e -> command.run());
+    }
+
+    private KometIcon.IconValue iconFor(String actionId) {
+        if (actionId.startsWith("Add")) {
+            return KometIcon.IconValue.PLUS;
+        }
+        if (actionId.startsWith("Remove")) {
+            return KometIcon.IconValue.TRASH;
+        }
+        return KometIcon.IconValue.PENCIL;
+    }
+
+    /**
+     * The rules-engine-sourced actions for a vertex, obtained through the control's
+     * {@link KLDiTreeControl#ruleActionsProviderProperty() rule actions provider}. Every menu
+     * builder starts here: a non-null result drives the menu (the engine decides which actions
+     * are present and their order), a null result means no provider is wired and the builder
+     * falls back to its built-in action catalog.
+     *
+     * @param vertex the clause vertex the menu is for, or null for the definition root
+     * @return the engine's actions for the vertex, or null when no provider is wired
+     */
+    private List<AxiomRuleAction> getRuleActions(EntityVertex vertex) {
+        Function<EntityVertex, List<AxiomRuleAction>> provider = control().getRuleActionsProvider();
+        return provider == null ? null : provider.apply(vertex);
     }
 
     /**
@@ -418,9 +549,19 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
 
     /**
      * Builds the leaf row menu from the row's chips: one choose action per chip (replacement
-     * is-a, role type, role restriction) plus removal of the row's axiom.
+     * is-a, role type, role restriction) plus removal of the row's axiom. The catalog comes from
+     * the rules engine when the provider is wired — its choose-concept submenus map to the inline
+     * chip editing; the built-in catalog below is the fallback.
      */
     private ContextMenu buildLeafMenu(HBox row, EntityVertex rowVertex) {
+        List<AxiomRuleAction> ruleActions = getRuleActions(rowVertex);
+        if (ruleActions != null) {
+            ContextMenu ruleMenu = newMenu();
+            for (AxiomRuleAction ruleAction : ruleActions) {
+                ruleMenu.getItems().add(leafMenuItem(ruleAction, row, rowVertex));
+            }
+            return ruleMenu;
+        }
         ContextMenu menu = newMenu();
         for (Node child : row.getChildren()) {
             if (child instanceof ComponentItemNode chip
@@ -439,6 +580,41 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
         menu.getItems().add(createMenuItem("Remove axiom", KometIcon.IconValue.TRASH,
                 e -> removeVertex(rowVertex)));
         return menu;
+    }
+
+    /**
+     * Maps one engine-generated leaf action to its menu item: the choose-concept submenus become
+     * inline chip edits on the row's matching chip, removal becomes the value-flow transform,
+     * anything else runs as the engine generated it.
+     */
+    private MenuItem leafMenuItem(AxiomRuleAction ruleAction, HBox row, EntityVertex rowVertex) {
+        if (ruleAction instanceof AxiomRuleAction.Submenu submenu) {
+            ChipKind kind = switch (submenu.text()) {
+                case "Choose replacement is-a" -> ChipKind.CONCEPT_REFERENCE;
+                case "Choose role type" -> ChipKind.ROLE_TYPE;
+                case "Choose role restriction" -> ChipKind.ROLE_RESTRICTION;
+                default -> null;
+            };
+            if (kind != null) {
+                Node chip = findChip(row, kind);
+                if (chip != null && chip.getProperties().get(CHIP_VERTEX) instanceof EntityVertex chipVertex) {
+                    ChipKind chipKind = kind;
+                    return createMenuItem(submenu.text(), KometIcon.IconValue.PENCIL,
+                            e -> startChipEdit(chip, chipVertex, chipKind));
+                }
+            }
+            return submenu.menu();
+        }
+        return defaultMenuItem(ruleAction, rowVertex);
+    }
+
+    private Node findChip(HBox row, ChipKind kind) {
+        for (Node child : row.getChildren()) {
+            if (child instanceof ComponentItemNode && child.getProperties().get(CHIP_KIND) == kind) {
+                return child;
+            }
+        }
+        return null;
     }
 
     /*=========================================================================*
@@ -488,9 +664,18 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
     /**
      * Builds the structure menu of a clause: the same actions the classic axiom control offers for
      * the node type through {@code AxiomFocusedRules} — the legal add items, set-type change, and
-     * removal.
+     * removal. The catalog comes from the rules engine when the provider is wired; the built-in
+     * catalog below is the fallback.
      */
     private ContextMenu buildClauseMenu(EntityVertex vertex, VBox childrenBox) {
+        List<AxiomRuleAction> ruleActions = getRuleActions(vertex);
+        if (ruleActions != null) {
+            ContextMenu ruleMenu = newMenu();
+            for (AxiomRuleAction ruleAction : ruleActions) {
+                ruleMenu.getItems().add(clauseMenuItem(ruleAction, vertex, childrenBox));
+            }
+            return ruleMenu;
+        }
         ContextMenu menu = newMenu();
         int meaning = vertex.getMeaningNid();
         if (meaning == TinkarTerm.ROLE.nid()) {
