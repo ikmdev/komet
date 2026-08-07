@@ -43,7 +43,6 @@ module dev.ikm.komet.application {
     // komet-grpc-plugin's jar retains the module name dev.ikm.tinkar.provider.grpc
     // (its original name from tinkar-core, before the implementation moved into the
     // external plugin repo) rather than a komet.* name — no wrapper module needed.
-    requires komet.claude;
     requires dev.ikm.tinkar.provider.grpc;
 
     // JPro related modules

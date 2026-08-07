@@ -114,21 +114,6 @@
             <groupId>dev.ikm.tinkar</groupId>
             <artifactId>changeset-writer-provider</artifactId>
         </dependency>
-        <dependency>
-            <groupId>dev.ikm.ike</groupId>
-            <artifactId>rocks-kb-engine</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>network.ike.komet</groupId>
-            <artifactId>komet-claude-plugin</artifactId>
-            <version>1-SNAPSHOT</version>
-        </dependency>
-        <!-- RocksDB platform-specific natives; classifier set by OS profile below -->
-        <dependency>
-            <groupId>dev.ikm.jpms</groupId>
-            <artifactId>rocksdbjni</artifactId>
-            <classifier>${rocksdbjni.classifier}</classifier>
-        </dependency>
 
     <!-- Start JPro related dependencies -->
         <dependency>
@@ -200,9 +185,6 @@
             <groupId>dev.ikm.tinkar</groupId>
             <artifactId>events</artifactId>
         </dependency>
-        <!-- gRPC datastore/search plugin — lives outside the komet repo, mirroring
-             komet-claude-plugin. Owns all gRPC-specific deps (grpc-stub, grpc-protobuf,
-             perfmark-api, etc); application only needs this one artifact + module requires. -->
         <dependency>
             <groupId>network.ike.komet</groupId>
             <artifactId>komet-grpc-plugin</artifactId>
