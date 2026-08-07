@@ -29,8 +29,11 @@ import javafx.geometry.Pos;
 import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TreeCell;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
@@ -68,6 +71,11 @@ import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
  *     replacement ({@code updateConceptReference} / {@code updateRoleType}); Esc restores the
  *     chip. Is-a chips additionally contribute a "Remove axiom" item to their component context
  *     menu.</li>
+ *     <li><b>Inline interval edit</b> — an interval role's bounds are number-only inline editors
+ *     (the lower bound is never allowed to exceed the upper bound), and clicking a bound's
+ *     bracket immediately flips it between open and closed; its row menu mirrors the classic
+ *     axiom control's interval menu: choose the role type and unit of measure (inline chip
+ *     edits), set each bound, toggle each bound open/closed.</li>
  *     <li><b>Structure edits</b> — clause headers reveal a + button on hover (add items for that
  *     node type) and offer the full structure menu on right-click, including changing the set type
  *     and removing the axiom; role rows offer "Remove axiom" on right-click.</li>
@@ -240,9 +248,10 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
 
     /**
      * The chip's contribution to its component context menu — the classic axiom control's actions
-     * for the leaf the chip represents. A restriction chip offers no removal: removing its vertex
-     * alone would leave the role without a restriction; the whole role is removed instead (row
-     * menu, or the role type chip whose vertex is the role itself).
+     * for the leaf the chip represents. A restriction or unit chip offers no removal: removing its
+     * vertex alone would leave the role without a restriction (or the interval without a unit);
+     * the whole role is removed instead (row menu, or the type chip whose vertex is the role
+     * itself).
      */
     private List<MenuItem> chipMenuItems(Node chip, EntityVertex vertex, ChipKind kind) {
         return switch (kind) {
@@ -256,6 +265,13 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
                     createMenuItem("Remove axiom", KometIcon.IconValue.TRASH, e -> removeVertex(vertex)));
             case ROLE_RESTRICTION -> List.of(
                     createMenuItem("Choose role restriction", KometIcon.IconValue.PENCIL,
+                            e -> startChipEdit(chip, vertex, kind)));
+            case INTERVAL_ROLE_TYPE -> List.of(
+                    createMenuItem("Choose interval role type", KometIcon.IconValue.PENCIL,
+                            e -> startChipEdit(chip, vertex, kind)),
+                    createMenuItem("Remove axiom", KometIcon.IconValue.TRASH, e -> removeVertex(vertex)));
+            case INTERVAL_UNIT -> List.of(
+                    createMenuItem("Choose unit of measure", KometIcon.IconValue.PENCIL,
                             e -> startChipEdit(chip, vertex, kind)));
         };
     }
@@ -271,9 +287,9 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
                 || meaning == TinkarTerm.INCLUSION_SET.nid();
         boolean isRoleGroup = meaning == TinkarTerm.ROLE.nid();
         if (!isSet && !isRoleGroup) {
-            // Property sets, features, interval roles, … have no add items of their own; the
-            // rules engine supplies their actions (set value, choose interval type, …) plus
-            // removal — mirroring AxiomFocusedRules' per-node-type rules.
+            // Property sets, features, … have no add items of their own; the rules engine
+            // supplies their actions (set value, choose feature type, …) plus removal —
+            // mirroring AxiomFocusedRules' per-node-type rules.
             header.setOnContextMenuRequested(e -> {
                 if (e.getTarget() instanceof Node target && isInsideChip(target, header)) {
                     return;
@@ -522,6 +538,181 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
         decorateLeafRow(row, vertex);
     }
 
+    @Override
+    protected void decorateIntervalRow(HBox row, EntityVertex vertex) {
+        if (!isEditable()) {
+            return;
+        }
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        row.getChildren().add(spacer);
+        decorateLeafRow(row, vertex);
+    }
+
+    /*=========================================================================*
+     *                                                                         *
+     * Inline interval bound edit                                              *
+     *                                                                         *
+     *=========================================================================*/
+
+    /** Matches a complete decimal number — what a bound editor must hold to commit. */
+    private static final String DECIMAL = "-?\\d+(\\.\\d+)?";
+    /** Matches any prefix of a decimal number — what a bound editor may hold while typing. */
+    private static final String DECIMAL_PREFIX = "-?\\d*(\\.\\d*)?";
+
+    /**
+     * The editable bounds of an interval row: each bracket is clickable and immediately flips its
+     * bound between open and closed (the row menu offers the same toggles), the bound values are
+     * inline editors that only accept numbers. Edits commit on Enter or when focus leaves the
+     * pair, and only when both values are complete numbers with lower ≤ upper — anything else
+     * restores the stored values. Esc restores the edited value.
+     */
+    @Override
+    protected Node createIntervalBoundsNode(EntityVertex vertex) {
+        if (!isEditable()) {
+            return super.createIntervalBoundsNode(vertex);
+        }
+        boolean lowerOpen = vertex.propertyFast(TinkarTerm.LOWER_BOUND_OPEN);
+        boolean upperOpen = vertex.propertyFast(TinkarTerm.UPPER_BOUND_OPEN);
+        TextField lowerField = boundField(vertex, true);
+        TextField upperField = boundField(vertex, false);
+        Runnable commit = () -> commitIntervalBounds(vertex, lowerField, upperField);
+        wireBoundCommit(lowerField, upperField, lowerField, commit);
+        wireBoundCommit(lowerField, upperField, upperField, commit);
+
+        HBox bounds = new HBox(
+                bracketToggle(lowerOpen ? "(" : "[",
+                        () -> toggleIntervalBoundOpen(vertex, lowerField, upperField, true)),
+                lowerField, operator(","), upperField,
+                bracketToggle(upperOpen ? ")" : "]",
+                        () -> toggleIntervalBoundOpen(vertex, lowerField, upperField, false)));
+        bounds.getStyleClass().add("ditree-interval-bounds");
+        bounds.setAlignment(Pos.CENTER_LEFT);
+        return bounds;
+    }
+
+    /** A bound's bracket, clickable to immediately flip that bound between open and closed. */
+    private Label bracketToggle(String glyph, Runnable toggle) {
+        Label bracket = operator(glyph);
+        bracket.getStyleClass().add("ditree-bound-bracket");
+        bracket.setOnMouseClicked(e -> {
+            if (e.getButton() == MouseButton.PRIMARY) {
+                toggle.run();
+                e.consume();
+            }
+        });
+        return bracket;
+    }
+
+    private TextField boundField(EntityVertex vertex, boolean lower) {
+        BigDecimal stored = vertex.propertyFast(
+                lower ? TinkarTerm.INTERVAL_LOWER_BOUND : TinkarTerm.INTERVAL_UPPER_BOUND);
+        TextField field = new TextField(stored.toPlainString());
+        field.getStyleClass().addAll("ditree-bound-field", lower ? "lower" : "upper");
+        field.setTextFormatter(new TextFormatter<>(change ->
+                change.getControlNewText().matches(DECIMAL_PREFIX) ? change : null));
+        field.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            if (e.getCode() == KeyCode.ESCAPE) {
+                field.setText(stored.toPlainString());
+                e.consume();
+            }
+        });
+        return field;
+    }
+
+    /**
+     * Commits on Enter, and when focus has left both editors of the pair — so tabbing between the
+     * two bounds does not commit a half-edited interval. The focus check is deferred a pulse: at
+     * the moment one editor reports focus lost, the other may not have gained it yet. A commit
+     * (or any other edit) rebuilds the tree and detaches the editors, which the scene check
+     * recognizes — skipping the stale focus-lost notification of a replaced editor.
+     */
+    private void wireBoundCommit(TextField lowerField, TextField upperField, TextField field, Runnable commit) {
+        field.setOnAction(e -> commit.run());
+        field.focusedProperty().subscribe(focused -> {
+            if (!focused) {
+                Platform.runLater(() -> {
+                    if (field.getScene() != null && !lowerField.isFocused() && !upperField.isFocused()) {
+                        commit.run();
+                    }
+                });
+            }
+        });
+    }
+
+    /** The bound values an edit applies. */
+    private record Bounds(BigDecimal lower, BigDecimal upper) {
+    }
+
+    /**
+     * The bound values an edit should apply: the editors' texts when both are complete numbers
+     * with lower ≤ upper — the lower bound is never allowed to exceed the upper bound — else the
+     * stored values.
+     */
+    private Bounds boundsToApply(EntityVertex vertex, TextField lowerField, TextField upperField) {
+        String lowerText = lowerField.getText();
+        String upperText = upperField.getText();
+        BigDecimal lower = lowerText.matches(DECIMAL) ? new BigDecimal(lowerText) : null;
+        BigDecimal upper = upperText.matches(DECIMAL) ? new BigDecimal(upperText) : null;
+        if (lower == null || upper == null || lower.compareTo(upper) > 0) {
+            return new Bounds(vertex.propertyFast(TinkarTerm.INTERVAL_LOWER_BOUND),
+                    vertex.propertyFast(TinkarTerm.INTERVAL_UPPER_BOUND));
+        }
+        return new Bounds(lower, upper);
+    }
+
+    /**
+     * Applies the inline bound editors' values to the interval role; a rejected or unchanged edit
+     * restores the editors to the stored values instead.
+     */
+    private void commitIntervalBounds(EntityVertex vertex, TextField lowerField, TextField upperField) {
+        BigDecimal storedLower = vertex.propertyFast(TinkarTerm.INTERVAL_LOWER_BOUND);
+        BigDecimal storedUpper = vertex.propertyFast(TinkarTerm.INTERVAL_UPPER_BOUND);
+        Bounds bounds = boundsToApply(vertex, lowerField, upperField);
+        if (bounds.lower().compareTo(storedLower) == 0 && bounds.upper().compareTo(storedUpper) == 0) {
+            lowerField.setText(storedLower.toPlainString());
+            upperField.setText(storedUpper.toPlainString());
+            return;
+        }
+        boolean lowerOpen = vertex.propertyFast(TinkarTerm.LOWER_BOUND_OPEN);
+        boolean upperOpen = vertex.propertyFast(TinkarTerm.UPPER_BOUND_OPEN);
+        transform(builder -> builder.updateIntervalRoleValue(
+                (LogicalAxiom.Atom.TypedAtom.IntervalRole) builder.get(vertex.vertexIndex()),
+                bounds.lower(), lowerOpen, bounds.upper(), upperOpen));
+    }
+
+    /**
+     * Toggles one bound of the interval between open and closed — the classic axiom control's
+     * {@code ChangeIntervalBoundOpen} action as a value-flow transform. The editors' pending
+     * values ride along in the same transform, so the rebuild the toggle triggers never discards
+     * an uncommitted bound edit.
+     */
+    private void toggleIntervalBoundOpen(EntityVertex vertex, TextField lowerField, TextField upperField,
+            boolean lower) {
+        Bounds bounds = boundsToApply(vertex, lowerField, upperField);
+        boolean lowerOpen = vertex.propertyFast(TinkarTerm.LOWER_BOUND_OPEN);
+        boolean upperOpen = vertex.propertyFast(TinkarTerm.UPPER_BOUND_OPEN);
+        boolean newLowerOpen = lower ? !lowerOpen : lowerOpen;
+        boolean newUpperOpen = lower ? upperOpen : !upperOpen;
+        transform(builder -> builder.updateIntervalRoleValue(
+                (LogicalAxiom.Atom.TypedAtom.IntervalRole) builder.get(vertex.vertexIndex()),
+                bounds.lower(), newLowerOpen, bounds.upper(), newUpperOpen));
+    }
+
+    private void toggleIntervalBoundOpen(HBox row, EntityVertex vertex, boolean lower) {
+        toggleIntervalBoundOpen(vertex, boundFieldIn(row, true), boundFieldIn(row, false), lower);
+    }
+
+    private TextField boundFieldIn(HBox row, boolean lower) {
+        return (TextField) row.lookup(".ditree-bound-field." + (lower ? "lower" : "upper"));
+    }
+
+    private void focusBoundField(HBox row, boolean lower) {
+        TextField field = boundFieldIn(row, lower);
+        field.requestFocus();
+        field.selectAll();
+    }
+
     /**
      * Mounts the leaf affordances on an is-a or role row: a hover-revealed + button and a
      * right-click menu with the classic axiom control's leaf actions (choose replacement /
@@ -571,10 +762,26 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
                     case CONCEPT_REFERENCE -> "Choose replacement is-a";
                     case ROLE_TYPE -> "Choose role type";
                     case ROLE_RESTRICTION -> "Choose role restriction";
+                    case INTERVAL_ROLE_TYPE -> "Choose interval role type";
+                    case INTERVAL_UNIT -> "Choose unit of measure";
                 };
                 menu.getItems().add(createMenuItem(label, KometIcon.IconValue.PENCIL,
                         e -> startChipEdit(chip, chipVertex, kind)));
             }
+        }
+        if (rowVertex.getMeaningNid() == TinkarTerm.INTERVAL_ROLE.nid()) {
+            // Mirrors the classic axiom control's interval menu (ChangeIntervalValuesMenu):
+            // toggle each bound open/closed, set each bound value.
+            boolean lowerOpen = rowVertex.propertyFast(TinkarTerm.LOWER_BOUND_OPEN);
+            boolean upperOpen = rowVertex.propertyFast(TinkarTerm.UPPER_BOUND_OPEN);
+            menu.getItems().add(createMenuItem("Set Lower Bound " + (lowerOpen ? "Closed" : "Open"),
+                    KometIcon.IconValue.PENCIL, e -> toggleIntervalBoundOpen(row, rowVertex, true)));
+            menu.getItems().add(createMenuItem("Set Lower Bound", KometIcon.IconValue.PENCIL,
+                    e -> focusBoundField(row, true)));
+            menu.getItems().add(createMenuItem("Set Upper Bound", KometIcon.IconValue.PENCIL,
+                    e -> focusBoundField(row, false)));
+            menu.getItems().add(createMenuItem("Set Upper Bound " + (upperOpen ? "Closed" : "Open"),
+                    KometIcon.IconValue.PENCIL, e -> toggleIntervalBoundOpen(row, rowVertex, false)));
         }
         menu.getItems().add(new SeparatorMenuItem());
         menu.getItems().add(createMenuItem("Remove axiom", KometIcon.IconValue.TRASH,
@@ -584,8 +791,9 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
 
     /**
      * Maps one engine-generated leaf action to its menu item: the choose-concept submenus become
-     * inline chip edits on the row's matching chip, removal becomes the value-flow transform,
-     * anything else runs as the engine generated it.
+     * inline chip edits on the row's matching chip, the interval bound actions become the inline
+     * bound editors and value-flow toggles, removal becomes the value-flow transform, anything
+     * else runs as the engine generated it.
      */
     private MenuItem leafMenuItem(AxiomRuleAction ruleAction, HBox row, EntityVertex rowVertex) {
         if (ruleAction instanceof AxiomRuleAction.Submenu submenu) {
@@ -593,6 +801,8 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
                 case "Choose replacement is-a" -> ChipKind.CONCEPT_REFERENCE;
                 case "Choose role type" -> ChipKind.ROLE_TYPE;
                 case "Choose role restriction" -> ChipKind.ROLE_RESTRICTION;
+                case "Choose interval role type" -> ChipKind.INTERVAL_ROLE_TYPE;
+                case "Choose unit of measure" -> ChipKind.INTERVAL_UNIT;
                 default -> null;
             };
             if (kind != null) {
@@ -605,7 +815,17 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
             }
             return submenu.menu();
         }
-        return defaultMenuItem(ruleAction, rowVertex);
+        AxiomRuleAction.Command command = (AxiomRuleAction.Command) ruleAction;
+        // The engine emits each interval bound action twice — once per bound — distinguished only
+        // by its text (same precedent as the ChangeSetType mapping).
+        boolean lower = command.text().contains("Lower");
+        return switch (command.id()) {
+            case "ChangeIntervalBound" -> createMenuItem(command.text(), KometIcon.IconValue.PENCIL,
+                    e -> focusBoundField(row, lower));
+            case "ChangeIntervalBoundOpen" -> createMenuItem(command.text(), KometIcon.IconValue.PENCIL,
+                    e -> toggleIntervalBoundOpen(row, rowVertex, lower));
+            default -> defaultMenuItem(ruleAction, rowVertex);
+        };
     }
 
     private Node findChip(HBox row, ChipKind kind) {
@@ -651,6 +871,12 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
                         builder.updateConceptReference((LogicalAxiom.Atom.ConceptAxiom) axiom, newConceptNid);
                 case ROLE_TYPE ->
                         builder.updateRoleType((LogicalAxiom.Atom.TypedAtom.Role) axiom, ConceptFacade.make(newConceptNid));
+                case INTERVAL_ROLE_TYPE ->
+                        builder.updateIntervalRoleType((LogicalAxiom.Atom.TypedAtom.IntervalRole) axiom,
+                                ConceptFacade.make(newConceptNid));
+                case INTERVAL_UNIT ->
+                        builder.updateIntervalRoleUnitOfMeasure((LogicalAxiom.Atom.TypedAtom.IntervalRole) axiom,
+                                ConceptFacade.make(newConceptNid));
             }
         });
     }

@@ -4,7 +4,8 @@
    signalling the + button and the structure context menu. */
 .ditree-control .ditree-clause-header:hover,
 .ditree-control .ditree-concept-row:hover,
-.ditree-control .ditree-role-row:hover {
+.ditree-control .ditree-role-row:hover,
+.ditree-control .ditree-interval-row:hover {
     -fx-background-color: #eef2f7;
     -fx-background-radius: 4px;
 }
@@ -12,7 +13,8 @@
 /* Editable leaf rows take the clause headers' padding, so the hover highlight has the same
    breathing room around the chips on every row. */
 .ditree-control .ditree-concept-row,
-.ditree-control .ditree-role-row {
+.ditree-control .ditree-role-row,
+.ditree-control .ditree-interval-row {
     -fx-padding: 3 6 3 0;
 }
 
@@ -27,8 +29,46 @@
 .ditree-control .ditree-clause-header:hover .ditree-add-button,
 .ditree-control .ditree-concept-row:hover .ditree-add-button,
 .ditree-control .ditree-role-row:hover .ditree-add-button,
+.ditree-control .ditree-interval-row:hover .ditree-add-button,
 .ditree-control .ditree-add-button:hover {
     -fx-opacity: 1;
+}
+
+/* The inline bound editors of an interval row: chip-sized number fields with the chips' own
+   white-box geometry, so the row reads as one piece with its concept chips. */
+.ditree-control .ditree-bound-field {
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 13px;
+    -fx-text-fill: #2E3240;
+
+    -fx-background-color: white;
+    -fx-background-radius: 3px;
+    -fx-border-width: 1px;
+    -fx-border-color: #b8c1d0;
+    -fx-border-radius: 3px;
+
+    -fx-padding: 2 4 2 4;
+    -fx-pref-width: 52px;
+    -fx-min-width: 36px;
+    -fx-alignment: center;
+}
+.ditree-control .ditree-bound-field:focused {
+    -fx-border-color: #66bb38;
+    -fx-background-color: #f4fbf0;
+}
+
+/* The brackets around the bound editors flip their bound between open and closed on click; the
+   padding widens the click target without moving the glyph. On hover the bracket lights up as a
+   button-like pill — the same blue-on-blue treatment as the + add button — so the click
+   affordance is unmistakable. */
+.ditree-control .ditree-bound-bracket {
+    -fx-cursor: hand;
+    -fx-padding: 0 4 0 4;
+    -fx-background-radius: 4px;
+}
+.ditree-control .ditree-bound-bracket:hover {
+    -fx-text-fill: #4A7AD2;
+    -fx-background-color: #deebff;
 }
 
 .ditree-control .ditree-add-button:hover {

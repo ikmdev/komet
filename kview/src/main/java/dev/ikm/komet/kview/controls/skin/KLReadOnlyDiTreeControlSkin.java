@@ -17,6 +17,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
+import java.math.BigDecimal;
 import java.util.function.IntFunction;
 
 /**
@@ -32,6 +33,8 @@ import java.util.function.IntFunction;
  *     provide the standard component context menu and drag-and-drop.</li>
  *     <li>Existential roles become {@code ∃ (role type) → [restriction]} rows whose role type and
  *     restriction are inline component chips.</li>
+ *     <li>Interval roles become {@code I (role type) → (lower,upper) unit} rows — the bracket
+ *     shapes carry the bounds' open/closed state, as in the classic axiom control.</li>
  *     <li>{@code AND} vertices are transparent operators: their children are flattened into the
  *     enclosing level.</li>
  * </ul>
@@ -53,7 +56,11 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
         /** The type of an existential role: edits replace the role type. */
         ROLE_TYPE,
         /** The restriction concept of an existential role: edits replace the restriction. */
-        ROLE_RESTRICTION
+        ROLE_RESTRICTION,
+        /** The type of an interval role: edits replace the interval role type. */
+        INTERVAL_ROLE_TYPE,
+        /** The unit of measure of an interval role: edits replace the unit. */
+        INTERVAL_UNIT
     }
 
     protected final VBox treeContainer = new VBox();
@@ -188,7 +195,10 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
             }
             return roleRow(vertex, tree, roleType);
         }
-        // Features, intervals, property sets, … — fall back to a plain clause header for v1.
+        if (meaning == TinkarTerm.INTERVAL_ROLE.nid()) {
+            return intervalRow(vertex);
+        }
+        // Features, property sets, … — fall back to a plain clause header for v1.
         IntFunction<String> descriptionResolver = getSkinnable().getDescriptionResolver();
         String clauseText = descriptionResolver != null ? descriptionResolver.apply(meaning) : Integer.toString(meaning);
         return createClauseNode(vertex, tree, "feature", clauseText);
@@ -325,6 +335,53 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
      * @param vertex the role vertex
      */
     protected void decorateRoleRow(HBox row, EntityVertex vertex) {
+    }
+
+    /**
+     * Builds the {@code I (role type) → (lower,upper) unit} row for an interval role — the same
+     * shape the classic axiom control renders ({@code IntervalUtil.getIntervalRoleString}), with
+     * the role type and unit of measure as inline component chips.
+     */
+    private Node intervalRow(EntityVertex vertex) {
+        HBox row = new HBox();
+        row.getStyleClass().add("ditree-interval-row");
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.getChildren().add(clauseBar("interval-role"));
+        row.getChildren().add(operator("I ("));
+        ConceptFacade roleType = vertex.propertyFast(TinkarTerm.INTERVAL_ROLE_TYPE);
+        row.getChildren().add(createChipNode(vertex, roleType.nid(), ChipKind.INTERVAL_ROLE_TYPE));
+        row.getChildren().add(operator(") →"));
+        row.getChildren().add(createIntervalBoundsNode(vertex));
+        ConceptFacade unit = vertex.propertyFast(TinkarTerm.UNIT_OF_MEASURE);
+        row.getChildren().add(createChipNode(vertex, unit.nid(), ChipKind.INTERVAL_UNIT));
+        decorateIntervalRow(row, vertex);
+        return row;
+    }
+
+    /**
+     * Builds the bounds part of an interval row — {@code (lower,upper)}, where each bracket is
+     * round when its bound is open and square when closed (the {@code Interval} notation). The
+     * default is a plain label; the editing subclass overrides this with inline bound editors.
+     *
+     * @param vertex the interval role vertex
+     */
+    protected Node createIntervalBoundsNode(EntityVertex vertex) {
+        BigDecimal lowerBound = vertex.propertyFast(TinkarTerm.INTERVAL_LOWER_BOUND);
+        boolean lowerOpen = vertex.propertyFast(TinkarTerm.LOWER_BOUND_OPEN);
+        BigDecimal upperBound = vertex.propertyFast(TinkarTerm.INTERVAL_UPPER_BOUND);
+        boolean upperOpen = vertex.propertyFast(TinkarTerm.UPPER_BOUND_OPEN);
+        return operator((lowerOpen ? "(" : "[") + lowerBound.toPlainString() + ","
+                + upperBound.toPlainString() + (upperOpen ? ")" : "]"));
+    }
+
+    /**
+     * Hook for the editing subclass to add affordances (structure context menu) to an interval
+     * role row. Default: no-op.
+     *
+     * @param row    the interval role row
+     * @param vertex the interval role vertex
+     */
+    protected void decorateIntervalRow(HBox row, EntityVertex vertex) {
     }
 
     /**
