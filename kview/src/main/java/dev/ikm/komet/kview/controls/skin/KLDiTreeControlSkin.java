@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import dev.ikm.komet.framework.panel.axiom.ConcreteDomainOperators;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.search.SearchResultCell;
 import dev.ikm.komet.kview.NodeUtils;
@@ -30,6 +31,7 @@ import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextField;
@@ -49,12 +51,14 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 
 import static dev.ikm.komet.framework.dnd.KometClipboard.COMPONENT_DRAG_FORMAT;
 import static dev.ikm.komet.framework.dnd.KometClipboard.decodePublicId;
@@ -76,6 +80,11 @@ import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
  *     bracket immediately flips it between open and closed; its row menu mirrors the classic
  *     axiom control's interval menu: choose the role type and unit of measure (inline chip
  *     edits), set each bound, toggle each bound open/closed.</li>
+ *     <li><b>Inline feature edit</b> — a feature's literal is an inline editor typed by the
+ *     current value (booleans flip on click), and clicking the comparison symbol pops the
+ *     concrete domain operator chooser; its row menu mirrors the classic axiom control's feature
+ *     menu: choose the concrete role type (inline chip edit), choose the comparison, set the
+ *     value.</li>
  *     <li><b>Structure edits</b> — clause headers reveal a + button on hover (add items for that
  *     node type) and offer the full structure menu on right-click, including changing the set type
  *     and removing the axiom; role rows offer "Remove axiom" on right-click.</li>
@@ -273,6 +282,10 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
             case INTERVAL_UNIT -> List.of(
                     createMenuItem("Choose unit of measure", KometIcon.IconValue.PENCIL,
                             e -> startChipEdit(chip, vertex, kind)));
+            case FEATURE_TYPE -> List.of(
+                    createMenuItem("Choose concrete role type", KometIcon.IconValue.PENCIL,
+                            e -> startChipEdit(chip, vertex, kind)),
+                    createMenuItem("Remove axiom", KometIcon.IconValue.TRASH, e -> removeVertex(vertex)));
         };
     }
 
@@ -713,6 +726,205 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
         field.selectAll();
     }
 
+    /*=========================================================================*
+     *                                                                         *
+     * Inline feature (concrete role) edit                                     *
+     *                                                                         *
+     *=========================================================================*/
+
+    @Override
+    protected void decorateFeatureRow(HBox row, EntityVertex vertex) {
+        if (!isEditable()) {
+            return;
+        }
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        row.getChildren().add(spacer);
+        decorateLeafRow(row, vertex);
+    }
+
+    /**
+     * The editable value of a feature row: the comparison symbol is clickable and pops the
+     * concrete domain operator chooser (the classic control's "Choose comparison" menu), the
+     * literal is an inline editor typed by the current value — a number-only editor for numeric
+     * literals, free text for strings, and a click-to-flip toggle for booleans. Edits commit on
+     * Enter or focus loss; a rejected edit restores the stored value. Esc restores the edited
+     * value.
+     */
+    @Override
+    protected Node createFeatureValueNode(EntityVertex vertex) {
+        if (!isEditable()) {
+            return super.createFeatureValueNode(vertex);
+        }
+        Object literal = vertex.propertyFast(TinkarTerm.LITERAL_VALUE);
+        Node literalNode = literal instanceof Boolean value
+                ? booleanLiteralToggle(vertex, value)
+                : literalField(vertex, literal);
+
+        ConceptFacade operatorConcept = vertex.propertyFast(TinkarTerm.CONCRETE_DOMAIN_OPERATOR);
+        Label symbol = comparisonLabel(operatorConcept);
+        symbol.getStyleClass().add("ditree-value-toggle");
+        symbol.setOnMouseClicked(e -> {
+            if (e.getButton() == MouseButton.PRIMARY) {
+                ContextMenu menu = newMenu();
+                menu.getItems().addAll(comparisonItems(vertex, literalNode));
+                menu.show(symbol, Side.BOTTOM, 0, 2);
+                e.consume();
+            }
+        });
+
+        HBox valueNode = new HBox(symbol, literalNode);
+        valueNode.getStyleClass().add("ditree-feature-value");
+        valueNode.setAlignment(Pos.CENTER_LEFT);
+        return valueNode;
+    }
+
+    /**
+     * One item per concrete domain operator — the classic control's
+     * {@code ChooseConcreteOperatorMenu} — applying the chosen operator as a value-flow
+     * transform. The literal editor's pending value rides along in the same transform, so the
+     * rebuild the choice triggers never discards an uncommitted literal edit.
+     */
+    private List<MenuItem> comparisonItems(EntityVertex vertex, Node literalNode) {
+        IntFunction<String> descriptionResolver = getSkinnable().getDescriptionResolver();
+        return Arrays.stream(ConcreteDomainOperators.values())
+                .map(op -> {
+                    String name = descriptionResolver != null
+                            ? descriptionResolver.apply(op.conceptRepresentation.nid())
+                            : op.conceptRepresentation.description();
+                    Label symbol = new Label(op.symbol);
+                    symbol.getStyleClass().add("ditree-op-symbol");
+                    MenuItem item = new MenuItem(name, symbol);
+                    item.setOnAction(e -> {
+                        Object literal = pendingLiteral(vertex, literalNode);
+                        transform(builder -> {
+                            LogicalAxiom.Atom.TypedAtom.Feature feature =
+                                    (LogicalAxiom.Atom.TypedAtom.Feature) builder.get(vertex.vertexIndex());
+                            builder.updateFeatureOperator(feature, op.conceptRepresentation);
+                            builder.updateFeatureLiteralValue(feature, literal);
+                        });
+                    });
+                    return item;
+                })
+                .toList();
+    }
+
+    /** A boolean literal, clickable to immediately flip between true and false. */
+    private Label booleanLiteralToggle(EntityVertex vertex, boolean value) {
+        Label toggle = literalLabel(String.valueOf(value));
+        toggle.getStyleClass().addAll("ditree-literal-toggle", "ditree-value-toggle");
+        toggle.setOnMouseClicked(e -> {
+            if (e.getButton() == MouseButton.PRIMARY) {
+                transform(builder -> builder.updateFeatureLiteralValue(
+                        (LogicalAxiom.Atom.TypedAtom.Feature) builder.get(vertex.vertexIndex()), !value));
+                e.consume();
+            }
+        });
+        return toggle;
+    }
+
+    /** The inline editor of a non-boolean literal, with input filtering per the literal's type. */
+    private TextField literalField(EntityVertex vertex, Object stored) {
+        TextField field = new TextField(String.valueOf(stored));
+        field.getStyleClass().add("ditree-literal-field");
+        String prefixPattern = switch (stored) {
+            case Integer i -> "-?\\d*";
+            case Float f -> DECIMAL_PREFIX;
+            case BigDecimal d -> DECIMAL_PREFIX;
+            default -> null;
+        };
+        if (prefixPattern != null) {
+            field.setTextFormatter(new TextFormatter<>(change ->
+                    change.getControlNewText().matches(prefixPattern) ? change : null));
+        }
+        field.setOnAction(e -> commitFeatureLiteral(vertex, field));
+        field.focusedProperty().subscribe(focused -> {
+            if (!focused && field.getScene() != null) {
+                commitFeatureLiteral(vertex, field);
+            }
+        });
+        field.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            if (e.getCode() == KeyCode.ESCAPE) {
+                field.setText(String.valueOf(stored));
+                e.consume();
+            }
+        });
+        return field;
+    }
+
+    /**
+     * Applies the inline literal editor's value to the feature; a rejected or unchanged edit
+     * restores the editor to the stored value instead.
+     */
+    private void commitFeatureLiteral(EntityVertex vertex, TextField field) {
+        Object stored = vertex.propertyFast(TinkarTerm.LITERAL_VALUE);
+        Object parsed = parseLiteral(stored, field.getText());
+        if (parsed == null || parsed.equals(stored)) {
+            field.setText(String.valueOf(stored));
+            return;
+        }
+        transform(builder -> builder.updateFeatureLiteralValue(
+                (LogicalAxiom.Atom.TypedAtom.Feature) builder.get(vertex.vertexIndex()), parsed));
+    }
+
+    /**
+     * The literal value an edit should apply: the editor's text when it parses as the stored
+     * literal's type, else the stored value.
+     */
+    private Object pendingLiteral(EntityVertex vertex, Node literalNode) {
+        Object stored = vertex.propertyFast(TinkarTerm.LITERAL_VALUE);
+        if (literalNode instanceof TextField field) {
+            Object parsed = parseLiteral(stored, field.getText());
+            if (parsed != null) {
+                return parsed;
+            }
+        }
+        return stored;
+    }
+
+    /** Parses the editor's text as the stored literal's type; null when it is not a complete value. */
+    private Object parseLiteral(Object stored, String text) {
+        return switch (stored) {
+            case Integer i -> text.matches("-?\\d+") ? Integer.valueOf(text) : null;
+            case Float f -> text.matches(DECIMAL) ? Float.valueOf(text) : null;
+            case BigDecimal d -> text.matches(DECIMAL) ? new BigDecimal(text) : null;
+            case String s -> text;
+            default -> null;
+        };
+    }
+
+    /**
+     * The "Set value" submenu — the classic control's {@code SetValueMenu} without its input
+     * dialogs: choosing a type converts the current literal to it in place (numbers and text
+     * carry over where they parse; otherwise the type's zero value), and the value itself is
+     * then edited inline in the row's literal editor. The editor's pending value is the
+     * conversion source, so a typed-but-uncommitted value is not lost.
+     */
+    private Menu setValueMenu(EntityVertex vertex, Node literalNode) {
+        Menu menu = new Menu("Set value");
+        menu.getItems().addAll(
+                setValueItem("Set Boolean", vertex, literalNode, Boolean::valueOf),
+                setValueItem("Set Integer", vertex, literalNode,
+                        text -> text.matches(DECIMAL) ? Integer.valueOf(new BigDecimal(text).intValue())
+                                : Integer.valueOf(0)),
+                setValueItem("Set Decimal", vertex, literalNode,
+                        text -> text.matches(DECIMAL) ? new BigDecimal(text) : BigDecimal.ZERO),
+                setValueItem("Set String", vertex, literalNode, text -> text));
+        return menu;
+    }
+
+    private MenuItem setValueItem(String text, EntityVertex vertex, Node literalNode,
+            Function<String, Object> convert) {
+        return createMenuItem(text, KometIcon.IconValue.PENCIL, e -> {
+            Object current = pendingLiteral(vertex, literalNode);
+            Object converted = convert.apply(String.valueOf(current));
+            if (!converted.equals(current)) {
+                transform(builder -> builder.updateFeatureLiteralValue(
+                        (LogicalAxiom.Atom.TypedAtom.Feature) builder.get(vertex.vertexIndex()), converted));
+            }
+        });
+    }
+
     /**
      * Mounts the leaf affordances on an is-a or role row: a hover-revealed + button and a
      * right-click menu with the classic axiom control's leaf actions (choose replacement /
@@ -764,6 +976,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
                     case ROLE_RESTRICTION -> "Choose role restriction";
                     case INTERVAL_ROLE_TYPE -> "Choose interval role type";
                     case INTERVAL_UNIT -> "Choose unit of measure";
+                    case FEATURE_TYPE -> "Choose concrete role type";
                 };
                 menu.getItems().add(createMenuItem(label, KometIcon.IconValue.PENCIL,
                         e -> startChipEdit(chip, chipVertex, kind)));
@@ -782,6 +995,14 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
                     e -> focusBoundField(row, false)));
             menu.getItems().add(createMenuItem("Set Upper Bound " + (upperOpen ? "Closed" : "Open"),
                     KometIcon.IconValue.PENCIL, e -> toggleIntervalBoundOpen(row, rowVertex, false)));
+        }
+        if (rowVertex.getMeaningNid() == TinkarTerm.FEATURE.nid()) {
+            // Mirrors the classic axiom control's feature menu: choose the comparison operator,
+            // set the literal value's type (the value itself is edited inline in the row).
+            Menu comparison = new Menu("Choose comparison");
+            comparison.getItems().addAll(comparisonItems(rowVertex, row.lookup(".ditree-literal-field")));
+            menu.getItems().add(comparison);
+            menu.getItems().add(setValueMenu(rowVertex, row.lookup(".ditree-literal-field")));
         }
         menu.getItems().add(new SeparatorMenuItem());
         menu.getItems().add(createMenuItem("Remove axiom", KometIcon.IconValue.TRASH,
@@ -803,6 +1024,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
                 case "Choose role restriction" -> ChipKind.ROLE_RESTRICTION;
                 case "Choose interval role type" -> ChipKind.INTERVAL_ROLE_TYPE;
                 case "Choose unit of measure" -> ChipKind.INTERVAL_UNIT;
+                case "Choose concrete role type" -> ChipKind.FEATURE_TYPE;
                 default -> null;
             };
             if (kind != null) {
@@ -813,7 +1035,19 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
                             e -> startChipEdit(chip, chipVertex, chipKind));
                 }
             }
-            return submenu.menu();
+            // The feature value submenus get inline substitutes: the engine's versions go
+            // through modal dialogs (SetValueMenu) or persist without the literal editor's
+            // pending value (ChooseConcreteOperatorMenu).
+            return switch (submenu.text()) {
+                case "Choose comparison" -> {
+                    Menu comparison = new Menu(submenu.text());
+                    comparison.getItems().addAll(
+                            comparisonItems(rowVertex, row.lookup(".ditree-literal-field")));
+                    yield comparison;
+                }
+                case "Set value" -> setValueMenu(rowVertex, row.lookup(".ditree-literal-field"));
+                default -> submenu.menu();
+            };
         }
         AxiomRuleAction.Command command = (AxiomRuleAction.Command) ruleAction;
         // The engine emits each interval bound action twice — once per bound — distinguished only
@@ -876,6 +1110,9 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
                                 ConceptFacade.make(newConceptNid));
                 case INTERVAL_UNIT ->
                         builder.updateIntervalRoleUnitOfMeasure((LogicalAxiom.Atom.TypedAtom.IntervalRole) axiom,
+                                ConceptFacade.make(newConceptNid));
+                case FEATURE_TYPE ->
+                        builder.updateFeatureType((LogicalAxiom.Atom.TypedAtom.Feature) axiom,
                                 ConceptFacade.make(newConceptNid));
             }
         });

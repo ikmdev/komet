@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import dev.ikm.komet.framework.panel.axiom.ConcreteDomainOperators;
 import dev.ikm.komet.kview.NodeUtils;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.controls.ComponentItemNodeFactory;
@@ -35,6 +36,9 @@ import java.util.function.IntFunction;
  *     restriction are inline component chips.</li>
  *     <li>Interval roles become {@code I (role type) → (lower,upper) unit} rows — the bracket
  *     shapes carry the bounds' open/closed state, as in the classic axiom control.</li>
+ *     <li>Features (concrete roles) become {@code ⒡ (feature type) = literal} rows, with the
+ *     comparison symbol of the concrete domain operator — again the classic control's
+ *     notation.</li>
  *     <li>{@code AND} vertices are transparent operators: their children are flattened into the
  *     enclosing level.</li>
  * </ul>
@@ -60,7 +64,9 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
         /** The type of an interval role: edits replace the interval role type. */
         INTERVAL_ROLE_TYPE,
         /** The unit of measure of an interval role: edits replace the unit. */
-        INTERVAL_UNIT
+        INTERVAL_UNIT,
+        /** The type of a feature (concrete role): edits replace the feature type. */
+        FEATURE_TYPE
     }
 
     protected final VBox treeContainer = new VBox();
@@ -198,7 +204,10 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
         if (meaning == TinkarTerm.INTERVAL_ROLE.nid()) {
             return intervalRow(vertex);
         }
-        // Features, property sets, … — fall back to a plain clause header for v1.
+        if (meaning == TinkarTerm.FEATURE.nid()) {
+            return featureRow(vertex);
+        }
+        // Property sets, … — fall back to a plain clause header for v1.
         IntFunction<String> descriptionResolver = getSkinnable().getDescriptionResolver();
         String clauseText = descriptionResolver != null ? descriptionResolver.apply(meaning) : Integer.toString(meaning);
         return createClauseNode(vertex, tree, "feature", clauseText);
@@ -382,6 +391,63 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
      * @param vertex the interval role vertex
      */
     protected void decorateIntervalRow(HBox row, EntityVertex vertex) {
+    }
+
+    /**
+     * Builds the {@code ⒡ (feature type) = literal} row for a feature (concrete role) — the same
+     * shape the classic axiom control renders, with the feature type as an inline component chip
+     * and the comparison symbol of the concrete domain operator.
+     */
+    private Node featureRow(EntityVertex vertex) {
+        HBox row = new HBox();
+        row.getStyleClass().add("ditree-feature-row");
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.getChildren().add(clauseBar("feature"));
+        row.getChildren().add(operator("⒡ ("));
+        ConceptFacade featureType = vertex.propertyFast(TinkarTerm.FEATURE_TYPE);
+        row.getChildren().add(createChipNode(vertex, featureType.nid(), ChipKind.FEATURE_TYPE));
+        row.getChildren().add(operator(")"));
+        row.getChildren().add(createFeatureValueNode(vertex));
+        decorateFeatureRow(row, vertex);
+        return row;
+    }
+
+    /**
+     * Builds the value part of a feature row — the comparison symbol and the literal, e.g.
+     * {@code = 1}. The default is plain labels; the editing subclass overrides this with a
+     * comparison chooser and an inline literal editor.
+     *
+     * @param vertex the feature vertex
+     */
+    protected Node createFeatureValueNode(EntityVertex vertex) {
+        ConceptFacade operatorConcept = vertex.propertyFast(TinkarTerm.CONCRETE_DOMAIN_OPERATOR);
+        Object literal = vertex.propertyFast(TinkarTerm.LITERAL_VALUE);
+        HBox valueNode = new HBox(comparisonLabel(operatorConcept), literalLabel(String.valueOf(literal)));
+        valueNode.getStyleClass().add("ditree-feature-value");
+        valueNode.setAlignment(Pos.CENTER_LEFT);
+        return valueNode;
+    }
+
+    protected final Label comparisonLabel(ConceptFacade operatorConcept) {
+        Label symbol = operator(ConcreteDomainOperators.fromConcept(operatorConcept).symbol);
+        symbol.getStyleClass().add("ditree-comparison");
+        return symbol;
+    }
+
+    protected final Label literalLabel(String text) {
+        Label label = new Label(text);
+        label.getStyleClass().add("ditree-literal");
+        return label;
+    }
+
+    /**
+     * Hook for the editing subclass to add affordances (structure context menu) to a feature row.
+     * Default: no-op.
+     *
+     * @param row    the feature row
+     * @param vertex the feature vertex
+     */
+    protected void decorateFeatureRow(HBox row, EntityVertex vertex) {
     }
 
     /**

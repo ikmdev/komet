@@ -6076,6 +6076,23 @@ Styling a context menu for kview ui/ux controls
     -fx-padding: 0.416667em 0.583333em 0.416667em 0em; /* 5 7 5 0 */
 }
 
+/* Submenus open in their own popup, which does not carry the klcontext-menu style class — the
+   item and label rules above still reach them (a popup's styleable parent is its owner node),
+   but the container styling does not: restate it for descendant context-menus, so submenus get
+   the same dark box instead of the default white one. */
+.klcontext-menu .context-menu {
+    -fx-background-color: #2e3140;
+    -fx-background-radius: 4px;
+
+    -fx-min-width: 150px;
+}
+
+/* Plain Text graphics in menu items (e.g. the comparison symbols of the classic
+   ChooseConcreteOperatorMenu) default to a black fill, invisible on the dark menu. */
+.klcontext-menu .menu-item Text {
+    -fx-fill: white;
+}
+
 .icon-klcontext-menu {
     size: 12px;
 
