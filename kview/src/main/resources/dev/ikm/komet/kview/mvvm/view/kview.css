@@ -6780,6 +6780,25 @@ Styling a context menu for kview ui/ux controls
     -fx-border-color: transparent, transparent transparent #ddd transparent;
 }
 
+/* Field separation within a semantic is whitespace-only: the gap between fields (vgap)
+   is much larger than the gap between a field's label and its value (main-container
+   spacing), so each label/value pair reads as one unit. */
+.gen-purpose-window .pattern-container .fields-container {
+    -fx-vgap: 11px;
+    -fx-hgap: 12px;
+}
+
+.gen-purpose-window .pattern-container .fields-container .main-container {
+    -fx-spacing: 2px;
+}
+
+/* Field labels: smaller and more muted than their values, so the values carry the
+   visual weight when scanning. */
+.gen-purpose-window .pattern-container .fields-container .main-container > .title {
+    -fx-font-size: 11px;
+    -fx-text-fill: -Grey-8;
+}
+
 /* Field value text: grey instead of the control's default near-black */
 .gen-purpose-window .pattern-container .read-only-data-control .text-container > .text {
     -fx-text-fill: -Grey-10;
