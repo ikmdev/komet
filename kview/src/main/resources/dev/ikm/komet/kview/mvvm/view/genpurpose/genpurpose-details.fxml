@@ -94,7 +94,8 @@
                                         <ComponentItemNode fx:id="windowConceptTitle"
                                                            maxHeight="1.7976931348623157E308" prefWidth="416.0"
                                                            styleClass="window-main-title"
-                                                           wrapText="true" GridPane.columnIndex="0">
+                                                           wrapText="true" GridPane.columnIndex="0"
+                                                           GridPane.columnSpan="3">
                                             <tooltip>
                                                 <Tooltip fx:id="windowConceptTitleTooltip" text="Empty Tooltip"/>
                                             </tooltip>

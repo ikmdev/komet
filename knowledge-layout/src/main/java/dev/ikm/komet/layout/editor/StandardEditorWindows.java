@@ -1,5 +1,8 @@
 package dev.ikm.komet.layout.editor;
 
+import dev.ikm.komet.layout.KlPatternSemanticsFactories;
+import dev.ikm.komet.layout.PatternDefinitionSeeder;
+import dev.ikm.komet.layout.PatternDefinitionTerms;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
@@ -45,6 +48,10 @@ public final class StandardEditorWindows {
      */
     public static void ensureStandardWindows(KometPreferences standardWindowsPreferences,
                                              ViewCalculator viewCalculator) {
+        // The standard Pattern window is composed from the pattern-definition patterns, so make
+        // sure they exist in the data store before any window definition is created from them.
+        PatternDefinitionSeeder.ensureSeeded(viewCalculator);
+
         List<String> standardWindows = standardWindowsPreferences.getList(KL_EDITOR_WINDOWS);
         if (!standardWindows.contains(CONCEPT_WINDOW_2)) {
             saveConceptWindow2(standardWindowsPreferences, viewCalculator);
@@ -112,10 +119,14 @@ public final class StandardEditorWindows {
     }
 
     /**
-     * The standard Pattern window: like the standard Concept window, a single section containing
-     * the Description pattern, required when the window is opened in the Journal in create mode.
-     * Unlike the Concept window it keeps the default grey chrome (see the concept-window-theme
-     * rules in kview.css, applied only to {@link EditorWindowType#STANDARD_CONCEPT}).
+     * The standard Pattern window: the pattern is defined through the pattern-definition patterns —
+     * a "Pattern Definition" section with the Meaning and Purpose pattern, a "Description" section
+     * with the Description pattern, and a "Fields" section with the Fields pattern shown as a table
+     * (one row per field of the pattern being defined). The Meaning and Purpose and Description
+     * patterns are required when the window is opened in the Journal in create mode; Fields is not
+     * (a membership pattern has no fields). Unlike the Concept window it keeps the default grey
+     * chrome (see the concept-window-theme rules in kview.css, applied only to
+     * {@link EditorWindowType#STANDARD_CONCEPT}).
      */
     private static void savePatternWindow2(KometPreferences standardWindowsPreferences,
                                            ViewCalculator viewCalculator) {
@@ -124,10 +135,29 @@ public final class StandardEditorWindows {
         window.setWindowType(EditorWindowType.STANDARD_PATTERN);
         window.setTimelineVisible(true);
 
+        EditorSectionModel definitionSection = window.getMainSection();
+        definitionSection.setName("Pattern Definition");
+        EditorPatternModel meaningAndPurposePattern = new EditorPatternModel(viewCalculator,
+                PatternDefinitionTerms.MEANING_AND_PURPOSE_PATTERN.nid());
+        meaningAndPurposePattern.setRequired(true);
+        definitionSection.getPatterns().add(meaningAndPurposePattern);
+
+        EditorSectionModel descriptionSection = new EditorSectionModel();
+        descriptionSection.setName("Description");
         EditorPatternModel descriptionPattern =
                 new EditorPatternModel(viewCalculator, TinkarTerm.DESCRIPTION_PATTERN.nid());
         descriptionPattern.setRequired(true);
-        window.getMainSection().getPatterns().add(descriptionPattern);
+        descriptionSection.getPatterns().add(descriptionPattern);
+        window.getAdditionalSections().add(descriptionSection);
+
+        EditorSectionModel fieldsSection = new EditorSectionModel();
+        fieldsSection.setName("Fields");
+        EditorPatternModel fieldsPattern = new EditorPatternModel(viewCalculator,
+                PatternDefinitionTerms.FIELDS_PATTERN.nid());
+        KlPatternSemanticsFactories.byClassName(KlPatternSemanticsFactories.TABLE_FACTORY_CLASS_NAME)
+                .ifPresent(fieldsPattern::setFactory);
+        fieldsSection.getPatterns().add(fieldsPattern);
+        window.getAdditionalSections().add(fieldsSection);
 
         window.save(standardWindowsPreferences);
     }

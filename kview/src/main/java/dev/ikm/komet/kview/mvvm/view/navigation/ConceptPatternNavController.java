@@ -243,7 +243,7 @@ public class ConceptPatternNavController {
                                             ConceptFacade.make(key), searchControl.getText()), topNidMatchMap.get(key));
                                 }
                             }));
-                    searchResultsMap.forEach((_, v) -> v.sort((o1, o2) -> Float.compare(o1.score(), o2.score())));
+                    searchResultsMap.forEach((_, v) -> v.sort((o1, o2) -> Float.compare(o2.score(), o1.score())));
 
                     List<Map.Entry<KLSearchControl.SearchResult, List<LatestVersionSearchResult>>> entries =
                             new ArrayList<>(searchResultsMap.entrySet());

@@ -58,7 +58,8 @@
 .read-only-ditree-control .ditree-clause-bar.role {
     -fx-background-color: #FF9100;
 }
-.read-only-ditree-control .ditree-clause-bar.feature {
+.read-only-ditree-control .ditree-clause-bar.feature,
+.read-only-ditree-control .ditree-clause-bar.interval-role {
     -fx-background-color: #956AFF;
 }
 
@@ -78,9 +79,14 @@
     -fx-padding: 1 0 1 0;
 }
 
-.read-only-ditree-control .ditree-role-row {
+.read-only-ditree-control .ditree-role-row,
+.read-only-ditree-control .ditree-interval-row {
     -fx-spacing: 5px;
     -fx-padding: 2 6 2 0;
+}
+
+.read-only-ditree-control .ditree-interval-bounds {
+    -fx-spacing: 2px;
 }
 
 .read-only-ditree-control .ditree-op {

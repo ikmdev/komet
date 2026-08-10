@@ -45,13 +45,9 @@ import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_T
 public class EditorPatternModel extends EditorGridNodeModel {
     private static final Logger LOG = LoggerFactory.getLogger(EditorPatternModel.class);
 
-    /**
-     * Fully qualified name of the factory used by default when a pattern has no factory stored. Referenced
-     * by name (not type) because the factory implementations live in the downstream knowledge-layout-editor
-     * module; depending on them directly would create a cycle.
-     */
+    /** Fully qualified name of the factory used by default when a pattern has no factory stored. */
     private static final String DEFAULT_FACTORY_CLASS_NAME =
-            "dev.ikm.komet.kleditorapp.factory.KlPatternSemanticsStandardFactory";
+            KlPatternSemanticsFactories.STANDARD_FACTORY_CLASS_NAME;
 
     private final ViewCalculator viewCalculator;
     private final PatternFacade patternFacade;

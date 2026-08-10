@@ -20,9 +20,12 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.events.MakeKLWindowEvent;
 import dev.ikm.komet.kview.events.ShowNavigationalPanelEvent;
+import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
+import dev.ikm.komet.layout.editor.StandardEditorWindows;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -42,6 +45,7 @@ import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 
 public class SortResultSemanticEntryController  {
 
@@ -85,12 +89,26 @@ public class SortResultSemanticEntryController  {
 
 
         searchEntryContainer.setOnMouseClicked(mouseEvent -> {
-            // double left click creates the concept window
+            // double left click opens the KL-driven general-purpose window — except for a
+            // semantic, which opens the gen editing window while there is no KL-driven window
+            // showing a single semantic; shift + double left click opens the classic window
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)){
                 if (mouseEvent.getClickCount() == 2) {
                     UUID journalTopic = searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
-                    eventBus.publish(journalTopic, new MakeConceptWindowEvent(this,
-                            MakeConceptWindowEvent.OPEN_ENTITY_COMPONENT, entity));
+                    if (mouseEvent.isShiftDown()) {
+                        eventBus.publish(journalTopic, new MakeConceptWindowEvent(this,
+                                MakeConceptWindowEvent.OPEN_ENTITY_COMPONENT, entity));
+                    } else if (entity instanceof ConceptEntity conceptEntity) {
+                        eventBus.publish(journalTopic, new MakeKLWindowEvent(this, MakeKLWindowEvent.OPEN_STANDARD_WINDOW,
+                                conceptEntity, StandardEditorWindows.CONCEPT_WINDOW_2));
+                    } else if (entity instanceof PatternEntity patternEntity) {
+                        eventBus.publish(journalTopic, new MakeKLWindowEvent(this, MakeKLWindowEvent.OPEN_STANDARD_WINDOW,
+                                patternEntity, StandardEditorWindows.PATTERN_WINDOW_2));
+                    } else if (entity instanceof SemanticEntity semanticEntity) {
+                        eventBus.publish(journalTopic, new MakeGenEditingWindowEvent(this,
+                                MakeGenEditingWindowEvent.OPEN_GEN_EDIT, semanticEntity,
+                                searchEntryViewModel.getPropertyValue(VIEW_PROPERTIES)));
+                    }
                 }
             }
         });
