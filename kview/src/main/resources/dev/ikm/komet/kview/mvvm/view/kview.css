@@ -288,7 +288,11 @@
 }
 
 .button.add-pencil-button:pressed {
-    -fx-background-color: -Primary-04;
+    -fx-background-color: -Secondary-06;
+}
+
+.button.add-pencil-button:pressed .add-pencil {
+    -fx-background-color: -Grey-White;
 }
 
 .button.add-pencil-button:disabled {
@@ -6753,16 +6757,23 @@ Styling a context menu for kview ui/ux controls
  * Pattern Semantics Standard View                                             *
  ******************************************************************************/
 
+/* The pattern's semantics sit inside the section ScrollPane, whose viewport clips at the
+   content edge — which would cut off the wash a read-only ditree field bleeds outside its own
+   bounds (read-only-ditree-control.css). Trade 14px of horizontal room from outside the scroll
+   pane to inside it: the pattern container reaches into the section's padding with negative
+   side insets and the semantics container pads the same amount back, so the fields keep their
+   exact position while the viewport's clip boundary moves clear of the wash. */
 .gen-purpose-window .pattern-container {
-    -fx-padding: 0 0 10px 0;
+    -fx-padding: -8 -14 10px -14;
 }
 
 .gen-purpose-window .pattern-container:last-child {
-    -fx-padding: 0 0 5px 0;
+    -fx-padding: -8 -14 5px -14;
 }
 
 .gen-purpose-window .pattern-container .semantics-container {
     -fx-spacing: 10px;
+    -fx-padding: 8 14 0 14;
 }
 
 /* Empty pattern placeholder: a pattern with no semantic shows one muted line where its
