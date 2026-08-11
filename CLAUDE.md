@@ -28,6 +28,7 @@ mvn clean verify -DskipTests -T 1C
 
 See `.claude/standards/` (after `mvn validate`) for full standards.
 See `CLAUDE-komet.md` for project-specific notes.
+
 <!-- BEGIN ike-managed: standards-pointer -->
 
 ## IKE Build Standards
