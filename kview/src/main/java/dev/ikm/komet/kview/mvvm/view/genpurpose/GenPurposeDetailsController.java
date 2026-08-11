@@ -234,6 +234,14 @@ public class GenPurposeDetailsController {
         // the STAMP form.
         stampViewControl.setSelectable(false);
 
+        // When the window resizes vertically only the bottom section should grow or shrink; the
+        // SplitPane's default is to spread the delta across every section proportionally, so pin
+        // all items except the last one.
+        mainContent.getItems().subscribe(() -> {
+            List<Node> items = mainContent.getItems();
+            items.forEach(item -> SplitPane.setResizableWithParent(item, item == items.getLast()));
+        });
+
         // Ghost-window styling while in create mode: the window frames a component that doesn't
         // exist yet, so the chrome dims and the frame dashes (see :create-mode in kview.css) and
         // the DRAFT chip + hint appear. Submitting flips the mode to EDIT, which clears all of it.
