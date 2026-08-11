@@ -18,7 +18,6 @@ package dev.ikm.komet.app;
 import static dev.ikm.komet.app.AppState.LOADING_DATA_SOURCE;
 import static dev.ikm.komet.app.AppState.LOGIN;
 import static dev.ikm.komet.app.AppState.RUNNING;
-import static dev.ikm.komet.app.AppState.SELECTED_DATA_SOURCE;
 import static dev.ikm.komet.app.AppState.SELECT_DATA_SOURCE;
 import static dev.ikm.komet.app.AppState.SHUTDOWN;
 import static dev.ikm.komet.app.AppState.STARTING;
@@ -50,7 +49,6 @@ import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.preferences.Preferences;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertStreams;
-import dev.ikm.tinkar.common.service.NoLocalUserStore;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.events.Evt;
@@ -195,6 +193,7 @@ public class App extends Application  {
             LOG.info("Starting shutdown hook");
 
             try {
+                // Save and stop primitive data services gracefully
                 PrimitiveData.save();
                 PrimitiveData.stop();
             } catch (Exception e) {
@@ -334,23 +333,11 @@ public class App extends Application  {
 
     /**
      * Handles the login feature based on the provided {@link LoginFeatureFlag} and platform.
-     * <p>
-     * When the system property {@code komet.datastore.controller} is set, the application
-     * auto-selects the named {@link dev.ikm.tinkar.common.service.DataServiceController}
-     * (matched by exact name, then by case-insensitive substring) instead of showing the
-     * datasource-selection screen. Author login is still skipped or shown afterward based on
-     * whether the selected provider implements {@link NoLocalUserStore} — see
-     * {@link #appStateChangeListener}.
      *
      * @param loginFeatureFlag the current state of the login feature
      * @param stage            the current application stage
      */
     public void handleLoginFeature(LoginFeatureFlag loginFeatureFlag, Stage stage) {
-        String datastoreControllerProp = System.getProperty("komet.datastore.controller");
-        if (datastoreControllerProp != null && !datastoreControllerProp.isBlank()) {
-            startWithNamedDataSource(stage, datastoreControllerProp);
-            return;
-        }
         switch (loginFeatureFlag) {
             case ENABLED_WEB_ONLY -> {
                 if (IS_BROWSER) {
@@ -369,34 +356,6 @@ public class App extends Application  {
             case ENABLED -> startLogin(stage);
             case DISABLED -> startSelectDataSource(stage);
         }
-    }
-
-    /**
-     * Auto-selects a named data store controller and feeds it through the same
-     * {@link AppState#SELECTED_DATA_SOURCE} → {@link LoadDataSourceTask} → {@link AppState#SELECT_USER}
-     * pipeline that manual datasource selection uses, instead of showing the selection screen.
-     *
-     * @param stage          the primary stage
-     * @param controllerName value of the {@code komet.datastore.controller} system property
-     */
-    private void startWithNamedDataSource(Stage stage, String controllerName) {
-        var controllers = PrimitiveData.getControllerOptions();
-        var match = controllers.stream()
-                .filter(c -> c.controllerName().equalsIgnoreCase(controllerName))
-                .findFirst()
-                .or(() -> controllers.stream()
-                        .filter(c -> c.controllerName().toLowerCase().contains(controllerName.toLowerCase()))
-                        .findFirst());
-        if (match.isEmpty()) {
-            LOG.error("No data store controller matching '{}'; available: {}", controllerName,
-                    controllers.stream().map(c -> c.controllerName()).toList());
-            startSelectDataSource(stage);
-            return;
-        }
-        PrimitiveData.selectControllerByName(match.get().controllerName());
-        LOG.info("Auto-selected data store controller: {}", match.get().controllerName());
-        state.addListener(this::appStateChangeListener);
-        state.set(SELECTED_DATA_SOURCE);
     }
 
     /**
@@ -540,13 +499,7 @@ public class App extends Application  {
                     TinkExecutor.threadPool().submit(new LoadDataSourceTask(state));
                 }
                 case SELECT_USER -> {
-                    // Providers with no local author/STAMP store (e.g. a remote-backed provider)
-                    // skip login and go straight to RUNNING.
-                    if (PrimitiveData.get() instanceof NoLocalUserStore) {
-                        Platform.runLater(() -> state.set(RUNNING));
-                    } else {
-                        appPages.launchLoginAuthor(primaryStage);
-                    }
+                    appPages.launchLoginAuthor(primaryStage);
                 }
                 case RUNNING -> {
                     if (userProperty.get() == null) {

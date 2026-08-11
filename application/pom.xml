@@ -185,10 +185,6 @@
             <groupId>dev.ikm.tinkar</groupId>
             <artifactId>events</artifactId>
         </dependency>
-        <dependency>
-            <groupId>network.ike.komet</groupId>
-            <artifactId>komet-grpc-plugin</artifactId>
-        </dependency>
     </dependencies>
     <build>
         <resources>
@@ -229,15 +225,6 @@
                         <ignoreSigningInformation>true</ignoreSigningInformation>
                         <options>
                             <option>-Xmx10g</option>
-                            <!-- Required: tinkar-core uses preview features -->
-                            <option>--enable-preview</option>
-                            <option>--add-opens</option>
-                            <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
-                            <option>--add-exports</option>
-                            <option>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</option>
-                            <option>--add-exports</option>
-                            <option>javafx.base/com.sun.javafx.event=one.jpro.platform.file</option>
-                            <option>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</option>
                         </options>
                     </configuration>
                 </plugin>
@@ -251,21 +238,6 @@
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
-                <configuration>
-                    <mainClass>dev.ikm.komet.application/dev.ikm.komet.app.App</mainClass>
-                    <options>
-                        <!-- tinkar-core uses preview features; must be enabled at runtime -->
-                        <option>--enable-preview</option>
-                        <option>-Xmx8g</option>
-                        <option>--add-opens</option>
-                        <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
-                        <option>--add-exports</option>
-                        <option>javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator</option>
-                        <option>--add-exports</option>
-                        <option>javafx.base/com.sun.javafx.event=one.jpro.platform.file</option>
-                        <option>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</option>
-                    </options>
-                </configuration>
                 <executions>
                     <execution>
                         <!-- Default configuration for running -->
@@ -281,8 +253,6 @@
                             <jlinkVerbose>true</jlinkVerbose>
                             <jlinkZipName>kometJlink</jlinkZipName>
                             <options>
-                                <!-- tinkar-core uses preview features; must be enabled at runtime -->
-                                <option>--enable-preview</option>
                                 <option>-Xmx8g</option>
                                 <option>--add-opens</option>
                                 <option>javafx.graphics/javafx.scene=org.controlsfx.controls</option>
@@ -291,42 +261,6 @@
                                 <option>--add-exports</option>
                                 <option>javafx.base/com.sun.javafx.event=one.jpro.platform.file</option>
                                 <option>-Djava.util.concurrent.ForkJoinPool.common.exceptionHandler=dev.ikm.tinkar.common.alert.UncaughtExceptionAlertStreamer</option>
-                                <!-- Forward datastore auto-select + gRPC connection properties from Maven -D flags to the app JVM -->
-                                <option>-Dkomet.datastore.controller=${komet.datastore.controller}</option>
-                                <option>-Dkomet.grpc.port=${komet.grpc.port}</option>
-                                <option>-Dkomet.grpc.host=${komet.grpc.host}</option>
-                                <!--
-                                    Allow the gRPC plugin (named module) to access grpc-api classes
-                                    from the unnamed module (classpath). grpc-netty-shaded transitively
-                                    pulls grpc-api onto the classpath; add-reads grants access.
-                                -->
-                                <option>--add-reads</option>
-                                <option>dev.ikm.tinkar.provider.grpc=ALL-UNNAMED</option>
-                                <!--
-                                    Reverse direction: grpc-netty-shaded/grpc-core/grpc-util (on the
-                                    classpath, unnamed module) reference classes shaded into
-                                    dev.ikm.tinkar.provider.grpc from grpc-api/guava — extend, in
-                                    NettyChannelProvider's case. A named module's packages are invisible
-                                    to the unnamed module unless explicitly exported to it. List
-                                    confirmed exhaustively via `jdeps -verbose:package` against every
-                                    classpath-resident gRPC jar.
-                                -->
-                                <option>--add-exports</option>
-                                <option>dev.ikm.tinkar.provider.grpc/io.grpc=ALL-UNNAMED</option>
-                                <option>--add-exports</option>
-                                <option>dev.ikm.tinkar.provider.grpc/com.google.common.base=ALL-UNNAMED</option>
-                                <option>--add-exports</option>
-                                <option>dev.ikm.tinkar.provider.grpc/com.google.common.collect=ALL-UNNAMED</option>
-                                <option>--add-exports</option>
-                                <option>dev.ikm.tinkar.provider.grpc/com.google.common.io=ALL-UNNAMED</option>
-                                <option>--add-exports</option>
-                                <option>dev.ikm.tinkar.provider.grpc/com.google.common.math=ALL-UNNAMED</option>
-                                <option>--add-exports</option>
-                                <option>dev.ikm.tinkar.provider.grpc/com.google.common.util.concurrent=ALL-UNNAMED</option>
-                                <option>--add-exports</option>
-                                <option>dev.ikm.tinkar.provider.grpc/com.google.common.hash=ALL-UNNAMED</option>
-                                <option>--add-exports</option>
-                                <option>dev.ikm.tinkar.provider.grpc/com.google.common.primitives=ALL-UNNAMED</option>
                             </options>
                         </configuration>
                     </execution>
@@ -513,7 +447,6 @@
                 <jpackage.type>PKG</jpackage.type>
                 <jpackage.icon>src/main/resources/icons/KOMET.icns</jpackage.icon>
                 <jpackage.resourceDir>installer_resources/resourceDir_unix</jpackage.resourceDir>
-                <rocksdbjni.classifier>osx</rocksdbjni.classifier>
             </properties>
         </profile>
         <profile>
@@ -528,7 +461,6 @@
                 <jpackage.type>RPM</jpackage.type>
                 <jpackage.icon>src/main/resources/icons/Komet.png</jpackage.icon>
                 <jpackage.resourceDir>installer_resources/resourceDir_unix</jpackage.resourceDir>
-                <rocksdbjni.classifier>linux64</rocksdbjni.classifier>
             </properties>
         </profile>
         <profile>
