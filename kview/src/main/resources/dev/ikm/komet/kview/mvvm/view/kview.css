@@ -6719,9 +6719,12 @@ Styling a context menu for kview ui/ux controls
     /* 12px sides = the shared content gutter (same inset as the banner title / Komet ID) */
     -fx-padding: 8px 12px 8px 12px;
 
-    /* Gaps between patterns laid out in this Section's grid */
+    /* Gaps between patterns laid out in this Section's grid. Rows stack at content height
+       (see PrefCappedRowsGridPane), so the vgap separates one pattern view from the next —
+       kept small because fields bring their own breathing room (e.g. the read-only ditree's
+       wash padding, read-only-ditree-control.css). */
     -fx-hgap: 10px;
-    -fx-vgap: 0px;
+    -fx-vgap: 10px;
 }
 
 /* Section header: a smaller, muted expand/collapse chevron, kept off the window edge,

@@ -105,7 +105,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import dev.ikm.komet.layout_engine.host.SupplementalAreaRenderer;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.slf4j.Logger;
@@ -939,9 +938,6 @@ public class GenPurposeDetailsController {
         editorPatternModel.columnSpanProperty().subscribe(newColumnSpan -> {
             GridPane.setColumnSpan(view, newColumnSpan.intValue());
         });
-
-        // Always expand to fill height of the GridPane
-        GridPane.setVgrow(view, Priority.ALWAYS);
 
         titledPane.getItems().add(view);
     }

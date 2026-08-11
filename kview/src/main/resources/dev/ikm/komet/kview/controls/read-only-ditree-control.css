@@ -11,9 +11,14 @@
    fill outward into the field's surroundings instead of padding the content inward, giving the
    wash visible breathing room on every side while the content keeps the exact same position as
    an editable field's — so the inferred and stated titles stay aligned. The editable subclass
-   clears the wash (ditree-control.css). */
+   clears the wash (ditree-control.css).
+
+   The breathing room below the tree is bottom padding rather than more inset bleed: a host may
+   clip at the control's bounds (the standard pattern view's ScrollPane does, swallowing the
+   bottom bleed), and padding stays inside the bounds — while still not shifting the content. */
 .read-only-ditree-control .main-container {
     -fx-spacing: 4px;
+    -fx-padding: 0 0 16px 0;
     -fx-background-color: #F4F6FA;
     -fx-background-insets: -8 -14 -12 -14;
     -fx-background-radius: 4px;

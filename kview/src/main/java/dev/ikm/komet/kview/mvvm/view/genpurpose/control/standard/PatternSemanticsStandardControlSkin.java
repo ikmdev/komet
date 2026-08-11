@@ -56,6 +56,20 @@ public class PatternSemanticsStandardControlSkin extends SkinBase<PatternSemanti
         control.getStyleClass().add("pattern-container");
     }
 
+    /**
+     * SkinBase's default preferred-height measurement ignores the control's own insets, but this
+     * control carries asymmetric CSS padding (.pattern-container in kview.css), so the default
+     * under-reports by the net inset. The section grid sizes this control's row to exactly the
+     * reported pref (see SectionTitledPaneSkin), and the shortfall showed as a ScrollPane
+     * scrollbar over a few phantom pixels — so report the true content-plus-insets height.
+     */
+    @Override
+    protected double computePrefHeight(double width, double topInset, double rightInset,
+                                       double bottomInset, double leftInset) {
+        double contentWidth = width < 0 ? -1 : width - leftInset - rightInset;
+        return topInset + scrollPane.prefHeight(contentWidth) + bottomInset;
+    }
+
     private void onPreviewingSemanticChanged(SemanticStandardControl semanticViewControl) {
         if (previousSemanticControlInPreviewMode != null) {
             previousSemanticControlInPreviewMode.setPreviewMode(false);
