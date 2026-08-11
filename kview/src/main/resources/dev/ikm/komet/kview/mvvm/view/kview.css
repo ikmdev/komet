@@ -6076,6 +6076,23 @@ Styling a context menu for kview ui/ux controls
     -fx-padding: 0.416667em 0.583333em 0.416667em 0em; /* 5 7 5 0 */
 }
 
+/* Submenus open in their own popup, which does not carry the klcontext-menu style class — the
+   item and label rules above still reach them (a popup's styleable parent is its owner node),
+   but the container styling does not: restate it for descendant context-menus, so submenus get
+   the same dark box instead of the default white one. */
+.klcontext-menu .context-menu {
+    -fx-background-color: #2e3140;
+    -fx-background-radius: 4px;
+
+    -fx-min-width: 150px;
+}
+
+/* Plain Text graphics in menu items (e.g. the comparison symbols of the classic
+   ChooseConcreteOperatorMenu) default to a black fill, invisible on the dark menu. */
+.klcontext-menu .menu-item Text {
+    -fx-fill: white;
+}
+
 .icon-klcontext-menu {
     size: 12px;
 
@@ -6761,6 +6778,25 @@ Styling a context menu for kview ui/ux controls
     -fx-border-style: solid, solid;
     -fx-border-insets: 0, 0 3px 0 3px;
     -fx-border-color: transparent, transparent transparent #ddd transparent;
+}
+
+/* Field separation within a semantic is whitespace-only: the gap between fields (vgap)
+   is much larger than the gap between a field's label and its value (main-container
+   spacing), so each label/value pair reads as one unit. */
+.gen-purpose-window .pattern-container .fields-container {
+    -fx-vgap: 11px;
+    -fx-hgap: 12px;
+}
+
+.gen-purpose-window .pattern-container .fields-container .main-container {
+    -fx-spacing: 2px;
+}
+
+/* Field labels: smaller and more muted than their values, so the values carry the
+   visual weight when scanning. */
+.gen-purpose-window .pattern-container .fields-container .main-container > .title {
+    -fx-font-size: 11px;
+    -fx-text-fill: -Grey-8;
 }
 
 /* Field value text: grey instead of the control's default near-black */

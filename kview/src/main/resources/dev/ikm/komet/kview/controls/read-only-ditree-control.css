@@ -80,13 +80,34 @@
 }
 
 .read-only-ditree-control .ditree-role-row,
-.read-only-ditree-control .ditree-interval-row {
+.read-only-ditree-control .ditree-interval-row,
+.read-only-ditree-control .ditree-feature-row {
     -fx-spacing: 5px;
     -fx-padding: 2 6 2 0;
 }
 
 .read-only-ditree-control .ditree-interval-bounds {
     -fx-spacing: 2px;
+}
+
+.read-only-ditree-control .ditree-feature-value {
+    -fx-spacing: 5px;
+}
+
+/* Literal values (feature literals) render in the chips' text styling, distinguishing them from
+   the muted operator glyphs around them. */
+.read-only-ditree-control .ditree-literal {
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 13px;
+    -fx-text-fill: #2E3240;
+}
+
+/* The comparison symbol of a feature: ≥ and ≤ are missing from the bundled Noto Sans, so they
+   fall back to whatever the OS provides and render faded next to = < >. The bundled Open Sans
+   (registered by LoadFonts on every platform) has the full set, keeping all five operators the
+   same weight on every OS. */
+.read-only-ditree-control .ditree-comparison {
+    -fx-font-family: "Open Sans";
 }
 
 .read-only-ditree-control .ditree-op {
