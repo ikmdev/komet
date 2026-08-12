@@ -1,11 +1,10 @@
 package dev.ikm.komet.kview.controls.skin;
 
-import dev.ikm.komet.framework.search.HighlightedSegments;
+import dev.ikm.komet.layout.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.GraphFilterOptionsNavigator;
+import dev.ikm.komet.layout.controls.IconRegion;
 import dev.ikm.komet.kview.controls.InvertedTree;
 import dev.ikm.komet.kview.controls.KLSearchControl;
-import dev.ikm.komet.layout.controls.FilterOptionsPopup;
-import dev.ikm.komet.layout.controls.IconRegion;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.animation.PauseTransition;
@@ -21,7 +20,14 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.Skin;
+import javafx.scene.control.SkinBase;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
@@ -32,10 +38,7 @@ import javafx.scene.text.Text;
 import javafx.util.Duration;
 import javafx.util.Subscription;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.*;
 
 /**
  * <p>Custom skin implementation for the {@link KLSearchControl}.
@@ -393,7 +396,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
                     getDescription(result.parentConcept().nid()) : null);
             descriptionLabel.setText(getDescription(result.concept().nid()));
             subscription = subscription.and(actualTextProperty.subscribe(text -> {
-                Platform.runLater(() -> addHighlightPaths(result.highlight()));
+                Platform.runLater(this::addHighlightPaths);
                 if (text != null && !text.isEmpty() && descriptionLabel.getText() != null && !text.equals(descriptionLabel.getText())) {
                     descriptionLabel.setTooltip(new Tooltip(descriptionLabel.getText()));
                 }
@@ -463,26 +466,23 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
          * the occurrences of the {@link KLSearchControl#textProperty()} in the
          * {@link ConceptFacade#description()}.
          */
-        private void addHighlightPaths(String query) {
+        private void addHighlightPaths() {
             getChildren().removeIf(Path.class::isInstance);
             String text = actualTextProperty.get();
             if (text == null || text.isEmpty()) {
                 return;
             }
-            try {
-                String highlights = navigator.getViewCalculator().highlight(query, descriptionLabel.getText());
-                List<HighlightedSegments.Segment> highlightedSegments = HighlightedSegments.parse(highlights);
-                AtomicInteger pos = new AtomicInteger();
-                highlightedSegments.forEach(segment -> {
-                    int start = pos.getAndAdd(segment.text().length());
-                    if (segment.matched()) {
-                        int end = pos.get();
-                        addBackgroundPath(start, end);
+            String label = descriptionLabel.getText().toLowerCase(Locale.ROOT);
+            int lastIndex = 0;
+            while (lastIndex != -1) {
+                lastIndex = label.indexOf(highlight, lastIndex);
+                if (lastIndex != -1) {
+                    addBackgroundPath(lastIndex, Math.min(lastIndex + highlight.length(), text.length()));
+                    lastIndex += highlight.length();
+                    if (lastIndex > text.length()) {
+                        break;
                     }
-                });
-            } catch (Exception _) {
-                // Ignore Exception and don't highlight
-                // TODO: Add Logging
+                }
             }
         }
 
