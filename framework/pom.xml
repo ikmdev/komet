@@ -139,10 +139,13 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
         </dependency>
-        <!-- Integration test dependencies -->
+        <!-- Shared tinkar test harness (extracted from the integration
+             module, IKE-Network/ike-issues#969) — depends on only the
+             providers the harness opens, so framework tests stop
+             waiting for tinkar-core's full integration chain. -->
         <dependency>
             <groupId>dev.ikm.tinkar</groupId>
-            <artifactId>integration</artifactId>
+            <artifactId>test-fixtures</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

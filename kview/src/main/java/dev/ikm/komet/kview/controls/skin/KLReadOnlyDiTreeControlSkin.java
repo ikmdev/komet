@@ -13,6 +13,7 @@ import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -72,12 +73,26 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
     protected final VBox treeContainer = new VBox();
 
     /**
+     * The lock + "read-only" marker after the field title, signalling that this definition can't
+     * be edited — paired with the light wash the stylesheet puts behind the whole field (title
+     * row and tree), so a read-only definition stays distinguishable from an editable one even
+     * when the title has scrolled out of view. The editing subclass ({@code KLDiTreeControlSkin})
+     * hides it (and its stylesheet clears the wash).
+     */
+    protected final HBox readOnlyIndicator = createReadOnlyIndicator();
+
+    /**
      * @param control The control for which this Skin should attach to.
      */
     public KLReadOnlyDiTreeControlSkin(KLReadOnlyDiTreeControl control) {
         super(control);
 
-        mainContainer.getChildren().addAll(promptTextLabel, treeContainer);
+        Region titleSpacer = new Region();
+        HBox.setHgrow(titleSpacer, Priority.ALWAYS);
+        HBox titleRow = new HBox(titleLabel, titleSpacer, readOnlyIndicator);
+        titleRow.getStyleClass().add("ditree-title-row");
+        titleRow.setAlignment(Pos.CENTER_LEFT);
+        mainContainer.getChildren().setAll(titleRow, promptTextLabel, treeContainer);
 
         // The chips provide their own context menus (ComponentItemNode), so the control-level
         // context menu from the base skin is not wanted here.
@@ -89,6 +104,18 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
 
         // CSS
         treeContainer.getStyleClass().add("ditree-container");
+    }
+
+    private static HBox createReadOnlyIndicator() {
+        Region lockIcon = new Region();
+        lockIcon.getStyleClass().add("ditree-lock-icon");
+        Label label = new Label("READ-ONLY");
+        label.getStyleClass().add("ditree-readonly-label");
+        HBox indicator = new HBox(lockIcon, label);
+        indicator.getStyleClass().add("ditree-readonly-indicator");
+        indicator.setAlignment(Pos.CENTER_LEFT);
+        Tooltip.install(indicator, new Tooltip("This field can't be edited"));
+        return indicator;
     }
 
     protected final void rebuildTree(DiTreeEntity tree) {

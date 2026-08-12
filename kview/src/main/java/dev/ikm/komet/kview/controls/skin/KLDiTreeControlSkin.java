@@ -106,6 +106,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
      */
     public KLDiTreeControlSkin(KLDiTreeControl control) {
         super(control);
+        NodeUtils.setShowing(readOnlyIndicator, false);
         control.componentSlotFactoryProperty().subscribe(() -> rebuildTree(control.getValue()));
     }
 

@@ -105,7 +105,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import dev.ikm.komet.layout_engine.host.SupplementalAreaRenderer;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.slf4j.Logger;
@@ -234,6 +233,14 @@ public class GenPurposeDetailsController {
         // The header STAMP is view-only in this window — clicking it must not select it or open
         // the STAMP form.
         stampViewControl.setSelectable(false);
+
+        // When the window resizes vertically only the bottom section should grow or shrink; the
+        // SplitPane's default is to spread the delta across every section proportionally, so pin
+        // all items except the last one.
+        mainContent.getItems().subscribe(() -> {
+            List<Node> items = mainContent.getItems();
+            items.forEach(item -> SplitPane.setResizableWithParent(item, item == items.getLast()));
+        });
 
         // Ghost-window styling while in create mode: the window frames a component that doesn't
         // exist yet, so the chrome dims and the frame dashes (see :create-mode in kview.css) and
@@ -939,9 +946,6 @@ public class GenPurposeDetailsController {
         editorPatternModel.columnSpanProperty().subscribe(newColumnSpan -> {
             GridPane.setColumnSpan(view, newColumnSpan.intValue());
         });
-
-        // Always expand to fill height of the GridPane
-        GridPane.setVgrow(view, Priority.ALWAYS);
 
         titledPane.getItems().add(view);
     }

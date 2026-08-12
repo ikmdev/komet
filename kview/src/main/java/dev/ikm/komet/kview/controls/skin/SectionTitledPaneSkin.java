@@ -5,6 +5,7 @@ import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.geometry.Orientation;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -17,6 +18,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 
@@ -92,10 +94,11 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
      * Builds the GridPane that holds the section's content areas and installs it as the pane's
      * content. Users of this control add views through
      * {@link SectionTitledPane#getItems()}, and the column layout follows the control's
-     * {@link SectionTitledPane#numberColumnsProperty()}.
+     * {@link SectionTitledPane#numberColumnsProperty()}. Rows stack at their content height
+     * rather than splitting the section's height — see {@link PrefCappedRowsGridPane}.
      */
     private void createContentContainer(SectionTitledPane<T> control) {
-        contentContainer = new GridPane();
+        contentContainer = new PrefCappedRowsGridPane();
         contentContainer.getStyleClass().add("section-titled-pane-container");
 
         Bindings.bindContent(contentContainer.getChildren(), control.getItems());
@@ -181,6 +184,142 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
      * Supporting Classes                                                          *
      *                                                                             *
      ******************************************************************************/
+
+    /**
+     * A GridPane whose rows take their preferred (content) height, stacked from the top, instead
+     * of stretching to split the pane's height between them. When the rows' combined preferred
+     * height exceeds the available height, each row is capped at its fair share of that height:
+     * rows shorter than the fair share keep their full preferred height, and the space they don't
+     * use raises the share of the taller rows, which then scroll internally (the content areas
+     * host their fields in a ScrollPane — see PatternSemanticsStandardControlSkin).
+     */
+    private static class PrefCappedRowsGridPane extends GridPane {
+
+        private double[] appliedRowHeights = new double[0];
+
+        @Override
+        protected void layoutChildren() {
+            applyRowConstraints();
+            super.layoutChildren();
+        }
+
+        /**
+         * Recomputes the fixed per-row heights for the current size and content and installs them
+         * as this grid's row constraints. Guarded so constraints are only touched when the heights
+         * actually change — installing them re-requests layout, and the guard is what lets that
+         * follow-up pass settle.
+         */
+        private void applyRowConstraints() {
+            List<Node> children = getManagedChildren();
+            int rowCount = 0;
+            for (Node child : children) {
+                rowCount = Math.max(rowCount, rowIndexOf(child) + 1);
+            }
+            if (rowCount == 0) {
+                if (appliedRowHeights.length > 0) {
+                    appliedRowHeights = new double[0];
+                    getRowConstraints().clear();
+                }
+                return;
+            }
+
+            // Column widths are uniform (see numberColumnsProperty subscription: every column
+            // gets the same percentWidth), so each child's width — which its preferred height
+            // may depend on — follows from its column span alone.
+            int columnCount = Math.max(1, getColumnConstraints().size());
+            double contentWidth = getWidth() - snappedLeftInset() - snappedRightInset();
+            double columnWidth = (contentWidth - getHgap() * (columnCount - 1)) / columnCount;
+
+            double[] rowPrefHeights = new double[rowCount];
+            for (Node child : children) {
+                Integer span = GridPane.getColumnSpan(child);
+                int columnSpan = span == null ? 1 : span;
+                double cellWidth = columnWidth * columnSpan + getHgap() * (columnSpan - 1);
+                int row = rowIndexOf(child);
+                rowPrefHeights[row] = Math.max(rowPrefHeights[row], child.prefHeight(cellWidth));
+            }
+
+            double availableHeight = getHeight() - snappedTopInset() - snappedBottomInset()
+                    - getVgap() * (rowCount - 1);
+            double[] rowHeights = capAtFairShare(rowPrefHeights, availableHeight);
+            for (int i = 0; i < rowHeights.length; i++) {
+                rowHeights[i] = snapSizeY(rowHeights[i]);
+            }
+
+            if (!heightsChanged(rowHeights)) {
+                return;
+            }
+            appliedRowHeights = rowHeights;
+            List<RowConstraints> constraints = new ArrayList<>(rowCount);
+            for (double rowHeight : rowHeights) {
+                // Pin only pref and max: pinning min too would raise the grid's computed min
+                // height to the full content height, freezing the section dividers and the
+                // window edges. The min stays at the children's own (small, ScrollPane-backed)
+                // computed min so the section remains freely resizable.
+                RowConstraints constraint = new RowConstraints();
+                constraint.setPrefHeight(rowHeight);
+                constraint.setMaxHeight(rowHeight);
+                constraints.add(constraint);
+            }
+            getRowConstraints().setAll(constraints);
+        }
+
+        private static int rowIndexOf(Node child) {
+            Integer rowIndex = GridPane.getRowIndex(child);
+            return rowIndex == null ? 0 : rowIndex;
+        }
+
+        /**
+         * Allocates the available height among the rows: every row gets at most its preferred
+         * height, and a row only gets less when the rows that need more than an equal split
+         * cannot be satisfied — those tall rows then share what the short rows left over.
+         */
+        private static double[] capAtFairShare(double[] prefHeights, double availableHeight) {
+            int rowCount = prefHeights.length;
+            double[] heights = new double[rowCount];
+            boolean[] keepsPref = new boolean[rowCount];
+            double remaining = Math.max(0, availableHeight);
+            int uncapped = rowCount;
+
+            // Settle the rows that fit within the current fair share; every row settled frees
+            // up share for the rest, so iterate until a full pass settles nothing.
+            boolean settledAny = true;
+            while (settledAny && uncapped > 0) {
+                settledAny = false;
+                double fairShare = remaining / uncapped;
+                for (int i = 0; i < rowCount; i++) {
+                    if (!keepsPref[i] && prefHeights[i] <= fairShare) {
+                        keepsPref[i] = true;
+                        heights[i] = prefHeights[i];
+                        remaining -= prefHeights[i];
+                        uncapped--;
+                        settledAny = true;
+                    }
+                }
+            }
+            if (uncapped > 0) {
+                double fairShare = remaining / uncapped;
+                for (int i = 0; i < rowCount; i++) {
+                    if (!keepsPref[i]) {
+                        heights[i] = fairShare;
+                    }
+                }
+            }
+            return heights;
+        }
+
+        private boolean heightsChanged(double[] rowHeights) {
+            if (rowHeights.length != appliedRowHeights.length) {
+                return true;
+            }
+            for (int i = 0; i < rowHeights.length; i++) {
+                if (Math.abs(rowHeights[i] - appliedRowHeights[i]) > 0.5) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
 
     private static class EditButton extends Pane {
         private final HBox mainContainer = new HBox();

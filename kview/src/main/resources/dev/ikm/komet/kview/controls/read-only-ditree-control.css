@@ -6,13 +6,59 @@
     -fx-text-fill: #5d5d5d;
 }
 
+/* A light wash behind the whole field — title, read-only marker and tree — keeps the read-only
+   definition distinguishable from an editable one at a glance. The negative insets bleed the
+   fill outward into the field's surroundings instead of padding the content inward, giving the
+   wash visible breathing room on every side while the content keeps the exact same position as
+   an editable field's — so the inferred and stated titles stay aligned. The editable subclass
+   clears the wash (ditree-control.css).
+
+   The breathing room below the tree is bottom padding rather than more inset bleed: a host may
+   clip at the control's bounds (the standard pattern view's ScrollPane does, swallowing the
+   bottom bleed), and padding stays inside the bounds — while still not shifting the content. */
 .read-only-ditree-control .main-container {
     -fx-spacing: 4px;
+    -fx-padding: 0 0 16px 0;
+    -fx-background-color: #F4F6FA;
+    -fx-background-insets: -8 -14 -12 -14;
+    -fx-background-radius: 4px;
 }
 
 .read-only-ditree-control .main-container .prompt-text {
     -fx-font-family: "Noto Sans SemiBold";
     -fx-font-size: 13px;
+}
+
+.read-only-ditree-control .ditree-title-row {
+    -fx-spacing: 7px;
+}
+
+/* The read-only marker at the right edge of the title row: a small lock + "read-only" pill, in
+   a muted gray so it reads quieter than the title itself. The white fill keeps it legible on
+   the wash. */
+.read-only-ditree-control .ditree-readonly-indicator {
+    -fx-spacing: 3px;
+    -fx-padding: 0 6 0 6;
+    -fx-background-color: white;
+    -fx-background-radius: 999px;
+    -fx-border-width: 1px;
+    -fx-border-color: #b8c1d0;
+    -fx-border-radius: 999px;
+}
+
+.read-only-ditree-control .ditree-lock-icon {
+    -fx-background-color: #8a97a4;
+    -fx-shape: "M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z";
+    -fx-min-width: 8px;
+    -fx-max-width: 8px;
+    -fx-min-height: 10px;
+    -fx-max-height: 10px;
+}
+
+.read-only-ditree-control .ditree-readonly-label {
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 9px;
+    -fx-text-fill: #8a97a4;
 }
 
 .read-only-ditree-control .ditree-container {

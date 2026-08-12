@@ -1,5 +1,10 @@
 /* Editing affordances of KLDiTreeControl, layered on top of read-only-ditree-control.css. */
 
+/* An editable definition carries no read-only wash. */
+.ditree-control .main-container {
+    -fx-background-color: transparent;
+}
+
 /* Every editable row — clause headers, is-a rows, role rows — highlights as a whole on hover,
    signalling the + button and the structure context menu. */
 .ditree-control .ditree-clause-header:hover,
