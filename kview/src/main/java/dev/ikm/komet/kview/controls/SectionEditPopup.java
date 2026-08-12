@@ -7,6 +7,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.css.PseudoClass;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -23,8 +24,18 @@ import javafx.scene.layout.VBox;
 public class SectionEditPopup extends PopupControl {
     private static final String POPUP_ENTRY_STYLE_CLASS = "popup-entry";
 
+    /** Active on the owner node while this popup is showing, so it can style its edit affordance as pressed. */
+    private static final PseudoClass POPUP_SHOWING = PseudoClass.getPseudoClass("popup-showing");
+
     public SectionEditPopup() {
         setAutoHide(true);
+
+        showingProperty().subscribe(showing -> {
+            Node ownerNode = getOwnerNode();
+            if (ownerNode != null) {
+                ownerNode.pseudoClassStateChanged(POPUP_SHOWING, showing);
+            }
+        });
     }
 
     @Override

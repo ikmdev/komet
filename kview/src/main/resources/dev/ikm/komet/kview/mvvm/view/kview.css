@@ -295,6 +295,16 @@
     -fx-background-color: -Grey-White;
 }
 
+/* SectionEditPopup applies :popup-showing to its owner section while open;
+   keep the pencil rendered as pressed for the popup's lifetime. */
+.section-titled-pane:popup-showing .add-pencil-button {
+    -fx-background-color: -Secondary-06;
+}
+
+.section-titled-pane:popup-showing .add-pencil-button .add-pencil {
+    -fx-background-color: -Grey-White;
+}
+
 .button.add-pencil-button:disabled {
     -fx-fill: -Grey-10;
 }
@@ -6742,6 +6752,12 @@ Styling a context menu for kview ui/ux controls
    the separator before it stretches the bar's full height (HBox fill-height). */
 .gen-purpose-window .section-titled-pane .section-edit-area {
     -fx-alignment: center;
+}
+
+/* Slightly smaller pencil than the global .add-pencil (16.67 x 15.83) */
+.gen-purpose-window .section-titled-pane .add-pencil {
+    -width-size: 14px;
+    -height-size: 13.3px;
 }
 
 .gen-purpose-window .section-titled-pane > .title > .arrow-button .arrow {
