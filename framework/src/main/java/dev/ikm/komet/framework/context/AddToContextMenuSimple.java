@@ -38,7 +38,6 @@ import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.entity.EntityStringUtil;
 import dev.ikm.tinkar.terms.EntityFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,7 +117,7 @@ public class AddToContextMenuSimple implements AddToContextMenu {
             if (entityFacade != null) {
                 final Clipboard clipboard = Clipboard.getSystemClipboard();
                 final ClipboardContent content = new ClipboardContent();
-                content.putString(EntityStringUtil.recursiveEntityToString(entityFacade));
+                content.putString(PrimitiveData.text(entityFacade.nid()));
                 clipboard.setContent(content);
             }
         });

@@ -79,7 +79,10 @@ public class KometPropertyEditorFactory implements Callback<PropertySheet.Item, 
                 propertyEditor = ed.get();
             } else {
                 propertyEditor = null;
-                AlertStreams.getRoot().dispatch(AlertObject.makeWarning("No editor for item " + item.getName(), item.toString()));
+                // createCustomEditor already dispatched an error alert for unexpected failures.
+                // Only log here — a second UI dialog for "No editor" would be redundant and
+                // confusing, especially in gRPC mode where missing entities are expected.
+                LOG.warn("No editor for item '{}': {}", item.getName(), item);
             }
         } else {
             return null;
@@ -184,17 +187,41 @@ public class KometPropertyEditorFactory implements Callback<PropertySheet.Item, 
                 }
                 if (editorClass == AxiomView.class) {
                     //TODO add stated/inferred to root property?
-                    DiTree<EntityVertex> axiomTree = (DiTree<EntityVertex>) property.getValue();
-                    PremiseType premiseType = PremiseType.STATED;
-                    if (property.getObservableField().definition(viewProperties.calculator()).meaningNid() == TinkarTerm.EL_PLUS_PLUS_INFERRED_TERMINOLOGICAL_AXIOMS.nid()) {
-                        premiseType = PremiseType.INFERRED;
+                    try {
+                        DiTree<EntityVertex> axiomTree = (DiTree<EntityVertex>) property.getValue();
+                        // Determine STATED vs INFERRED via fieldDefinition() which goes directly to
+                        // Entity.getFast() rather than the Observable layer (avoids thread-check
+                        // and absent-entity exceptions). Fall back to STATED on any failure.
+                        PremiseType premiseType = PremiseType.STATED;
+                        try {
+                            if (property.observableField.field()
+                                    .fieldDefinition(viewProperties.calculator()).meaningNid()
+                                    == TinkarTerm.EL_PLUS_PLUS_INFERRED_TERMINOLOGICAL_AXIOMS.nid()) {
+                                premiseType = PremiseType.INFERRED;
+                            }
+                        } catch (Exception e) {
+                            LOG.debug("Could not determine axiom premise type from field definition, defaulting to STATED: {}", e.getMessage());
+                        }
+                        int semanticNid = property.observableField.field().nid();
+                        ObservableSemantic axiomSemantic = ObservableSemantic.get(semanticNid);
+                        if (axiomSemantic == null) {
+                            LOG.warn("Axiom semantic not available for NID {} — returning no editor (gRPC mode)", semanticNid);
+                            return Optional.empty();
+                        }
+                        ObservableSemanticVersion axiomSemanticVersion = axiomSemantic.getVersionFast(property.observableField.field().versionStampNid());
+                        if (axiomSemanticVersion == null) {
+                            LOG.warn("Axiom semantic version not available for stamp NID {} — returning no editor (gRPC mode)",
+                                    property.observableField.field().versionStampNid());
+                            return Optional.empty();
+                        }
+                        AxiomView axiomView = AxiomView.create(axiomSemanticVersion, premiseType, viewProperties);
+                        return Optional.of(axiomView);
+                    } catch (Exception e) {
+                        // Any remaining failure (pattern absent, stamp mismatch, etc.) in
+                        // gRPC/ephemeral-store mode — return empty without showing an error dialog.
+                        LOG.warn("Axiom editor not available (gRPC mode): {} — {}", e.getClass().getSimpleName(), e.getMessage());
+                        return Optional.empty();
                     }
-                    int semanticNid = property.observableField.field().nid();
-                    ObservableSemantic axiomSemantic = ObservableSemantic.get(semanticNid);
-                    ObservableSemanticVersion axiomSemanticVersion = axiomSemantic.getVersionFast(property.observableField.field().versionStampNid());
-
-                    AxiomView axiomView = AxiomView.create(axiomSemanticVersion, premiseType, viewProperties);
-                    return Optional.of(axiomView);
                 }
             }
             return property.getPropertyEditorClass().map(cls -> {

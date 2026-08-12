@@ -32,6 +32,8 @@ import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.komet.framework.search.HighlightedSegments;
 import dev.ikm.komet.framework.search.SearchPanelController;
+import dev.ikm.tinkar.common.service.RemoteConceptSearchService;
+import dev.ikm.tinkar.common.service.ServiceLifecycleManager;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.AutoCompleteTextField;
 import dev.ikm.komet.layout.controls.FilterOptionsPopup;
@@ -53,6 +55,7 @@ import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -92,6 +95,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -286,6 +290,8 @@ public class NextGenSearchController {
         clearView();
         String queryText = searchField.getText().strip();
         currentQueryText = queryText;
+        Optional<RemoteConceptSearchService> remoteSearch =
+                ServiceLifecycleManager.get().getRunningService(RemoteConceptSearchService.class);
         try {
             if (queryText.startsWith("-") && parseInt(queryText).isPresent()) {
                 addComponentFromNid(queryText);
@@ -299,6 +305,51 @@ public class NextGenSearchController {
                 UuidUtil.getUUID(queryText).ifPresent(uuid -> {
                     addComponentFromNid(PrimitiveData.nid(PublicIds.of(uuid)));
                 });
+            } else if (remoteSearch.isPresent()) {
+                RemoteConceptSearchService remote = remoteSearch.get();
+                final String remoteQuery = queryText;
+                RemoteConceptSearchService.SortOption sortOption = switch (sortByButton.getText()) {
+                    case BUTTON_TEXT_TOP_COMPONENT_ALPHA -> RemoteConceptSearchService.SortOption.TOP_COMPONENT_ALPHA;
+                    case BUTTON_TEXT_DESCRIPTION_SEMANTIC -> RemoteConceptSearchService.SortOption.SEMANTIC;
+                    case BUTTON_TEXT_DESCRIPTION_SEMANTIC_ALPHA -> RemoteConceptSearchService.SortOption.SEMANTIC_ALPHA;
+                    default -> RemoteConceptSearchService.SortOption.TOP_COMPONENT;
+                };
+                boolean isSemanticMode = sortOption == RemoteConceptSearchService.SortOption.SEMANTIC
+                        || sortOption == RemoteConceptSearchService.SortOption.SEMANTIC_ALPHA;
+                if (isSemanticMode) {
+                    setCurrentSearchResultType(SearchResultType.DESCRIPTION_SEMANTICS);
+                    List<RemoteConceptSearchService.SemanticResult> results =
+                            remote.searchFlat(remoteQuery, MAX_RESULT_SIZE, sortOption);
+                    LOG.info("{} remote flat results returned for query: {} sortBy: {}", results.size(), remoteQuery, sortOption);
+                    List<LatestVersionSearchResult> converted = results.stream()
+                            .map(r -> new LatestVersionSearchResult(
+                                    new Latest<>(SemanticEntityVersion.class),
+                                    0,
+                                    r.score(),
+                                    r.highlightedText()))
+                            .toList();
+                    searchResultsListView.getItems().setAll(converted);
+                } else {
+                    setCurrentSearchResultType(SearchResultType.TOP_COMPONENT);
+                    List<RemoteConceptSearchService.GroupedResult> results =
+                            remote.searchGrouped(remoteQuery, MAX_RESULT_SIZE, sortOption);
+                    LOG.info("{} remote grouped results returned for query: {} sortBy: {}", results.size(), remoteQuery, sortOption);
+                    List<Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>> entries =
+                            results.stream().map(g -> {
+                                List<UUID> uuids = g.publicId().stream().map(UUID::fromString).toList();
+                                SearchPanelController.NidTextRecord key =
+                                        new SearchPanelController.NidTextRecord(0, g.fullyQualifiedName(), g.active(), uuids);
+                                List<LatestVersionSearchResult> semantics = g.matchingSemantics().stream()
+                                        .map(m -> new LatestVersionSearchResult(
+                                                new Latest<>(SemanticEntityVersion.class),
+                                                0,
+                                                m.score(),
+                                                m.highlightedText()))
+                                        .toList();
+                                return Map.entry(key, semantics);
+                            }).toList();
+                    searchResultsListView.getItems().setAll(entries);
+                }
             } else {
                 List<LatestVersionSearchResult> results = getViewProperties().calculator().search(queryText, MAX_RESULT_SIZE).toList();
                 LOG.info("{} search results returned for query: {}", results.size(), queryText);

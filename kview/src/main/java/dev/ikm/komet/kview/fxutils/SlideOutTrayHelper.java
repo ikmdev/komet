@@ -93,6 +93,9 @@ public interface SlideOutTrayHelper {
      *                 If false, the panel will appear immediately in its final position.
      */
     static void slideOut(Pane trayPane, boolean animated) {
+        if (trayPane.getChildren().isEmpty()) {
+            return;
+        }
         final Node panel = trayPane.getChildren().getFirst();
         // Force a full CSS pass so .root looked-up colors are resolved
         // before the animation makes clipped children visible (JDK-8093516).
@@ -149,6 +152,9 @@ public interface SlideOutTrayHelper {
      *                 If false, the panel will disappear immediately.
      */
     static void slideIn(Pane trayPane, boolean animated) {
+        if (trayPane.getChildren().isEmpty()) {
+            return;
+        }
         final Node panel = trayPane.getChildren().getFirst();
         final double width = panel.getBoundsInLocal().getWidth();
 
@@ -202,6 +208,9 @@ public interface SlideOutTrayHelper {
      *                    If false, both panels will adjust immediately.
      */
     static void slideOut(Pane trayPane, Pane owningPanel, boolean animated) {
+        if (trayPane.getChildren().isEmpty()) {
+            return;
+        }
         final Node panel = trayPane.getChildren().getFirst();
         // Force a full CSS pass so .root looked-up colors are resolved
         // before the animation makes clipped children visible (JDK-8093516).
@@ -260,6 +269,9 @@ public interface SlideOutTrayHelper {
      *                    If false, both panels will adjust immediately.
      */
     static void slideIn(Pane trayPane, Pane owningPanel, boolean animated) {
+        if (trayPane.getChildren().isEmpty()) {
+            return;
+        }
         final Node panel = trayPane.getChildren().getFirst();
         final double width = panel.getBoundsInLocal().getWidth();
 

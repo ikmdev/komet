@@ -200,6 +200,12 @@ public class EditDescriptionFormController implements BasicController {
         Entity<? extends EntityVersion> acceptable = EntityService.get().getEntityFast(TinkarTerm.ACCEPTABLE);
         Entity<? extends EntityVersion> preferred = EntityService.get().getEntityFast(TinkarTerm.PREFERRED);
 
+        // In gRPC read-only mode the ephemeral entity store may not contain vocabulary meta-concepts;
+        // skip dialect population rather than throwing NPE.
+        if (acceptable == null || preferred == null) {
+            return;
+        }
+
         // each combo box has a separate list instance
         setupComboBox(dialectComboBox1, Arrays.asList(Entity.getFast(acceptable.nid()), Entity.getFast(preferred.nid())));
         dialectComboBox1.getSelectionModel().select(Entity.getFast(acceptable.nid()));
