@@ -58,7 +58,22 @@ public class KometPreferencesImpl
 
     private KometPreferencesImpl() {
         super(null, "");
-        File configuredRoot = ServiceProperties.get(ServiceKeys.DATA_STORE_ROOT, new File("target/IsaacPreferencesDefault"));
+        // The default is RELATIVE, so it resolves against user.dir. That is right for a Maven
+        // build or an IDE run, where user.dir is the module directory and preferences land under
+        // target/ for `mvn clean` to remove. It is wrong for a packaged application: a jpackage
+        // app launched from Finder has user.dir = "/", so this resolved to
+        // /target/IsaacPreferencesDefault and the landing page failed with
+        // "BackingStoreException: ... create failed", leaving the UI stuck after login.
+        // Reachable whenever DATA_STORE_ROOT is unset, which is the normal case for a
+        // remote-backed datastore. Mirrors the same fix in SearchProvider.
+        File defaultRoot = new File("target/IsaacPreferencesDefault");
+        File workingDirectory = new File(System.getProperty("user.dir", "."));
+        if (!workingDirectory.canWrite()) {
+            defaultRoot = new File(System.getProperty("user.home"), "Solor/komet/preferences");
+            LOG.warn("Working directory {} is not writable; falling back to {}",
+                    workingDirectory.getAbsolutePath(), defaultRoot.getAbsolutePath());
+        }
+        File configuredRoot = ServiceProperties.get(ServiceKeys.DATA_STORE_ROOT, defaultRoot);
         this.directory = new File(configuredRoot, DB_PREFERENCES_FOLDER);
         LOG.info("Opening configuration preferences from location: " + this.directory.getAbsolutePath());
         this.preferencesFile = new File(this.directory, "preferences.xml");
