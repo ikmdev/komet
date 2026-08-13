@@ -225,6 +225,7 @@ public class ConceptPatternNavController {
         searchControl.setViewProperties(viewProperties);
         searchControl.setNavigator(navigator);
         searchControl.setOnAction(_ -> {
+            searchControl.setActiveSearchQuery(searchControl.getText());
             ViewCalculator calculator = viewProperties.calculator();
             searchControl.setResultsPlaceholder("Searching..."); // DUMMY, resources?
             TinkExecutor.threadPool().execute(() -> {
@@ -240,7 +241,7 @@ public class ConceptPatternNavController {
                                 // Add one search result per parent, ignoring concepts or patterns that don't have a parent
                                 for (int parentNid : navigator.getParentNids(key)) {
                                     searchResultsMap.put(new KLSearchControl.SearchResult(ConceptFacade.make(parentNid),
-                                            ConceptFacade.make(key), searchControl.getText()), topNidMatchMap.get(key));
+                                            ConceptFacade.make(key)), topNidMatchMap.get(key));
                                 }
                             }));
                     searchResultsMap.forEach((_, v) -> v.sort((o1, o2) -> Float.compare(o2.score(), o1.score())));

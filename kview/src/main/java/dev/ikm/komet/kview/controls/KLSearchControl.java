@@ -41,8 +41,8 @@ import java.util.function.Consumer;
  *          List&lt;KLSearchControl.SearchResult&gt; searchResults = results.stream()
  *              .map(entity -&gt;
  *                  new KLSearchControl.SearchResult(Entity.getFast(navigator.getParentNids(entity.nid())[0]),
- *                      entity, searchControl.getText())
-*               .toList());
+ *                      entity))
+ *               .toList());
  *          searchControl.setResultsPlaceholder(null);
  *          searchControl.resultsProperty().addAll(searchResults);
  *     });
@@ -89,6 +89,20 @@ public class KLSearchControl extends Control {
     }
     public final void setText(String value) {
         textProperty.set(value);
+    }
+
+    /**
+     * The active search query used for highlighting text within the search results.
+     */
+    private final StringProperty activeSearchQuery = new SimpleStringProperty(this, "activeSearchQuery", "");
+    public final StringProperty activeSearchQueryProperty() {
+        return activeSearchQuery;
+    }
+    public final String getActiveSearchQuery() {
+        return activeSearchQuery.get();
+    }
+    public final void setActiveSearchQuery(String value) {
+        activeSearchQuery.set(value);
     }
 
     /**
@@ -260,13 +274,12 @@ public class KLSearchControl extends Control {
 
     /**
      * <p>The {@link SearchResult} record holds a result after searching a dataset with a given term. This
-     * result includes the {@link ConceptFacade} found, the {@link ConceptFacade} of one of its possible
-     * parents, and the string that was searched for.
+     * result includes the {@link ConceptFacade} found and the {@link ConceptFacade} of one of its possible
+     * parents.
      * @param parentConcept the {@link ConceptFacade} of one of the possible parents
-     * @param concept the {@link ConceptFacade} found as a result of a search in a dataset of {@link #textProperty()}
-     * @param highlight the term searched, typically defined by {@link #textProperty()}.
+     * @param concept the {@link ConceptFacade} found as a result of a search in a dataset
      */
-    public record SearchResult(ConceptFacade parentConcept, ConceptFacade concept, String highlight) {}
+    public record SearchResult(ConceptFacade parentConcept, ConceptFacade concept) {}
 
     /**
      * <p>An {@link ObservableList<SearchResult>} that holds the {@link SearchResult} of a search performed

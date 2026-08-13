@@ -152,6 +152,7 @@ public class SamplerConceptNavigatorController {
 
         searchControl.navigatorProperty().bind(conceptNavigatorControl.navigatorProperty());
         searchControl.setOnAction(_ -> {
+            searchControl.setActiveSearchQuery(searchControl.getText());
             Navigator navigator = conceptNavigatorControl.getNavigator();
             if (navigator == null) {
                 return;
@@ -173,10 +174,10 @@ public class SamplerConceptNavigatorController {
                                             if (parentNids != null) {
                                                 for (int parentNid : parentNids) {
                                                     ConceptFacade parent = Entity.getFast(parentNid);
-                                                    list.add(new KLSearchControl.SearchResult(parent, entity, searchControl.getText()));
+                                                    list.add(new KLSearchControl.SearchResult(parent, entity));
                                                 }
                                             } else {
-                                                list.add(new KLSearchControl.SearchResult(null, entity, searchControl.getText()));
+                                                list.add(new KLSearchControl.SearchResult(null, entity));
                                             }
                                             return list;
                                         }).orElse(List.of()));
