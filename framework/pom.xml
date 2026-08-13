@@ -6,7 +6,7 @@
     <dependencies>
         <!-- Module dependencies -->
         <!-- ike-docs koncept-core (ike-issues#623): shared, JavaFX-free component-kind + stamp-sigil
-             geometry; version managed by komet-bom (${ike-docs.version}). -->
+             geometry; version managed by komet-bom (${koncept-core.version}). -->
         <dependency>
             <groupId>network.ike.docs</groupId>
             <artifactId>koncept-core</artifactId>
