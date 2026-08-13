@@ -12,6 +12,8 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.geometry.HPos;
+import javafx.geometry.VPos;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -56,6 +58,17 @@ public class KometLabel extends Region {
 
     public KometLabel(ViewProperties viewProperties) {
         this(null, viewProperties);
+    }
+
+    @Override
+    protected void layoutChildren() {
+        // Lay the label out within this region's actual bounds (instead of the default
+        // autosize-to-preferred-width), so that when a container narrows this node the
+        // label truncates its text with an ellipsis rather than overflowing.
+        layoutInArea(label, snappedLeftInset(), snappedTopInset(),
+                getWidth() - snappedLeftInset() - snappedRightInset(),
+                getHeight() - snappedTopInset() - snappedBottomInset(),
+                0, HPos.LEFT, VPos.CENTER);
     }
 
     private void updateEntity(EntityFacade entity) {
