@@ -6544,12 +6544,18 @@ Styling a context menu for kview ui/ux controls
 /* Ghost window while in create mode: the window frames a component that doesn't exist yet
    (it's committed when the user submits, which flips the window back to edit mode). The
    chrome dims to a washed-out version of the window blue and the window's outside edges get
-   a dashed outline: dark-blue stitching on the tab and toolbar (a light dash reads as a
-   white fringe against their blue fills), light stitching around the white body frame —
-   which also wraps the slideout trays, so an open properties bumpout stays inside the
-   dashes. The header STAMP fades to read as tentative, and a DRAFT chip + hint line name
+   a dashed outline in a single mid-blue (-create-mode-dash-color below). The body frame
+   also wraps the slideout trays, so an open properties bumpout stays inside the dashes.
+   The header STAMP fades to read as tentative, and a DRAFT chip + hint line name
    the state. Driven by the :create-mode pseudo-class toggled from the mode property in
    GenPurposeDetailsController. */
+.gen-purpose-window:create-mode {
+    /* single stitch color for all the window's dashed edges (tab, toolbar, body frame):
+       dark enough not to read as a white fringe against the blue chrome fills, and dark
+       enough to stay visible against the light desktop the outside-drawn dashes sit on */
+    -create-mode-dash-color: #6881AD;
+}
+
 .gen-purpose-window.concept-window-theme:create-mode .lidr-rounded-tab {
     -tab-color: #5C74A0; /* dimmed derive(-Secondary-06, -25%), hue kept */
 }
@@ -6559,9 +6565,7 @@ Styling a context menu for kview ui/ux controls
 }
 
 .gen-purpose-window:create-mode .lidr-rounded-tab {
-    /* midway between the window blue and the body frame's #97A6C0: dark enough not to read
-       as a white fringe on the blue chrome, light enough to sit with the body dashes */
-    -fx-border-color: #6881AD;
+    -fx-border-color: -create-mode-dash-color;
     -fx-border-width: 2 2 0 2;
     /* negative insets draw the border just outside the bounds, so toggling create mode
        contributes no layout insets and the tab content doesn't shift */
@@ -6573,7 +6577,7 @@ Styling a context menu for kview ui/ux controls
    paints above via -fx-view-order and covers the rest) and the sides, with the top-right
    corner following the toolbar's rounded-upper-right-only radius. */
 .gen-purpose-window:create-mode .kl-window-control-toolbar .concept-header-control {
-    -fx-border-color: #6881AD; /* same midway blue as the tab's dashes */
+    -fx-border-color: -create-mode-dash-color;
     -fx-border-width: 2 2 0 2;
     -fx-border-insets: -2 -2 0 -2; /* drawn outside: no layout shift */
     -fx-border-style: segments(6, 5);
@@ -6588,7 +6592,7 @@ Styling a context menu for kview ui/ux controls
 }
 
 .gen-purpose-window:create-mode .window-body-frame {
-    -fx-border-color: transparent #97A6C0 #97A6C0 #97A6C0;
+    -fx-border-color: transparent -create-mode-dash-color -create-mode-dash-color -create-mode-dash-color;
     -fx-border-width: 0 2 2 2;
     /* MUST stay layout-neutral (negative insets = drawn outside the bounds): the slideout
        tray content's prefHeight is bound to the tray's actual height (addPaneToTray), so
