@@ -22,6 +22,7 @@ import static dev.ikm.tinkar.terms.TinkarTerm.BYTE_ARRAY_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_LIST_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_SET_FIELD;
+import static dev.ikm.tinkar.terms.TinkarTerm.DITREE_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.FLOAT_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
@@ -37,6 +38,8 @@ import dev.ikm.tinkar.component.SemanticVersion;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.entity.graph.DiTreeEntity;
+import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpressionBuilder;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.*;
 import javafx.application.Platform;
@@ -661,6 +664,11 @@ public final class ObservableComposer {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 byte [] ba = bos.toByteArray();
                 fieldsValues.add(ba);
+            } else if (f.dataTypeNid() == DITREE_FIELD.nid()) {
+                // An empty logical definition (definition root vertex only). A null DiTree cannot
+                // be serialized (EntityRecordFactory.writeField rejects null field values), so a
+                // newly built semantic record must start from a real, empty tree.
+                fieldsValues.add(emptyDiTree());
             } else if (f.dataTypeNid() == BYTE_ARRAY_FIELD.nid()) {
                 //TODO: We're using BYTE_ARRAY for the moment for Image data type
                 //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
@@ -674,6 +682,18 @@ public final class ObservableComposer {
             }
         });
         return (T) fieldsValues;
+    }
+
+    /**
+     * An empty logical definition — the definition root vertex with no sets — the default value
+     * of a DiTree field on a newly built semantic.
+     */
+    private static DiTreeEntity emptyDiTree() {
+        return switch (new LogicalExpressionBuilder().build().sourceGraph()) {
+            case DiTreeEntity tree -> tree;
+            case DiTreeEntity.Builder treeBuilder -> treeBuilder.build();
+            default -> throw new IllegalStateException("Unexpected source graph type");
+        };
     }
 
     /**

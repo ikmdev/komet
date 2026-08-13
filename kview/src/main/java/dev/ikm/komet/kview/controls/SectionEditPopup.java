@@ -2,19 +2,15 @@ package dev.ikm.komet.kview.controls;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.PopupControl;
 import javafx.scene.control.Separator;
 import javafx.scene.control.Skin;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 
 /**
@@ -47,11 +43,20 @@ public class SectionEditPopup extends PopupControl {
     private final ObservableList<Node> items = FXCollections.observableArrayList();
     public ObservableList<Node> getItems() { return items; }
 
-    // -- on create semantic action
-    private final ObjectProperty<Runnable> onCreateSemanticAction = new SimpleObjectProperty<>();
-    public Runnable getOnCreateSemanticAction() { return onCreateSemanticAction.get(); }
-    public ObjectProperty<Runnable> onCreateSemanticActionProperty() { return onCreateSemanticAction; }
-    public void setOnCreateSemanticAction(Runnable runnable) { onCreateSemanticAction.set(runnable); }
+    // -- create actions
+    /**
+     * One entry of the popup's create area: its label text and the action it runs. The popup
+     * hides itself after running the action.
+     */
+    public record CreateAction(String text, Runnable action) {
+    }
+
+    /**
+     * The entries of the popup's create area, shown above the EDIT SEMANTIC list — typically a
+     * single "Create new Semantic" entry, or the set-creation entries of the axiom section.
+     */
+    private final ObservableList<CreateAction> createActions = FXCollections.observableArrayList();
+    public ObservableList<CreateAction> getCreateActions() { return createActions; }
 
 
     /***************************************************************************
@@ -64,6 +69,7 @@ public class SectionEditPopup extends PopupControl {
 
         private final VBox mainContainer = new VBox();
         private SectionEditPopup skinnable;
+        private final VBox createContent = new VBox();
         private final VBox popupContent = new VBox();
 
         /**
@@ -74,47 +80,54 @@ public class SectionEditPopup extends PopupControl {
         public TitledMenuPopupSkin(SectionEditPopup control) {
             this.skinnable = control;
 
-            Label createSemanticLabel = new Label("Create new Semantic", KometIcon.create(KometIcon.IconValue.PLUS));
-            createSemanticLabel.getStyleClass().add(POPUP_ENTRY_STYLE_CLASS);
-            createSemanticLabel.setOnMousePressed(onCreateSemanticAction(control));
-
             Separator separator = new Separator();
 
             Label editSemanticTitleLabel = new Label("EDIT SEMANTIC");
 
             mainContainer.getChildren().addAll(
-                    createSemanticLabel,
+                    createContent,
                     separator,
                     editSemanticTitleLabel,
                     popupContent
             );
 
+            control.createActions.addListener((ListChangeListener<? super CreateAction>) change ->
+                    rebuildCreateContent(control));
+            rebuildCreateContent(control);
+
             Bindings.bindContent(popupContent.getChildren(), control.getItems());
             control.items.addListener(this::onItemsChanged);
             control.items.forEach(this::addPopupEntryStyleClass);
 
-            bindVisibilityToList(separator, control.getItems());
-            bindVisibilityToList(editSemanticTitleLabel, control.getItems());
-            bindVisibilityToList(popupContent, control.getItems());
+            // The separator only earns its place between two non-empty areas.
+            BooleanBinding hasCreateActions = Bindings.isNotEmpty(control.getCreateActions());
+            BooleanBinding hasItems = Bindings.isNotEmpty(control.getItems());
+            bindVisibility(separator, hasCreateActions.and(hasItems));
+            bindVisibility(createContent, hasCreateActions);
+            bindVisibility(editSemanticTitleLabel, hasItems);
+            bindVisibility(popupContent, hasItems);
 
             // CSS
             editSemanticTitleLabel.getStyleClass().add("title-label");
             mainContainer.getStyleClass().add("edit-semantic-popup");
         }
 
-        private void bindVisibilityToList(Node node, ObservableList<?> list) {
-            BooleanBinding hasItems = Bindings.isNotEmpty(list);
-            node.visibleProperty().bind(hasItems);
-            node.managedProperty().bind(hasItems);
+        private void rebuildCreateContent(SectionEditPopup control) {
+            createContent.getChildren().clear();
+            for (CreateAction createAction : control.getCreateActions()) {
+                Label createLabel = new Label(createAction.text(), KometIcon.create(KometIcon.IconValue.PLUS));
+                createLabel.getStyleClass().add(POPUP_ENTRY_STYLE_CLASS);
+                createLabel.setOnMousePressed(mouseEvent -> {
+                    createAction.action().run();
+                    control.hide(); // hide popup after the create action has been executed
+                });
+                createContent.getChildren().add(createLabel);
+            }
         }
 
-        private EventHandler<MouseEvent> onCreateSemanticAction(SectionEditPopup control) {
-            return mouseEvent -> {
-                if (control.getOnCreateSemanticAction() != null) {
-                    control.getOnCreateSemanticAction().run();
-                    control.hide(); // hide popup after the create Semantic action has been executed
-                }
-            };
+        private void bindVisibility(Node node, BooleanBinding condition) {
+            node.visibleProperty().bind(condition);
+            node.managedProperty().bind(condition);
         }
 
         private void onItemsChanged(ListChangeListener.Change<? extends Node> change) {

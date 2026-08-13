@@ -28,6 +28,7 @@ import static dev.ikm.komet.layout_engine.window.DraggableSupport.addDraggableNo
 import static dev.ikm.komet.layout_engine.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
+import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 
 import dev.ikm.komet.framework.Identicon;
@@ -36,6 +37,7 @@ import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
+import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservablePattern;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
@@ -50,6 +52,7 @@ import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
 import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.controls.SectionEditPopup;
+import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.controls.ComponentItemNodeFactory;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
@@ -73,6 +76,7 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
@@ -80,6 +84,8 @@ import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
+import dev.ikm.tinkar.entity.graph.DiTreeEntity;
+import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpressionBuilder;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
@@ -87,6 +93,8 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
+import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
@@ -208,6 +216,14 @@ public class GenPurposeDetailsController {
     private Consumer<GenPurposeDetailsController> onCloseConceptWindow;
 
     private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
+
+    /**
+     * Re-evaluates the required chips when a stated definition changes: inline axiom edits
+     * persist straight to the store without a PUBLISH event, yet they can satisfy — or, by
+     * removing the definition's last set, un-satisfy — the stated pattern's requirement.
+     * Strong reference: the entity provider holds its subscribers weakly.
+     */
+    private dev.ikm.tinkar.common.util.broadcast.Subscriber<Integer> statedDefinitionChangeSubscriber;
 
     private ObservableComposer composer;
 
@@ -525,6 +541,80 @@ public class GenPurposeDetailsController {
         return newComponent;
     }
 
+    /**
+     * The stated axioms pattern per the view's logic coordinate — the pattern whose semantics
+     * edit inline as an axiom tree (see {@code KlFieldHelper.createReadOnlyKlField}).
+     */
+    private int statedAxiomsPatternNid() {
+        return getViewProperties().calculator().viewCoordinateRecord().logicCoordinate().statedAxiomsPatternNid();
+    }
+
+    /**
+     * Creates the stated definition semantic seeded with one necessary or sufficient set — the
+     * classic concept window's "Add Necessary Set" / "Add Sufficient Set" actions: the set holds
+     * an is-a to "Anonymous concept", the placeholder chip the user then replaces in the inline
+     * axiom tree. The new semantic is submitted through the window's PUBLISH flow — the same
+     * path a properties-panel submit takes: edit mode commits right away, create mode defers the
+     * commit until every required pattern is satisfied, and the details area re-renders bound to
+     * the new semantic either way. In create mode the window may not have a reference component
+     * yet — the seeded definition brings it into existence, exactly like authoring the first
+     * semantic through the section pencil ({@link #onCreateSemantic}).
+     */
+    private void createSeededStatedDefinition(EditorSectionModel section, EditorPatternModel patternModel,
+            boolean necessary) {
+        EntityFacade refComponent = resolveSectionReferenceComponent(section);
+        if (refComponent == null) {
+            refComponent = createUncommitedReferenceComponent();
+        }
+
+        DiTreeEntity seededDefinition = seedDefinition(necessary);
+
+        initializeComposer();
+        ObservableEntity observableReferenceComponent = ObservableEntityHandle.get(refComponent.nid()).expectEntity();
+        ObservablePattern observablePattern = ObservableEntityHandle.get(patternModel.getNid()).expectPattern();
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor =
+                composer.composeSemantic(PublicIds.newRandom(), observableReferenceComponent, observablePattern);
+
+        // The stated axiom pattern's single field holds the definition.
+        @SuppressWarnings("unchecked")
+        ObservableField.Editable<DiTreeEntity> definitionField = (ObservableField.Editable<DiTreeEntity>)
+                semanticEditor.getEditableVersion().getEditableFields().getFirst();
+        definitionField.setValue(seededDefinition);
+        semanticEditor.save(); // Save to create an uncommitted version holding the definition
+
+        SemanticEntity<SemanticEntityVersion> semantic = EntityHandle.get(semanticEditor.getEntity().nid())
+                .asSemantic().orElseThrow();
+
+        // The PUBLISH handler runs synchronously and flips a CREATE window to EDIT only when the
+        // seeded set was the last unmet requirement and the concept actually got committed —
+        // announce that like the properties panel's submit does.
+        boolean wasCreateMode = genPurposeViewModel.getMode() == FormMode.CREATE;
+        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
+                new GenPurposeEvent(this, GenPurposeEvent.PUBLISH, List.of(seededDefinition), semantic));
+        if (wasCreateMode && genPurposeViewModel.getMode() == FormMode.EDIT) {
+            toast().show(Toast.Status.SUCCESS, "Concept created");
+        }
+    }
+
+    /**
+     * A definition holding one necessary or sufficient set whose only member is an is-a to
+     * "Anonymous concept" — the same seed the classic concept window writes
+     * ({@code ConceptViewModel.createConcept}).
+     */
+    private static DiTreeEntity seedDefinition(boolean necessary) {
+        LogicalExpressionBuilder builder = new LogicalExpressionBuilder();
+        if (necessary) {
+            builder.NecessarySet(builder.And(builder.ConceptAxiom(TinkarTerm.ANONYMOUS_CONCEPT.nid())));
+        } else {
+            builder.SufficientSet(builder.And(builder.ConceptAxiom(TinkarTerm.ANONYMOUS_CONCEPT.nid())));
+        }
+        return switch (builder.build().sourceGraph()) {
+            case DiTreeEntity tree -> tree;
+            case DiTreeEntity.Builder treeBuilder -> treeBuilder.build();
+            default -> throw new IllegalStateException("Unexpected source graph type");
+        };
+    }
+
     private void setupProperties() {
         this.propertiesController = new GenPurposePropertiesController(genPurposeViewModel);
         this.propertiesBorderPane = this.propertiesController.getNode();
@@ -654,6 +744,13 @@ public class GenPurposeDetailsController {
 
         // Sections exist now — show the required-pattern chips (create mode only).
         updateRequiredChips();
+
+        // Inline stated-definition edits persist without a PUBLISH event, so track them here:
+        // a change to any stated-axiom semantic re-evaluates the required chips.
+        statedDefinitionChangeSubscriber = changedNid -> EntityHandle.get(changedNid).asSemantic()
+                .filter(semantic -> semantic.patternNid() == statedAxiomsPatternNid())
+                .ifPresent(semantic -> Platform.runLater(this::updateRequiredChips));
+        Entity.provider().addSubscriberWithWeakReference(statedDefinitionChangeSubscriber);
     }
 
     /**
@@ -780,7 +877,7 @@ public class GenPurposeDetailsController {
 
         // In create mode the standard Concept/Pattern window has no reference component yet — the
         // new component is created lazily when the user authors the first semantic (see
-        // onCreateSemantic), so the popup still opens, offering only "Create Semantic".
+        // onCreateSemantic), so the popup still opens, offering only its create entries.
         boolean canCreateReferenceComponent = sectionModel.getReferenceComponent() == null
                 && genPurposeViewModel.getMode() == FormMode.CREATE
                 && (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_CONCEPT
@@ -791,10 +888,21 @@ public class GenPurposeDetailsController {
             return;
         }
 
+        // The stated definition pattern takes over its section's popup: its semantics are the
+        // ones offered for editing (never the reasoner-owned inferred definition's), and its
+        // create entries seed the definition with a set instead of the generic "Create new
+        // Semantic" — the classic concept window's axiom + menu.
+        EditorPatternModel statedPattern = sectionModel.getPatterns().stream()
+                .filter(pattern -> pattern.getNid() == statedAxiomsPatternNid())
+                .findFirst().orElse(null);
+        EditorPatternModel editPattern = statedPattern != null
+                ? statedPattern
+                : sectionModel.getPatterns().getFirst();
+
         if (refComponent != null) {
             // Populate the Popup
             EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(),
-                    sectionModel.getPatterns().getFirst().getNid(), (semantic) -> {
+                    editPattern.getNid(), (semantic) -> {
                         KometLabel semanticLabel = new KometLabel(semantic, viewProperties);
                         semanticLabel.setShowTooltip(true);
 
@@ -818,10 +926,22 @@ public class GenPurposeDetailsController {
                     });
         }
 
-        popup.setOnCreateSemanticAction(() -> {
-            initializeComposer();
-            onCreateSemantic(actionEvent, sectionModel, refComponent);
-        });
+        if (statedPattern != null) {
+            // A concept has at most one stated definition — offer the seeds only until it
+            // exists (afterwards more sets are added inline, on the tree's root row). Sufficient
+            // before necessary, matching the classic concept window's menu.
+            if (popup.getItems().isEmpty()) {
+                popup.getCreateActions().add(new SectionEditPopup.CreateAction("Add sufficient set",
+                        () -> createSeededStatedDefinition(sectionModel, statedPattern, false)));
+                popup.getCreateActions().add(new SectionEditPopup.CreateAction("Add necessary set",
+                        () -> createSeededStatedDefinition(sectionModel, statedPattern, true)));
+            }
+        } else {
+            popup.getCreateActions().add(new SectionEditPopup.CreateAction("Create new Semantic", () -> {
+                initializeComposer();
+                onCreateSemantic(actionEvent, sectionModel, refComponent);
+            }));
+        }
 
         // Show Popup
         SectionTitledPane<?> sectionTitledPane = sectionModelToTitledPane.get(sectionModel);
@@ -1108,9 +1228,9 @@ public class GenPurposeDetailsController {
     /**
      * Refreshes each section's required-pattern chip (see the REQUIRED / "✓ REQUIREMENT MET"
      * chip in the section title bar): shown in create mode on sections hosting a required
-     * pattern, flipping
-     * to satisfied once every required pattern in the section has at least one semantic — the
-     * same check that gates the component's creation on submit.
+     * pattern, flipping to satisfied once every required pattern in the section is satisfied
+     * ({@link #isRequiredPatternSatisfied}) — the same check that gates the component's
+     * creation on submit.
      */
     private void updateRequiredChips() {
         boolean createMode = genPurposeViewModel.getMode() == FormMode.CREATE;
@@ -1122,27 +1242,59 @@ public class GenPurposeDetailsController {
             titledPane.setRequiredChipVisible(chipVisible);
             if (chipVisible) {
                 titledPane.setRequiredSatisfied(requiredPatterns.stream()
-                        .noneMatch(pattern -> getSemanticsOfPattern(pattern).isEmpty()));
+                        .allMatch(this::isRequiredPatternSatisfied));
             }
         });
     }
 
     /**
-     * Whether every pattern marked Required in the KL editor has at least one semantic against
-     * its section's resolved reference component. In create mode this gates the actual creation
-     * (commit) of the window's component: uncommitted semantics count, since they are found by
-     * the entity service once saved.
+     * Whether every pattern marked Required in the KL editor is satisfied
+     * ({@link #isRequiredPatternSatisfied}) against its section's resolved reference component.
+     * In create mode this gates the actual creation (commit) of the window's component:
+     * uncommitted semantics count, since they are found by the entity service once saved.
      */
     private boolean allRequiredPatternsSatisfied() {
         AtomicBoolean satisfied = new AtomicBoolean(true);
         forEachSectionInWindow(section -> {
             for (EditorPatternModel pattern : section.getPatterns()) {
-                if (pattern.isRequired() && getSemanticsOfPattern(pattern).isEmpty()) {
+                if (pattern.isRequired() && !isRequiredPatternSatisfied(pattern)) {
                     satisfied.set(false);
                 }
             }
         });
         return satisfied.get();
+    }
+
+    /**
+     * Whether a required pattern's requirement is met: at least one semantic against its
+     * section's resolved reference component. The stated definition pattern demands more — its
+     * definition must contain a necessary or sufficient set, the same condition the classic
+     * concept window enforces before creating a concept ({@code ConceptViewModel}'s AXIOM
+     * validation) — so removing the definition's last set flips the requirement back to unmet.
+     */
+    private boolean isRequiredPatternSatisfied(EditorPatternModel pattern) {
+        List<EntityFacade> semantics = getSemanticsOfPattern(pattern);
+        if (semantics.isEmpty()) {
+            return false;
+        }
+        if (pattern.getNid() != statedAxiomsPatternNid()) {
+            return true;
+        }
+        return semantics.stream().anyMatch(this::definesNecessaryOrSufficientSet);
+    }
+
+    /**
+     * Whether the given stated-axiom semantic's latest definition (uncommitted versions count,
+     * like the semantic-existence check) contains a necessary or sufficient set.
+     */
+    private boolean definesNecessaryOrSufficientSet(EntityFacade semantic) {
+        Latest<SemanticEntityVersion> latestVersion = getViewProperties().calculator().latest(semantic.nid());
+        if (latestVersion.isAbsent()) {
+            return false;
+        }
+        return latestVersion.get().fieldValues().get(0) instanceof DiTreeEntity definition
+                && (definition.containsVertexWithMeaning(TinkarTerm.NECESSARY_SET)
+                        || definition.containsVertexWithMeaning(TinkarTerm.SUFFICIENT_SET));
     }
 
     /**

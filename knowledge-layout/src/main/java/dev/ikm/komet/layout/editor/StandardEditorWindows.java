@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_WINDOWS;
 
@@ -36,12 +37,26 @@ public final class StandardEditorWindows {
     /** Title of the standard Pattern window. */
     public static final String PATTERN_WINDOW_2 = "Pattern (2)";
 
+    /**
+     * Version of the standard window definitions authored below. Bump this whenever a standard
+     * window's definition changes: seeded definitions carrying an older version are removed and
+     * re-seeded from the current code, so application-shipped windows never go stale in the
+     * preferences. User-authored windows live in the user-windows folder and are untouched.
+     */
+    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 2;
+
+    /** Preferences key holding the version the seeded standard windows were created from. */
+    private static final String STANDARD_WINDOWS_VERSION_KEY = "STANDARD-WINDOWS-VERSION";
+
     private StandardEditorWindows() {
     }
 
     /**
      * Creates any standard window definitions not yet present in the given standard-windows
-     * preferences folder.
+     * preferences folder. Definitions seeded by an older application version
+     * ({@link #CURRENT_STANDARD_WINDOWS_VERSION}) are removed first and re-seeded from the current code.
+     * This runs before every standard-window load (journal load and window summoning), so a
+     * removed definition is always re-created before anything reads it.
      *
      * @param standardWindowsPreferences the kl-editor-app/standard-windows preferences node
      * @param viewCalculator             the view calculator used to resolve the pattern definitions
@@ -51,6 +66,11 @@ public final class StandardEditorWindows {
         // The standard Pattern window is composed from the pattern-definition patterns, so make
         // sure they exist in the data store before any window definition is created from them.
         PatternDefinitionSeeder.ensureSeeded(viewCalculator);
+
+        if (standardWindowsPreferences.getInt(STANDARD_WINDOWS_VERSION_KEY, 0) != CURRENT_STANDARD_WINDOWS_VERSION) {
+            removeStandardWindows(standardWindowsPreferences);
+            standardWindowsPreferences.putInt(STANDARD_WINDOWS_VERSION_KEY, CURRENT_STANDARD_WINDOWS_VERSION);
+        }
 
         List<String> standardWindows = standardWindowsPreferences.getList(KL_EDITOR_WINDOWS);
         if (!standardWindows.contains(CONCEPT_WINDOW_2)) {
@@ -62,9 +82,25 @@ public final class StandardEditorWindows {
     }
 
     /**
-     * The standard Concept window: a main section containing the Description pattern, required
-     * when the window is opened in the Journal in create mode, plus an "Axiom" section with the
-     * Inferred definition pattern on top and the Stated definition pattern below it.
+     * Removes every seeded standard window definition (their window nodes and the window list),
+     * so the seeding in {@link #ensureStandardWindows} re-creates them from the current code.
+     */
+    private static void removeStandardWindows(KometPreferences standardWindowsPreferences) {
+        for (String windowTitle : standardWindowsPreferences.getList(KL_EDITOR_WINDOWS)) {
+            try {
+                standardWindowsPreferences.node(windowTitle).removeNode();
+            } catch (BackingStoreException e) {
+                LOG.warn("Failed to remove outdated standard window '{}': {}", windowTitle, e.getMessage());
+            }
+        }
+        standardWindowsPreferences.putList(KL_EDITOR_WINDOWS, List.of());
+    }
+
+    /**
+     * The standard Concept window: a main section containing the Description pattern, plus an
+     * "Axiom" section with the Inferred definition pattern on top and the Stated definition
+     * pattern below it. The Description and Stated definition patterns are required when the
+     * window is opened in the Journal in create mode.
      */
     private static void saveConceptWindow2(KometPreferences standardWindowsPreferences,
                                            ViewCalculator viewCalculator) {
@@ -87,6 +123,10 @@ public final class StandardEditorWindows {
                 TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid());
         EditorPatternModel statedDefinitionPattern = new EditorPatternModel(viewCalculator,
                 TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid());
+        // Required like in the classic concept window: the concept can only be created once its
+        // stated definition has a necessary or sufficient set (the required check is
+        // definition-aware for this pattern, not just semantic-existence).
+        statedDefinitionPattern.setRequired(true);
         statedDefinitionPattern.setRowIndex(1);
         axiomSection.getPatterns().addAll(inferredDefinitionPattern, statedDefinitionPattern);
 
