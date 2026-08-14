@@ -6,6 +6,7 @@ import dev.ikm.komet.layout.KlPatternSemanticsFactory;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.property.KlPropertySet;
 import javafx.geometry.HPos;
+import javafx.geometry.Pos;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
@@ -14,7 +15,9 @@ import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.Subscription;
 
@@ -28,6 +31,7 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
     private final ToggleSwitch titleVisibleTSwitch;
 
     private final ToggleSwitch requiredTSwitch;
+    private final PatternRequirementsView requirementsView = new PatternRequirementsView();
 
     private final ComboBox<KlPatternSemanticsFactory> displayComboBox;
 
@@ -153,33 +157,28 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         Label dataPropertiesTitleLabel = new Label("DATA PROPERTIES");
         dataPropertiesTitleLabel.getStyleClass().add("group-title");
 
-        // Data properties GridPane
-        GridPane dataPropertiesGridPane = new GridPane();
-        dataPropertiesGridPane.setHgap(8);
-        dataPropertiesGridPane.setVgap(8);
-
-        ColumnConstraints dataCol1 = new ColumnConstraints();
-        dataCol1.setMinWidth(10);
-        dataCol1.setPrefWidth(100);
-
-        ColumnConstraints dataCol2 = new ColumnConstraints();
-        dataCol2.setMinWidth(10);
-        dataCol2.setHgrow(Priority.ALWAYS);
-
-        dataPropertiesGridPane.getColumnConstraints().addAll(dataCol1, dataCol2);
-
+        // Required row: label on the left edge, toggle on the right edge
         Label requiredLabel = new Label("Required");
-        GridPane.setHalignment(requiredLabel, HPos.RIGHT);
-        dataPropertiesGridPane.add(requiredLabel, 0, 0);
+
+        Region requiredSpacer = new Region();
+        HBox.setHgrow(requiredSpacer, Priority.ALWAYS);
 
         requiredTSwitch = new ToggleSwitch();
         requiredTSwitch.setSelected(false);
         requiredTSwitch.getStyleClass().add("required");
-        dataPropertiesGridPane.add(requiredTSwitch, 1, 0);
+
+        HBox requiredRow = new HBox(requiredLabel, requiredSpacer, requiredTSwitch);
+        requiredRow.getStyleClass().add("required-row");
+        requiredRow.setAlignment(Pos.CENTER_LEFT);
+
+        // Requirement refinements, shown only while the pattern is required
+        requirementsView.visibleProperty().bind(requiredTSwitch.selectedProperty());
+        requirementsView.managedProperty().bind(requirementsView.visibleProperty());
 
         dataPropertiesContainer.getChildren().addAll(
                 dataPropertiesTitleLabel,
-                dataPropertiesGridPane
+                requiredRow,
+                requirementsView
         );
 
         // Separator between data properties and positioning
@@ -241,6 +240,7 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         titleTextField.setText(currentlyShownModel.getTitle());
         titleVisibleTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.titleVisibleProperty());
         requiredTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.requiredProperty());
+        requirementsView.setPattern(currentlyShownModel);
 
         // Identifier
         identifierTextField.textProperty().bindBidirectional(currentlyShownModel.identifierProperty());

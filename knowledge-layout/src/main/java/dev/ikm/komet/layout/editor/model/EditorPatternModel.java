@@ -35,6 +35,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.stream.Collectors;
 
 import static dev.ikm.komet.preferences.KLEditorPreferences.ListKey.PATTERN_LIST;
+import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_REQUIREMENTS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_SEMANTICS_FACTORY;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_TITLE_VISIBLE;
 
@@ -160,6 +161,10 @@ public class EditorPatternModel extends EditorGridNodeModel {
 
         loadGridNodeDetails(patternPreferences);
 
+        requirements.setAll(patternPreferences.getList(PATTERN_REQUIREMENTS).stream()
+                .map(EditorPatternRequirement::fromPreferenceString)
+                .toList());
+
         for (EditorFieldModel fieldModel : getFields()) {
             fieldModel.load(patternPreferences, viewCalculator);
         }
@@ -219,6 +224,11 @@ public class EditorPatternModel extends EditorGridNodeModel {
 
         saveGridNodeDetails(patternPreferences);
 
+        // requirement refinements
+        patternPreferences.putList(PATTERN_REQUIREMENTS, requirements.stream()
+                .map(EditorPatternRequirement::toPreferenceString)
+                .toList());
+
         for (EditorFieldModel fieldModel : getFields()) {
             fieldModel.save(patternPreferences);
         }
@@ -266,6 +276,22 @@ public class EditorPatternModel extends EditorGridNodeModel {
      */
     private final ObservableList<EditorFieldModel> fields = FXCollections.observableArrayList();
     public ObservableList<EditorFieldModel> getFields() { return fields; }
+
+    // -- requirements
+    /**
+     * Refinements of this Pattern's required flag (see {@link EditorPatternRequirement}). Only
+     * meaningful while {@link #isRequired()} is true; an empty list keeps the plain required
+     * meaning of at least one semantic of any kind.
+     */
+    private final ObservableList<EditorPatternRequirement> requirements = FXCollections.observableArrayList();
+    public ObservableList<EditorPatternRequirement> getRequirements() { return requirements; }
+
+    // -- view calculator
+    /**
+     * The calculator this Pattern's display names (and those of its requirement constraints) are
+     * resolved with.
+     */
+    public ViewCalculator getViewCalculator() { return viewCalculator; }
 
     // -- nid
     /**

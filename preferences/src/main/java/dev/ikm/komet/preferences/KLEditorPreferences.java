@@ -122,5 +122,11 @@ public class KLEditorPreferences {
     public class PatternKey {
         public static String PATTERN_TITLE_VISIBLE = "pattern-title-visible";
         public static String PATTERN_SEMANTICS_FACTORY = "pattern-semantics-factory";
+
+        /**
+         * List of requirement refinements of a required Pattern (one encoded
+         * {@code EditorPatternRequirementModel} per entry).
+         */
+        public static String PATTERN_REQUIREMENTS = "pattern-requirements";
     }
 }

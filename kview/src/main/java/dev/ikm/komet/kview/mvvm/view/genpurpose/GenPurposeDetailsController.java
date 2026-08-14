@@ -68,6 +68,7 @@ import dev.ikm.komet.layout.KlPatternSemanticsFactory;
 import dev.ikm.komet.layout.PatternSemanticsPresenter;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
+import dev.ikm.komet.layout.editor.model.EditorPatternRequirement;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowType;
@@ -1267,20 +1268,42 @@ public class GenPurposeDetailsController {
 
     /**
      * Whether a required pattern's requirement is met: at least one semantic against its
-     * section's resolved reference component. The stated definition pattern demands more — its
-     * definition must contain a necessary or sufficient set, the same condition the classic
-     * concept window enforces before creating a concept ({@code ConceptViewModel}'s AXIOM
-     * validation) — so removing the definition's last set flips the requirement back to unmet.
+     * section's resolved reference component, plus — when the pattern carries requirement
+     * refinements authored in the KL editor ({@link EditorPatternRequirement}) — at least
+     * each refinement's minimum count of semantics matching its field constraints. The stated
+     * definition pattern demands more — its definition must contain a necessary or sufficient
+     * set, the same condition the classic concept window enforces before creating a concept
+     * ({@code ConceptViewModel}'s AXIOM validation) — so removing the definition's last set
+     * flips the requirement back to unmet.
      */
     private boolean isRequiredPatternSatisfied(EditorPatternModel pattern) {
         List<EntityFacade> semantics = getSemanticsOfPattern(pattern);
         if (semantics.isEmpty()) {
             return false;
         }
-        if (pattern.getNid() != statedAxiomsPatternNid()) {
-            return true;
+        if (pattern.getNid() == statedAxiomsPatternNid()
+                && semantics.stream().noneMatch(this::definesNecessaryOrSufficientSet)) {
+            return false;
         }
-        return semantics.stream().anyMatch(this::definesNecessaryOrSufficientSet);
+        return pattern.getRequirements().stream().allMatch(requirement ->
+                semantics.stream().filter(semantic -> matchesRequirement(semantic, requirement)).count()
+                        >= requirement.getMinCount());
+    }
+
+    /**
+     * Whether the semantic's latest version (uncommitted versions count, like the
+     * semantic-existence check) holds every constrained field's concept.
+     */
+    private boolean matchesRequirement(EntityFacade semantic, EditorPatternRequirement requirement) {
+        Latest<SemanticEntityVersion> latestVersion = getViewProperties().calculator().latest(semantic.nid());
+        if (latestVersion.isAbsent()) {
+            return false;
+        }
+        var fieldValues = latestVersion.get().fieldValues();
+        return requirement.getFieldConstraints().entrySet().stream().allMatch(constraint ->
+                constraint.getKey() < fieldValues.size()
+                        && fieldValues.get(constraint.getKey()) instanceof EntityFacade fieldConcept
+                        && fieldConcept.nid() == constraint.getValue().nid());
     }
 
     /**

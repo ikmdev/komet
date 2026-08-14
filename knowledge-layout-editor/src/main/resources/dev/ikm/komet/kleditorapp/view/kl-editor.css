@@ -532,6 +532,231 @@
     -fx-font-size: 14px;
 }
 
+/* Required semantics (requirement refinements) — nested under the Required toggle: indented,
+   hanging off a vertical guide line, with a demoted title so it doesn't read as a sibling of
+   the DATA PROPERTIES group */
+.right-properties-pane .pattern-properties .pattern-requirements {
+    -fx-spacing: 6;
+    -fx-border-color: transparent transparent transparent #d0d0d0;
+    -fx-border-width: 0 0 0 2;
+    -fx-border-insets: 0 0 0 6;
+    -fx-padding: 6 0 2 20;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .requirements-title {
+    -fx-font-size: 11px;
+    -fx-text-fill: #888;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .rules-container {
+    -fx-spacing: 8;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .requirement-rule {
+    -fx-background-color: white;
+    -fx-background-radius: 6;
+    -fx-border-color: #d8d8d8;
+    -fx-border-radius: 6;
+    -fx-padding: 6 8 6 6;
+    -fx-spacing: 6;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .rule-header {
+    -fx-spacing: 4;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .rule-summary {
+    -fx-font-size: 12px;
+    -fx-text-fill: #333;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .icon-button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 3;
+    -fx-border-color: transparent;
+    -fx-padding: 3;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .icon-button:hover {
+    -fx-background-color: #ececec;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .icon-button .icon {
+    -fx-background-color: #8a8a8a;
+    -fx-scale-shape: true;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .icon-button .icon.cross {
+    -fx-min-width: 9;
+    -fx-max-width: 9;
+    -fx-min-height: 9;
+    -fx-max-height: 9;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .icon-button .icon.chevron-right {
+    -fx-min-width: 6;
+    -fx-max-width: 6;
+    -fx-min-height: 9;
+    -fx-max-height: 9;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .rule-editor {
+    -fx-spacing: 10;
+    -fx-padding: 2 2 2 2;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .count-row {
+    -fx-spacing: 6;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .count-row .label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #555;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .min-count-spinner {
+    -fx-background-color: white;
+    -fx-background-radius: 4;
+    -fx-border-color: #d8d8d8;
+    -fx-border-radius: 4;
+    -fx-pref-height: 24;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .min-count-spinner > .text-field {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-width: 0;
+    -fx-font-size: 12px;
+    -fx-alignment: center;
+    -fx-padding: 1 2 1 2;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .min-count-spinner > .increment-arrow-button,
+.right-properties-pane .pattern-properties .pattern-requirements .min-count-spinner > .decrement-arrow-button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 3 5 3 5;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .min-count-spinner > .increment-arrow-button:hover,
+.right-properties-pane .pattern-properties .pattern-requirements .min-count-spinner > .decrement-arrow-button:hover {
+    -fx-background-color: #ececec;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .min-count-spinner > .increment-arrow-button > .increment-arrow,
+.right-properties-pane .pattern-properties .pattern-requirements .min-count-spinner > .decrement-arrow-button > .decrement-arrow {
+    -fx-background-color: #777;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .fields-container {
+    -fx-spacing: 8;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .field-row {
+    -fx-spacing: 3;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .field-name {
+    -fx-font-size: 12px;
+    -fx-text-fill: #555;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .any-value {
+    -fx-font-size: 12px;
+    -fx-text-fill: #999;
+    -fx-background-color: #f6f6f6;
+    -fx-background-radius: 4;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 4;
+    -fx-padding: 5 8 5 8;
+}
+
+.right-properties-pane .pattern-properties .pattern-requirements .add-requirement {
+    -fx-font-size: 12px;
+    -fx-underline: false;
+    -fx-border-color: transparent;
+    -fx-padding: 2 0 2 0;
+}
+
+/* Lighter KL component control inside the requirements area: drop the gray slab around the
+   search/selected boxes, thin out the border, shrink the type to 12px, and hide the
+   (action-less) filter button */
+.right-properties-pane .pattern-requirements .component-control > .concept-container,
+.right-properties-pane .pattern-requirements .component-control > .selected-concept-container {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+
+.right-properties-pane .pattern-requirements .component-control > .concept-container > .concept-search-box,
+.right-properties-pane .pattern-requirements .component-control > .selected-concept-container > .concept-selected-entity-box {
+    -fx-background-color: white;
+    -fx-background-radius: 4;
+    -fx-border-color: #d8d8d8;
+    -fx-border-radius: 4;
+}
+
+.right-properties-pane .pattern-requirements .component-control:focus-within > .concept-container > .concept-search-box {
+    -fx-border-color: #1035AC;
+}
+
+.right-properties-pane .pattern-requirements .component-control > .concept-container > .concept-search-box > .search-field-container > .concept-text-field {
+    -fx-font-size: 12px;
+    -fx-padding: 5 8 5 8;
+}
+
+.right-properties-pane .pattern-requirements .component-control > .concept-container > .concept-search-box > .search-field-container {
+    -fx-alignment: center-left;
+}
+
+.right-properties-pane .pattern-requirements .component-control > .concept-container > .concept-search-box > .search-field-container > .search-prompt {
+    -fx-font-size: 12px;
+    -fx-text-fill: #999;
+    -fx-padding: 0 0 0 8;
+}
+
+.right-properties-pane .pattern-requirements .component-control > .concept-container > .concept-search-box > .concept-filter-button {
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+    -fx-padding: 0;
+}
+
+.right-properties-pane .pattern-requirements .component-control > .concept-container > .concept-search-box > .concept-filter-button > .concept-filter-region {
+    -width-size: 0;
+    -height-size: 0;
+    visibility: hidden;
+}
+
+.right-properties-pane .pattern-requirements .component-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-description.label {
+    -fx-font-size: 12px;
+}
+
+/* The discard button inherits this app's global .button chrome (border + gray fill) — flatten it
+   back and shrink the glyph */
+.right-properties-pane .pattern-requirements .component-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-discard-button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 3;
+    -fx-border-color: transparent;
+    -fx-padding: 2 6 2 6;
+}
+
+.right-properties-pane .pattern-requirements .component-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-discard-button:hover {
+    -fx-background-color: #ececec;
+}
+
+.right-properties-pane .pattern-requirements .component-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-discard-button > .selected-concept-discard-region {
+    -fx-scale-shape: true;
+    -fx-background-color: #8a8a8a;
+    -fx-pref-width: 9;
+    -fx-pref-height: 9;
+    -fx-min-width: 9;
+    -fx-max-width: 9;
+    -fx-min-height: 9;
+    -fx-max-height: 9;
+}
+
 /******************************************************************************
  * Field Properties Pane                                                      *
  ******************************************************************************/
