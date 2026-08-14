@@ -125,7 +125,7 @@ public class KLEditorPreferences {
 
         /**
          * List of requirement refinements of a required Pattern (one encoded
-         * {@code EditorPatternRequirementModel} per entry).
+         * {@code EditorPatternRequirement} per entry).
          */
         public static String PATTERN_REQUIREMENTS = "pattern-requirements";
     }
