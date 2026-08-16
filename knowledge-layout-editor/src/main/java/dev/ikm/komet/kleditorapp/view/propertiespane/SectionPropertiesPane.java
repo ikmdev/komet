@@ -148,7 +148,7 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
             interactionGridPane
         );
 
-        mainContainer.setCenter(sectionMainContainer);
+        setContent(sectionMainContainer);
 
         // CSS
         getStyleClass().add(DEFAULT_STYLE_CLASS);

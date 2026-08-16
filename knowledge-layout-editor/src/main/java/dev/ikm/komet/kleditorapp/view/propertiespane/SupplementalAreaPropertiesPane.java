@@ -36,7 +36,7 @@ public class SupplementalAreaPropertiesPane extends ControlBasePropertiesPane<Ed
         mainVBox.getChildren().addAll(typeLabel, typeValueLabel, factoryLabel, factoryValueLabel,
                 dataPropertiesTitleLabel, requiredTSwitch);
 
-        mainContainer.setCenter(mainVBox);
+        setContent(mainVBox);
 
         getStyleClass().add(DEFAULT_STYLE_CLASS);
     }

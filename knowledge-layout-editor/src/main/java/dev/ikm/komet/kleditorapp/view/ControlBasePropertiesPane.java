@@ -4,7 +4,9 @@ import dev.ikm.komet.kleditorapp.KLEditorSession;
 import dev.ikm.komet.layout.editor.model.EditorModelBase;
 import javafx.beans.property.Property;
 import javafx.event.ActionEvent;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -16,6 +18,13 @@ import java.util.function.Function;
 public abstract class ControlBasePropertiesPane<T extends EditorModelBase> extends Region {
     protected final BorderPane mainContainer = new BorderPane();
 
+    /**
+     * Scrolls the pane's properties when they don't fit the pane's height, so that the DELETE
+     * button — which sits outside it, at the bottom of {@link #mainContainer} — stays visible
+     * however tall the properties grow.
+     */
+    private final ScrollPane contentScrollPane = new ScrollPane();
+
     private final HBox bottomContainer = new HBox();
     private final Button deleteButton = new Button();
 
@@ -23,6 +32,21 @@ public abstract class ControlBasePropertiesPane<T extends EditorModelBase> exten
     protected T previouslyShownModel;
 
     public ControlBasePropertiesPane(boolean isDeletable) {
+        contentScrollPane.setFitToWidth(true);
+        mainContainer.setCenter(contentScrollPane);
+
+        // ScrollPane's skin caches its viewport as a bitmap, which drops LCD subpixel
+        // antialiasing and makes the properties' text render differently. Uncache it so the text
+        // renders the same as it did without the ScrollPane.
+        contentScrollPane.skinProperty().subscribe(skin -> {
+            if (skin != null) {
+                Node viewport = contentScrollPane.lookup(".viewport");
+                if (viewport != null) {
+                    viewport.setCache(false);
+                }
+            }
+        });
+
         // Delete button
         if (isDeletable) {
             deleteButton.setText("DELETE");
@@ -42,7 +66,17 @@ public abstract class ControlBasePropertiesPane<T extends EditorModelBase> exten
         });
 
         // CSS
+        contentScrollPane.getStyleClass().add("content-scroll-pane");
         bottomContainer.getStyleClass().add("bottom-container");
+    }
+
+    /**
+     * Sets the properties shown by this pane. The content scrolls when it is taller than the pane.
+     *
+     * @param content the pane's properties
+     */
+    protected void setContent(Node content) {
+        contentScrollPane.setContent(content);
     }
 
     protected void onSessionEnding() { }

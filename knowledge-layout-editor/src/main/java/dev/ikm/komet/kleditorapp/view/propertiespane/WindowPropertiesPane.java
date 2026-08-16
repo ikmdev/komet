@@ -101,7 +101,7 @@ public class WindowPropertiesPane extends ControlBasePropertiesPane<EditorWindow
                 controlBarGridPane
         );
 
-        mainContainer.setCenter(windowMainContainer);
+        setContent(windowMainContainer);
 
         // CSS
         getStyleClass().add(DEFAULT_STYLE_CLASS);

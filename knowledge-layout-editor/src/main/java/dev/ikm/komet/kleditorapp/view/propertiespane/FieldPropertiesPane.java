@@ -103,7 +103,7 @@ public class FieldPropertiesPane extends GridNodePropertiesPane<EditorFieldModel
                 gridPane
         );
 
-        mainContainer.setCenter(fieldMainContainer);
+        setContent(fieldMainContainer);
 
         // CSS
         getStyleClass().add(DEFAULT_STYLE_CLASS);

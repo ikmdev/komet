@@ -197,7 +197,7 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
                 propertiesContainer
         );
 
-        mainContainer.setCenter(patternMainContainer);
+        setContent(patternMainContainer);
 
         // CSS
         getStyleClass().add(DEFAULT_STYLE_CLASS);
