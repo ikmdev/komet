@@ -1,5 +1,3 @@
-@import "../mvvm/view/kview.css";
-
 .component-control > .selected-concept-container,
 .component-control > .concept-container {
     -fx-padding: 8;
