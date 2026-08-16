@@ -11,7 +11,7 @@
     <groupId>dev.ikm.komet</groupId>
     <artifactId>komet-parent</artifactId>
     <name>KOMET</name>
-    <version>1.59.2-SNAPSHOT</version>
+    <version>1.59.2</version>
     <packaging>pom</packaging>
     <inceptionYear>2015</inceptionYear>
     <licenses>
@@ -99,7 +99,7 @@
             <dependency>
                 <groupId>dev.ikm.komet</groupId>
                 <artifactId>komet-bom</artifactId>
-                <version>3.0.9-SNAPSHOT</version>
+                <version>3.0.9</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
