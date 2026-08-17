@@ -901,13 +901,8 @@ public class WindowSupport {
         // Calculate new width: original width plus change in mouse X position.
         double newWidth = initialPaneWidth + (currentMouseX - initialMouseX);
 
-        // Boundary check: Adjust if the new width would make the pane exceed the parent's right boundary.
-        final double parentWidth = getParentWidth();
-        if (initialPaneX + newWidth > parentWidth) {
-            // Pane hits the right edge of the parent.
-            // Adjust width to stop exactly at the boundary.
-            newWidth = parentWidth - initialPaneX;
-        }
+        // The parent's right boundary is not a growth limit (ike-issues#1045) — the same
+        // ruling as the south edge: the workspace scrolls and extends beneath a growing window.
 
         // Apply the new width, respecting min/max constraints.
         final double minWidth = Math.max(MIN_DIMENSION, pane.minWidth(pane.getHeight()));
@@ -987,17 +982,17 @@ public class WindowSupport {
         final double newX = pane.getLayoutX();
         final double newY = pane.getLayoutY();
 
-        // Only constrain position, not size
+        // Only constrain position, not size — and only at the ORIGIN edges (ike-issues#1045):
+        // a window must never detach above or left of the workspace origin, but the right and
+        // bottom are NOT limits — a window may extend past the desktop's current bounds, and
+        // the workspace scrolls and extends beneath it. The former push-back at these edges is
+        // what made vertical growth read as a forbidden limit: the height grew and the window
+        // was immediately relocated upward to fit.
         if (newX < 0) {
             pane.setLayoutX(0);
-        } else if (newX + windowWidth > containerWidth) {
-            pane.setLayoutX(containerWidth - windowWidth);
         }
-
         if (newY < 0) {
             pane.setLayoutY(0);
-        } else if (newY + windowHeight > containerHeight) {
-            pane.setLayoutY(containerHeight - windowHeight);
         }
     }
 
