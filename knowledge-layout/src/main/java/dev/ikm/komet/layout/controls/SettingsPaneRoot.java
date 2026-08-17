@@ -136,7 +136,12 @@ final class SettingsPaneRoot extends VBox {
         backRow.setAlignment(Pos.CENTER_LEFT);
         backRow.setOnMouseClicked(e -> showSections());
 
-        VBox drill = new VBox(backRow, section.content().get());
+        Node contentNode = section.content().get();
+        // The drill-in owns the pane's whole body height: the section content grows to fill it
+        // rather than floating as a small box above empty space (KEC 2026-08-17). Content that
+        // wants less keeps its own max.
+        VBox.setVgrow(contentNode, javafx.scene.layout.Priority.ALWAYS);
+        VBox drill = new VBox(backRow, contentNode);
         drill.getStyleClass().add("settings-drill");
         body.getChildren().setAll(drill);
     }
