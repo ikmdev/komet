@@ -1,0 +1,67 @@
+/*
+ * Settings pane (IKE-Network/ike-issues#1043) — the section-card extension over the shared
+ * filter-options-popup.css base (dark pane, header grammar). Palette matches the View Options
+ * pane: #2E3240 ground, #444B5C rules, #5896F6 section titles, #E1E8F1 values.
+ */
+
+.settings-pane > * > .settings-sections {
+    -fx-spacing: 8;
+}
+
+.settings-pane .settings-section-card {
+    -fx-border-color: #444B5C;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 10 12 10 12;
+    -fx-spacing: 3;
+    -fx-cursor: hand;
+}
+
+.settings-pane .settings-section-card:hover {
+    -fx-background-color: #3A4050;
+}
+
+.settings-pane .settings-section-card .section-title {
+    -fx-text-fill: #5896F6;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12;
+    -fx-font-weight: 600;
+}
+
+.settings-pane .settings-section-card .section-value {
+    -fx-text-fill: #E1E8F1;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 13;
+}
+
+.settings-pane .settings-section-card .section-chevron {
+    -fx-text-fill: #E1E8F1;
+    -fx-font-size: 14;
+}
+
+.settings-pane .drill-back-row {
+    -fx-spacing: 8;
+    -fx-padding: 0 0 8 0;
+    -fx-cursor: hand;
+}
+
+.settings-pane .drill-back-row .drill-back {
+    -fx-text-fill: #E1E8F1;
+    -fx-font-size: 16;
+}
+
+.settings-pane .drill-back-row .drill-title {
+    -fx-text-fill: #E1E8F1;
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 500;
+    -fx-font-size: 13;
+}
+
+.settings-pane .settings-drill {
+    -fx-spacing: 4;
+}
+
+/* Consumer content sits on the dark ground: give plain labels a readable fill. */
+.settings-pane .settings-drill .label {
+    -fx-text-fill: #E1E8F1;
+}

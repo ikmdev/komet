@@ -155,21 +155,37 @@ public final class ViewOptionsPopupHelper {
     public static Consumer<FilterOptionsPopup> flankWindowShowStrategy(Pane owningPane) {
         return filterOptionsPopup -> {
             filterOptionsPopup.setStyle("-popup-pref-height: " + Math.max(owningPane.getHeight(), 760));
-            Bounds windowBounds = owningPane.localToScreen(owningPane.getLayoutBounds());
-            Screen screen = Screen.getScreens().stream().filter(s -> {
-                double minX = s.getBounds().getMinX();
-                double maxX = s.getBounds().getMaxX();
-                double windowX = windowBounds.getMinX();
-                return windowX >= minX && windowX <= maxX;
-            }).findFirst().orElse(Screen.getPrimary());
-            double popupWidth = filterOptionsPopup.getWidth() == 0.0d ? 326.0 : filterOptionsPopup.getWidth();
-            double distanceToScreenLeft = windowBounds.getMinX() - screen.getBounds().getMinX();
-            filterOptionsPopup.setAutoFix(false);
-            if (distanceToScreenLeft < popupWidth) {
-                filterOptionsPopup.show(owningPane.getScene().getWindow(), windowBounds.getMaxX(), windowBounds.getMinY());
-            } else {
-                filterOptionsPopup.show(owningPane.getScene().getWindow(), windowBounds.getMinX() - popupWidth, windowBounds.getMinY());
-            }
+            flankWindow(filterOptionsPopup, owningPane, 326.0);
         };
+    }
+
+    /**
+     * Shows any popup flanking the owning pane — the adjacent-pane positioning shared by the
+     * View Options popup and the standardized settings pane ({@link SettingsPanePopup},
+     * ike-issues#1043): on whichever side of the pane has room on its screen, top-aligned with
+     * it. Size the popup <em>before</em> calling (a stable pref, never a live content binding —
+     * the ike-issues#681 crash rule).
+     *
+     * @param popup              the popup to show
+     * @param owningPane         the pane the popup flanks
+     * @param popupWidthFallback the width assumed before the popup has ever been laid out
+     */
+    public static void flankWindow(javafx.stage.PopupWindow popup, Pane owningPane,
+                                   double popupWidthFallback) {
+        Bounds windowBounds = owningPane.localToScreen(owningPane.getLayoutBounds());
+        Screen screen = Screen.getScreens().stream().filter(s -> {
+            double minX = s.getBounds().getMinX();
+            double maxX = s.getBounds().getMaxX();
+            double windowX = windowBounds.getMinX();
+            return windowX >= minX && windowX <= maxX;
+        }).findFirst().orElse(Screen.getPrimary());
+        double popupWidth = popup.getWidth() == 0.0d ? popupWidthFallback : popup.getWidth();
+        double distanceToScreenLeft = windowBounds.getMinX() - screen.getBounds().getMinX();
+        popup.setAutoFix(false);
+        if (distanceToScreenLeft < popupWidth) {
+            popup.show(owningPane.getScene().getWindow(), windowBounds.getMaxX(), windowBounds.getMinY());
+        } else {
+            popup.show(owningPane.getScene().getWindow(), windowBounds.getMinX() - popupWidth, windowBounds.getMinY());
+        }
     }
 }
