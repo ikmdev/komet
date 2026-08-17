@@ -4,6 +4,7 @@ import dev.ikm.komet.layout.KlPatternSemanticsFactories;
 import dev.ikm.komet.layout.PatternDefinitionSeeder;
 import dev.ikm.komet.layout.PatternDefinitionTerms;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
+import dev.ikm.komet.layout.editor.model.EditorPatternRequirement;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowType;
@@ -43,7 +44,7 @@ public final class StandardEditorWindows {
      * re-seeded from the current code, so application-shipped windows never go stale in the
      * preferences. User-authored windows live in the user-windows folder and are untouched.
      */
-    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 2;
+    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 3;
 
     /** Preferences key holding the version the seeded standard windows were created from. */
     private static final String STANDARD_WINDOWS_VERSION_KEY = "STANDARD-WINDOWS-VERSION";
@@ -100,7 +101,8 @@ public final class StandardEditorWindows {
      * The standard Concept window: a main section containing the Description pattern, plus an
      * "Axiom" section with the Inferred definition pattern on top and the Stated definition
      * pattern below it. The Description and Stated definition patterns are required when the
-     * window is opened in the Journal in create mode.
+     * window is opened in the Journal in create mode; the Description pattern additionally
+     * requires one of its semantics to be the concept's fully qualified name.
      */
     private static void saveConceptWindow2(KometPreferences standardWindowsPreferences,
                                            ViewCalculator viewCalculator) {
@@ -109,13 +111,18 @@ public final class StandardEditorWindows {
         window.setWindowType(EditorWindowType.STANDARD_CONCEPT);
         window.setTimelineVisible(true);
 
-        ensureLocallyResolvable(viewCalculator, TinkarTerm.DESCRIPTION_PATTERN);
-
-        EditorPatternModel descriptionPattern =
-                new EditorPatternModel(viewCalculator, TinkarTerm.DESCRIPTION_PATTERN.nid());
-        descriptionPattern.setRequired(true);
+        // Description
+        EditorPatternModel descriptionPattern = createDescriptionPatternForMainSection(viewCalculator);
         window.getMainSection().getPatterns().add(descriptionPattern);
 
+        // Axiom
+        EditorSectionModel axiomSection = createAxiomSection(viewCalculator);
+        window.getAdditionalSections().add(axiomSection);
+
+        window.save(standardWindowsPreferences);
+    }
+
+    private static EditorSectionModel createAxiomSection(ViewCalculator viewCalculator) {
         EditorSectionModel axiomSection = new EditorSectionModel();
         axiomSection.setName("Axiom");
 
@@ -129,10 +136,35 @@ public final class StandardEditorWindows {
         statedDefinitionPattern.setRequired(true);
         statedDefinitionPattern.setRowIndex(1);
         axiomSection.getPatterns().addAll(inferredDefinitionPattern, statedDefinitionPattern);
+        return axiomSection;
+    }
 
-        window.getAdditionalSections().add(axiomSection);
+    private static EditorPatternModel createDescriptionPatternForMainSection(ViewCalculator viewCalculator) {
+        ensureLocallyResolvable(viewCalculator, TinkarTerm.DESCRIPTION_PATTERN);
 
-        window.save(standardWindowsPreferences);
+        EditorPatternModel descriptionPattern =
+                new EditorPatternModel(viewCalculator, TinkarTerm.DESCRIPTION_PATTERN.nid());
+        descriptionPattern.setRequired(true);
+        requireFullyQualifiedName(descriptionPattern, viewCalculator);
+        return descriptionPattern;
+    }
+
+    /**
+     * Refines the Description pattern's required flag ({@link EditorPatternRequirement}): at least one
+     * of its semantics must hold "Fully qualified name description type" in the pattern's
+     * "Description type" field, so a concept can only be created once it has a fully qualified name.
+     */
+    private static void requireFullyQualifiedName(EditorPatternModel descriptionPattern,
+                                                  ViewCalculator viewCalculator) {
+        ensureLocallyResolvable(viewCalculator, TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+
+        viewCalculator.latestPatternEntityVersion(TinkarTerm.DESCRIPTION_PATTERN).ifPresent(patternVersion -> {
+            EditorPatternRequirement fullyQualifiedNameRequirement = new EditorPatternRequirement();
+            fullyQualifiedNameRequirement.getFieldConstraints().put(
+                    patternVersion.indexForMeaning(TinkarTerm.DESCRIPTION_TYPE),
+                    TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+            descriptionPattern.getRequirements().add(fullyQualifiedNameRequirement);
+        });
     }
 
     /**
