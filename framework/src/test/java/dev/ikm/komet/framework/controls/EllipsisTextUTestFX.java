@@ -85,6 +85,123 @@ class EllipsisTextUTestFX {
     }
 
     @Test
+    void wrapModeShowsTheFullStringAndGrowsInHeight() {
+        EllipsisText node = new EllipsisText();
+        node.setText(NAME);
+        node.setWrapText(true);
+        double full = node.prefWidth(-1);
+
+        assertEquals(javafx.geometry.Orientation.HORIZONTAL, node.getContentBias(),
+                "wrap mode is height-for-width");
+        layoutAt(node, full / 3);
+        String display = node.textNode().getText();
+        assertTrue(display.contains("\n"), "the narrowed string folds into explicit lines");
+        assertEquals(NAME.replaceAll("\\s", ""), display.replaceAll("\\s", ""),
+                "wrap mode never drops a character — the full string shows at any width");
+        assertEquals(0, node.textNode().getWrappingWidth(), 0.001,
+                "the semantic wrap owns the folding; the engine's whitespace wrap stays off");
+        assertTrue(node.prefHeight(full / 3) > node.prefHeight(full) * 1.5,
+                "a narrowed wrap-mode region grows in height (multiple lines)");
+    }
+
+    @Test
+    void wrapBreaksAfterSemanticCharactersNotMidWord() {
+        EllipsisText node = new EllipsisText();
+        node.setText("Human Rhinovirus/Enterovirus");
+        node.setWrapText(true);
+        // A width that holds everything through the slash but not the whole name: the fold
+        // must land AFTER the slash — never inside "Enterovirus" (the mid-word break KEC
+        // flagged: "…/Enterovi / rus").
+        Text probe = new Text("Human Rhinovirus/");
+        probe.setFont(node.textNode().getFont());
+        double width = probe.getLayoutBounds().getWidth() + 2;
+        layoutAt(node, width);
+        assertEquals("Human Rhinovirus/\nEnterovirus", node.textNode().getText(),
+                "the fold lands after the slash, the semantic break");
+
+        assertEquals("Flu A", EllipsisText.wrapToWidth("Flu A", probe.getFont(), 1_000),
+                "a fitting string is returned unchanged");
+        String forced = EllipsisText.wrapToWidth("Metapneumovirus", probe.getFont(), 40);
+        assertTrue(forced.contains("\n"),
+                "a single token with no break opportunity still force-folds, got: " + forced);
+        assertEquals("Metapneumovirus", forced.replace("\n", ""),
+                "the forced fold drops nothing");
+    }
+
+    @Test
+    void isEllipsizedTracksTruncationAndIsNeverSetInWrapMode() {
+        EllipsisText node = new EllipsisText();
+        node.setText(NAME);
+        assertTrue(node.getContentBias() == null, "single-line mode has no content bias");
+        double full = node.prefWidth(-1);
+        layoutAt(node, full);
+        assertTrue(!node.isEllipsized(), "an unconstrained name is not ellipsized");
+
+        layoutAt(node, full / 3);
+        assertTrue(node.isEllipsized(), "a truncated name reports ellipsized — the expansion gate");
+
+        layoutAt(node, full);
+        assertTrue(!node.isEllipsized(), "re-widening clears the ellipsized state");
+
+        node.setWrapText(true);
+        layoutAt(node, full / 3);
+        assertTrue(!node.isEllipsized(), "wrap mode shows the whole string, never ellipsized");
+    }
+
+    @Test
+    void switchingModesRestoresAndReTruncates() {
+        EllipsisText node = new EllipsisText();
+        node.setText(NAME);
+        double full = node.prefWidth(-1);
+
+        layoutAt(node, full / 3);
+        assertNotEquals(NAME, node.textNode().getText(), "starts truncated in the default mode");
+
+        node.setWrapText(true);
+        layoutAt(node, full / 3);
+        assertEquals(NAME.replaceAll("\\s", ""), node.textNode().getText().replaceAll("\\s", ""),
+                "entering wrap mode restores the full string, folded");
+
+        node.setWrapText(false);
+        layoutAt(node, full / 3);
+        String display = node.textNode().getText();
+        assertNotEquals(NAME, display, "leaving wrap mode truncates again");
+        assertTrue(display.endsWith("…") && !display.contains("\n"),
+                "the single-line mode is back: one ellipsised line");
+    }
+
+    @Test
+    void aTrailingNodeFlowsAfterTheLastWrappedWord() {
+        EllipsisText node = new EllipsisText();
+        node.setText(NAME);
+        node.setWrapText(true);
+        double bare = node.prefWidth(-1);
+
+        javafx.scene.layout.Region glyph = new javafx.scene.layout.Region();
+        glyph.setMinSize(12, 12);
+        glyph.setPrefSize(12, 12);
+        glyph.setMaxSize(12, 12);
+        node.setTrailingNode(glyph);
+
+        assertTrue(node.prefWidth(-1) > bare + 12,
+                "the preference reserves the trailing node and its gap on one line");
+
+        double width = bare / 3;
+        node.resize(width, node.prefHeight(width));
+        node.layout();
+        assertTrue(glyph.getLayoutX() >= 0 && glyph.getLayoutX() + 12 <= width + 0.5,
+                "the trailing node stays inside the allocated width");
+        double blockHeight = node.getHeight();
+        assertTrue(glyph.getLayoutY() + 6 > blockHeight / 2,
+                "the trailing node seats on the LAST line's band, in the block's lower half");
+
+        node.setTrailingNode(null);
+        assertEquals(bare, node.prefWidth(-1), 0.5, "removing the trailer restores the preference");
+        assertTrue(node.getChildrenUnmodifiable().stream().noneMatch(child -> child == glyph),
+                "the removed trailer leaves the children");
+    }
+
+    @Test
     void fitToWidthReturnsAFittingStringUnchanged() {
         Font font = Font.font(12);
         assertEquals("Short", EllipsisText.fitToWidth("Short", font, 1_000));

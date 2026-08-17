@@ -600,17 +600,20 @@ public final class MarkdownRichTextRenderer {
                 + (header ? " -fx-background-color: #f6f8fa;" : ""));
         appendCellInlines(flow, tc.getFirstChild(), new CellStyle(header, false, false, false));
         // A TextFlow lays embedded nodes at PREFERRED width, so a concept
-        // badge's ellipsising name (EllipsisText, ike-issues#855) never
-        // sees a width constraint inside a table cell — a badge wider
-        // than its COLUMN paints across the neighbour columns. No fixed
-        // cap can catch that (the column's width is decided at layout),
-        // so the badge yields to the cell itself: once the cell has a
-        // real width, a badge whose natural pref exceeds it is clamped
-        // to the cell's inner width, and the badge's own layout
-        // ellipsises the name (its min is zero), full identity still on
-        // the badge's hover tooltip. Snapping pref to the allocated
-        // width is a fixed point of GridPane's column sizing — unlike a
-        // live pref↔width binding, it cannot spiral columns narrower.
+        // badge never sees a width constraint inside a table cell — a
+        // badge wider than its COLUMN paints across the neighbour
+        // columns. No fixed cap can catch that (the column's width is
+        // decided at layout), so the badge yields to the cell itself:
+        // once the cell has a real width, a badge whose natural pref
+        // exceeds it is clamped to the cell's inner width, and the badge
+        // reflows to it. In a cell the badge is in its MULTI-LINE form
+        // (decorateForCell, ike-issues#1036), so the clamp is what makes
+        // its name fold to the column like the cell's own text wraps —
+        // a badge without that form ellipsises instead (EllipsisText,
+        // ike-issues#855), full identity on the hover tooltip either
+        // way. Snapping pref to the allocated width is a fixed point of
+        // GridPane's column sizing — unlike a live pref↔width binding,
+        // it cannot spiral columns narrower.
         for (javafx.scene.Node child : flow.getChildren()) {
             if (child instanceof javafx.scene.text.Text
                     || !(child instanceof javafx.scene.layout.Region badge)) {
@@ -705,7 +708,7 @@ public final class MarkdownRichTextRenderer {
         if (text == null || text.isEmpty()) {
             return;
         }
-        for (InlinePiece piece : decorator.decorate(text, cellStyleAttr(style))) {
+        for (InlinePiece piece : decorator.decorateForCell(text, cellStyleAttr(style))) {
             switch (piece) {
                 case InlinePiece.TextRun tr -> {
                     if (tr.text() != null && !tr.text().isEmpty()) {

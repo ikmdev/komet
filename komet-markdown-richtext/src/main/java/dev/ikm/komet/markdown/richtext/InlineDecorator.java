@@ -51,6 +51,21 @@ public interface InlineDecorator {
     List<InlinePiece> decorate(String text, StyleAttributeMap style);
 
     /**
+     * The table-cell variant of {@link #decorate}: the renderer calls this for text inside a grid
+     * cell, where content <em>wraps</em> to the column. A decorator whose injected nodes have a
+     * multi-line form applies it here — a concept chip folds its name to the cell width the way
+     * the cell's own text does — while flowing text keeps the inline single-line form
+     * ({@code IKE-Network/ike-issues#1036}). The default draws no distinction.
+     *
+     * @param text  the cell text run to decorate (may be null/empty)
+     * @param style the style to apply to text pieces, or {@code null}/empty for the default
+     * @return the ordered pieces (never null; may be empty)
+     */
+    default List<InlinePiece> decorateForCell(String text, StyleAttributeMap style) {
+        return decorate(text, style);
+    }
+
+    /**
      * Emits {@code text} into {@code builder} by appending each decorated piece. Provided so the
      * flowing-paragraph path stays a one-liner; equivalent to appending {@link #decorate}'s result.
      *

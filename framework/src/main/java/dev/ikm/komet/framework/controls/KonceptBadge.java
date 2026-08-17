@@ -45,17 +45,26 @@ import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import org.controlsfx.control.PopOver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,6 +99,15 @@ import java.util.Locale;
  * atom for the refreshed axiom tree (ike-issues#639) and the recursive semantic viewer
  * (ike-issues#641); it never applies policy truncation to the concept label — only width-driven
  * ellipsis when a host constrains it, with the full name preserved on the identity tooltip.
+ *
+ * <p>The label-fidelity rule is <em>contextual</em> (ike-issues#1036): a wrapping host — an
+ * assistant table cell, where content folds to the column — enables
+ * {@link #setMultiLineLabel(boolean) the multi-line label} and the badge wraps its whole name
+ * like the text beside it; a single-line host constrains the badge and it ellipsises. The two
+ * meet on the ellipsised badge itself: its identity tooltip carries a multi-line rendering of
+ * the badge ({@link #expandedRendering(double)}), and clicking the ellipsised badge opens the
+ * same rendering live (drag source, definition popout) in a transient {@link PopOver} — the
+ * full identity is always one hover or one click away.
  */
 public class KonceptBadge extends HBox {
 
@@ -178,12 +196,27 @@ public class KonceptBadge extends HBox {
     /** Sentinel nid for a presentation-only badge built without a populated store/view. */
     private static final int UNKNOWN_NID = Integer.MIN_VALUE;
 
+    /**
+     * Width cap (px) of the expanded multi-line rendering used by the identity tooltip and the
+     * click-to-expand popover (ike-issues#1036) — wide enough for a long clinical name to wrap
+     * into two or three comfortable lines rather than a tall sliver.
+     */
+    private static final double EXPANDED_MAX_WIDTH = 340;
+
     private final int nid;
     private final PublicId publicId;
     private final ViewProperties viewProperties;
     private boolean inactive;
     /** Whether {@link #setStandaloneStyling} is in effect, so a state change repaints inline. */
     private boolean standalone;
+    /** Whether the name wraps across lines instead of ellipsising (ike-issues#1036). */
+    private boolean multiLineLabel;
+    /** The ambient body font size last applied via {@link #setAmbientFontSize}, or 0 when unset. */
+    private double ambientFontSize;
+    /** The single identity tooltip, its content refreshed lazily each time it shows. */
+    private Tooltip identityTooltip;
+    /** The open click-to-expand popover, so a second click toggles instead of stacking. */
+    private PopOver expandedPopover;
 
     /**
      * Where the definition-popout affordance sits in the badge (ike-issues#941).
@@ -386,6 +419,97 @@ public class KonceptBadge extends HBox {
             });
         }
         installTooltip();
+        // Click-to-expand from the ellipsis (ike-issues#1036): a truncated badge opens its full
+        // multi-line rendering. Installed on every badge — the gate reads the live ellipsis
+        // state, so an unconstrained badge never reacts. CLICKED (not PRESSED) keeps the drag
+        // gesture and the definition popout untouched: a real drag fails isStillSincePress, and
+        // the popout button consumes its own clicks.
+        addEventHandler(MouseEvent.MOUSE_CLICKED, this::onClickExpandFromEllipsis);
+        // The badge's name is a Text node — not natively selectable — so copying rides two
+        // affordances (ike-issues#1036): a context menu (whole-value copies + "Select text…"),
+        // and double-click as the direct entry into the selection popover, whose read-only
+        // text field gives real word/character/line selection.
+        installCopyMenu();
+        addEventHandler(MouseEvent.MOUSE_CLICKED, this::onDoubleClickSelectText);
+    }
+
+    /**
+     * Installs the copy context menu: the whole name, the canonical id-bearing {@code k:}
+     * interchange token (paste-ready for the assistant and adoc), and the selection popover
+     * for partial copies. The event is consumed so a host's own menu (a table's copy-table
+     * menu) never stacks on top of the badge's.
+     */
+    private void installCopyMenu() {
+        MenuItem copyName = new MenuItem("Copy name");
+        copyName.setOnAction(action -> copyToClipboard(conceptName == null ? "" : conceptName));
+        MenuItem copyToken = new MenuItem("Copy k: token");
+        copyToken.setOnAction(action -> copyToClipboard(interchangeToken()));
+        MenuItem selectText = new MenuItem("Select text…");
+        selectText.setOnAction(action -> {
+            javafx.geometry.Bounds bounds = localToScreen(getBoundsInLocal());
+            if (bounds != null) {
+                showTextSelectionPopover(bounds.getMinX(), bounds.getMaxY());
+            }
+        });
+        ContextMenu menu = new ContextMenu(copyName, copyToken, selectText);
+        setOnContextMenuRequested(event -> {
+            menu.show(this, event.getScreenX(), event.getScreenY());
+            event.consume();
+        });
+    }
+
+    /**
+     * The badge's canonical id-bearing {@code k:} interchange token
+     * ({@code k:uuid=<id>[Name]}, ike-issues#735) — the paste-everywhere form; the bare name
+     * when the badge has no identifier.
+     */
+    private String interchangeToken() {
+        String name = conceptName == null ? "" : conceptName;
+        if (publicId == null || publicId.asUuidArray().length == 0) {
+            return name;
+        }
+        return "k:uuid=" + publicId.asUuidArray()[0] + "[" + name + "]";
+    }
+
+    /** Puts {@code value} on the system clipboard as plain text. */
+    private static void copyToClipboard(String value) {
+        ClipboardContent content = new ClipboardContent();
+        content.putString(value);
+        Clipboard.getSystemClipboard().setContent(content);
+    }
+
+    /** Double-click is the direct gesture into the text-selection popover. */
+    private void onDoubleClickSelectText(MouseEvent event) {
+        if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
+            showTextSelectionPopover(event.getScreenX(), event.getScreenY());
+            event.consume();
+        }
+    }
+
+    /**
+     * Opens the selection popover: the full name in a read-only, wrapping text field —
+     * pre-selected for an immediate copy, with native word/character/line sub-selection for
+     * partial copies (ike-issues#1036). Transient and auto-hiding, like the badge's other
+     * popovers.
+     */
+    private void showTextSelectionPopover(double screenX, double screenY) {
+        String name = conceptName == null ? "" : conceptName;
+        TextArea area = new TextArea(name);
+        area.setEditable(false);
+        area.setWrapText(true);
+        area.setPrefColumnCount(Math.min(28, Math.max(12, name.length())));
+        area.setPrefRowCount(Math.max(1, Math.min(4, 1 + name.length() / 34)));
+        StackPane content = new StackPane(area);
+        content.setPadding(new Insets(6));
+        PopOver popover = new PopOver(content);
+        popover.setDetachable(false);
+        popover.setHeaderAlwaysVisible(false);
+        popover.setCloseButtonEnabled(false);
+        popover.setOnShown(shown -> {
+            area.requestFocus();
+            area.selectAll();
+        });
+        popover.show(this, screenX, screenY);
     }
 
     /**
@@ -414,6 +538,7 @@ public class KonceptBadge extends HBox {
             // always visible; the tooltip only explains it — parity with the adoc renderer's title.
             Tooltip.install(statusBox, new Tooltip(this.status.accessibleText()));
         }
+        applyCompanionSeating();
     }
 
     /**
@@ -474,6 +599,7 @@ public class KonceptBadge extends HBox {
         refreshAlarm();
         // A kind change can gain or lose the definition popout (only a concept has one).
         refreshPopout();
+        applyCompanionSeating();
     }
 
     /**
@@ -515,15 +641,21 @@ public class KonceptBadge extends HBox {
     }
 
     /**
-     * (Re)installs the definition popout per the applicability gate, suppression flag, and
-     * position. The button holds its preferred size ({@code USE_PREF_SIZE} min), and the name
-     * is the badge's only shrinkable child — so a width-constrained badge ellipsizes the name
-     * while the affordance stays fully visible at its position, never clipped and never
-     * covering text (ike-issues#941).
+     * (Re)installs the definition popout per the applicability gate, suppression flag, position,
+     * and label mode. Single-line: a row child — the button holds its preferred size
+     * ({@code USE_PREF_SIZE} min) and the name is the badge's only shrinkable child, so a
+     * width-constrained badge ellipsizes the name while the affordance stays fully visible,
+     * never clipped and never covering text (ike-issues#941). Multi-line: the button flows
+     * <em>inline after the last wrapped word</em> of the name (the name region's trailing node,
+     * ike-issues#1036) — trailing the text like a link glyph, never floating at the pill's
+     * edge; the position preference applies only to the single-line row.
      */
     private void refreshPopout() {
         if (popoutButton != null) {
             getChildren().remove(popoutButton);
+            if (nameNode.getTrailingNode() == popoutButton) {
+                nameNode.setTrailingNode(null);
+            }
         }
         if (popoutSuppressed || !popoutApplicable(nid, viewProperties, kind)) {
             return;
@@ -542,11 +674,14 @@ public class KonceptBadge extends HBox {
                 }
             });
         }
-        if (popoutPosition == PopoutPosition.AFTER_IDENTICON) {
+        if (multiLineLabel) {
+            nameNode.setTrailingNode(popoutButton);
+        } else if (popoutPosition == PopoutPosition.AFTER_IDENTICON) {
             getChildren().add(getChildren().indexOf(nameNode), popoutButton);
         } else {
             getChildren().add(popoutButton);
         }
+        applyCompanionSeating();
     }
 
     /**
@@ -633,6 +768,7 @@ public class KonceptBadge extends HBox {
         if (basePx <= 0) {
             return;
         }
+        this.ambientFontSize = basePx;
         String scFamily = SmallCapsFonts.family();
         double nameSize = basePx * (scFamily != null ? NAME_SCALE : NAME_SCALE_FALLBACK);
         nameNode.setFont(scFamily != null
@@ -648,6 +784,7 @@ public class KonceptBadge extends HBox {
         // The status cluster follows the rescaled name in a stylesheet-free host (#953); under
         // komet.css the .koncept-status rule keeps governing.
         applyStatusFont();
+        applyCompanionSeating();
     }
 
     /**
@@ -662,14 +799,196 @@ public class KonceptBadge extends HBox {
      */
     public void setStandaloneStyling(boolean standalone) {
         this.standalone = standalone;
+        applyStyleLayers();
         if (!standalone) {
-            setStyle(null);
             nameNode.textNode().setFill(null);
             return;
         }
-        setStyle(STANDALONE_PILL_STYLE);
         nameNode.textNode().setFill(Color.web(isInactive() ? LABEL_INACTIVE : LABEL_ACTIVE));
         nameNode.textNode().setStrikethrough(isInactive() && SPEC.inactiveStrikethrough());
+    }
+
+    /**
+     * Composes the badge's inline style from its two independent layers: the standalone pill
+     * (for scenes no stylesheet reaches) and the multi-line row alignment. The alignment must
+     * be <em>inline</em>, not merely code-set: {@code -fx-alignment} is CSS-styleable on an
+     * {@code HBox}, and komet.css's {@code .koncept-chip} rule pins {@code center-left} — an
+     * author stylesheet outranks a {@code setAlignment} call, so in a Komet scene a code-set
+     * {@code TOP_LEFT} silently loses. An inline style outranks the stylesheet in turn, in
+     * every scene.
+     */
+    private void applyStyleLayers() {
+        StringBuilder style = new StringBuilder();
+        if (standalone) {
+            style.append(STANDALONE_PILL_STYLE);
+        }
+        if (multiLineLabel) {
+            style.append(" -fx-alignment: top-left;");
+        }
+        setStyle(style.isEmpty() ? null : style.toString());
+    }
+
+    /**
+     * Switches the name between the single-line ellipsising label (the default) and the
+     * multi-line wrapping label (ike-issues#1036). A multi-line badge always shows its whole
+     * name, growing in height as its host narrows it — for wrapping contexts, where the badge
+     * folds like the text beside it (the assistant's table cells); single-line contexts keep
+     * the default ellipsis and get the multi-line form on the identity tooltip and the
+     * click-to-expand popover instead.
+     *
+     * @param multiLine {@code true} to wrap the name across lines; {@code false} to ellipsise
+     */
+    public final void setMultiLineLabel(boolean multiLine) {
+        this.multiLineLabel = multiLine;
+        nameNode.setWrapText(multiLine);
+        // Rehome the definition popout for the mode: inline after the last wrapped word in
+        // multi-line, a row child in single-line.
+        refreshPopout();
+        applyCompanionSeating();
+    }
+
+    /**
+     * Seats the badge's companions for the current label mode. Multi-line: the row is
+     * top-aligned and every companion — sigil, status cluster, identicon on the left, the
+     * definition popout on the right — gets a computed top margin centring it on the
+     * <em>first line's</em> band, like a paragraph with a lead-in icon and a trailing link
+     * marker; never floating beside the middle of the wrapped block. (Baseline row alignment
+     * cannot express this: the row baseline resolves against the tallest companion —
+     * the padded popout button — and shifts everything else down.) Single-line: centre
+     * seating, the ikmdev/komet#883 ruling, with margins cleared.
+     */
+    private void applyCompanionSeating() {
+        // Both the property and the inline layer: the property serves stylesheet-free scenes
+        // and honest reads via getAlignment(); the inline layer is what actually wins where
+        // komet.css styles the chip (see applyStyleLayers).
+        setAlignment(multiLineLabel ? Pos.TOP_LEFT : Pos.CENTER_LEFT);
+        applyStyleLayers();
+        setFillHeight(!multiLineLabel);
+        double lineHeight = multiLineLabel ? oneLineHeight() : 0;
+        for (Node child : getChildren()) {
+            if (child == nameNode) {
+                HBox.setMargin(child, null);
+                continue;
+            }
+            if (multiLineLabel) {
+                double childHeight = child.prefHeight(-1);
+                double top = Math.max(0, (lineHeight - childHeight) / 2);
+                HBox.setMargin(child, new Insets(top, 0, 0, 0));
+            } else {
+                HBox.setMargin(child, null);
+            }
+        }
+    }
+
+    /** One line's height in the name's current font — the first-line band companions seat on. */
+    private double oneLineHeight() {
+        Text probe = new Text("Xg");
+        probe.setFont(nameNode.textNode().getFont());
+        return probe.getLayoutBounds().getHeight();
+    }
+
+    /**
+     * Whether the name wraps across lines instead of ellipsising.
+     *
+     * @return {@code true} when the multi-line label is enabled
+     */
+    public final boolean isMultiLineLabel() {
+        return multiLineLabel;
+    }
+
+    /**
+     * Builds the expanded multi-line rendering of this badge (ike-issues#1036): the same
+     * component with the same anatomy — kind sigil, status cluster, identicon, and the
+     * <em>full wrapped name</em> — capped at {@code maxWidthPx} and styled inline (standalone),
+     * so it renders identically in a tooltip, a popover, or any other scene the stylesheet may
+     * not reach. A view-backed badge resolves its twin fresh through the same view (so the
+     * expansion is as current as the coordinate), and the twin of a badge with a known component
+     * is a full drag source with the definition popout; a presentation-only badge yields a
+     * presentation-only twin carrying this badge's displayed state.
+     *
+     * @param maxWidthPx the width cap the wrapped name folds to
+     * @return the expanded badge (never {@code null})
+     */
+    public KonceptBadge expandedRendering(double maxWidthPx) {
+        KonceptBadge expanded;
+        if (viewProperties != null && nid != UNKNOWN_NID) {
+            expanded = new KonceptBadge(nid, publicId, viewProperties);
+            if (expanded.premiseType != premiseType) {
+                expanded.setPremiseType(premiseType);
+            }
+        } else {
+            expanded = (nid != UNKNOWN_NID)
+                    ? new KonceptBadge(nid, publicId, conceptName)
+                    : new KonceptBadge(publicId, conceptName);
+            expanded.setKind(kind);
+            expanded.setStatus(status);
+            expanded.setInactive(inactive);
+        }
+        expanded.setConceptExpected(conceptExpected);
+        expanded.setSctid(sctid);
+        expanded.setPopoutPosition(popoutPosition);
+        if (popoutSuppressed) {
+            expanded.setDefinitionPopoutVisible(false);
+        }
+        if (ambientFontSize > 0) {
+            expanded.setAmbientFontSize(ambientFontSize);
+        }
+        expanded.setMultiLineLabel(true);
+        expanded.setStandaloneStyling(true);
+        // A Labeled (the tooltip) and a PopOver both lay a node out at its preferred size, so
+        // the width cap must live on the preference itself: natural size when it fits, the cap
+        // when the one-line name would exceed it (the multi-line name then wraps to it). The
+        // measurement is honest here — every font in the badge is set programmatically, so
+        // nothing about the natural width waits on CSS.
+        double natural = expanded.prefWidth(-1);
+        if (natural > maxWidthPx) {
+            expanded.setPrefWidth(maxWidthPx);
+        }
+        expanded.setMaxWidth(maxWidthPx);
+        return expanded;
+    }
+
+    /**
+     * Toggles the click-to-expand popover on a truncated badge (ike-issues#1036): a primary
+     * click on an ellipsised name opens the expanded multi-line rendering in a transient
+     * auto-hiding {@link PopOver} (the definition popout's popover convention); a click while it
+     * is open closes it. Drags and clicks on the popout affordance never arrive here, and an
+     * un-truncated badge ignores clicks entirely.
+     */
+    private void onClickExpandFromEllipsis(MouseEvent event) {
+        if (event.getButton() != MouseButton.PRIMARY || !event.isStillSincePress()) {
+            return;
+        }
+        if (expandedPopover != null && expandedPopover.isShowing()) {
+            expandedPopover.hide();
+            expandedPopover = null;
+            event.consume();
+            return;
+        }
+        if (!nameNode.isEllipsized()) {
+            return;
+        }
+        KonceptBadge expanded;
+        try {
+            expanded = expandedRendering(EXPANDED_MAX_WIDTH);
+        } catch (RuntimeException e) {
+            LOG.warn("Could not build the expanded rendering for nid {}", nid, e);
+            return;
+        }
+        StackPane content = new StackPane(expanded);
+        content.setPadding(new Insets(10));
+        PopOver popover = new PopOver(content);
+        popover.setDetachable(false);
+        popover.setHeaderAlwaysVisible(false);
+        popover.setCloseButtonEnabled(false);
+        popover.setOnHidden(hidden -> {
+            if (expandedPopover == popover) {
+                expandedPopover = null;
+            }
+        });
+        expandedPopover = popover;
+        popover.show(this, event.getScreenX(), event.getScreenY());
+        event.consume();
     }
 
     /**
@@ -787,12 +1106,59 @@ public class KonceptBadge extends HBox {
         return smallCapsFamily != null ? name : name.toUpperCase(Locale.ROOT);
     }
 
+    /**
+     * Installs the single identity tooltip, once. Its content is rebuilt each time it shows
+     * (never at construction), so the name, state, SCTID, and the expanded rendering are always
+     * the badge's current ones — a later {@code setConceptName}/{@code setSctid} can never leave
+     * a stale tooltip behind.
+     */
     private void installTooltip() {
+        if (identityTooltip != null) {
+            return;
+        }
+        identityTooltip = new Tooltip();
+        identityTooltip.setOnShowing(showing -> refreshTooltipContent());
+        Tooltip.install(this, identityTooltip);
+    }
+
+    /**
+     * Rebuilds the identity tooltip's content for this showing: the expanded multi-line
+     * rendering of the badge as the graphic (the full name as a real badge, ike-issues#1036)
+     * with the identity details beneath it. A badge already showing its whole name — the
+     * multi-line mode — needs no graphic and keeps the plain identity text; so does the rare
+     * badge whose expansion fails to build.
+     */
+    private void refreshTooltipContent() {
+        if (!multiLineLabel) {
+            try {
+                identityTooltip.setGraphic(expandedRendering(EXPANDED_MAX_WIDTH));
+                identityTooltip.setContentDisplay(ContentDisplay.TOP);
+                identityTooltip.setText(identityText(false));
+                return;
+            } catch (RuntimeException e) {
+                LOG.warn("Could not build the tooltip's expanded rendering for nid {}", nid, e);
+            }
+        }
+        identityTooltip.setGraphic(null);
+        identityTooltip.setText(identityText(true));
+    }
+
+    /**
+     * The identity tooltip's text: the inactive note, then (optionally) the name, then the
+     * SCTID/UUID/nid details. The name is included only when the tooltip carries no expanded
+     * badge graphic — beside the graphic it would repeat what the wrapped badge already shows.
+     *
+     * @param includeName whether to include the displayed name line
+     * @return the tooltip text, possibly empty
+     */
+    private String identityText(boolean includeName) {
         StringBuilder tip = new StringBuilder();
         if (inactive) {
             tip.append("Inactive — retired in this view\n");
         }
-        tip.append(conceptName == null ? "" : conceptName);
+        if (includeName) {
+            tip.append(conceptName == null ? "" : conceptName);
+        }
         if (sctid != null) {
             tip.append("\nSCTID: ").append(sctid);
         }
@@ -802,7 +1168,7 @@ public class KonceptBadge extends HBox {
         if (nid != UNKNOWN_NID) {
             tip.append("\nnid: ").append(nid);
         }
-        Tooltip.install(this, new Tooltip(tip.toString()));
+        return tip.toString().strip();
     }
 
     /**
