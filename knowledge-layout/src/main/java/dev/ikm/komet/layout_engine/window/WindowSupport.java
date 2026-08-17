@@ -860,13 +860,11 @@ public class WindowSupport {
         // Calculate new height: original height plus change in mouse Y position.
         double newHeight = initialPaneHeight + (currentMouseY - initialMouseY);
 
-        // Boundary check: Adjust if the new height would make the pane exceed the parent's bottom boundary.
-        final double parentHeight = getParentHeight();
-        if (initialPaneY + newHeight > parentHeight) {
-            // Pane hits the bottom of the parent.
-            // Adjust height to stop exactly at the boundary.
-            newHeight = parentHeight - initialPaneY;
-        }
+        // The parent's bottom boundary is NOT a growth limit (ike-issues#1045): a card may grow
+        // past the visible desktop — the workspace scrolls and the grid extends beneath it
+        // ("jump the grid boundaries; no forbidden limit", KEC 2026-08-17). The north edge's
+        // top pin stays: negative desktop coordinates would detach the window from the
+        // workspace origin.
 
         // Apply the new height, respecting min/max constraints.
         final double minHeight = Math.max(MIN_DIMENSION, pane.minHeight(pane.getWidth()));
