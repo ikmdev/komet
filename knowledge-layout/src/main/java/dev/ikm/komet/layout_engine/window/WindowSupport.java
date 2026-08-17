@@ -824,11 +824,15 @@ public class WindowSupport {
             newHeight = this.anchorHeight.get() + distance; // Recalculate height based on pinned position.
         }
 
-        // Apply the new height and adjusted position, respecting min/max constraints.
+        // Apply the new height and adjusted position. A USER gesture outranks a standing
+        // height cap (ike-issues#1045: no forbidden limit) — dragging past the cap raises it;
+        // the cap keeps governing content-driven auto-growth between gestures.
         final double minHeight = Math.max(MIN_DIMENSION, pane.minHeight(pane.getWidth()));
         final double maxHeight = pane.getMaxHeight();
-
-        if (isValidDimension(newHeight, minHeight, maxHeight)) {
+        if (newHeight >= minHeight) {
+            if (maxHeight > 0 && newHeight > maxHeight) {
+                pane.setMaxHeight(newHeight);
+            }
             windowPositionY.set(newY);
             currentHeight.set(newHeight);
         }
@@ -866,11 +870,15 @@ public class WindowSupport {
         // top pin stays: negative desktop coordinates would detach the window from the
         // workspace origin.
 
-        // Apply the new height, respecting min/max constraints.
+        // Apply the new height. A USER gesture outranks a standing height cap
+        // (ike-issues#1045: no forbidden limit) — dragging past the cap raises it; the cap
+        // keeps governing content-driven auto-growth between gestures.
         final double minHeight = Math.max(MIN_DIMENSION, pane.minHeight(pane.getWidth()));
         final double maxHeight = pane.getMaxHeight();
-
-        if (isValidDimension(newHeight, minHeight, maxHeight)) {
+        if (newHeight >= minHeight) {
+            if (maxHeight > 0 && newHeight > maxHeight) {
+                pane.setMaxHeight(newHeight);
+            }
             currentHeight.set(newHeight);
         }
     }
@@ -904,11 +912,14 @@ public class WindowSupport {
         // The parent's right boundary is not a growth limit (ike-issues#1045) — the same
         // ruling as the south edge: the workspace scrolls and extends beneath a growing window.
 
-        // Apply the new width, respecting min/max constraints.
+        // Apply the new width. A USER gesture outranks a standing width cap
+        // (ike-issues#1045) — dragging past the cap raises it.
         final double minWidth = Math.max(MIN_DIMENSION, pane.minWidth(pane.getHeight()));
         final double maxWidth = pane.getMaxWidth();
-
-        if (isValidDimension(newWidth, minWidth, maxWidth)) {
+        if (newWidth >= minWidth) {
+            if (maxWidth > 0 && newWidth > maxWidth) {
+                pane.setMaxWidth(newWidth);
+            }
             currentWidth.set(newWidth);
         }
     }
