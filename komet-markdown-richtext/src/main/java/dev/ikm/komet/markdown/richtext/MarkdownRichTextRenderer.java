@@ -311,7 +311,21 @@ public final class MarkdownRichTextRenderer {
         grid.getStyleClass().add("md-table");
         grid.setHgap(0);
         grid.setVgap(0);
-        grid.setMaxWidth(Double.MAX_VALUE);
+        // Hosted inline in a RichTextArea paragraph, an over-wide grid
+        // used to overflow into the area's own horizontal scrollbar,
+        // hiding whole columns in a narrow host (ike-issues#1030/#1031).
+        // Clamp to the host paragraph's width once attached: the grid
+        // compresses, cell TextFlows wrap harder, and every column
+        // stays visible; the column minimum floors below still guard
+        // against starvation.
+        grid.parentProperty().addListener((obs, was, parent) -> {
+            grid.maxWidthProperty().unbind();
+            if (parent instanceof javafx.scene.layout.Region host) {
+                grid.maxWidthProperty().bind(host.widthProperty().subtract(24));
+            } else {
+                grid.setMaxWidth(Double.MAX_VALUE);
+            }
+        });
 
         int row = 0;
         int columnCount = 0;
