@@ -99,7 +99,7 @@
             <dependency>
                 <groupId>dev.ikm.komet</groupId>
                 <artifactId>komet-bom</artifactId>
-                <version>3.0.9</version>
+                <version>3.0.10-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
