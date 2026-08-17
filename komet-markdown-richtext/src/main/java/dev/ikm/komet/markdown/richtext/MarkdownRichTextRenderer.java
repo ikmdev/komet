@@ -82,6 +82,19 @@ public final class MarkdownRichTextRenderer {
     private final String fontFamily;
     private final InlineDecorator decorator;
     private final BlockRenderer blockRenderer;
+    private TableColumnWidths columnWidths;
+
+    /**
+     * Sets the store for user-chosen table column widths ({@code IKE-Network/ike-issues#1034}).
+     * Tables built after this call apply the store's remembered widths and report resize drags to
+     * it; each table captures the store in effect when it was built. Columns are drag-resizable at
+     * their boundaries regardless — a {@code null} store only makes the result session-local.
+     *
+     * @param columnWidths the width store, or {@code null} to neither recall nor remember
+     */
+    public void setColumnWidths(TableColumnWidths columnWidths) {
+        this.columnWidths = columnWidths;
+    }
 
     /**
      * Equivalent to {@link #MarkdownRichTextRenderer(double, InlineDecorator, BlockRenderer)} with
@@ -321,7 +334,16 @@ public final class MarkdownRichTextRenderer {
         grid.parentProperty().addListener((obs, was, parent) -> {
             grid.maxWidthProperty().unbind();
             if (parent instanceof javafx.scene.layout.Region host) {
-                grid.maxWidthProperty().bind(host.widthProperty().subtract(24));
+                // Floor the clamp at the grid's own minimum: an unshrinkable
+                // inline node (a concept badge keeps its full label,
+                // koncept-label fidelity) must widen the table into the
+                // host's horizontal overflow, never overpaint a neighbor
+                // cell (KEC review: the badge overwrote the next column).
+                grid.maxWidthProperty().bind(javafx.beans.binding.Bindings
+                        .createDoubleBinding(
+                                () -> Math.max(host.getWidth() - 24,
+                                        grid.minWidth(-1)),
+                                host.widthProperty()));
             } else {
                 grid.setMaxWidth(Double.MAX_VALUE);
             }
@@ -348,9 +370,19 @@ public final class MarkdownRichTextRenderer {
             // short-label column sitting next to long-content columns gets starved down to a single
             // character and wraps its label vertically. The floor only binds in that pathological
             // case; otherwise columns stay content-proportional.
-            cc.setMinWidth(base * 6);
+            // Wide enough for a reasonable single word (KEC review:
+            // "Adenovirus" must fit) — user column resize refines from here.
+            cc.setMinWidth(base * 9);
             grid.getColumnConstraints().add(cc);
         }
+        // User-resizable, remembered columns (ike-issues#1034). The store is
+        // captured now, not read at drag time: a shared renderer's store is
+        // re-pointed per activation, and a table must keep reporting to the
+        // conversation it was built for.
+        String tableKey = tableKey(tb, columnCount);
+        TableColumnWidths store = columnWidths;
+        applyRememberedWidths(grid, store, tableKey, columnCount);
+        installColumnResize(grid, store, tableKey, columnCount);
         // Right-click → copy the table to the clipboard in the #596 interchange format
         // (text/plain GFM + text/html), so it pastes losslessly into Zulip/adoc and richly elsewhere.
         MenuItem copyItem = new MenuItem("Copy table");
@@ -358,6 +390,160 @@ public final class MarkdownRichTextRenderer {
         ContextMenu menu = new ContextMenu(copyItem);
         grid.setOnContextMenuRequested(e -> menu.show(grid, e.getScreenX(), e.getScreenY()));
         return grid;
+    }
+
+    /**
+     * The table's stable identity for width recall: a hash of its first header row's cell texts
+     * and its column count. Two renderings of the same table (across re-renders, restarts, or the
+     * table moving within the document) produce the same key; same-shaped tables deliberately
+     * share widths.
+     */
+    private static String tableKey(TableBlock tb, int columnCount) {
+        StringBuilder identity = new StringBuilder();
+        outer:
+        for (Node section = tb.getFirstChild(); section != null; section = section.getNext()) {
+            if (!(section instanceof TableHead head)) {
+                continue;
+            }
+            for (Node r = head.getFirstChild(); r != null; r = r.getNext()) {
+                if (r instanceof TableRow tr) {
+                    for (Node c = tr.getFirstChild(); c != null; c = c.getNext()) {
+                        if (c instanceof TableCell cell) {
+                            identity.append(plainOf(cell)).append(' ');
+                        }
+                    }
+                    break outer;
+                }
+            }
+        }
+        identity.append('|').append(columnCount);
+        try {
+            byte[] digest = java.security.MessageDigest.getInstance("SHA-256")
+                    .digest(identity.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            return "tw-" + java.util.HexFormat.of().formatHex(digest, 0, 8);
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 unavailable", e);
+        }
+    }
+
+    /** Applies the store's remembered widths to the grid's column constraints, if any fit. */
+    private static void applyRememberedWidths(GridPane grid, TableColumnWidths store,
+                                              String tableKey, int columnCount) {
+        if (store == null) {
+            return;
+        }
+        double[] widths = store.recall(tableKey, columnCount);
+        if (widths == null || widths.length != columnCount) {
+            return;
+        }
+        for (int i = 0; i < columnCount; i++) {
+            if (widths[i] > 0) {
+                ColumnConstraints cc = grid.getColumnConstraints().get(i);
+                // Pin min = pref: the table's total width is fixed by its
+                // host, and GridPane resolves an over-budget by shrinking
+                // the columns with the most pref-over-min slack — a merely
+                // preferred width would be taken straight back. A pinned
+                // column is firm at the user's width; the horizontal
+                // scrollbar is the last resort when the host is narrower
+                // than the remembered total.
+                cc.setMinWidth(widths[i]);
+                cc.setPrefWidth(widths[i]);
+            }
+        }
+    }
+
+    /**
+     * Installs drag-to-resize on the grid's column boundaries (ike-issues#1034): the cursor flips
+     * to a horizontal resize near a boundary, a drag re-prefs the column left of it, and the
+     * release reports every column's laid-out width to the store. Event filters keep the gesture
+     * ahead of cell content (text selection, chip drags), and only fire within the boundary zone.
+     */
+    private void installColumnResize(GridPane grid, TableColumnWidths store,
+                                     String tableKey, int columnCount) {
+        final int[] dragColumn = {-1};
+        final double[] press = new double[2];
+        grid.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_MOVED, e -> grid.setCursor(
+                boundaryColumn(grid, columnCount, e.getX()) >= 0
+                        ? javafx.scene.Cursor.H_RESIZE : javafx.scene.Cursor.DEFAULT));
+        grid.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_EXITED, e -> {
+            if (dragColumn[0] < 0) {
+                grid.setCursor(javafx.scene.Cursor.DEFAULT);
+            }
+        });
+        grid.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> {
+            int boundary = boundaryColumn(grid, columnCount, e.getX());
+            if (boundary >= 0) {
+                dragColumn[0] = boundary;
+                press[0] = e.getX();
+                press[1] = columnExtent(grid, boundary)[1] - columnExtent(grid, boundary)[0];
+                e.consume();
+            }
+        });
+        grid.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_DRAGGED, e -> {
+            if (dragColumn[0] < 0) {
+                return;
+            }
+            double width = Math.max(base * 2, press[1] + (e.getX() - press[0]));
+            ColumnConstraints cc = grid.getColumnConstraints().get(dragColumn[0]);
+            // Pin min = pref while dragging: under the host's fixed total
+            // width, GridPane pays an expansion's deficit out of the column
+            // with the most pref-over-min slack — the dragged column itself,
+            // so a pref-only expansion nets to nothing. Firm at min, the
+            // dragged column keeps the width and the NEIGHBOURS yield,
+            // down to their own floors (then the host's horizontal
+            // scrollbar takes over).
+            cc.setMinWidth(width);
+            cc.setPrefWidth(width);
+            e.consume();
+        });
+        grid.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_RELEASED, e -> {
+            if (dragColumn[0] < 0) {
+                return;
+            }
+            dragColumn[0] = -1;
+            e.consume();
+            if (store == null) {
+                return;
+            }
+            double[] widths = new double[columnCount];
+            for (int i = 0; i < columnCount; i++) {
+                double[] extent = columnExtent(grid, i);
+                widths[i] = extent[1] - extent[0];
+            }
+            store.remember(tableKey, widths);
+        });
+    }
+
+    /**
+     * The column whose right boundary lies within the grab zone of {@code x}, or {@code -1} when
+     * none does. The last column's boundary is the table edge and is not resizable — the table's
+     * overall width belongs to the host clamp.
+     */
+    private static int boundaryColumn(GridPane grid, int columnCount, double x) {
+        for (int i = 0; i < columnCount - 1; i++) {
+            double rightEdge = columnExtent(grid, i)[1];
+            if (rightEdge > 0 && Math.abs(x - rightEdge) <= 5) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * The laid-out horizontal extent {@code [minX, maxX]} of a column, from the cells occupying
+     * it; {@code [0, 0]} when the column has no laid-out cell yet.
+     */
+    private static double[] columnExtent(GridPane grid, int column) {
+        double min = Double.MAX_VALUE;
+        double max = -Double.MAX_VALUE;
+        for (javafx.scene.Node child : grid.getChildren()) {
+            Integer childColumn = GridPane.getColumnIndex(child);
+            if (childColumn != null && childColumn == column) {
+                min = Math.min(min, child.getBoundsInParent().getMinX());
+                max = Math.max(max, child.getBoundsInParent().getMaxX());
+            }
+        }
+        return min > max ? new double[] {0, 0} : new double[] {min, max};
     }
 
     private int renderTableSection(Node section, GridPane grid, int startRow, boolean header) {
@@ -413,6 +599,65 @@ public final class MarkdownRichTextRenderer {
         flow.setStyle("-fx-border-color: #d0d7de; -fx-border-width: 0.5;"
                 + (header ? " -fx-background-color: #f6f8fa;" : ""));
         appendCellInlines(flow, tc.getFirstChild(), new CellStyle(header, false, false, false));
+        // A TextFlow lays embedded nodes at PREFERRED width, so a concept
+        // badge's ellipsising name (EllipsisText, ike-issues#855) never
+        // sees a width constraint inside a table cell — a badge wider
+        // than its COLUMN paints across the neighbour columns. No fixed
+        // cap can catch that (the column's width is decided at layout),
+        // so the badge yields to the cell itself: once the cell has a
+        // real width, a badge whose natural pref exceeds it is clamped
+        // to the cell's inner width, and the badge's own layout
+        // ellipsises the name (its min is zero), full identity still on
+        // the badge's hover tooltip. Snapping pref to the allocated
+        // width is a fixed point of GridPane's column sizing — unlike a
+        // live pref↔width binding, it cannot spiral columns narrower.
+        for (javafx.scene.Node child : flow.getChildren()) {
+            if (child instanceof javafx.scene.text.Text
+                    || !(child instanceof javafx.scene.layout.Region badge)) {
+                continue;
+            }
+            // The natural width is re-measured on every fit, never
+            // snapshotted: a build-time measurement misses content that
+            // lands after CSS (the badge's trailing definition-popout
+            // button, the resolved small-caps font), and a badge passed
+            // as "fits" on a stale measurement overruns the cell at real
+            // layout — cutting its own popout affordance off at the
+            // clip. Resetting to computed size before measuring keeps
+            // the query honest once a clamp is in place; writes converge
+            // (the second pass computes the same values), so the
+            // layout-bounds trigger cannot oscillate.
+            final boolean[] fitting = {false};
+            Runnable fit = () -> {
+                if (fitting[0]) {
+                    return;
+                }
+                fitting[0] = true;
+                try {
+                    double avail = flow.getWidth()
+                            - flow.getPadding().getLeft() - flow.getPadding().getRight();
+                    if (avail <= 0) {
+                        return;
+                    }
+                    badge.setPrefWidth(javafx.scene.layout.Region.USE_COMPUTED_SIZE);
+                    badge.setMaxWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+                    if (badge.prefWidth(-1) > avail) {
+                        badge.setPrefWidth(avail);
+                        badge.setMaxWidth(avail);
+                    }
+                } finally {
+                    fitting[0] = false;
+                }
+            };
+            flow.widthProperty().addListener((obs, was, is) -> fit.run());
+            badge.layoutBoundsProperty().addListener((obs, was, is) -> fit.run());
+        }
+        // The cell clips to its own bounds: even mid-layout (before the
+        // width listener has snapped a badge) nothing a cell holds can
+        // ever paint over a neighbouring column.
+        javafx.scene.shape.Rectangle cellClip = new javafx.scene.shape.Rectangle();
+        cellClip.widthProperty().bind(flow.widthProperty());
+        cellClip.heightProperty().bind(flow.heightProperty());
+        flow.setClip(cellClip);
         return flow;
     }
 
