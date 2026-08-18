@@ -44,7 +44,7 @@ public final class StandardEditorWindows {
      * re-seeded from the current code, so application-shipped windows never go stale in the
      * preferences. User-authored windows live in the user-windows folder and are untouched.
      */
-    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 3;
+    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 4;
 
     /** Preferences key holding the version the seeded standard windows were created from. */
     private static final String STANDARD_WINDOWS_VERSION_KEY = "STANDARD-WINDOWS-VERSION";
@@ -112,12 +112,46 @@ public final class StandardEditorWindows {
         window.setTimelineVisible(true);
 
         // Description
-        EditorPatternModel descriptionPattern = createDescriptionPatternForMainSection(viewCalculator);
+        EditorPatternModel descriptionPattern = createRequiredDescriptionPattern(viewCalculator);
         window.getMainSection().getPatterns().add(descriptionPattern);
 
         // Axiom
         EditorSectionModel axiomSection = createAxiomSection(viewCalculator);
         window.getAdditionalSections().add(axiomSection);
+
+        window.save(standardWindowsPreferences);
+    }
+
+    /**
+     * The standard Pattern window: the pattern is defined through the pattern-definition patterns —
+     * a "Pattern Definition" section with the Meaning and Purpose pattern, a "Description" section
+     * with the Description pattern, and a "Fields" section with the Fields pattern shown as a table
+     * (one row per field of the pattern being defined). The Meaning and Purpose and Description
+     * patterns are required when the window is opened in the Journal in create mode, and — as in the
+     * Concept window — the Description pattern additionally requires one of its semantics to be the
+     * pattern's fully qualified name; Fields is not required (a membership pattern has no fields).
+     * Unlike the Concept window it keeps the default grey
+     * chrome (see the concept-window-theme rules in kview.css, applied only to
+     * {@link EditorWindowType#STANDARD_CONCEPT}).
+     */
+    private static void savePatternWindow2(KometPreferences standardWindowsPreferences,
+                                           ViewCalculator viewCalculator) {
+        EditorWindowModel window = new EditorWindowModel();
+        window.setTitle(PATTERN_WINDOW_2);
+        window.setWindowType(EditorWindowType.STANDARD_PATTERN);
+        window.setTimelineVisible(true);
+
+        // Definition
+        EditorSectionModel definitionSection = window.getMainSection();
+        populateDefinitionSection(viewCalculator, definitionSection);
+
+        // Description
+        EditorSectionModel descriptionSection = createPatternDescriptionSection(viewCalculator);
+        window.getAdditionalSections().add(descriptionSection);
+
+        // Fields
+        EditorSectionModel fieldsSection = createFieldsSection(viewCalculator);
+        window.getAdditionalSections().add(fieldsSection);
 
         window.save(standardWindowsPreferences);
     }
@@ -139,7 +173,12 @@ public final class StandardEditorWindows {
         return axiomSection;
     }
 
-    private static EditorPatternModel createDescriptionPatternForMainSection(ViewCalculator viewCalculator) {
+    /**
+     * The Description pattern, required and refined so at least one of its semantics is a fully
+     * qualified name. Shared by the standard Concept and Pattern windows: neither a concept nor a
+     * pattern can be created without a fully qualified name.
+     */
+    private static EditorPatternModel createRequiredDescriptionPattern(ViewCalculator viewCalculator) {
         ensureLocallyResolvable(viewCalculator, TinkarTerm.DESCRIPTION_PATTERN);
 
         EditorPatternModel descriptionPattern =
@@ -152,7 +191,8 @@ public final class StandardEditorWindows {
     /**
      * Refines the Description pattern's required flag ({@link EditorPatternRequirement}): at least one
      * of its semantics must hold "Fully qualified name description type" in the pattern's
-     * "Description type" field, so a concept can only be created once it has a fully qualified name.
+     * "Description type" field, so the window's component can only be created once it has a fully
+     * qualified name.
      */
     private static void requireFullyQualifiedName(EditorPatternModel descriptionPattern,
                                                   ViewCalculator viewCalculator) {
@@ -190,38 +230,7 @@ public final class StandardEditorWindows {
                 });
     }
 
-    /**
-     * The standard Pattern window: the pattern is defined through the pattern-definition patterns —
-     * a "Pattern Definition" section with the Meaning and Purpose pattern, a "Description" section
-     * with the Description pattern, and a "Fields" section with the Fields pattern shown as a table
-     * (one row per field of the pattern being defined). The Meaning and Purpose and Description
-     * patterns are required when the window is opened in the Journal in create mode; Fields is not
-     * (a membership pattern has no fields). Unlike the Concept window it keeps the default grey
-     * chrome (see the concept-window-theme rules in kview.css, applied only to
-     * {@link EditorWindowType#STANDARD_CONCEPT}).
-     */
-    private static void savePatternWindow2(KometPreferences standardWindowsPreferences,
-                                           ViewCalculator viewCalculator) {
-        EditorWindowModel window = new EditorWindowModel();
-        window.setTitle(PATTERN_WINDOW_2);
-        window.setWindowType(EditorWindowType.STANDARD_PATTERN);
-        window.setTimelineVisible(true);
-
-        EditorSectionModel definitionSection = window.getMainSection();
-        definitionSection.setName("Pattern Definition");
-        EditorPatternModel meaningAndPurposePattern = new EditorPatternModel(viewCalculator,
-                PatternDefinitionTerms.MEANING_AND_PURPOSE_PATTERN.nid());
-        meaningAndPurposePattern.setRequired(true);
-        definitionSection.getPatterns().add(meaningAndPurposePattern);
-
-        EditorSectionModel descriptionSection = new EditorSectionModel();
-        descriptionSection.setName("Description");
-        EditorPatternModel descriptionPattern =
-                new EditorPatternModel(viewCalculator, TinkarTerm.DESCRIPTION_PATTERN.nid());
-        descriptionPattern.setRequired(true);
-        descriptionSection.getPatterns().add(descriptionPattern);
-        window.getAdditionalSections().add(descriptionSection);
-
+    private static EditorSectionModel createFieldsSection(ViewCalculator viewCalculator) {
         EditorSectionModel fieldsSection = new EditorSectionModel();
         fieldsSection.setName("Fields");
         EditorPatternModel fieldsPattern = new EditorPatternModel(viewCalculator,
@@ -229,8 +238,21 @@ public final class StandardEditorWindows {
         KlPatternSemanticsFactories.byClassName(KlPatternSemanticsFactories.TABLE_FACTORY_CLASS_NAME)
                 .ifPresent(fieldsPattern::setFactory);
         fieldsSection.getPatterns().add(fieldsPattern);
-        window.getAdditionalSections().add(fieldsSection);
+        return fieldsSection;
+    }
 
-        window.save(standardWindowsPreferences);
+    private static EditorSectionModel createPatternDescriptionSection(ViewCalculator viewCalculator) {
+        EditorSectionModel descriptionSection = new EditorSectionModel();
+        descriptionSection.setName("Description");
+        descriptionSection.getPatterns().add(createRequiredDescriptionPattern(viewCalculator));
+        return descriptionSection;
+    }
+
+    private static void populateDefinitionSection(ViewCalculator viewCalculator, EditorSectionModel definitionSection) {
+        definitionSection.setName("Pattern Definition");
+        EditorPatternModel meaningAndPurposePattern = new EditorPatternModel(viewCalculator,
+                PatternDefinitionTerms.MEANING_AND_PURPOSE_PATTERN.nid());
+        meaningAndPurposePattern.setRequired(true);
+        definitionSection.getPatterns().add(meaningAndPurposePattern);
     }
 }
