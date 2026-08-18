@@ -120,6 +120,12 @@ public class KLEditorPreferences {
     }
 
     public class PatternKey {
+        /**
+         * The Pattern's title as authored by the user. Absent when the title was left as the
+         * Pattern's description, which is resolved fresh on every load.
+         */
+        public static String PATTERN_TITLE = "pattern-title";
+
         public static String PATTERN_TITLE_VISIBLE = "pattern-title-visible";
         public static String PATTERN_SEMANTICS_FACTORY = "pattern-semantics-factory";
 

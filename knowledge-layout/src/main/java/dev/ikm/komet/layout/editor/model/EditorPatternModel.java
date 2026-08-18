@@ -39,6 +39,7 @@ import static dev.ikm.komet.preferences.KLEditorPreferences.ListKey.PATTERN_LIST
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_REQUIREMENTS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_SEMANTICS_FACTORY;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_SEMANTIC_FILTERS;
+import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_TITLE;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_TITLE_VISIBLE;
 
 /**
@@ -151,6 +152,9 @@ public class EditorPatternModel extends EditorGridNodeModel {
     }
 
     private void loadPatternDetails(KometPreferences patternPreferences, ViewCalculator viewCalculator) {
+        // Only an authored title is stored; without one the title stays the Pattern's description,
+        // as resolved by the constructor.
+        patternPreferences.get(PATTERN_TITLE).ifPresent(this::setTitle);
         patternPreferences.getBoolean(PATTERN_TITLE_VISIBLE).ifPresent(this::setTitleVisible);
 
         loadFactory(patternPreferences);
@@ -213,6 +217,14 @@ public class EditorPatternModel extends EditorGridNodeModel {
 
     private void savePatternDetails(KometPreferences sectionPreferences) {
         KometPreferences patternPreferences = sectionPreferences.node(patternFacadeToPrefsDirName(patternFacade));
+
+        // title: stored only when the user authored one, so that a title left as the Pattern's
+        // description keeps following that description rather than freezing the text it had here.
+        if (getTitle().equals(retrieveDisplayName(patternFacade))) {
+            patternPreferences.remove(PATTERN_TITLE);
+        } else {
+            patternPreferences.put(PATTERN_TITLE, getTitle());
+        }
 
         // title visible
         patternPreferences.putBoolean(PATTERN_TITLE_VISIBLE, isTitleVisible());

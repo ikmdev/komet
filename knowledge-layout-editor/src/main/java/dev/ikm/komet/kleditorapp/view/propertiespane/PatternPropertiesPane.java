@@ -249,6 +249,8 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         super.doInit();
 
         if (previouslyShownModel != null) {
+            titleTextField.textProperty().unbindBidirectional(previouslyShownModel.titleProperty());
+            identifierTextField.textProperty().unbindBidirectional(previouslyShownModel.identifierProperty());
             titleVisibleTSwitch.selectedProperty().unbindBidirectional(previouslyShownModel.titleVisibleProperty());
             requiredTSwitch.selectedProperty().unbindBidirectional(previouslyShownModel.requiredProperty());
             displayComboBox.valueProperty().unbindBidirectional(previouslyShownModel.factoryProperty());
@@ -258,7 +260,7 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
             }
         }
 
-        titleTextField.setText(currentlyShownModel.getTitle());
+        titleTextField.textProperty().bindBidirectional(currentlyShownModel.titleProperty());
         titleVisibleTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.titleVisibleProperty());
         requiredTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.requiredProperty());
         requirementsView.setPattern(currentlyShownModel);

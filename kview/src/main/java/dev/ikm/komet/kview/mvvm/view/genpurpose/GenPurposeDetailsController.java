@@ -114,7 +114,9 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import dev.ikm.komet.layout_engine.host.SupplementalAreaRenderer;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,6 +150,12 @@ public class GenPurposeDetailsController {
      * read as sitting closer to the screen.
      */
     private static final PseudoClass WINDOW_FOCUSED = PseudoClass.getPseudoClass("window-focused");
+
+    /**
+     * Active on a Pattern's container while the Pattern shows its title. Drives the vertical spacing
+     * the title needs in kview.css.
+     */
+    private static final PseudoClass TITLE_VISIBLE_PSEUDO_CLASS = PseudoClass.getPseudoClass("title-visible");
 
     /**
      * Given a Pattern what is the Section that has it as its Reference Component.
@@ -1040,21 +1048,12 @@ public class GenPurposeDetailsController {
         EditorSectionModel parentSection = editorPatternModel.getParentSection();
         SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(parentSection);
 
-//        VBox patternMainContainer = createPatternContainer(editorPatternModel);
-//
-//        // Pattern title
-//        Label patternTitle = new Label(editorPatternModel.getTitle());
-//        patternTitle.getStyleClass().add("gen-purpose-pattern-title");
-//        patternTitle.visibleProperty().bind(editorPatternModel.titleVisibleProperty());
-//        patternTitle.managedProperty().bind(editorPatternModel.titleVisibleProperty());
-//        patternMainContainer.getChildren().add(patternTitle);
-
         // Pattern fields
         PatternSemanticsPresenter patternSemanticsPresenter = addSemanticViews(editorPatternModel);
 
         editorPatternModelToPatternPresenter.put(editorPatternModel, patternSemanticsPresenter);
 
-        Node view = patternSemanticsPresenter.getView();
+        Node view = createPatternContainer(editorPatternModel, patternSemanticsPresenter.getView());
 
         editorPatternModel.rowIndexProperty().subscribe(newRowIndex -> {
             GridPane.setRowIndex(view, newRowIndex.intValue());
@@ -1069,6 +1068,34 @@ public class GenPurposeDetailsController {
         });
 
         titledPane.getItems().add(view);
+    }
+
+    /**
+     * Wraps a Pattern's semantics view — whichever representation its factory supplies — in the
+     * container that goes into the Section's grid, with the Pattern's title above it. Title text and
+     * title visibility are authored per Pattern in the KL Editor, and apply to every representation,
+     * so the title is rendered here rather than by each representation's own control.
+     */
+    private Node createPatternContainer(EditorPatternModel editorPatternModel, Node semanticsView) {
+        Label patternTitle = new Label();
+        patternTitle.getStyleClass().add("gen-purpose-pattern-title");
+        // Uppercased here rather than in CSS — JavaFX has no text-transform — so the title reads in
+        // the same group-label language as the field labels under it (KLReadOnlyBaseControlSkin
+        // uppercases those the same way). Only the display changes; the authored title is untouched.
+        patternTitle.textProperty().bind(editorPatternModel.titleProperty().map(String::toUpperCase));
+        patternTitle.visibleProperty().bind(editorPatternModel.titleVisibleProperty());
+        patternTitle.managedProperty().bind(editorPatternModel.titleVisibleProperty());
+
+        VBox patternContainer = new VBox(patternTitle, semanticsView);
+        patternContainer.getStyleClass().add("pattern-view-container");
+        VBox.setVgrow(semanticsView, Priority.ALWAYS);
+
+        // A shown title needs the room the semantics view claims above itself (see the negative top
+        // inset on .pattern-container in kview.css), so the state is exposed to CSS.
+        editorPatternModel.titleVisibleProperty().subscribe(titleVisible ->
+                patternContainer.pseudoClassStateChanged(TITLE_VISIBLE_PSEUDO_CLASS, titleVisible));
+
+        return patternContainer;
     }
 
     private PatternSemanticsPresenter addSemanticViews(EditorPatternModel editorPatternModel) {

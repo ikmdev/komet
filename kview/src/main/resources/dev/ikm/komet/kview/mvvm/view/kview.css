@@ -6779,10 +6779,16 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: -Grey-7;
 }
 
+/* The Pattern's title sits above its semantics view, inside the container wrapping both
+   (.pattern-view-container). It reads as a group label in the same language as the field labels
+   below it — uppercased (in GenPurposeDetailsController, since JavaFX CSS has no text-transform),
+   same muted grey — a single step larger so it leads its group without competing with the field
+   values, which carry the window's darkest, largest text. */
 .gen-purpose-window .gen-purpose-pattern-title {
-    -fx-font-family: "Noto Sans Bold";
-    -fx-font-size: 16px;
-    -fx-padding: 0 0 3px 0;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 12px;
+    -fx-text-fill: -Grey-8;
+    -fx-padding: 0 0 5px 0;
 }
 
 /*******************************************************************************
@@ -6799,8 +6805,20 @@ Styling a context menu for kview ui/ux controls
     -fx-padding: -8 -14 10px -14;
 }
 
-.gen-purpose-window .pattern-container:last-child {
+/* Matched on the wrapping container, since that — not the pattern view itself — is now the
+   section grid's child. */
+.gen-purpose-window .pattern-view-container:last-child > .pattern-container {
     -fx-padding: -8 -14 5px -14;
+}
+
+/* The negative top inset above tightens the gap to whatever precedes the pattern, but with a title
+   shown the thing above is the title itself, which sets its own gap — so give the 8px back. */
+.gen-purpose-window .pattern-view-container:title-visible > .pattern-container {
+    -fx-padding: 0 -14 10px -14;
+}
+
+.gen-purpose-window .pattern-view-container:title-visible:last-child > .pattern-container {
+    -fx-padding: 0 -14 5px -14;
 }
 
 .gen-purpose-window .pattern-container .semantics-container {
@@ -6842,9 +6860,18 @@ Styling a context menu for kview ui/ux controls
     -fx-text-fill: -Grey-8;
 }
 
-/* Field value text: grey instead of the control's default near-black */
+/* Content first: a field's value is the largest text in the window — above its own label, above the
+   Pattern title and the Section title framing it — so the data reads before its framing does. Each
+   control declares the size on its own value node, so each is named here. */
+.gen-purpose-window .pattern-container .fields-container .main-container .text-container,
+.gen-purpose-window .pattern-container .fields-container .main-container .component-item > .label,
+.gen-purpose-window .pattern-container .fields-container .main-container .prompt-text {
+    -fx-font-size: 14px;
+}
+
+/* Field value text: the darkest text in the section, for the same reason. */
 .gen-purpose-window .pattern-container .read-only-data-control .text-container > .text {
-    -fx-text-fill: -Grey-10;
+    -fx-text-fill: -Grey-12;
 }
 
 /* Standard pattern view content scrollbar: slim rounded thumb over a transparent track,
