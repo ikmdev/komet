@@ -78,6 +78,16 @@ public final class CardKlWindow extends AbstractChapterKlWindow<Pane> {
         }
     }
 
+    /**
+     * The contributing provider's class name — the stable identity a
+     * {@code MakeCardWindowEvent} matches open card windows by.
+     *
+     * @return the {@code KlCardProvider} implementation class name
+     */
+    public String providerClassName() {
+        return providerClassName;
+    }
+
     private final UUID windowTopic;
     private UUID journalTopic;
     private final String providerClassName;

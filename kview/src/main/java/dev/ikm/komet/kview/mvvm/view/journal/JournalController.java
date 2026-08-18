@@ -376,6 +376,8 @@ public class JournalController {
     private Subscriber<RefreshCalculatorCacheEvent> refreshCalculatorEventSubscriber;
 
     private Subscriber<MakeKLWindowEvent> makeKLWindowEventSubscriber;
+
+    private Subscriber<dev.ikm.komet.layout_engine.host.MakeCardWindowEvent> makeCardWindowEventSubscriber;
     //////////////////////////////////////////////////////////////////////////////////
 
     @InjectViewModel
@@ -489,6 +491,13 @@ public class JournalController {
             }
         };
         journalEventBus.subscribe(journalTopic, MakeKLWindowEvent.class, makeKLWindowEventSubscriber);
+
+        // Focus-or-create for provider-contributed cards (ike-issues#1044): one editing
+        // surface per card kind — front the open window, else create it.
+        makeCardWindowEventSubscriber = evt -> focusOrCreateCardWindow(evt.getProviderClassName());
+        journalEventBus.subscribe(journalTopic,
+                dev.ikm.komet.layout_engine.host.MakeCardWindowEvent.class,
+                makeCardWindowEventSubscriber);
 
         makePatternWindowEventSubscriber = evt ->
                 createPatternWindow(evt.getPatternFacade(), evt.getViewProperties());
@@ -617,6 +626,30 @@ public class JournalController {
         ToolCardKlWindow toolWindow =
                 ToolCardKlWindow.create(journalTopic, toolAreaFactory, viewProperties, null);
         setupWorkspaceWindow(toolWindow);
+    }
+
+    /**
+     * Fronts the open card window contributed by the named provider, or creates one when none
+     * is open ({@code MakeCardWindowEvent.FOCUS_OR_CREATE}).
+     *
+     * @param providerClassName the {@code KlCardProvider} implementation class name naming the card kind
+     */
+    private void focusOrCreateCardWindow(String providerClassName) {
+        for (ChapterKlWindow<Pane> window : workspace.getWindows()) {
+            if (window instanceof CardKlWindow cardWindow
+                    && providerClassName.equals(cardWindow.providerClassName())) {
+                cardWindow.fxObject().toFront();
+                cardWindow.fxObject().requestFocus();
+                return;
+            }
+        }
+        for (KlCardProvider provider : PluggableService.load(KlCardProvider.class)) {
+            if (provider.getClass().getName().equals(providerClassName)) {
+                createCardWindow(provider);
+                return;
+            }
+        }
+        LOG.warn("No card provider {} to focus or create", providerClassName);
     }
 
     /**

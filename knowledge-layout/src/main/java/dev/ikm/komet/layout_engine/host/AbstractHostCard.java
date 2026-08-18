@@ -197,7 +197,11 @@ public abstract class AbstractHostCard extends CardBlueprint {
      * @param content the content node
      */
     protected final void setCardContent(Node content) {
-        body.setCenter(content);
+        if (drawerContainer != null) {
+            drawerContainer.setCenter(content);
+        } else {
+            body.setCenter(content);
+        }
     }
 
     /**
@@ -205,6 +209,16 @@ public abstract class AbstractHostCard extends CardBlueprint {
      *
      * @param journalTopic the journal topic
      */
+    /**
+     * The hosting journal's event topic, for publishing journal-scoped gestures
+     * (e.g. {@link MakeCardWindowEvent}).
+     *
+     * @return the journal topic, or {@code null} before the factory set it
+     */
+    public UUID getJournalTopic() {
+        return journalTopic;
+    }
+
     public void setJournalTopic(UUID journalTopic) {
         this.journalTopic = journalTopic;
     }
@@ -251,10 +265,11 @@ public abstract class AbstractHostCard extends CardBlueprint {
     /** Toolbar items created once (each with its own prefs node) and re-placed when the header rebuilds. */
     private SpacerToolbarItem spacerItem;
     private NodeToolbarItem leadingItem;
+    private NodeToolbarItem trailingItem;
     private NodeToolbarItem closeItem;
 
-    /** Overlay created on the first drawer; holds the card content with drawers that slide out beyond its edges. */
-    private StackPane drawerContainer;
+    /** In-flow container created on the first drawer: the card content in the center, drawers on the edges. */
+    private BorderPane drawerContainer;
 
     private KlSelectionContext selectionContext;
 
@@ -316,7 +331,6 @@ public abstract class AbstractHostCard extends CardBlueprint {
     private KlDrawer addDrawerInternal(Side side, Region content, KlArea<? extends Region> area, String toggleLabel) {
         ensureDrawerContainer();
         KlDrawer drawer = new KlDrawer(side, content);
-        drawer.setContent(buildDrawerChrome(content, () -> drawer.setExpanded(false)));
         placeDrawerInContainer(drawer, side);
 
         String prefKey = DRAWER_EXPANDED_KEY_PREFIX + drawers.size();
@@ -329,19 +343,43 @@ public abstract class AbstractHostCard extends CardBlueprint {
         toggleItem.knowledgeLayoutBind();
         drawers.add(new DrawerHandle(drawer, area, prefKey, toggleLabel, toggleItem));
 
-        // Restore the persisted open state without animation (a restored card opens its drawer instantly),
-        // then enable animation for subsequent user toggles.
+        // The in-flow reveal is INSTANT: the window widens in one step, and animating the
+        // drawer against that step made the content/drawer divider visibly slide
+        // (KEC 2026-08-17). Restore the persisted open state the same way.
+        drawer.setAnimated(false);
         if (preferences() != null) {
-            drawer.setAnimated(false);
             drawer.setExpanded(preferences().getBoolean(prefKey, false));
-            drawer.setAnimated(true);
         }
-        // A user toggle marks the card changed (so the open state persists) and grows or shrinks the card so
-        // the drawer slides out beside the content, widening the card, rather than overlaying the content.
+        // A user toggle marks the card changed (so the open state persists), squares the docked corner, and
+        // GROWS the window by the drawer content's size — the card widens (or tallens) so the drawer sits
+        // beside the content rather than compressing it; closing gives the size back. Attached after the
+        // persisted-state restore above, so a restored-open drawer never double-grows a window whose persisted
+        // size already includes it. A raise past a standing size cap follows the user-gesture rule
+        // (ike-issues#1045): the gesture outranks the cap.
         updateDrawerOpenClass(side, drawer.expandedProperty().get());
         drawer.expandedProperty().addListener((obs, wasOpen, isOpen) -> {
             changedProperty().set(true);
             updateDrawerOpenClass(side, isOpen);
+            Region windowPane = fxObject();
+            if (side == Side.LEFT || side == Side.RIGHT) {
+                double panelWidth = content.prefWidth(-1);
+                double width = windowPane.getWidth() > 0 ? windowPane.getWidth()
+                        : windowPane.getPrefWidth();
+                double target = isOpen ? width + panelWidth : Math.max(0, width - panelWidth);
+                if (windowPane.getMaxWidth() > 0 && target > windowPane.getMaxWidth()) {
+                    windowPane.setMaxWidth(target);
+                }
+                windowPane.setPrefWidth(target);
+            } else {
+                double panelHeight = content.prefHeight(-1);
+                double height = windowPane.getHeight() > 0 ? windowPane.getHeight()
+                        : windowPane.getPrefHeight();
+                double target = isOpen ? height + panelHeight : Math.max(0, height - panelHeight);
+                if (windowPane.getMaxHeight() > 0 && target > windowPane.getMaxHeight()) {
+                    windowPane.setMaxHeight(target);
+                }
+                windowPane.setPrefHeight(target);
+            }
         });
 
         if (isRealized()) {
@@ -361,17 +399,20 @@ public abstract class AbstractHostCard extends CardBlueprint {
      */
     private void ensureDrawerContainer() {
         if (drawerContainer == null) {
-            drawerContainer = new StackPane();
+            drawerContainer = new BorderPane();
             drawerContainer.getStyleClass().add("dynamic-card-drawer-overlay");
-            // Overlay the drawer over the whole body — navy title bar + content — so a slid-out drawer aligns
-            // with the card's title bar (the bar reads as extending across the drawer), not just the content
-            // beneath it.
-            Node bodyNode = fxObject().getCenter();
-            fxObject().setCenter(null);
-            if (bodyNode != null) {
-                drawerContainer.getChildren().add(bodyNode);
+            // Wrap the CARD CONTENT only: the header — tab, toolbar, drawer toggles, the one
+            // close control — spans the full widened window above content and drawer alike,
+            // one continuous title bar (KEC 2026-08-17, the concept-properties grammar).
+            // Wrapping at the body level also leaves the window ROOT's child order untouched:
+            // re-centering the root would re-append the card content above the window's
+            // resize-handle lines and bury them — the dead south edge.
+            Node contentNode = body.getCenter();
+            body.setCenter(null);
+            if (contentNode != null) {
+                drawerContainer.setCenter(contentNode);
             }
-            fxObject().setCenter(drawerContainer);
+            body.setCenter(drawerContainer);
         }
     }
 
@@ -382,67 +423,20 @@ public abstract class AbstractHostCard extends CardBlueprint {
      * neighbour is the separate {@code #716} concern.
      */
     private void placeDrawerInContainer(KlDrawer drawer, Side side) {
-        StackPane.setAlignment(drawer, alignmentForSide(side));
-        // The drawer slides out beyond the docked edge (translate by its own size). On the cross axis it fills
-        // the body, so a side drawer is as tall as the card (its title bar aligns with the card's, the divider
-        // runs the full height) and a top/bottom drawer is as wide.
+        // IN-FLOW docking (KEC 2026-08-17): the drawer occupies a BorderPane edge region INSIDE the card's
+        // bounds — picking, drops, resize bands, and z-order all behave by construction, where the old
+        // beyond-the-edge overlay leaked drops onto the desktop and sat over the window's resize bands. The
+        // reveal still slides: the skin animates the drawer's preferred size on the docked axis from zero to
+        // the content's size, and the edge region follows it.
         switch (side) {
-            case RIGHT -> {
-                drawer.translateXProperty().bind(drawer.widthProperty());
-                drawer.prefHeightProperty().bind(drawerContainer.heightProperty());
-                drawer.maxHeightProperty().bind(drawerContainer.heightProperty());
-            }
-            case LEFT -> {
-                drawer.translateXProperty().bind(drawer.widthProperty().negate());
-                drawer.prefHeightProperty().bind(drawerContainer.heightProperty());
-                drawer.maxHeightProperty().bind(drawerContainer.heightProperty());
-            }
-            case BOTTOM -> {
-                drawer.translateYProperty().bind(drawer.heightProperty());
-                drawer.prefWidthProperty().bind(drawerContainer.widthProperty());
-                drawer.maxWidthProperty().bind(drawerContainer.widthProperty());
-            }
-            case TOP -> {
-                drawer.translateYProperty().bind(drawer.heightProperty().negate());
-                drawer.prefWidthProperty().bind(drawerContainer.widthProperty());
-                drawer.maxWidthProperty().bind(drawerContainer.widthProperty());
-            }
+            case RIGHT -> drawerContainer.setRight(drawer);
+            case LEFT -> drawerContainer.setLeft(drawer);
+            case BOTTOM -> drawerContainer.setBottom(drawer);
+            case TOP -> drawerContainer.setTop(drawer);
         }
-        drawerContainer.getChildren().add(drawer);
     }
 
     /** Maps a docked side to the {@link Pos} that pins a drawer to that edge of the overlay. */
-    /**
-     * Wraps a drawer's content in card-matching chrome: a navy header bar — the drawer's own toolbar, carrying
-     * a close control (and, later, drawer tools) — above the content, framed with a divider on the docked edge
-     * so the slid-out drawer reads as an extension of the card's title bar rather than a detached panel.
-     *
-     * @param content the drawer's content
-     * @param onClose invoked when the drawer's own close control is pressed
-     * @return the chrome wrapping the content
-     */
-    private Region buildDrawerChrome(Region content, Runnable onClose) {
-        // The drawer's own toolbar bar (same navy as the card's title bar). The "PROPERTIES" label lives on the
-        // card's toggle — not repeated here — so this bar carries the close control, right-aligned past a spacer.
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        Region closeIcon = new Region();
-        closeIcon.getStyleClass().add("close-window");
-        Button closeButton = new Button();
-        closeButton.setGraphic(closeIcon);
-        closeButton.getStyleClass().add("dynamic-card-close-button");
-        closeButton.setOnAction(event -> onClose.run());
-
-        HBox drawerHeader = new HBox(spacer, closeButton);
-        drawerHeader.setAlignment(Pos.CENTER_LEFT);
-        drawerHeader.getStyleClass().add("dynamic-card-drawer-header");
-
-        VBox chrome = new VBox(drawerHeader, content);
-        VBox.setVgrow(content, Priority.ALWAYS);
-        chrome.getStyleClass().add("dynamic-card-drawer");
-        return chrome;
-    }
 
     /**
      * Squares the card's corners on the docked edge while a drawer is open there, so the card and the slid-out
@@ -457,15 +451,6 @@ public abstract class AbstractHostCard extends CardBlueprint {
         if (open) {
             body.getStyleClass().add(openClass);
         }
-    }
-
-    private static Pos alignmentForSide(Side side) {
-        return switch (side) {
-            case TOP -> Pos.TOP_LEFT;
-            case BOTTOM -> Pos.BOTTOM_LEFT;
-            case LEFT -> Pos.TOP_LEFT;
-            case RIGHT -> Pos.TOP_RIGHT;
-        };
     }
 
     /** The leading-controls item, wrapping the card's own controls; created once, content refreshed per build. */
@@ -489,6 +474,15 @@ public abstract class AbstractHostCard extends CardBlueprint {
                     .create(KlPreferencesFactory.create(preferences(), NodeToolbarItem.class));
         }
         return leadingItem;
+    }
+
+    /** The trailing controls item — right of the spacer, before the drawer toggles; created once. */
+    private NodeToolbarItem trailingItem() {
+        if (trailingItem == null) {
+            trailingItem = NodeToolbarItem.factory()
+                    .create(KlPreferencesFactory.create(preferences(), NodeToolbarItem.class));
+        }
+        return trailingItem;
     }
 
     /** The growing spacer item that right-aligns the trailing items; created once. */
@@ -644,9 +638,17 @@ public abstract class AbstractHostCard extends CardBlueprint {
         buildToolbarControls(leadingControls);
         leadingItem().setNode(leadingControls);
 
+        HBox trailingControls = new HBox(8);
+        trailingControls.setAlignment(Pos.CENTER_LEFT);
+        buildTrailingToolbarControls(trailingControls);
+
         List<KlToolbarItem<?>> items = new ArrayList<>();
         items.add(leadingItem());
         items.add(spacerItem());
+        if (!trailingControls.getChildren().isEmpty()) {
+            trailingItem().setNode(trailingControls);
+            items.add(trailingItem());
+        }
         for (DrawerHandle handle : drawers) {
             items.add(handle.toggleItem());
         }
@@ -719,6 +721,18 @@ public abstract class AbstractHostCard extends CardBlueprint {
      */
     protected void buildToolbarControls(HBox toolBar) {
         // A minimal card has no toolbar controls of its own.
+    }
+
+    /**
+     * Extension point: a concrete card adds trailing toolbar controls — right-aligned past the
+     * growing spacer, in front of the drawer toggles (the properties-toggle position). A card
+     * whose control depends on later-built content should add a stable container here and
+     * populate it when that content exists. Default adds nothing.
+     *
+     * @param toolBar the trailing controls container
+     */
+    protected void buildTrailingToolbarControls(HBox toolBar) {
+        // A minimal card has no trailing controls.
     }
 
     /**

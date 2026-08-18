@@ -12,6 +12,9 @@ module dev.ikm.komet.layout {
     requires dev.ikm.tinkar.terms;
     requires javafx.graphics;
     requires dev.ikm.komet.preferences;
+    // MakeCardWindowEvent extends Evt in an exported package, so readers need the
+    // events module readable through this one.
+    requires transitive dev.ikm.tinkar.events;
 
     exports dev.ikm.komet.layout;
     exports dev.ikm.komet.layout.action;
