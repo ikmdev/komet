@@ -1296,18 +1296,11 @@ public class GenPurposeDetailsController {
 
     /**
      * Whether the semantic's latest version (uncommitted versions count, like the
-     * semantic-existence check) holds every constrained field's concept.
+     * semantic-existence check) matches the requirement's field constraints.
      */
     private boolean matchesRequirement(EntityFacade semantic, EditorPatternRequirement requirement) {
         Latest<SemanticEntityVersion> latestVersion = getViewProperties().calculator().latest(semantic.nid());
-        if (latestVersion.isAbsent()) {
-            return false;
-        }
-        var fieldValues = latestVersion.get().fieldValues();
-        return requirement.getFieldConstraints().entrySet().stream().allMatch(constraint ->
-                constraint.getKey() < fieldValues.size()
-                        && fieldValues.get(constraint.getKey()) instanceof EntityFacade fieldConcept
-                        && fieldConcept.nid() == constraint.getValue().nid());
+        return latestVersion.isPresent() && requirement.matches(latestVersion.get().fieldValues());
     }
 
     /**

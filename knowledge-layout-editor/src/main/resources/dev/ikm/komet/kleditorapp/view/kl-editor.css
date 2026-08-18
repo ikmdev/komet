@@ -712,8 +712,8 @@
     -fx-padding: 2 0 2 0;
 }
 
-/* "All semantics are shown" — the no-filters state of the Visible semantics area */
-.right-properties-pane .pattern-properties .pattern-semantic-filters .all-shown {
+/* The "no rules yet" state, e.g. "All semantics are shown" in the Visible semantics area */
+.right-properties-pane .pattern-properties .constraint-rules .empty-state {
     -fx-font-size: 12px;
     -fx-text-fill: #999;
 }
