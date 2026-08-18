@@ -128,5 +128,11 @@ public class KLEditorPreferences {
          * {@code EditorPatternRequirement} per entry).
          */
         public static String PATTERN_REQUIREMENTS = "pattern-requirements";
+
+        /**
+         * List of filters selecting which of a Pattern's semantics are displayed (one encoded
+         * {@code EditorPatternSemanticFilter} per entry). No entries means every semantic is displayed.
+         */
+        public static String PATTERN_SEMANTIC_FILTERS = "pattern-semantic-filters";
     }
 }

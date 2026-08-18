@@ -33,6 +33,8 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
     private final ToggleSwitch requiredTSwitch;
     private final PatternRequirementsView requirementsView = new PatternRequirementsView();
 
+    private final PatternSemanticFiltersView semanticFiltersView = new PatternSemanticFiltersView();
+
     private final ComboBox<KlPatternSemanticsFactory> displayComboBox;
 
     // Factory-specific properties section, rebuilt from the model whenever the factory changes.
@@ -181,15 +183,34 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
                 requirementsView
         );
 
-        // Separator between data properties and positioning
+        // Separator between data properties and visible semantics
         Separator dataPropertiesSeparator = new Separator();
         dataPropertiesSeparator.setPrefWidth(200);
+
+        // Visible semantics container: which of the Pattern's semantics are displayed
+        VBox visibleSemanticsContainer = new VBox();
+        visibleSemanticsContainer.getStyleClass().addAll("sub-section", "visible-semantics-container");
+        visibleSemanticsContainer.setSpacing(4);
+
+        Label visibleSemanticsTitleLabel = new Label("VISIBLE SEMANTICS");
+        visibleSemanticsTitleLabel.getStyleClass().add("group-title");
+
+        visibleSemanticsContainer.getChildren().addAll(
+                visibleSemanticsTitleLabel,
+                semanticFiltersView
+        );
+
+        // Separator between visible semantics and positioning
+        Separator visibleSemanticsSeparator = new Separator();
+        visibleSemanticsSeparator.setPrefWidth(200);
 
         patternMainContainer.getChildren().addAll(
                 titleContainer,
                 separator,
                 dataPropertiesContainer,
                 dataPropertiesSeparator,
+                visibleSemanticsContainer,
+                visibleSemanticsSeparator,
                 positioningContainer,
                 separator3,
                 interactionContainer,
@@ -241,6 +262,7 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         titleVisibleTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.titleVisibleProperty());
         requiredTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.requiredProperty());
         requirementsView.setPattern(currentlyShownModel);
+        semanticFiltersView.setPattern(currentlyShownModel);
 
         // Identifier
         identifierTextField.textProperty().bindBidirectional(currentlyShownModel.identifierProperty());

@@ -11,6 +11,7 @@ import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
 import static dev.ikm.komet.preferences.KLEditorPreferences.ListKey.PATTERN_LIST;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_REQUIREMENTS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_SEMANTICS_FACTORY;
+import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_SEMANTIC_FILTERS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_TITLE_VISIBLE;
 
 /**
@@ -165,6 +167,10 @@ public class EditorPatternModel extends EditorGridNodeModel {
                 .map(EditorPatternRequirement::fromPreferenceString)
                 .toList());
 
+        semanticFilters.setAll(patternPreferences.getList(PATTERN_SEMANTIC_FILTERS).stream()
+                .map(EditorPatternSemanticFilter::fromPreferenceString)
+                .toList());
+
         for (EditorFieldModel fieldModel : getFields()) {
             fieldModel.load(patternPreferences, viewCalculator);
         }
@@ -229,6 +235,11 @@ public class EditorPatternModel extends EditorGridNodeModel {
                 .map(EditorPatternRequirement::toPreferenceString)
                 .toList());
 
+        // semantic display filters
+        patternPreferences.putList(PATTERN_SEMANTIC_FILTERS, semanticFilters.stream()
+                .map(EditorPatternSemanticFilter::toPreferenceString)
+                .toList());
+
         for (EditorFieldModel fieldModel : getFields()) {
             fieldModel.save(patternPreferences);
         }
@@ -242,6 +253,33 @@ public class EditorPatternModel extends EditorGridNodeModel {
         // than throw NoSuchElementException.
         return optionalStringRegularName.or(() -> optionalStringFQN)
                 .orElseGet(() -> "Pattern [nid=" + patternFacade.nid() + "]");
+    }
+
+    /**
+     * Whether the passed in semantic of this Pattern passes its display filters (see
+     * {@link #getSemanticFilters()}), that is whether it should be shown wherever this Pattern's
+     * semantics are rendered. A Pattern with no filters displays every semantic.
+     *
+     * <p>The semantic's latest version is resolved with the passed in calculator — the one the
+     * semantic is displayed under rather than this model's authoring calculator — so an uncommitted
+     * version counts, as it does in the required-pattern checks.
+     *
+     * @param semanticNid the nid of a semantic of this Pattern
+     * @param viewCalculator the calculator the semantic is displayed under
+     * @return whether the semantic should be displayed
+     */
+    public boolean displaysSemantic(int semanticNid, ViewCalculator viewCalculator) {
+        if (semanticFilters.isEmpty()) {
+            return true;
+        }
+
+        Latest<SemanticEntityVersion> latestVersion = viewCalculator.latest(semanticNid);
+        if (latestVersion.isAbsent()) {
+            return false;
+        }
+
+        ImmutableList<Object> fieldValues = latestVersion.get().fieldValues();
+        return semanticFilters.stream().anyMatch(filter -> filter.matches(fieldValues));
     }
 
     @Override
@@ -285,6 +323,15 @@ public class EditorPatternModel extends EditorGridNodeModel {
      */
     private final ObservableList<EditorPatternRequirement> requirements = FXCollections.observableArrayList();
     public ObservableList<EditorPatternRequirement> getRequirements() { return requirements; }
+
+    // -- semantic filters
+    /**
+     * Filters selecting which of this Pattern's semantics are displayed (see
+     * {@link EditorPatternSemanticFilter}). An empty list displays every semantic; several filters
+     * display the semantics passing any one of them.
+     */
+    private final ObservableList<EditorPatternSemanticFilter> semanticFilters = FXCollections.observableArrayList();
+    public ObservableList<EditorPatternSemanticFilter> getSemanticFilters() { return semanticFilters; }
 
     // -- view calculator
     /**

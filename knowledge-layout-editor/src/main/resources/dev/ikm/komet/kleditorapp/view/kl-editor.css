@@ -564,10 +564,11 @@
     -fx-font-size: 14px;
 }
 
-/* Required semantics (requirement refinements) — nested under the Required toggle: indented,
-   hanging off a vertical guide line, with a demoted title so it doesn't read as a sibling of
-   the DATA PROPERTIES group */
-.right-properties-pane .pattern-properties .pattern-requirements {
+/* Field-constraint rule lists — the Required semantics (requirement refinements) nested under the
+   Required toggle, and the Visible semantics (display filters) under VISIBLE SEMANTICS. Both are
+   indented and hang off a vertical guide line, with a demoted title so they don't read as siblings
+   of the group they sit in */
+.right-properties-pane .pattern-properties .constraint-rules {
     -fx-spacing: 6;
     -fx-border-color: transparent transparent transparent #d0d0d0;
     -fx-border-width: 0 0 0 2;
@@ -575,16 +576,16 @@
     -fx-padding: 6 0 2 20;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .requirements-title {
+.right-properties-pane .pattern-properties .constraint-rules .rules-title {
     -fx-font-size: 11px;
     -fx-text-fill: #888;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .rules-container {
+.right-properties-pane .pattern-properties .constraint-rules .rules-container {
     -fx-spacing: 8;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .requirement-rule {
+.right-properties-pane .pattern-properties .constraint-rules .constraint-rule {
     -fx-background-color: white;
     -fx-background-radius: 6;
     -fx-border-color: #d8d8d8;
@@ -593,16 +594,16 @@
     -fx-spacing: 6;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .rule-header {
+.right-properties-pane .pattern-properties .constraint-rules .rule-header {
     -fx-spacing: 4;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .rule-summary {
+.right-properties-pane .pattern-properties .constraint-rules .rule-summary {
     -fx-font-size: 12px;
     -fx-text-fill: #333;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .icon-button {
+.right-properties-pane .pattern-properties .constraint-rules .icon-button {
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-background-radius: 3;
@@ -610,44 +611,44 @@
     -fx-padding: 3;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .icon-button:hover {
+.right-properties-pane .pattern-properties .constraint-rules .icon-button:hover {
     -fx-background-color: #ececec;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .icon-button .icon {
+.right-properties-pane .pattern-properties .constraint-rules .icon-button .icon {
     -fx-background-color: #8a8a8a;
     -fx-scale-shape: true;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .icon-button .icon.cross {
+.right-properties-pane .pattern-properties .constraint-rules .icon-button .icon.cross {
     -fx-min-width: 9;
     -fx-max-width: 9;
     -fx-min-height: 9;
     -fx-max-height: 9;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .icon-button .icon.chevron-right {
+.right-properties-pane .pattern-properties .constraint-rules .icon-button .icon.chevron-right {
     -fx-min-width: 6;
     -fx-max-width: 6;
     -fx-min-height: 9;
     -fx-max-height: 9;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .rule-editor {
+.right-properties-pane .pattern-properties .constraint-rules .rule-editor {
     -fx-spacing: 10;
     -fx-padding: 2 2 2 2;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .count-row {
+.right-properties-pane .pattern-properties .constraint-rules .count-row {
     -fx-spacing: 6;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .count-row .label {
+.right-properties-pane .pattern-properties .constraint-rules .count-row .label {
     -fx-font-size: 12px;
     -fx-text-fill: #555;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .min-count-spinner {
+.right-properties-pane .pattern-properties .constraint-rules .min-count-spinner {
     -fx-background-color: white;
     -fx-background-radius: 4;
     -fx-border-color: #d8d8d8;
@@ -655,7 +656,7 @@
     -fx-pref-height: 24;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .min-count-spinner > .text-field {
+.right-properties-pane .pattern-properties .constraint-rules .min-count-spinner > .text-field {
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-border-width: 0;
@@ -664,37 +665,37 @@
     -fx-padding: 1 2 1 2;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .min-count-spinner > .increment-arrow-button,
-.right-properties-pane .pattern-properties .pattern-requirements .min-count-spinner > .decrement-arrow-button {
+.right-properties-pane .pattern-properties .constraint-rules .min-count-spinner > .increment-arrow-button,
+.right-properties-pane .pattern-properties .constraint-rules .min-count-spinner > .decrement-arrow-button {
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-padding: 3 5 3 5;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .min-count-spinner > .increment-arrow-button:hover,
-.right-properties-pane .pattern-properties .pattern-requirements .min-count-spinner > .decrement-arrow-button:hover {
+.right-properties-pane .pattern-properties .constraint-rules .min-count-spinner > .increment-arrow-button:hover,
+.right-properties-pane .pattern-properties .constraint-rules .min-count-spinner > .decrement-arrow-button:hover {
     -fx-background-color: #ececec;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .min-count-spinner > .increment-arrow-button > .increment-arrow,
-.right-properties-pane .pattern-properties .pattern-requirements .min-count-spinner > .decrement-arrow-button > .decrement-arrow {
+.right-properties-pane .pattern-properties .constraint-rules .min-count-spinner > .increment-arrow-button > .increment-arrow,
+.right-properties-pane .pattern-properties .constraint-rules .min-count-spinner > .decrement-arrow-button > .decrement-arrow {
     -fx-background-color: #777;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .fields-container {
+.right-properties-pane .pattern-properties .constraint-rules .fields-container {
     -fx-spacing: 8;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .field-row {
+.right-properties-pane .pattern-properties .constraint-rules .field-row {
     -fx-spacing: 3;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .field-name {
+.right-properties-pane .pattern-properties .constraint-rules .field-name {
     -fx-font-size: 12px;
     -fx-text-fill: #555;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .any-value {
+.right-properties-pane .pattern-properties .constraint-rules .any-value {
     -fx-font-size: 12px;
     -fx-text-fill: #999;
     -fx-background-color: #f6f6f6;
@@ -704,69 +705,75 @@
     -fx-padding: 5 8 5 8;
 }
 
-.right-properties-pane .pattern-properties .pattern-requirements .add-requirement {
+.right-properties-pane .pattern-properties .constraint-rules .add-rule {
     -fx-font-size: 12px;
     -fx-underline: false;
     -fx-border-color: transparent;
     -fx-padding: 2 0 2 0;
 }
 
-/* Lighter KL component control inside the requirements area: drop the gray slab around the
+/* "All semantics are shown" — the no-filters state of the Visible semantics area */
+.right-properties-pane .pattern-properties .pattern-semantic-filters .all-shown {
+    -fx-font-size: 12px;
+    -fx-text-fill: #999;
+}
+
+/* Lighter KL component control inside a constraint rule: drop the gray slab around the
    search/selected boxes, thin out the border, shrink the type to 12px, and hide the
    (action-less) filter button */
-.right-properties-pane .pattern-requirements .component-control > .concept-container,
-.right-properties-pane .pattern-requirements .component-control > .selected-concept-container {
+.right-properties-pane .constraint-rules .component-control > .concept-container,
+.right-properties-pane .constraint-rules .component-control > .selected-concept-container {
     -fx-padding: 0;
     -fx-background-color: transparent;
 }
 
-.right-properties-pane .pattern-requirements .component-control > .concept-container > .concept-search-box,
-.right-properties-pane .pattern-requirements .component-control > .selected-concept-container > .concept-selected-entity-box {
+.right-properties-pane .constraint-rules .component-control > .concept-container > .concept-search-box,
+.right-properties-pane .constraint-rules .component-control > .selected-concept-container > .concept-selected-entity-box {
     -fx-background-color: white;
     -fx-background-radius: 4;
     -fx-border-color: #d8d8d8;
     -fx-border-radius: 4;
 }
 
-.right-properties-pane .pattern-requirements .component-control:focus-within > .concept-container > .concept-search-box {
+.right-properties-pane .constraint-rules .component-control:focus-within > .concept-container > .concept-search-box {
     -fx-border-color: #1035AC;
 }
 
-.right-properties-pane .pattern-requirements .component-control > .concept-container > .concept-search-box > .search-field-container > .concept-text-field {
+.right-properties-pane .constraint-rules .component-control > .concept-container > .concept-search-box > .search-field-container > .concept-text-field {
     -fx-font-size: 12px;
     -fx-padding: 5 8 5 8;
 }
 
-.right-properties-pane .pattern-requirements .component-control > .concept-container > .concept-search-box > .search-field-container {
+.right-properties-pane .constraint-rules .component-control > .concept-container > .concept-search-box > .search-field-container {
     -fx-alignment: center-left;
 }
 
-.right-properties-pane .pattern-requirements .component-control > .concept-container > .concept-search-box > .search-field-container > .search-prompt {
+.right-properties-pane .constraint-rules .component-control > .concept-container > .concept-search-box > .search-field-container > .search-prompt {
     -fx-font-size: 12px;
     -fx-text-fill: #999;
     -fx-padding: 0 0 0 8;
 }
 
-.right-properties-pane .pattern-requirements .component-control > .concept-container > .concept-search-box > .concept-filter-button {
+.right-properties-pane .constraint-rules .component-control > .concept-container > .concept-search-box > .concept-filter-button {
     -fx-min-width: 0;
     -fx-pref-width: 0;
     -fx-max-width: 0;
     -fx-padding: 0;
 }
 
-.right-properties-pane .pattern-requirements .component-control > .concept-container > .concept-search-box > .concept-filter-button > .concept-filter-region {
+.right-properties-pane .constraint-rules .component-control > .concept-container > .concept-search-box > .concept-filter-button > .concept-filter-region {
     -width-size: 0;
     -height-size: 0;
     visibility: hidden;
 }
 
-.right-properties-pane .pattern-requirements .component-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-description.label {
+.right-properties-pane .constraint-rules .component-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-description.label {
     -fx-font-size: 12px;
 }
 
 /* The discard button inherits this app's global .button chrome (border + gray fill) — flatten it
    back and shrink the glyph */
-.right-properties-pane .pattern-requirements .component-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-discard-button {
+.right-properties-pane .constraint-rules .component-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-discard-button {
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-background-radius: 3;
@@ -774,11 +781,11 @@
     -fx-padding: 2 6 2 6;
 }
 
-.right-properties-pane .pattern-requirements .component-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-discard-button:hover {
+.right-properties-pane .constraint-rules .component-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-discard-button:hover {
     -fx-background-color: #ececec;
 }
 
-.right-properties-pane .pattern-requirements .component-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-discard-button > .selected-concept-discard-region {
+.right-properties-pane .constraint-rules .component-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-discard-button > .selected-concept-discard-region {
     -fx-scale-shape: true;
     -fx-background-color: #8a8a8a;
     -fx-pref-width: 9;

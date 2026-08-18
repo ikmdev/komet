@@ -1126,9 +1126,13 @@ public class GenPurposeDetailsController {
         // Composer
         initializeComposer();
 
-        // Start adding Semantics
+        // Start adding Semantics — skipping the ones the pattern's display filters hide (see
+        // EditorPatternSemanticFilter), e.g. a Description pattern showing only fully qualified names.
         EntityService.get().forEachSemanticForComponentOfPattern(referenceComponent.nid(), patternEntity.nid(),
                 (semantic) -> {
+                    if (!editorPatternModel.displaysSemantic(semantic.nid(), getViewProperties().calculator())) {
+                        return;
+                    }
                     patternSemanticsPresenter.addNewSemantic(semantic);
                     semanticEntityToPatternSemanticsPresenter.put(semantic, patternSemanticsPresenter);
                 });

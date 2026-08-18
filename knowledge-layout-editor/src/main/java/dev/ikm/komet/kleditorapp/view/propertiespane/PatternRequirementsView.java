@@ -1,11 +1,8 @@
 package dev.ikm.komet.kleditorapp.view.propertiespane;
 
 import dev.ikm.komet.kview.controls.KLComponentControl;
-import dev.ikm.komet.kview.controls.KLComponentControlFactory;
-import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternRequirement;
-import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Pos;
@@ -21,12 +18,7 @@ import javafx.scene.layout.VBox;
 import javafx.util.Subscription;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.CONCEPT_FIELD;
 
 /**
  * The "REQUIRED SEMANTICS" area of the {@link PatternPropertiesPane}: the list of requirement
@@ -34,7 +26,7 @@ import static dev.ikm.tinkar.terms.TinkarTerm.CONCEPT_FIELD;
  * one-line summary that expands in place into an editor with the rule's minimum semantic count and
  * one row per Pattern field — concept-typed fields get a {@link KLComponentControl} so the
  * constraint concept can be entered with inline type-ahead search (or drag and drop), other fields
- * accept any value.
+ * accept any value (see {@link FieldConstraintsEditor}).
  */
 public class PatternRequirementsView extends VBox {
     public static final String DEFAULT_STYLE_CLASS = "pattern-requirements";
@@ -52,18 +44,18 @@ public class PatternRequirementsView extends VBox {
 
     public PatternRequirementsView() {
         Label titleLabel = new Label("Required semantics");
-        titleLabel.getStyleClass().add("requirements-title");
+        titleLabel.getStyleClass().add("rules-title");
 
         rulesContainer.getStyleClass().add("rules-container");
 
         Hyperlink addRequirementLink = new Hyperlink("+ Add requirement");
-        addRequirementLink.getStyleClass().add("add-requirement");
+        addRequirementLink.getStyleClass().add("add-rule");
         addRequirementLink.setOnAction(_ -> addRequirement());
 
         getChildren().addAll(titleLabel, rulesContainer, addRequirementLink);
 
         // CSS
-        getStyleClass().add(DEFAULT_STYLE_CLASS);
+        getStyleClass().addAll("constraint-rules", DEFAULT_STYLE_CLASS);
     }
 
     /**
@@ -160,7 +152,7 @@ public class PatternRequirementsView extends VBox {
             updateSummary();
 
             // CSS
-            getStyleClass().add("requirement-rule");
+            getStyleClass().addAll("constraint-rule", "requirement-rule");
         }
 
         void dispose() {
@@ -181,53 +173,9 @@ public class PatternRequirementsView extends VBox {
             countRow.getStyleClass().add("count-row");
             countRow.setAlignment(Pos.CENTER_LEFT);
 
-            // One row per Pattern field: the field's name above its constraint editor, so names
-            // aren't truncated by the pane's narrow width
-            VBox fieldsContainer = new VBox();
-            fieldsContainer.getStyleClass().add("fields-container");
-
-            for (EditorFieldModel field : pattern.getFields()) {
-                Label fieldNameLabel = new Label(field.getTitle());
-                fieldNameLabel.getStyleClass().add("field-name");
-
-                VBox fieldRow = new VBox(fieldNameLabel, createFieldValueNode(field));
-                fieldRow.getStyleClass().add("field-row");
-                fieldsContainer.getChildren().add(fieldRow);
-            }
-
-            editor.getChildren().addAll(countRow, fieldsContainer);
+            editor.getChildren().addAll(countRow,
+                    new FieldConstraintsEditor(pattern, requirement.getFieldConstraints()));
             return editor;
-        }
-
-        private Node createFieldValueNode(EditorFieldModel field) {
-            int dataTypeNid = field.getDataTypeNid();
-            if (dataTypeNid != COMPONENT_FIELD.nid() && dataTypeNid != CONCEPT_FIELD.nid()) {
-                // Only concept-valued fields can be constrained (for now)
-                Label anyValueLabel = new Label("Any value");
-                anyValueLabel.getStyleClass().add("any-value");
-                anyValueLabel.setMaxWidth(Double.MAX_VALUE);
-                return anyValueLabel;
-            }
-
-            KLComponentControl componentControl =
-                    KLComponentControlFactory.createComponentControl(pattern.getViewCalculator());
-            componentControl.setMaxWidth(Double.MAX_VALUE);
-
-            EntityProxy constraint = requirement.getFieldConstraints().get(field.getIndex());
-            if (constraint != null) {
-                componentControl.setEntity(constraint);
-            }
-
-            componentControl.entityProperty().subscribe(() -> {
-                EntityProxy entity = componentControl.getEntity();
-                if (KLComponentControl.isEmpty(entity)) {
-                    requirement.getFieldConstraints().remove(field.getIndex());
-                } else {
-                    requirement.getFieldConstraints().put(field.getIndex(), entity);
-                }
-            });
-
-            return componentControl;
         }
 
         private void updateSummary() {
@@ -238,24 +186,8 @@ public class PatternRequirementsView extends VBox {
                 return;
             }
 
-            String conditions = requirement.getFieldConstraints().entrySet().stream()
-                    .sorted(Map.Entry.comparingByKey())
-                    .map(constraint -> fieldTitle(constraint.getKey()) + " = " + conceptName(constraint.getValue()))
-                    .collect(Collectors.joining(", "));
-
-            summaryLabel.setText(count + " where " + conditions);
-        }
-
-        private String fieldTitle(int fieldIndex) {
-            return pattern.getFields().stream()
-                    .filter(field -> field.getIndex() == fieldIndex)
-                    .findFirst()
-                    .map(EditorFieldModel::getTitle)
-                    .orElse("Field " + fieldIndex);
-        }
-
-        private String conceptName(EntityProxy concept) {
-            return pattern.getViewCalculator().languageCalculator().getDescriptionTextOrNid(concept.nid());
+            summaryLabel.setText(count + " where "
+                    + FieldConstraintsEditor.describe(pattern, requirement.getFieldConstraints()));
         }
     }
 }
