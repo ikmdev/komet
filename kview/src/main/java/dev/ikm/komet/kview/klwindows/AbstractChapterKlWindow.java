@@ -155,6 +155,16 @@ public abstract class AbstractChapterKlWindow<T extends Pane> implements Chapter
         return Optional.ofNullable(onCloseRunnable);
     }
 
+    /**
+     * The window's preferences node name — the journal-scoped identity that tile menus and
+     * focus gestures match windows by ({@code IKE-Network/ike-issues#1047}).
+     *
+     * @return the node name, or empty when the window has no preferences
+     */
+    public String preferencesNodeName() {
+        return preferences == null ? "" : preferences.name();
+    }
+
     @Override
     public void save() {
         if (preferences == null) {

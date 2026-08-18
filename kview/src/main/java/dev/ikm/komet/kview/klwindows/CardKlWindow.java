@@ -68,6 +68,14 @@ public final class CardKlWindow extends AbstractChapterKlWindow<Pane> {
     /** Preference key holding the contributing {@link KlCardProvider} class name. */
     public static final String CARD_PROVIDER_CLASS = "CARD_PROVIDER_CLASS";
 
+    /**
+     * Preference key for the tile's display name — the kind-plus-sequence convention minted by
+     * the cards themselves (e.g. "Assistant Card 2"). The literal is a shared contract with the
+     * plugin cards' own {@code TILE_LABEL_KEY} constants; the journal's Tiles menu reads it
+     * ({@code IKE-Network/ike-issues#1047}).
+     */
+    public static final String TILE_LABEL_KEY = "tile-label";
+
     static {
         // Register the (non-enum) card window type so EntityKlWindowState.fromPreferences and revert() can
         // round-trip the persisted WINDOW_TYPE string. Idempotent.
@@ -169,6 +177,16 @@ public final class CardKlWindow extends AbstractChapterKlWindow<Pane> {
 
     /** Resolves a {@link KlCardProvider} by class name across module layers (spans the plugin layer). */
     private static KlCardProvider resolveProvider(String providerClassName) {
+        // The service registration is the front door: it spans module layers with no export
+        // demands on provider internals. Reflective instantiation broke exactly there — the
+        // Instruction Editor's factory lives in a package its module does not export to
+        // kview, so reopen and journal restore failed while the "+" menu (service-loaded)
+        // worked (ike-issues#1047).
+        for (KlCardProvider provider : PluggableService.load(KlCardProvider.class)) {
+            if (provider.getClass().getName().equals(providerClassName)) {
+                return provider;
+            }
+        }
         try {
             final Class<?> providerClass = PluggableService.forName(providerClassName);
             return (KlCardProvider) providerClass.getDeclaredConstructor().newInstance();

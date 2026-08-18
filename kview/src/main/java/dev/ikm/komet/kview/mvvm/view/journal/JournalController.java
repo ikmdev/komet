@@ -610,6 +610,138 @@ public class JournalController {
         if (anyToolArea) {
             addContextMenuSeparator.setVisible(true);
         }
+
+        // Journal tile lifecycle (ike-issues#1047): every card tile registered under this
+        // journal — open or closed — with front, reopen, and true deletion. Content is
+        // rebuilt on every popup so the states are live.
+        tilesMenu = new Menu("Tiles");
+        addContextMenu.getItems().addAll(new SeparatorMenuItem(), tilesMenu);
+    }
+
+    private Menu tilesMenu;
+
+    /** Rebuilds the Tiles menu from the journal's card-window preference nodes. */
+    private void rebuildTilesMenu() {
+        if (tilesMenu == null) {
+            return;
+        }
+        tilesMenu.getItems().clear();
+        List<KometPreferences> tiles = new ArrayList<>();
+        try {
+            KometPreferences journalPreferences = getJournalPreferences(getJournalTopic());
+            for (KometPreferences child : journalPreferences.children()) {
+                if (child.name().startsWith(CardKlWindow.CARD_WINDOW_TYPE.getPrefix())) {
+                    tiles.add(child);
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Could not enumerate card tiles for the Tiles menu", e);
+        }
+        if (tiles.isEmpty()) {
+            MenuItem none = new MenuItem("No tiles yet");
+            none.setDisable(true);
+            tilesMenu.getItems().add(none);
+            return;
+        }
+        Map<String, Long> labelCounts = tiles.stream().collect(
+                java.util.stream.Collectors.groupingBy(this::tileLabel,
+                        java.util.stream.Collectors.counting()));
+        for (KometPreferences tile : tiles) {
+            String label = tileLabel(tile);
+            boolean open = findOpenCardWindow(tile.name()).isPresent();
+            // The window-node tail — each tile is a distinct journal_card_<uuid> node —
+            // appears only when labels collide; on unique labels it is clutter
+            // (ike-issues#1046, KEC 2026-08-18).
+            String identity = "";
+            if (labelCounts.getOrDefault(label, 0L) > 1) {
+                identity = " · " + (tile.name().length() > 4
+                        ? tile.name().substring(tile.name().length() - 4) : tile.name());
+            }
+            Menu tileEntry = new Menu((open ? "● " : "○ ") + label + identity);
+            MenuItem primary = new MenuItem(open ? "Show" : "Reopen");
+            primary.setOnAction(e -> {
+                if (open) {
+                    findOpenCardWindow(tile.name()).ifPresent(window -> {
+                        window.fxObject().toFront();
+                        window.fxObject().requestFocus();
+                    });
+                } else {
+                    reopenCardWindow(tile);
+                }
+            });
+            MenuItem delete = new MenuItem("Delete…");
+            delete.setOnAction(e -> deleteCardTile(tile, label));
+            tileEntry.getItems().addAll(primary, new SeparatorMenuItem(), delete);
+            tilesMenu.getItems().add(tileEntry);
+        }
+    }
+
+    /**
+     * The tile's display label: cards mint it on their own CHILD node under the window
+     * ({@code <window>/<CardClass>}), so the window's children are searched — the window
+     * node itself never carries it (ike-issues#1046).
+     */
+    private String tileLabel(KometPreferences windowNode) {
+        try {
+            for (KometPreferences child : windowNode.children()) {
+                String label = child.get(CardKlWindow.TILE_LABEL_KEY, "");
+                if (!label.isBlank()) {
+                    return label;
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Could not read the tile label for {}", windowNode.name(), e);
+        }
+        return windowNode.name();
+    }
+
+    /** The open card window persisted under the given preferences node name, if any. */
+    private Optional<CardKlWindow> findOpenCardWindow(String nodeName) {
+        return workspace.getWindows().stream()
+                .filter(window -> window instanceof CardKlWindow cardWindow
+                        && nodeName.equals(cardWindow.preferencesNodeName()))
+                .map(window -> (CardKlWindow) window)
+                .findFirst();
+    }
+
+    /** Reopens a closed card tile from its surviving preferences node — full state back. */
+    private void reopenCardWindow(KometPreferences tile) {
+        try {
+            tile.putUuid(JOURNAL_TOPIC, getJournalTopic());
+            ViewProperties viewProperties =
+                    windowView.makeOverridableViewProperties("JournalController.reopenCardWindow");
+            setupWorkspaceWindow(CardKlWindow.restore(tile, viewProperties));
+        } catch (Exception e) {
+            LOG.error("Could not reopen card tile {}", tile.name(), e);
+        }
+    }
+
+    /** True deletion of a card tile — confirmed, closing it first when open. */
+    private void deleteCardTile(KometPreferences tile, String label) {
+        javafx.scene.control.Alert confirm = new javafx.scene.control.Alert(
+                javafx.scene.control.Alert.AlertType.CONFIRMATION,
+                "Delete tile \"" + label + "\" and all of its content? This cannot be undone.",
+                javafx.scene.control.ButtonType.OK, javafx.scene.control.ButtonType.CANCEL);
+        confirm.setHeaderText("Delete " + label);
+        if (confirm.showAndWait().orElse(javafx.scene.control.ButtonType.CANCEL)
+                != javafx.scene.control.ButtonType.OK) {
+            return;
+        }
+        Optional<CardKlWindow> openWindow = findOpenCardWindow(tile.name());
+        if (openWindow.isPresent()) {
+            workspace.getWindows().remove(openWindow.get());
+            openWindow.get().delete();
+            return;
+        }
+        try {
+            KometPreferences parent = tile.parent();
+            tile.removeNode();
+            if (parent != null) {
+                parent.flush();
+            }
+        } catch (Exception e) {
+            LOG.error("Could not delete card tile {}", tile.name(), e);
+        }
     }
 
     /**
@@ -1548,7 +1680,15 @@ public class JournalController {
     private void setupWorkspaceWindow(ChapterKlWindow<Pane> chapterKlWindow) {
         // Calls the remove method to remove the windows that were closed by the user.
         chapterKlWindow.setOnClose(() -> {
-            chapterKlWindow.delete();
+            if (chapterKlWindow instanceof CardKlWindow) {
+                // Close is NOT deletion for card tiles (ike-issues#1047): the preferences node
+                // and its payloads (conversations, instruction sets) survive; the tile drops
+                // off WINDOW_NAMES at the next journal save and reopens from the Tiles menu.
+                // True deletion is that menu's own confirmed gesture.
+                chapterKlWindow.save();
+            } else {
+                chapterKlWindow.delete();
+            }
             workspace.getWindows().remove(chapterKlWindow);
 
             if (chapterKlWindow instanceof ConceptKlWindow conceptKlWindow) {
@@ -1967,6 +2107,7 @@ public class JournalController {
     @FXML
     private void popupAddContextMenu(ActionEvent actionEvent) {
         LOG.info("popupAddContextMenu: " + addButton.getScene().getRoot().getStyleClass().toString());
+        rebuildTilesMenu();
         MenuHelper.fireContextMenuEvent(actionEvent, Side.BOTTOM, -50, 0);
     }
 

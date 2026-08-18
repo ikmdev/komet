@@ -16,7 +16,10 @@
 package dev.ikm.komet.layout.controls;
 
 import javafx.application.Platform;
+import javafx.scene.Scene;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.paint.Color;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -106,6 +109,24 @@ class SettingsPaneRootTest {
                             .anyMatch(node -> node instanceof Label label
                                     && "15 px".equals(label.getText())),
                     "drill-back re-reads the live summary");
+        });
+    }
+
+    @Test
+    void drillContentCheckBoxTextIsReadableOnTheDarkGround() throws Exception {
+        assumeTrue(fxReady, "JavaFX toolkit unavailable (headless)");
+        onFx(() -> {
+            SettingsPaneRoot root = new SettingsPaneRoot("Assistant Settings", () -> { });
+            CheckBox smallCaps = new CheckBox("Small caps");
+            root.addSection("Chip labels", () -> "Small caps", () -> smallCaps);
+            // Styling only resolves inside a scene; the popup normally provides one.
+            new Scene(root);
+            root.lookup(".settings-section-card").getOnMouseClicked().handle(null);
+            root.applyCss();
+            smallCaps.applyCss();
+            assertEquals(Color.web("#E1E8F1"), smallCaps.getTextFill(),
+                    "drill-content checkbox text carries the readable fill — a CheckBox is not"
+                            + " a .label, so the dark-ground rule must name it (ike-issues#1050)");
         });
     }
 }

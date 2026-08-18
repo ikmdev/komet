@@ -61,7 +61,9 @@
     -fx-spacing: 4;
 }
 
-/* Consumer content sits on the dark ground: give plain labels a readable fill. */
-.settings-pane .settings-drill .label {
+/* Consumer content sits on the dark ground: give plain labels and labeled controls
+   (check boxes carry their own text, not a .label) a readable fill. */
+.settings-pane .settings-drill .label,
+.settings-pane .settings-drill .check-box {
     -fx-text-fill: #E1E8F1;
 }

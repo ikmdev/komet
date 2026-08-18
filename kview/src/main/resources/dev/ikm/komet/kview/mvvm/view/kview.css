@@ -4211,6 +4211,15 @@ Styling a context menu for kview ui/ux controls
     -fx-background-insets: 1;
     -fx-background-color: -Grey-11;
 }
+/* A nested submenu popup (e.g. the journal's Tiles menu) chains its styleable parent to the
+   owner menu, so the descendant label rules above reach it (white text) while this
+   class-qualified root rule does not — leaving white-on-white. Paint nested popups like
+   their parent (ike-issues#1047). */
+.kview-context-menu .context-menu {
+    -fx-background-radius: 8px;
+    -fx-background-insets: 1;
+    -fx-background-color: -Grey-11;
+}
 .context-menu.kview-context-menu .separator:horizontal {
     -fx-padding: 4px 8px 4px 8px;
 }

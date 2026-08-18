@@ -63,6 +63,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import org.controlsfx.control.PopOver;
 import org.slf4j.Logger;
@@ -213,6 +214,10 @@ public class KonceptBadge extends HBox {
     private boolean multiLineLabel;
     /** The ambient body font size last applied via {@link #setAmbientFontSize}, or 0 when unset. */
     private double ambientFontSize;
+    /** The label typography last applied via {@link #setLabelTypography}; never {@code null}. */
+    private KonceptLabelTypography typography = KonceptLabelTypography.DEFAULT;
+    /** Whether the status cluster renders in a reserved constant-width slot (ike-issues#1049). */
+    private boolean statusSlotReserved;
     /** The single identity tooltip, its content refreshed lazily each time it shows. */
     private Tooltip identityTooltip;
     /** The open click-to-expand popover, so a second click toggles instead of stacking. */
@@ -357,15 +362,9 @@ public class KonceptBadge extends HBox {
         this.identicon.getStyleClass().add(StyleClasses.KONCEPT_IDENTICON.toString());
 
         this.nameNode.textNode().getStyleClass().add(StyleClasses.KONCEPT_LABEL.toString());
-        // True small caps via the bundled dedicated family; absent the font, the shrunken all-caps
-        // fallback (see the class comment). Set in code, not komet.css, because only code can ask
-        // the resolver whether the family registered.
-        String scFamily = SmallCapsFonts.family();
-        this.nameNode.setFont(scFamily != null
-                ? Font.font(scFamily, SC_FONT_SIZE)
-                : Font.font(FALLBACK_FONT_SIZE));
-        // The sigil rides the name it sits beside — spec ratio, whichever family resolved.
-        this.letterSigilSize = (scFamily != null ? SC_FONT_SIZE : FALLBACK_FONT_SIZE) * SIGIL_TO_NAME;
+        applyNameFont();
+        // The sigil rides the name it sits beside — spec ratio, whichever face resolved.
+        this.letterSigilSize = nameNode.textNode().getFont().getSize() * SIGIL_TO_NAME;
         // Let the name shrink and ellipsize (with the full name on the identity tooltip) so the
         // badge fits a fixed-width container without forcing a horizontal scrollbar.
         HBox.setHgrow(this.nameNode, Priority.ALWAYS);
@@ -520,10 +519,7 @@ public class KonceptBadge extends HBox {
     public final void setStatus(KonceptStatus status) {
         this.status = (status == null) ? KonceptStatus.NONE : status;
         statusBox.getChildren().clear();
-        boolean visible = this.status.hasGlyph();
-        statusBox.setManaged(visible);
-        statusBox.setVisible(visible);
-        if (visible) {
+        if (this.status.hasGlyph()) {
             Text glyph = new Text(this.status.glyph());
             glyph.getStyleClass().addAll(StyleClasses.KONCEPT_STATUS.toString(), this.status.styleClass().toString());
             statusBox.getChildren().add(glyph);
@@ -533,11 +529,12 @@ public class KonceptBadge extends HBox {
                         StyleClasses.KONCEPT_MULTIPARENT.toString());
                 statusBox.getChildren().add(fork);
             }
-            applyStatusFont();
             // The non-colour, non-glyph accessibility channel (ike-issues#861): the cluster is
             // always visible; the tooltip only explains it — parity with the adoc renderer's title.
             Tooltip.install(statusBox, new Tooltip(this.status.accessibleText()));
         }
+        // Fonts, then the slot: managed/visible live with the slot mode (ike-issues#1049).
+        applyStatusFont();
         applyCompanionSeating();
     }
 
@@ -549,16 +546,93 @@ public class KonceptBadge extends HBox {
      * wins, so the two renderings agree by construction ({@code KonceptAppearanceMirrorTest}).
      */
     private void applyStatusFont() {
-        double size = nameNode.textNode().getFont().getSize() * STATUS_TO_NAME;
-        String glyphFamily = KonceptGlyphFonts.family();
-        Font statusFont = glyphFamily != null
-                ? Font.font(glyphFamily, size)
-                : Font.font(size);
+        Font statusFont = statusFont();
         for (Node child : statusBox.getChildren()) {
             if (child instanceof Text text) {
                 text.setFont(statusFont);
             }
         }
+        // The reserved slot is measured in this font, so it re-applies whenever the font does.
+        applyStatusSlot();
+    }
+
+    /**
+     * The status cluster's programmatic font: the bundled glyph face at {@link #STATUS_TO_NAME}
+     * of the current name size.
+     *
+     * @return the font the status cluster renders in where no stylesheet reaches
+     */
+    private Font statusFont() {
+        double size = nameNode.textNode().getFont().getSize() * STATUS_TO_NAME;
+        String glyphFamily = KonceptGlyphFonts.family();
+        return glyphFamily != null ? Font.font(glyphFamily, size) : Font.font(size);
+    }
+
+    /**
+     * Reserves a constant-width slot for the status cluster, so identicons seat on one column
+     * down stacked sibling badges — a taxonomy tree's rows (ike-issues#1049). The slot holds the
+     * widest cluster any status can render at the current status font (classification glyph plus
+     * the multi-parent fork), the cluster sits right-aligned against the identicon it precedes —
+     * the sigil-never-bare adjacency is spatial, not just structural — and the slot is kept,
+     * empty, when the status is {@link KonceptStatus#NONE}. Off by default: an inline chip in
+     * flowing prose hugs its content.
+     *
+     * <p>The reservation covers the status cluster only; the kind sigil's width is not reserved,
+     * because today's stacked surfaces are concept taxonomies, where a concept is the bare
+     * identicon and carries no kind sigil.
+     *
+     * @param reserved {@code true} to reserve the slot; {@code false} restores content hugging
+     */
+    public final void setStatusSlotReserved(boolean reserved) {
+        this.statusSlotReserved = reserved;
+        applyStatusSlot();
+    }
+
+    /**
+     * Applies the status cluster's slot mode: reserved — constant width, cluster right-aligned
+     * against the identicon, managed even when empty — or hugging, where an empty cluster leaves
+     * the row entirely (the pre-#1049 behavior).
+     */
+    private void applyStatusSlot() {
+        boolean hasGlyph = status.hasGlyph();
+        if (statusSlotReserved) {
+            statusBox.setAlignment(Pos.CENTER_RIGHT);
+            double width = widestStatusClusterWidth(statusFont());
+            statusBox.setMinWidth(width);
+            statusBox.setPrefWidth(width);
+            statusBox.setManaged(true);
+            statusBox.setVisible(hasGlyph);
+        } else {
+            statusBox.setAlignment(Pos.CENTER);
+            statusBox.setMinWidth(Region.USE_COMPUTED_SIZE);
+            statusBox.setPrefWidth(Region.USE_COMPUTED_SIZE);
+            statusBox.setManaged(hasGlyph);
+            statusBox.setVisible(hasGlyph);
+        }
+    }
+
+    /**
+     * The widest cluster any status can render in the given font — each classification glyph
+     * with the fork its multi-parent variant appends — the constant width the reserved slot
+     * holds, so the slot never re-measures per row.
+     *
+     * @param font the status-cluster font to measure in
+     * @return the widest cluster width in px, rounded up
+     */
+    private static double widestStatusClusterWidth(Font font) {
+        double widest = 0;
+        for (KonceptStatus value : KonceptStatus.values()) {
+            if (!value.hasGlyph()) {
+                continue;
+            }
+            String cluster = value.isMultiParent()
+                    ? value.glyph() + KonceptStatus.MULTI_PARENT_GLYPH
+                    : value.glyph();
+            Text probe = new Text(cluster);
+            probe.setFont(font);
+            widest = Math.max(widest, probe.getLayoutBounds().getWidth());
+        }
+        return Math.ceil(widest);
     }
 
     /**
@@ -769,22 +843,71 @@ public class KonceptBadge extends HBox {
             return;
         }
         this.ambientFontSize = basePx;
-        String scFamily = SmallCapsFonts.family();
-        double nameSize = basePx * (scFamily != null ? NAME_SCALE : NAME_SCALE_FALLBACK);
-        nameNode.setFont(scFamily != null
-                ? Font.font(scFamily, nameSize)
-                : Font.font(nameSize));
+        applyNameFont();
         double iconSize = Math.round(basePx * ICON_SCALE);
         setIconSize(iconSize);
         // Rebuild the sigil at the scaled size, holding the spec ratios: letter a quarter larger
         // than the name, pentagon five-eighths of the identicon (KonceptFigureRenderer).
-        this.letterSigilSize = nameSize * SIGIL_TO_NAME;
+        this.letterSigilSize = nameNode.textNode().getFont().getSize() * SIGIL_TO_NAME;
         this.stampSigilSize = iconSize * PENTAGON_TO_ICON;
         setKind(this.kind);
         // The status cluster follows the rescaled name in a stylesheet-free host (#953); under
         // komet.css the .koncept-status rule keeps governing.
         applyStatusFont();
         applyCompanionSeating();
+    }
+
+    /**
+     * Sets the label typography — small caps versus plain text, and the label weight —
+     * re-applying the name face, the display case transform, the kind-sigil and status-cluster
+     * sizes that ride the name, and companion seating (ike-issues#1050). The default is
+     * {@link KonceptLabelTypography#DEFAULT}, today's ike-issues#855 rendering; the identicon
+     * rides the ambient font size alone, so typography never moves it.
+     *
+     * @param typography the typography to render the label with; {@code null} restores the default
+     */
+    public final void setLabelTypography(KonceptLabelTypography typography) {
+        this.typography = (typography == null) ? KonceptLabelTypography.DEFAULT : typography;
+        applyNameFont();
+        this.letterSigilSize = nameNode.textNode().getFont().getSize() * SIGIL_TO_NAME;
+        // Re-transform the display case for the new mode (the raw name is kept, so this is
+        // lossless in both directions), then rebuild the companions that ride the name size.
+        setConceptName(conceptName);
+        setKind(this.kind);
+        applyStatusFont();
+        applyCompanionSeating();
+    }
+
+    /**
+     * The label typography currently applied.
+     *
+     * @return the typography (never {@code null})
+     */
+    public final KonceptLabelTypography getLabelTypography() {
+        return typography;
+    }
+
+    /**
+     * Applies the name face for the current typography and ambient size. Small caps: true small
+     * caps via the bundled dedicated family — set in code, not komet.css, because only code can
+     * ask the resolver whether the family registered — with the shrunken all-caps fallback when
+     * the family is absent (see the class comment). Plain text: the platform default family in
+     * the name's natural case. Bold raises the requested weight; JavaFX resolves it against the
+     * registered faces (it never synthesizes weight), so small-caps bold degrades to the
+     * family's registered face until a bold small-caps face is bundled (ike-issues#1050).
+     */
+    private void applyNameFont() {
+        FontWeight weight = typography.bold() ? FontWeight.BOLD : FontWeight.NORMAL;
+        if (typography.smallCaps()) {
+            String scFamily = SmallCapsFonts.family();
+            double size = ambientFontSize > 0
+                    ? ambientFontSize * (scFamily != null ? NAME_SCALE : NAME_SCALE_FALLBACK)
+                    : (scFamily != null ? SC_FONT_SIZE : FALLBACK_FONT_SIZE);
+            nameNode.setFont(Font.font(scFamily, weight, size));
+        } else {
+            double size = ambientFontSize > 0 ? ambientFontSize * NAME_SCALE : SC_FONT_SIZE;
+            nameNode.setFont(Font.font(null, weight, size));
+        }
     }
 
     /**
@@ -930,6 +1053,9 @@ public class KonceptBadge extends HBox {
         if (popoutSuppressed) {
             expanded.setDefinitionPopoutVisible(false);
         }
+        // The twin renders with this badge's typography; the reserved status slot is not copied —
+        // alignment is a stacked-siblings concern, and the expansion stands alone.
+        expanded.setLabelTypography(typography);
         if (ambientFontSize > 0) {
             expanded.setAmbientFontSize(ambientFontSize);
         }
@@ -1085,7 +1211,11 @@ public class KonceptBadge extends HBox {
         this.conceptName = name;
         // The retired strikethrough needs nothing here: the name is a Text node, and komet.css
         // strikes it (with the retired colour) under the inactive pseudo-class.
-        nameNode.setText(displayText(name, SmallCapsFonts.family()));
+        // Plain-text typography (ike-issues#1050) shows the natural case untransformed; the
+        // all-caps transform belongs to the small-caps rendering's font-absent fallback alone.
+        nameNode.setText(typography.smallCaps()
+                ? displayText(name, SmallCapsFonts.family())
+                : (name == null ? "" : name));
     }
 
     /**
