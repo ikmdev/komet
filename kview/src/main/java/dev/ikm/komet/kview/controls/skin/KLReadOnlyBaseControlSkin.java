@@ -62,6 +62,10 @@ public abstract class KLReadOnlyBaseControlSkin<T extends KLReadOnlyBaseSingleVa
 
         titleLabel.setMaxWidth(Region.USE_PREF_SIZE);
 
+        // Whether the field shows its title is authored per field in the KL Editor.
+        titleLabel.visibleProperty().bind(control.titleVisibleProperty());
+        titleLabel.managedProperty().bind(control.titleVisibleProperty());
+
         initContextMenu(control);
 
         // CSS

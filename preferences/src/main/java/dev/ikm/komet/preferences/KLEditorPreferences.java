@@ -119,6 +119,16 @@ public class KLEditorPreferences {
         public static String KL_REQUIRED = "kl-required";
     }
 
+    /**
+     * Keys for a Pattern's Fields.
+     */
+    public class FieldKey {
+        /**
+         * Whether the Field's title is displayed above its value.
+         */
+        public static String FIELD_TITLE_VISIBLE = "field-title-visible";
+    }
+
     public class PatternKey {
         /**
          * The Pattern's title as authored by the user. Absent when the title was left as the

@@ -826,3 +826,12 @@
     -fx-font-family: "Noto Sans Bold";
     -fx-font-size: 14px;
 }
+
+.right-properties-pane .field-properties .title-container {
+    -fx-padding: 0 4 0 4;
+    -fx-spacing: 4;
+}
+
+.right-properties-pane .field-properties .title-container > .text-field {
+    -fx-font-size: 13px;
+}

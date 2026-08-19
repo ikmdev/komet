@@ -4,14 +4,18 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static dev.ikm.komet.preferences.KLEditorPreferences.FieldKey.FIELD_TITLE_VISIBLE;
 
 /**
  * Semantics from Patterns have fields and this represents a field. It has properties like the title of the Field and
@@ -47,6 +51,7 @@ public class EditorFieldModel extends EditorGridNodeModel {
     public void load(KometPreferences patternPreferences, ViewCalculator viewCalculator) {
         final KometPreferences fieldPreferences = patternPreferences.node(String.valueOf(getIndex()));
         loadGridNodeDetails(fieldPreferences);
+        fieldPreferences.getBoolean(FIELD_TITLE_VISIBLE).ifPresent(this::setTitleVisible);
     }
 
     /**
@@ -57,6 +62,7 @@ public class EditorFieldModel extends EditorGridNodeModel {
     public void save(KometPreferences patternPreferences) {
         KometPreferences fieldPreferences = patternPreferences.node(String.valueOf(fieldDefinitionRecord.indexInPattern()));
         saveGridNodeDetails(fieldPreferences);
+        fieldPreferences.putBoolean(FIELD_TITLE_VISIBLE, isTitleVisible());
     }
 
     @Override
@@ -77,6 +83,15 @@ public class EditorFieldModel extends EditorGridNodeModel {
     private ReadOnlyStringWrapper title = new ReadOnlyStringWrapper();
     public String getTitle() { return title.get(); }
     public ReadOnlyStringProperty titleProperty() { return title.getReadOnlyProperty(); }
+
+    // -- title visible
+    /**
+     * Whether the Field's title is displayed above its value. Defaults to shown.
+     */
+    private final BooleanProperty titleVisible = new SimpleBooleanProperty(true);
+    public boolean isTitleVisible() { return titleVisible.get(); }
+    public BooleanProperty titleVisibleProperty() { return titleVisible; }
+    public void setTitleVisible(boolean titleVisible) { this.titleVisible.set(titleVisible); }
 
     // -- index
     /**

@@ -15,6 +15,16 @@ public abstract class KLReadOnlyBaseControl extends Control {
     public StringProperty titleProperty() { return title; }
     public void setTitle(String title) { this.title.set(title); }
 
+    // -- title visible
+    /**
+     * Whether the title is displayed above the field's value. Authored per field in the KL Editor;
+     * defaults to shown.
+     */
+    private BooleanProperty titleVisible = new SimpleBooleanProperty(true);
+    public boolean isTitleVisible() { return titleVisible.get(); }
+    public BooleanProperty titleVisibleProperty() { return titleVisible; }
+    public void setTitleVisible(boolean titleVisible) { this.titleVisible.set(titleVisible); }
+
     // -- prompt text
     private StringProperty promptText = new SimpleStringProperty("");
     public String getPromptText() { return promptText.get(); }

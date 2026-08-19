@@ -127,6 +127,9 @@ public class PatternSemanticsStandardPresenter extends AbstractPatternSemanticsP
             GridPane.setColumnSpan(baseControl, newColumnSpan.intValue());
         });
 
-        semanticViewControl.getFields().add((KLReadOnlyBaseControl) baseControl);
+        KLReadOnlyBaseControl fieldControl = (KLReadOnlyBaseControl) baseControl;
+        fieldControl.titleVisibleProperty().bind(fieldModel.titleVisibleProperty());
+
+        semanticViewControl.getFields().add(fieldControl);
     }
 }

@@ -6783,12 +6783,17 @@ Styling a context menu for kview ui/ux controls
    (.pattern-view-container). It reads as a group label in the same language as the field labels
    below it — uppercased (in GenPurposeDetailsController, since JavaFX CSS has no text-transform),
    same muted grey — a single step larger so it leads its group without competing with the field
-   values, which carry the window's darkest, largest text. */
+   values, which carry the window's darkest text.
+
+   The 1px left inset lines the title up with the column beneath it: every field label and field
+   value carries a 1px transparent border reserving room for its hover/edit highlight (see the
+   read-only-*.css files), so their text sits 1px in from the control edge. The title has no such
+   border and would otherwise start 1px to their left. */
 .gen-purpose-window .gen-purpose-pattern-title {
     -fx-font-family: "Noto Sans SemiBold";
     -fx-font-size: 12px;
     -fx-text-fill: -Grey-8;
-    -fx-padding: 0 0 5px 0;
+    -fx-padding: 0 0 5px 1px;
 }
 
 /*******************************************************************************
@@ -6819,6 +6824,21 @@ Styling a context menu for kview ui/ux controls
 
 .gen-purpose-window .pattern-view-container:title-visible:last-child > .pattern-container {
     -fx-padding: 0 -14 5px -14;
+}
+
+/* Those 13px below a shown title — its own 5px plus the 8px the semantics container adds — are
+   sized for the field labels that normally lead each field: two muted lines a comfortable step
+   apart. With the fields' titles hidden it is the values that follow, the darkest text in the
+   window, and across that much space they stop reading as belonging to the title above them.
+   With no field label left to lead them, the Pattern title is what labels those values, so it sits
+   the same 2px above them that a field label sets above its own value. Change the top inset below
+   to widen or tighten that gap. */
+.gen-purpose-window .pattern-view-container:title-visible:field-titles-hidden > .gen-purpose-pattern-title {
+    -fx-padding: 0 0 0 1px;
+}
+
+.gen-purpose-window .pattern-view-container:title-visible:field-titles-hidden .semantics-container {
+    -fx-padding: 2 14 0 14;
 }
 
 .gen-purpose-window .pattern-container .semantics-container {
@@ -6860,18 +6880,26 @@ Styling a context menu for kview ui/ux controls
     -fx-text-fill: -Grey-8;
 }
 
-/* Content first: a field's value is the largest text in the window — above its own label, above the
-   Pattern title and the Section title framing it — so the data reads before its framing does. Each
-   control declares the size on its own value node, so each is named here. */
+/* Field values read at the same size here as in the Pattern Semantic window — the size each
+   read-only control sets for itself (13px). Stated rather than left to the controls so every field
+   type matches, whatever its own default: each control declares the size on its own value node, so
+   each is named here. The values still lead their labels, which are a step smaller and muted. */
 .gen-purpose-window .pattern-container .fields-container .main-container .text-container,
 .gen-purpose-window .pattern-container .fields-container .main-container .component-item > .label,
 .gen-purpose-window .pattern-container .fields-container .main-container .prompt-text {
-    -fx-font-size: 14px;
+    -fx-font-size: 13px;
 }
 
-/* Field value text: the darkest text in the section, for the same reason. */
+/* Field value text: the darkest text in the section, so the data reads before its framing does. */
 .gen-purpose-window .pattern-container .read-only-data-control .text-container > .text {
     -fx-text-fill: -Grey-12;
+}
+
+/* modena gives every ScrollPane 1px of padding to sit inside its box border. This one draws no
+   border (.transparent-scroll), so that padding only pushed the whole field column 1px right and
+   1px down of where the insets above place it — off the Pattern title leading it. */
+.gen-purpose-window .pattern-container > .scroll-pane {
+    -fx-padding: 0;
 }
 
 /* Standard pattern view content scrollbar: slim rounded thumb over a transparent track,

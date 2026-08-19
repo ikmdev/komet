@@ -1,5 +1,6 @@
 package dev.ikm.komet.kleditorapp.view.propertiespane;
 
+import dev.ikm.komet.kview.controls.ToggleSwitch;
 import dev.ikm.komet.layout.KlRestorable;
 import dev.ikm.komet.layout.area.KlAreaForBoolean;
 import dev.ikm.komet.layout.area.KlAreaForComponent;
@@ -14,6 +15,7 @@ import javafx.geometry.HPos;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -39,6 +41,8 @@ public class FieldPropertiesPane extends GridNodePropertiesPane<EditorFieldModel
 
     private final VBox fieldMainContainer = new VBox();
     private final ComboBox<String> displayComboBox;
+    private final ToggleSwitch titleVisibleTSwitch;
+    private final TextField titleTextField;
 
     public FieldPropertiesPane() {
         super(true);
@@ -46,6 +50,19 @@ public class FieldPropertiesPane extends GridNodePropertiesPane<EditorFieldModel
         VBox titleContainer = new VBox();
         titleContainer.getStyleClass().add("title-container");
         titleContainer.setSpacing(4);
+
+        Label titleLabel = new Label("Field Title:");
+
+        // The title is the meaning of the Pattern field, so it is shown rather than authored here;
+        // only whether it is displayed is up to the author.
+        titleTextField = new TextField();
+        titleTextField.setEditable(false);
+
+        titleVisibleTSwitch = new ToggleSwitch();
+        titleVisibleTSwitch.setText("Visible");
+        titleVisibleTSwitch.getStyleClass().add("title-visible");
+
+        titleContainer.getChildren().addAll(titleLabel, titleTextField, titleVisibleTSwitch);
 
         // Separator
         Separator separator = new Separator();
@@ -150,6 +167,13 @@ public class FieldPropertiesPane extends GridNodePropertiesPane<EditorFieldModel
     @Override
     protected void doInit() {
         super.doInit();
+
+        if (previouslyShownModel != null) {
+            titleVisibleTSwitch.selectedProperty().unbindBidirectional(previouslyShownModel.titleVisibleProperty());
+        }
+
+        titleTextField.setText(currentlyShownModel.getTitle());
+        titleVisibleTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.titleVisibleProperty());
 
         populateDisplayComboBox(currentlyShownModel);
     }

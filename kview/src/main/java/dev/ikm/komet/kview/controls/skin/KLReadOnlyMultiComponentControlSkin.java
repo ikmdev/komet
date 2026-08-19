@@ -67,6 +67,10 @@ public abstract class KLReadOnlyMultiComponentControlSkin<C extends KLReadOnlyMu
             }
         });
 
+        // Whether the field shows its title is authored per field in the KL Editor.
+        titleLabel.visibleProperty().bind(control.titleVisibleProperty());
+        titleLabel.managedProperty().bind(control.titleVisibleProperty());
+
         promptTextLabel.textProperty().bind(control.promptTextProperty());
         promptTextLabel.setMaxWidth(Double.MAX_VALUE);
 

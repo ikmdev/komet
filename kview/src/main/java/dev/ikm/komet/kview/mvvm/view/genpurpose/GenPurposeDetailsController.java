@@ -67,6 +67,7 @@ import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
 import dev.ikm.komet.layout.KlPatternSemanticsFactory;
 import dev.ikm.komet.layout.PatternSemanticsPresenter;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
+import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternRequirement;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
@@ -156,6 +157,13 @@ public class GenPurposeDetailsController {
      * the title needs in kview.css.
      */
     private static final PseudoClass TITLE_VISIBLE_PSEUDO_CLASS = PseudoClass.getPseudoClass("title-visible");
+
+    /**
+     * Active on a Pattern's container while none of its fields show their title. The gap the Pattern
+     * title sets below itself is sized for the field labels that normally lead each field, so kview.css
+     * closes it when the field values follow the title directly.
+     */
+    private static final PseudoClass FIELD_TITLES_HIDDEN_PSEUDO_CLASS = PseudoClass.getPseudoClass("field-titles-hidden");
 
     /**
      * Given a Pattern what is the Section that has it as its Reference Component.
@@ -1095,7 +1103,20 @@ public class GenPurposeDetailsController {
         editorPatternModel.titleVisibleProperty().subscribe(titleVisible ->
                 patternContainer.pseudoClassStateChanged(TITLE_VISIBLE_PSEUDO_CLASS, titleVisible));
 
+        // The title's gap is likewise sized for the field labels below it, so whether any field still
+        // shows one is exposed too. Recomputed as the author toggles the fields in the KL Editor.
+        for (EditorFieldModel fieldModel : editorPatternModel.getFields()) {
+            fieldModel.titleVisibleProperty().subscribe(() ->
+                    updateFieldTitlesHidden(patternContainer, editorPatternModel));
+        }
+        updateFieldTitlesHidden(patternContainer, editorPatternModel);
+
         return patternContainer;
+    }
+
+    private static void updateFieldTitlesHidden(VBox patternContainer, EditorPatternModel editorPatternModel) {
+        boolean anyFieldTitleShown = editorPatternModel.getFields().stream().anyMatch(EditorFieldModel::isTitleVisible);
+        patternContainer.pseudoClassStateChanged(FIELD_TITLES_HIDDEN_PSEUDO_CLASS, !anyFieldTitleShown);
     }
 
     private PatternSemanticsPresenter addSemanticViews(EditorPatternModel editorPatternModel) {
