@@ -6846,6 +6846,15 @@ Styling a context menu for kview ui/ux controls
     -fx-padding: 8 14 0 14;
 }
 
+/* Those 10px are half the gap a separator sits in — with the separators turned off in the KL Editor
+   they are the whole gap, and a list of one-line semantics reads as far apart as the fields inside
+   one (11px vgap). So the gap closes to a step below that, tight enough that the semantics read as
+   one block per Pattern while each still starts its own line. Change the spacing below to widen or
+   tighten the compact list. */
+.gen-purpose-window .pattern-container:separator-hidden .semantics-container {
+    -fx-spacing: 4px;
+}
+
 /* Empty pattern placeholder: a pattern with no semantic shows one muted line where its
    semantic's fields would render, so the section reads as deliberately empty. */
 .gen-purpose-window .pattern-container .semantics-container .no-semantic-label {

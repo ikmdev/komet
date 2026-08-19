@@ -36,13 +36,22 @@ public class PatternSemanticsStandardPresenter extends AbstractPatternSemanticsP
     private final UUID journalTopic;
     private final EditorPatternModel editorPatternModel;
 
+    /**
+     * The pattern's factory-specific properties. A presenter is only ever created by the factory the
+     * pattern holds, and the model keeps this set in lockstep with that factory, so for this
+     * presenter it is always the Standard factory's set.
+     */
+    private final StandardPatternProperties factoryProperties;
+
     public PatternSemanticsStandardPresenter(EditorPatternModel editorPatternModel, ViewProperties viewProperties, ObservableComposer composer, UUID journalTopic) {
         this.composer = composer;
         this.viewProperties = viewProperties;
         this.journalTopic = journalTopic;
         this.editorPatternModel = editorPatternModel;
+        this.factoryProperties = (StandardPatternProperties) editorPatternModel.getFactoryProperties();
 
         patternSemanticsControl = PatternSemanticsStandardControl.create();
+        patternSemanticsControl.separatorVisibleProperty().bind(factoryProperties.separatorVisibleProperty());
     }
 
     @Override
@@ -95,9 +104,7 @@ public class PatternSemanticsStandardPresenter extends AbstractPatternSemanticsP
         }
 
         // The column count is a Standard-factory property; bind it from the pattern's factory property set.
-        if (editorPatternModel.getFactoryProperties() instanceof StandardPatternProperties standardProperties) {
-            semanticViewControl.numberColumnsProperty().bind(standardProperties.numberColumnsProperty());
-        }
+        semanticViewControl.numberColumnsProperty().bind(factoryProperties.numberColumnsProperty());
 
         return semanticViewControl;
     }

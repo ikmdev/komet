@@ -1,7 +1,9 @@
 package dev.ikm.komet.layout.editor.property;
 
 import dev.ikm.komet.layout.editor.model.ParentGridModel;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 
 /**
@@ -23,4 +25,16 @@ public class StandardPatternProperties extends KlPropertySet implements ParentGr
     public IntegerProperty numberColumnsProperty() { return numberColumns; }
     public int getNumberColumns() { return numberColumns.get(); }
     public void setNumberColumns(int numberColumns) { this.numberColumns.set(numberColumns); }
+
+    // -- separator visible
+    /**
+     * Whether a horizontal separator is drawn between consecutive semantics of the pattern. Turning
+     * it off gives a more compact list, which is what an author wants when each semantic renders a
+     * single untitled field and the separators dominate the content.
+     */
+    @KlProperty(label = "Separator")
+    private final BooleanProperty separatorVisible = new SimpleBooleanProperty(true);
+    public BooleanProperty separatorVisibleProperty() { return separatorVisible; }
+    public boolean isSeparatorVisible() { return separatorVisible.get(); }
+    public void setSeparatorVisible(boolean separatorVisible) { this.separatorVisible.set(separatorVisible); }
 }

@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard;
 
 import javafx.collections.ListChangeListener;
+import javafx.css.PseudoClass;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -9,6 +10,14 @@ import javafx.scene.control.SkinBase;
 import javafx.scene.layout.VBox;
 
 public class PatternSemanticsStandardControlSkin extends SkinBase<PatternSemanticsStandardControl> {
+
+    /**
+     * Active while no separator is drawn between the semantics. The gap between semantics is sized
+     * for the separator that normally sits in it, so kview.css tightens it when there is none — the
+     * compact list the author turned the separators off to get.
+     */
+    private static final PseudoClass SEPARATOR_HIDDEN_PSEUDO_CLASS = PseudoClass.getPseudoClass("separator-hidden");
+
     private final VBox semanticsContainer = new VBox();
 
     // Hosting the semantics in a ScrollPane keeps the view's min height small, so the user can
@@ -46,7 +55,11 @@ public class PatternSemanticsStandardControlSkin extends SkinBase<PatternSemanti
 
         // listen to semantics ObservableList
         control.getSemantics().addListener(this::onSemanticsChanged);
-        rebuildSemantics();
+
+        // Drives both the separators built into the container and, through the pseudo-class, the
+        // spacing around them. Also does the initial build.
+        control.separatorVisibleProperty().subscribe(this::onSeparatorVisibleChanged);
+        onSeparatorVisibleChanged();
 
         control.editingSemanticProperty().subscribe(semanticInEditMode -> onEditingSemanticChanged(semanticInEditMode));
         control.previewingSemanticProperty().subscribe(semanticInPreviewMode -> onPreviewingSemanticChanged(semanticInPreviewMode));
@@ -92,6 +105,11 @@ public class PatternSemanticsStandardControlSkin extends SkinBase<PatternSemanti
         previousSemanticControlInEditMode = semanticViewControl;
     }
 
+    private void onSeparatorVisibleChanged() {
+        getSkinnable().pseudoClassStateChanged(SEPARATOR_HIDDEN_PSEUDO_CLASS, !getSkinnable().isSeparatorVisible());
+        rebuildSemantics();
+    }
+
     private void onSemanticsChanged(ListChangeListener.Change<? extends SemanticStandardControl> change) {
         // Rebuild the whole container from the current list rather than mutating it incrementally.
         // This isn't the most performant solution so if there are performance issues we can revisit.
@@ -110,8 +128,9 @@ public class PatternSemanticsStandardControlSkin extends SkinBase<PatternSemanti
             semanticsContainer.getChildren().add(noSemanticLabel);
             return;
         }
+        boolean separatorVisible = getSkinnable().isSeparatorVisible();
         for (int i = 0; i < semantics.size(); i++) {
-            if (i > 0) {
+            if (i > 0 && separatorVisible) {
                 semanticsContainer.getChildren().add(new Separator());
             }
             semanticsContainer.getChildren().add(semantics.get(i));
