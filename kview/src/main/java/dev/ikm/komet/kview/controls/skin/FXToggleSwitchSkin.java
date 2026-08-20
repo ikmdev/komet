@@ -181,7 +181,7 @@ public class FXToggleSwitchSkin extends SkinBase<ToggleSwitch> {
             };
 
     private static final CssMetaData<ToggleSwitch, ThumbDisplay> THUMB_DISPLAY_META_DATA =
-            new CssMetaData<>("-toggle-display", new EnumConverter<>(ThumbDisplay.class)) {
+            new CssMetaData<>("-toggle-display", new EnumConverter<>(ThumbDisplay.class), ThumbDisplay.LEFT) {
 
                 @Override
                 public boolean isSettable(ToggleSwitch toggleSwitch) {
