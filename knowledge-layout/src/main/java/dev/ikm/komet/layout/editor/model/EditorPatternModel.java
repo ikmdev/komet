@@ -36,6 +36,7 @@ import java.util.UUID;
 import java.util.prefs.BackingStoreException;
 import java.util.stream.Collectors;
 
+import static dev.ikm.komet.preferences.KLEditorPreferences.ListKey.FIELDS_LIST;
 import static dev.ikm.komet.preferences.KLEditorPreferences.ListKey.PATTERN_LIST;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_REQUIREMENTS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_SEMANTICS_FACTORY;
@@ -177,6 +178,14 @@ public class EditorPatternModel extends EditorGridNodeModel {
                 .map(EditorPatternSemanticFilter::fromPreferenceString)
                 .toList());
 
+        // The fields the author kept. The constructor laid out one per field definition, so this drops
+        // the ones that were removed. A layout stored before fields could be removed has no list and
+        // keeps them all.
+        patternPreferences.getOptionalList(FIELDS_LIST).ifPresent(shownFieldIndexes -> {
+            List<Integer> indexes = shownFieldIndexes.stream().map(Integer::valueOf).toList();
+            visibleFields.removeIf(field -> !indexes.contains(field.getIndex()));
+        });
+
         for (EditorFieldModel fieldModel : getVisibleFields()) {
             fieldModel.load(patternPreferences, viewCalculator);
         }
@@ -252,6 +261,11 @@ public class EditorPatternModel extends EditorGridNodeModel {
         // semantic display filters
         patternPreferences.putList(PATTERN_SEMANTIC_FILTERS, semanticFilters.stream()
                 .map(EditorPatternSemanticFilter::toPreferenceString)
+                .toList());
+
+        // the fields shown, so that the ones the author removed from the layout stay removed
+        patternPreferences.putList(FIELDS_LIST, visibleFields.stream()
+                .map(field -> String.valueOf(field.getIndex()))
                 .toList());
 
         for (EditorFieldModel fieldModel : getVisibleFields()) {

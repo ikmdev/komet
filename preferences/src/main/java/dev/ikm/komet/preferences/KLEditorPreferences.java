@@ -80,7 +80,9 @@ public class KLEditorPreferences {
          */
         PATTERN_LIST,
         /**
-         * List of Fields in a Pattern
+         * List of the Fields of a Pattern that are shown in its layout, by index in the Pattern. The
+         * Fields the author removed from the layout are absent from it. No stored list at all — as in
+         * a layout saved before Fields could be removed — means every Field is shown.
          */
         FIELDS_LIST
     };

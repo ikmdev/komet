@@ -1830,6 +1830,19 @@ public interface KometPreferences {
     }
 
     /**
+     * Retrieves an optional list of strings associated with a specified enumeration key.
+     * If a value is stored for the key it returns an Optional containing the list — which is
+     * empty when an empty list was stored. Otherwise it returns an empty Optional, so a key
+     * that was never written can be told apart from one written with no entries.
+     *
+     * @param key the enumeration key used to retrieve the corresponding list
+     * @return an Optional containing the list of strings if a value is stored, otherwise an empty Optional
+     */
+    default Optional<List<String>> getOptionalList(Enum key) {
+        return getOptionalList(enumToGeneralKey(key));
+    }
+
+    /**
      * Retrieves a list of strings associated with the specified key. If the list is empty,
      * the provided default list is returned instead.
      *
