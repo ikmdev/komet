@@ -104,7 +104,7 @@ public class PatternSemanticsTablePresenter extends AbstractPatternSemanticsPres
 
         List<SemanticField> fields = new ArrayList<>();
         for (ObservableField<?> observableField : latestVersion.fields()) {
-            for (EditorFieldModel editorFieldModel : editorPatternModel.getFields()) {
+            for (EditorFieldModel editorFieldModel : editorPatternModel.getVisibleFields()) {
                 if (observableField.indexInPattern() == editorFieldModel.getIndex()) {
                     SemanticField field = createField(observableField, editorFieldModel);
                     fields.add(field);

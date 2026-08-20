@@ -24,6 +24,7 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +57,7 @@ public class EditorPatternModel extends EditorGridNodeModel {
     private final ViewCalculator viewCalculator;
     private final PatternFacade patternFacade;
     private final int nid;
+    private final ImmutableList<FieldDefinitionRecord> fieldDefinitions;
 
     /*=============================================================================*
      *                                                                             *
@@ -84,20 +86,20 @@ public class EditorPatternModel extends EditorGridNodeModel {
         setTitle(retrieveDisplayName(patternFacade));
         setIdentifier(getTitle());
 
-        fields.addListener(this::fieldsChanged);
+        visibleFields.addListener(this::fieldsChanged);
 
-        // -- add fields if they exist
+        // -- the fields the Pattern is defined with in the database
         Entity<EntityVersion> entity = EntityService.get().getEntityFast(patternFacade);
         Latest<EntityVersion> optionalLatest = viewCalculator.latest(entity);
-        optionalLatest.ifPresent(latest -> {
-            PatternVersionRecord patternVersionRecord = (PatternVersionRecord) latest;
-            ImmutableList<FieldDefinitionRecord> fieldDefinitionRecords = patternVersionRecord.fieldDefinitions();
+        fieldDefinitions = optionalLatest.isPresent()
+                ? ((PatternVersionRecord) optionalLatest.get()).fieldDefinitions()
+                : Lists.immutable.empty();
 
-            fieldDefinitionRecords.stream().forEachOrdered(fieldDefinitionForEntity -> {
-                EditorFieldModel editorFieldModel = new EditorFieldModel(viewCalculator, fieldDefinitionForEntity);
-                fields.add(editorFieldModel);
-                editorFieldModel.setRowIndex(fields.indexOf(editorFieldModel));
-            });
+        // -- lay out one field per definition; the author can then remove the ones they don't want shown
+        fieldDefinitions.forEachWithIndex((fieldDefinition, index) -> {
+            EditorFieldModel editorFieldModel = new EditorFieldModel(viewCalculator, fieldDefinition);
+            visibleFields.add(editorFieldModel);
+            editorFieldModel.setRowIndex(index);
         });
 
         parentGridProperty().bind(parentSectionProperty());
@@ -175,7 +177,7 @@ public class EditorPatternModel extends EditorGridNodeModel {
                 .map(EditorPatternSemanticFilter::fromPreferenceString)
                 .toList());
 
-        for (EditorFieldModel fieldModel : getFields()) {
+        for (EditorFieldModel fieldModel : getVisibleFields()) {
             fieldModel.load(patternPreferences, viewCalculator);
         }
     }
@@ -252,7 +254,7 @@ public class EditorPatternModel extends EditorGridNodeModel {
                 .map(EditorPatternSemanticFilter::toPreferenceString)
                 .toList());
 
-        for (EditorFieldModel fieldModel : getFields()) {
+        for (EditorFieldModel fieldModel : getVisibleFields()) {
             fieldModel.save(patternPreferences);
         }
     }
@@ -322,10 +324,22 @@ public class EditorPatternModel extends EditorGridNodeModel {
 
     // -- fields
     /**
-     * The collection of EditorFieldModel (fields) this Pattern has.
+     * The collection of EditorFieldModel (fields) this Pattern is showing.
      */
-    private final ObservableList<EditorFieldModel> fields = FXCollections.observableArrayList();
-    public ObservableList<EditorFieldModel> getFields() { return fields; }
+    private final ObservableList<EditorFieldModel> visibleFields = FXCollections.observableArrayList();
+    public ObservableList<EditorFieldModel> getVisibleFields() { return visibleFields; }
+
+    // -- field definitions
+    /**
+     * The fields this Pattern is defined with in the database, in the order they are defined in.
+     *
+     * <p>Unlike {@link #getVisibleFields()} — the fields laid out in the editor, which the author adds to
+     * and removes from — this is the Pattern as the database has it, so it stays complete however the
+     * layout is edited. It is what anything reasoning about the Pattern's semantics rather than about
+     * their layout works from, e.g. the constraints of {@link EditorPatternRequirement} and
+     * {@link EditorPatternSemanticFilter}, which can constrain a field whether or not it is shown.
+     */
+    public ImmutableList<FieldDefinitionRecord> getFieldDefinitions() { return fieldDefinitions; }
 
     // -- requirements
     /**

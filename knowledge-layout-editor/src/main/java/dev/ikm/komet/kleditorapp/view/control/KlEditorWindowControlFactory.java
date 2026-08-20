@@ -46,7 +46,7 @@ public class KlEditorWindowControlFactory {
         updateMaps(editorPatternModel, patternStandardEditorControl);
 
         // Populate the field tiles from the pattern's fields.
-        for (EditorFieldModel fieldModel : editorPatternModel.getFields()) {
+        for (EditorFieldModel fieldModel : editorPatternModel.getVisibleFields()) {
             patternStandardEditorControl.getFields().add(createFieldView(fieldModel));
         }
 
@@ -65,7 +65,7 @@ public class KlEditorWindowControlFactory {
         updateMaps(editorPatternModel, patternTableViewControl);
 
         // A table renders each field as a column header (no FieldViewControls).
-        for (EditorFieldModel fieldModel : editorPatternModel.getFields()) {
+        for (EditorFieldModel fieldModel : editorPatternModel.getVisibleFields()) {
             patternTableViewControl.addColumn(fieldModel.titleProperty());
         }
 

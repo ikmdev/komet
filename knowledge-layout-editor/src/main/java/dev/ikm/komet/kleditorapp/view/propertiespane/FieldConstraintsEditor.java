@@ -2,8 +2,8 @@ package dev.ikm.komet.kleditorapp.view.propertiespane;
 
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentControlFactory;
-import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
+import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.collections.ObservableMap;
 import javafx.scene.Node;
@@ -23,14 +23,19 @@ import static dev.ikm.tinkar.terms.TinkarTerm.CONCEPT_FIELD;
  * {@link KLComponentControl} so the constraint concept can be entered with inline type-ahead search
  * (or drag and drop); other fields accept any value.
  *
+ * <p>The rows are the Pattern's fields as the database defines them
+ * ({@link EditorPatternModel#getFieldDefinitions()}), not the fields laid out in the editor window:
+ * a rule selects semantics by their values, so it can constrain a field the author chose not to
+ * display, and removing a field from the layout must not take away the ability to constrain it.
+ *
  * <p>Edits are written straight into the passed in constraints map — clearing a field's concept
  * removes its entry, which is what "accepts any value" is.
  */
 class FieldConstraintsEditor extends VBox {
 
     FieldConstraintsEditor(EditorPatternModel pattern, ObservableMap<Integer, EntityProxy> constraints) {
-        for (EditorFieldModel field : pattern.getFields()) {
-            Label fieldNameLabel = new Label(field.getTitle());
+        for (FieldDefinitionRecord field : pattern.getFieldDefinitions()) {
+            Label fieldNameLabel = new Label(getFieldTitle(field));
             fieldNameLabel.getStyleClass().add("field-name");
 
             VBox fieldRow = new VBox(fieldNameLabel, createFieldValueNode(pattern, constraints, field));
@@ -44,8 +49,8 @@ class FieldConstraintsEditor extends VBox {
 
     private static Node createFieldValueNode(EditorPatternModel pattern,
                                              ObservableMap<Integer, EntityProxy> constraints,
-                                             EditorFieldModel field) {
-        int dataTypeNid = field.getDataTypeNid();
+                                             FieldDefinitionRecord field) {
+        int dataTypeNid = field.dataTypeNid();
         if (dataTypeNid != COMPONENT_FIELD.nid() && dataTypeNid != CONCEPT_FIELD.nid()) {
             // Only concept-valued fields can be constrained (for now)
             Label anyValueLabel = new Label("Any value");
@@ -58,7 +63,7 @@ class FieldConstraintsEditor extends VBox {
                 KLComponentControlFactory.createComponentControl(pattern.getViewCalculator());
         componentControl.setMaxWidth(Double.MAX_VALUE);
 
-        EntityProxy constraint = constraints.get(field.getIndex());
+        EntityProxy constraint = constraints.get(field.indexInPattern());
         if (constraint != null) {
             componentControl.setEntity(constraint);
         }
@@ -66,9 +71,9 @@ class FieldConstraintsEditor extends VBox {
         componentControl.entityProperty().subscribe(() -> {
             EntityProxy entity = componentControl.getEntity();
             if (KLComponentControl.isEmpty(entity)) {
-                constraints.remove(field.getIndex());
+                constraints.remove(field.indexInPattern());
             } else {
-                constraints.put(field.getIndex(), entity);
+                constraints.put(field.indexInPattern(), entity);
             }
         });
 
@@ -86,17 +91,21 @@ class FieldConstraintsEditor extends VBox {
     static String describe(EditorPatternModel pattern, ObservableMap<Integer, EntityProxy> constraints) {
         return constraints.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
-                .map(constraint -> fieldTitle(pattern, constraint.getKey())
+                .map(constraint -> getFieldTitle(pattern, constraint.getKey())
                         + " = " + conceptName(pattern, constraint.getValue()))
                 .collect(Collectors.joining(", "));
     }
 
-    private static String fieldTitle(EditorPatternModel pattern, int fieldIndex) {
-        return pattern.getFields().stream()
-                .filter(field -> field.getIndex() == fieldIndex)
+    private static String getFieldTitle(EditorPatternModel pattern, int fieldIndex) {
+        return pattern.getFieldDefinitions().stream()
+                .filter(field -> field.indexInPattern() == fieldIndex)
                 .findFirst()
-                .map(EditorFieldModel::getTitle)
+                .map(FieldConstraintsEditor::getFieldTitle)
                 .orElse("Field " + fieldIndex);
+    }
+
+    private static String getFieldTitle(FieldDefinitionRecord field) {
+        return field.meaning().description();
     }
 
     private static String conceptName(EditorPatternModel pattern, EntityProxy concept) {

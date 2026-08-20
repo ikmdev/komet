@@ -96,7 +96,7 @@ public class PatternSemanticsStandardPresenter extends AbstractPatternSemanticsP
         ObservableSemanticVersion latestVersion = getObservableSemanticFromSemanticEntity(semanticEntity);
 
         for (ObservableField<?> observableField : latestVersion.fields()) {
-            for (EditorFieldModel editorFieldModel : editorPatternModel.getFields()) {
+            for (EditorFieldModel editorFieldModel : editorPatternModel.getVisibleFields()) {
                 if (observableField.indexInPattern() == editorFieldModel.getIndex()) {
                     addFieldView(observableField, editorFieldModel, semanticViewControl);
                 }

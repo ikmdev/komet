@@ -67,7 +67,7 @@ public class EditorFieldModel extends EditorGridNodeModel {
 
     @Override
     public void delete() {
-        getParentPattern().getFields().remove(this);
+        getParentPattern().getVisibleFields().remove(this);
     }
 
     /*******************************************************************************

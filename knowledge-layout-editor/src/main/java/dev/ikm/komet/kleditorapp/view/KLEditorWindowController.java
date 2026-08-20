@@ -114,7 +114,7 @@ public class KLEditorWindowController {
         patternModel.factoryProperty().addListener((obs, oldFactory, newFactory) -> swapPatternView(editorSectionModel, patternModel));
 
         // Keep the displayed control's field views in sync as the model's fields change.
-        patternModel.getFields().addListener(
+        patternModel.getVisibleFields().addListener(
                 (ListChangeListener<? super EditorFieldModel>) change -> onPatternModelFieldsChanged(patternModel, change));
     }
 

@@ -1105,7 +1105,7 @@ public class GenPurposeDetailsController {
 
         // The title's gap is likewise sized for the field labels below it, so whether any field still
         // shows one is exposed too. Recomputed as the author toggles the fields in the KL Editor.
-        for (EditorFieldModel fieldModel : editorPatternModel.getFields()) {
+        for (EditorFieldModel fieldModel : editorPatternModel.getVisibleFields()) {
             fieldModel.titleVisibleProperty().subscribe(() ->
                     updateFieldTitlesHidden(patternContainer, editorPatternModel));
         }
@@ -1115,7 +1115,7 @@ public class GenPurposeDetailsController {
     }
 
     private static void updateFieldTitlesHidden(VBox patternContainer, EditorPatternModel editorPatternModel) {
-        boolean anyFieldTitleShown = editorPatternModel.getFields().stream().anyMatch(EditorFieldModel::isTitleVisible);
+        boolean anyFieldTitleShown = editorPatternModel.getVisibleFields().stream().anyMatch(EditorFieldModel::isTitleVisible);
         patternContainer.pseudoClassStateChanged(FIELD_TITLES_HIDDEN_PSEUDO_CLASS, !anyFieldTitleShown);
     }
 
