@@ -44,7 +44,7 @@ public final class StandardEditorWindows {
      * re-seeded from the current code, so application-shipped windows never go stale in the
      * preferences. User-authored windows live in the user-windows folder and are untouched.
      */
-    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 4;
+    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 5;
 
     /** Preferences key holding the version the seeded standard windows were created from. */
     private static final String STANDARD_WINDOWS_VERSION_KEY = "STANDARD-WINDOWS-VERSION";

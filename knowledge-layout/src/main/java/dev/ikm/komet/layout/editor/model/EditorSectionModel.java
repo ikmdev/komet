@@ -2,6 +2,7 @@ package dev.ikm.komet.layout.editor.model;
 
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -27,6 +28,7 @@ import static dev.ikm.komet.preferences.KLEditorPreferences.GridLayoutKey.KL_GRI
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_ADDITIONAL_SECTIONS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_REFERENCE_COMPONENT;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_SUPPLEMENTAL_AREAS;
+import static dev.ikm.komet.preferences.KLEditorPreferences.ListKey.PATTERN_LIST;
 
 /**
  * Represents a Section. It has properties like the Section name, the patterns inside it (EditorPatternModel instances),
@@ -236,6 +238,20 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
         if (getReferenceComponent() != null) {
             sectionPreferences.putEntity(KL_REFERENCE_COMPONENT, getReferenceComponent().getPatternFacade());
         }
+
+        // The Patterns this Section holds, in the order it holds them, by placement id — a Pattern can be
+        // placed more than once, so the placement rather than the Pattern is what's listed. Written from
+        // the Section on every save (rather than each Pattern adding itself), so that a Pattern removed
+        // from the Section — and its stored details — goes away, and so that reordering is kept.
+        List<String> patternIds = getPatterns().stream()
+                .map(EditorPatternModel::getId)
+                .toList();
+
+        // Remove pattern folders that are not being stored anymore (Patterns may have been deleted by a user but the folders
+        // might still be sitting there)
+        EditorPatternModel.removePlacementsOtherThan(sectionPreferences, patternIds);
+
+        sectionPreferences.putList(PATTERN_LIST, patternIds);
 
         for (EditorPatternModel editorPatternModel : getPatterns()) {
             editorPatternModel.save(sectionPreferences);

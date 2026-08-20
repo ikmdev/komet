@@ -76,7 +76,10 @@ public class KLEditorPreferences {
 
     public enum ListKey {
         /**
-         * List of Patterns in a Section
+         * List of the Patterns placed in a Section, by placement id — the name of the sub-node holding
+         * that placement's details, which name the Pattern itself (see
+         * {@code PatternKey#PATTERN_COMPONENT}). Ids rather than Patterns, so that the same Pattern can
+         * be placed in a Section more than once, each placement with its own position and rules.
          */
         PATTERN_LIST,
         /**
@@ -132,6 +135,12 @@ public class KLEditorPreferences {
     }
 
     public class PatternKey {
+        /**
+         * The Pattern placed in a Section. Stored with the placement's own details (rather than only in
+         * the Section's list of placements), so that the same Pattern can be placed more than once.
+         */
+        public static String PATTERN_COMPONENT = "pattern-component";
+
         /**
          * The Pattern's title as authored by the user. Absent when the title was left as the
          * Pattern's description, which is resolved fresh on every load.

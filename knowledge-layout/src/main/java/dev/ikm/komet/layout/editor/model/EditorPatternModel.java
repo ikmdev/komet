@@ -12,6 +12,7 @@ import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -34,10 +35,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.prefs.BackingStoreException;
-import java.util.stream.Collectors;
 
 import static dev.ikm.komet.preferences.KLEditorPreferences.ListKey.FIELDS_LIST;
 import static dev.ikm.komet.preferences.KLEditorPreferences.ListKey.PATTERN_LIST;
+import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_COMPONENT;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_REQUIREMENTS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_SEMANTICS_FACTORY;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_SEMANTIC_FILTERS;
@@ -60,6 +61,13 @@ public class EditorPatternModel extends EditorGridNodeModel {
     private final int nid;
     private final ImmutableList<FieldDefinitionRecord> fieldDefinitions;
 
+    /**
+     * This placement's identity, and the name of the sub-node its details are stored under. Identifies
+     * the placement rather than the Pattern, so the same Pattern placed twice in a Section is two
+     * placements with their own positions, titles and rules.
+     */
+    private final String id;
+
     /*=============================================================================*
      *                                                                             *
      * Constructors                                                                *
@@ -78,8 +86,21 @@ public class EditorPatternModel extends EditorGridNodeModel {
      * @param viewCalculator the view calculator
      * @param patternNid the nid of the Pattern
      */
-    @SuppressWarnings("removal")
     public EditorPatternModel(ViewCalculator viewCalculator, int patternNid) {
+        this(viewCalculator, patternNid, UUID.randomUUID().toString());
+    }
+
+    /**
+     * Creates a EditorPatternModel for a Pattern already placed in a Section, restoring the placement's
+     * identity so its stored details are read from (and written back to) the node they are already in.
+     *
+     * @param viewCalculator the view calculator
+     * @param patternNid the nid of the Pattern
+     * @param id the placement's id
+     */
+    @SuppressWarnings("removal")
+    private EditorPatternModel(ViewCalculator viewCalculator, int patternNid, String id) {
+        this.id = id;
         this.viewCalculator = viewCalculator;
         this.nid = patternNid;
         patternFacade = PatternFacade.make(patternNid);
@@ -134,24 +155,24 @@ public class EditorPatternModel extends EditorGridNodeModel {
     public static List<EditorPatternModel> load(KometPreferences sectionPreferences, ViewCalculator viewCalculator) {
         List<EditorPatternModel> editorPatternModels = new ArrayList<>();
 
-        List<PatternFacade> patternFacades = sectionPreferences.getPatternList(PATTERN_LIST);
+        for (String patternId : sectionPreferences.getList(PATTERN_LIST)) {
+            PatternFacade patternFacade = getStoredPattern(sectionPreferences, patternId);
 
-        for (PatternFacade patternFacade : patternFacades) {
-            EditorPatternModel editorPatternModel = new EditorPatternModel(viewCalculator, patternFacade.nid());
+            EditorPatternModel editorPatternModel =
+                    new EditorPatternModel(viewCalculator, patternFacade.nid(), patternId);
             editorPatternModels.add(editorPatternModel);
 
-            final KometPreferences patternPreferences = sectionPreferences.node(patternFacadeToPrefsDirName(patternFacade));
-
-            editorPatternModel.loadPatternDetails(patternPreferences, viewCalculator);
+            editorPatternModel.loadPatternDetails(sectionPreferences.node(patternId), viewCalculator);
         }
 
         return editorPatternModels;
     }
 
-    private static String patternFacadeToPrefsDirName(PatternFacade patternFacade) {
-        return patternFacade.publicId().asUuidList().stream()
-                .map(UUID::toString)
-                .collect(Collectors.joining("_"));
+    private static PatternFacade getStoredPattern(KometPreferences sectionPreferences, String patternId) {
+        EntityFacade pattern = sectionPreferences.node(patternId).getEntity(PATTERN_COMPONENT)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Placed Pattern '" + patternId + "' has no stored Pattern"));
+        return PatternFacade.make(pattern.nid());
     }
 
     private void loadPatternDetails(KometPreferences patternPreferences, ViewCalculator viewCalculator) {
@@ -205,18 +226,13 @@ public class EditorPatternModel extends EditorGridNodeModel {
     }
 
     /**
-     * Saves the Pattern into KometPreferences (stored preferences).
+     * Saves the Pattern into KometPreferences (stored preferences). Which Patterns a Section holds, and
+     * in what order, is written by the Section itself (see {@code EditorSectionModel}) — this stores
+     * only the Pattern's own details.
      *
      * @param sectionPreferences the stored preferences pointing to the Section
      */
     public void save(KometPreferences sectionPreferences) {
-        List<PatternFacade> patterns = sectionPreferences.getPatternList(PATTERN_LIST);
-        if (!patterns.contains(patternFacade)) {
-            patterns.add(patternFacade);
-        }
-
-        sectionPreferences.putComponentList(PATTERN_LIST, patterns);
-
         savePatternDetails(sectionPreferences);
 
         try {
@@ -226,8 +242,31 @@ public class EditorPatternModel extends EditorGridNodeModel {
         }
     }
 
+    /**
+     * Removes the stored details of the Section's placements other than the passed in ones — the
+     * placements removed from the Section since it was last saved — so that details don't sit there for
+     * a placement nothing points at any more.
+     *
+     * @param sectionPreferences the stored preferences pointing to the Section
+     * @param patternIds the ids of the placements the Section still holds
+     */
+    static void removePlacementsOtherThan(KometPreferences sectionPreferences, List<String> patternIds) {
+        sectionPreferences.getList(PATTERN_LIST).stream()
+                .filter(storedPatternId -> !patternIds.contains(storedPatternId))
+                .forEach(removedPatternId -> {
+                    try {
+                        sectionPreferences.node(removedPatternId).removeNode();
+                    } catch (BackingStoreException e) {
+                        LOG.error("Error removing Pattern from preferences", e);
+                    }
+                });
+    }
+
     private void savePatternDetails(KometPreferences sectionPreferences) {
-        KometPreferences patternPreferences = sectionPreferences.node(patternFacadeToPrefsDirName(patternFacade));
+        KometPreferences patternPreferences = sectionPreferences.node(id);
+
+        // the Pattern placed, which is what the placement's id stands for
+        patternPreferences.putEntity(PATTERN_COMPONENT, patternFacade);
 
         // title: stored only when the user authored one, so that a title left as the Pattern's
         // description keeps following that description rather than freezing the text it had here.
@@ -392,6 +431,14 @@ public class EditorPatternModel extends EditorGridNodeModel {
      * the machine-local nid) when the Pattern needs to be stored in preferences.
      */
     public PatternFacade getPatternFacade() { return patternFacade; }
+
+    // -- id
+    /**
+     * This placement's id, and the name of the preferences sub-node its details are stored under. It
+     * identifies the placement rather than the Pattern, so that the same Pattern placed twice in a
+     * Section keeps two sets of details rather than the two placements sharing (and overwriting) one.
+     */
+    public String getId() { return id; }
 
     // -- parent section
     private ReadOnlyObjectWrapper<EditorSectionModel> parentSection = new ReadOnlyObjectWrapper<>();
