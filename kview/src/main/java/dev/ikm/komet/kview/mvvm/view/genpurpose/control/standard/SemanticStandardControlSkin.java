@@ -51,4 +51,18 @@ public class SemanticStandardControlSkin extends SkinBase<SemanticStandardContro
             }
         });
     }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * {@code SkinBase} measures children with {@code prefHeight(-1)}, which for a field whose value
+     * wraps reports a single line. The fields grid is measured at the width actually available
+     * instead, so a semantic containing a long value is tall enough for all of its fields.
+     */
+    @Override
+    protected double computePrefHeight(double width, double topInset, double rightInset,
+                                       double bottomInset, double leftInset) {
+        double contentWidth = width < 0 ? -1 : width - leftInset - rightInset;
+        return topInset + fieldsContainer.prefHeight(contentWidth) + bottomInset;
+    }
 }

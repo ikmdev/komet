@@ -3,6 +3,7 @@ package dev.ikm.komet.kview.controls;
 import dev.ikm.komet.kview.controls.skin.KLReadOnlyDataTypeControlSkin;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.geometry.Orientation;
 import javafx.scene.control.Skin;
 
 public class KLReadOnlyDataTypeControl<T> extends KLReadOnlyBaseSingleValueControl<T> {
@@ -52,6 +53,19 @@ public class KLReadOnlyDataTypeControl<T> extends KLReadOnlyBaseSingleValueContr
     public void setDataType(String value) throws ClassNotFoundException {
         classDataType = (Class<T>) Class.forName(value);
         this.dataType = value;
+    }
+
+    /**
+     * The value is displayed in a wrapping label, so this control's height depends on the width it
+     * is given. Neither {@code Control} nor {@code SkinBase} reports a content bias, so without this
+     * override parents would size the control with {@code prefHeight(-1)} and only ever make room
+     * for a single line of text.
+     *
+     * @return {@link Orientation#HORIZONTAL}
+     */
+    @Override
+    public Orientation getContentBias() {
+        return Orientation.HORIZONTAL;
     }
 
     @Override

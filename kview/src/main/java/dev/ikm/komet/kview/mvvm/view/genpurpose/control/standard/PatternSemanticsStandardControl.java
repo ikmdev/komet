@@ -6,6 +6,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Orientation;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
@@ -21,6 +22,18 @@ public class PatternSemanticsStandardControl extends Control {
     @Override
     protected Skin<?> createDefaultSkin() {
         return new PatternSemanticsStandardControlSkin(this);
+    }
+
+    /**
+     * The semantics this control lists hold fields whose values wrap, so its height depends on the
+     * width it is given. The skin already measures at a width; this makes the enclosing layouts
+     * supply one rather than measuring with {@code prefHeight(-1)}.
+     *
+     * @return {@link Orientation#HORIZONTAL}
+     */
+    @Override
+    public Orientation getContentBias() {
+        return Orientation.HORIZONTAL;
     }
 
     // -- semantics

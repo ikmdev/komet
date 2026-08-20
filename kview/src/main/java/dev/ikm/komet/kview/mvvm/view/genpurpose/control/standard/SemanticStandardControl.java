@@ -7,6 +7,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Orientation;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
@@ -22,6 +23,19 @@ public class SemanticStandardControl extends Control {
     @Override
     protected Skin<?> createDefaultSkin() {
         return new SemanticStandardControlSkin(this);
+    }
+
+    /**
+     * A field's value wraps, so a field's height — and with it this control's height — depends on
+     * the width its column gives it. Without a content bias the enclosing layouts measure this
+     * control with {@code prefHeight(-1)} and only make room for single-line fields, which squeezes
+     * every field in the semantic.
+     *
+     * @return {@link Orientation#HORIZONTAL}
+     */
+    @Override
+    public Orientation getContentBias() {
+        return Orientation.HORIZONTAL;
     }
 
     // -- read only fields
