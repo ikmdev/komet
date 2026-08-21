@@ -5,14 +5,17 @@ import dev.ikm.komet.layout.PatternDefinitionSeeder;
 import dev.ikm.komet.layout.PatternDefinitionTerms;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternRequirement;
+import dev.ikm.komet.layout.editor.model.EditorPatternSemanticFilter;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowType;
+import dev.ikm.komet.layout.editor.property.StandardPatternProperties;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.service.RemoteConceptSearchService;
 import dev.ikm.tinkar.common.service.ServiceLifecycleManager;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,13 +41,16 @@ public final class StandardEditorWindows {
     /** Title of the standard Pattern window. */
     public static final String PATTERN_WINDOW_2 = "Pattern (2)";
 
+    /** Name of the section holding the Description pattern, in both standard windows. */
+    private static final String DESCRIPTION_SECTION_NAME = "Description";
+
     /**
      * Version of the standard window definitions authored below. Bump this whenever a standard
      * window's definition changes: seeded definitions carrying an older version are removed and
      * re-seeded from the current code, so application-shipped windows never go stale in the
      * preferences. User-authored windows live in the user-windows folder and are untouched.
      */
-    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 5;
+    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 7;
 
     /** Preferences key holding the version the seeded standard windows were created from. */
     private static final String STANDARD_WINDOWS_VERSION_KEY = "STANDARD-WINDOWS-VERSION";
@@ -98,11 +104,12 @@ public final class StandardEditorWindows {
     }
 
     /**
-     * The standard Concept window: a main section containing the Description pattern, plus an
-     * "Axiom" section with the Inferred definition pattern on top and the Stated definition
-     * pattern below it. The Description and Stated definition patterns are required when the
-     * window is opened in the Journal in create mode; the Description pattern additionally
-     * requires one of its semantics to be the concept's fully qualified name.
+     * The standard Concept window: a main "Description" section laying the Description pattern out in
+     * three columns — fully qualified names, other names and definitions (see
+     * {@link #populateConceptDescriptionSection}) — plus an "Axiom" section with the Inferred
+     * definition pattern on top and the Stated definition pattern below it. The fully qualified name
+     * column and the Stated definition pattern are required when the window is opened in the Journal
+     * in create mode.
      */
     private static void saveConceptWindow2(KometPreferences standardWindowsPreferences,
                                            ViewCalculator viewCalculator) {
@@ -112,14 +119,127 @@ public final class StandardEditorWindows {
         window.setTimelineVisible(true);
 
         // Description
-        EditorPatternModel descriptionPattern = createRequiredDescriptionPattern(viewCalculator);
-        window.getMainSection().getPatterns().add(descriptionPattern);
+        populateConceptDescriptionSection(viewCalculator, window.getMainSection());
 
         // Axiom
         EditorSectionModel axiomSection = createAxiomSection(viewCalculator);
         window.getAdditionalSections().add(axiomSection);
 
         window.save(standardWindowsPreferences);
+    }
+
+    /**
+     * Turns the separator between consecutive semantics off for every pattern in the section. Applied
+     * to the section in one pass rather than pattern by pattern, so a pattern added to it later comes
+     * without separators too.
+     *
+     * <p>Separators are a Standard-factory property ({@link StandardPatternProperties}), so a pattern
+     * shown through another factory — the Table factory lays its semantics out as table rows — has no
+     * such property and is left alone.
+     */
+    private static void hideSemanticSeparators(EditorSectionModel section) {
+        for (EditorPatternModel pattern : section.getPatterns()) {
+            if (pattern.getFactoryProperties() instanceof StandardPatternProperties standardProperties) {
+                standardProperties.setSeparatorVisible(false);
+            }
+        }
+    }
+
+    /**
+     * Lays the passed in section out as the standard Concept window's Description section: the
+     * Description pattern placed once per column — fully qualified names, other names, definitions —
+     * each column showing only the descriptions of its own type (see
+     * {@link EditorPatternSemanticFilter}) under its own title, and only their text (the language,
+     * case significance and description type of every row would repeat what the column already says).
+     * No column separates its descriptions with a line (see {@link #hideSemanticSeparators}).
+     *
+     * <p>The fully qualified name column is the required one, refined so the concept can only be
+     * created once it has a fully qualified name — the same requirement the section carried when it
+     * held a single unfiltered Description pattern.
+     */
+    private static void populateConceptDescriptionSection(ViewCalculator viewCalculator,
+                                                          EditorSectionModel descriptionSection) {
+        ensureLocallyResolvable(viewCalculator, TinkarTerm.DESCRIPTION_PATTERN);
+
+        // Named here rather than left to the section's auto-naming, which would take the name from the
+        // authored title of the first pattern placed in it ("Fully qualified names:").
+        descriptionSection.setName(DESCRIPTION_SECTION_NAME);
+
+        descriptionSection.setNumberColumns(3);
+
+        // FQN
+        EditorPatternModel fullyQualifiedNames = createDescriptionColumn(viewCalculator,
+                "Fully qualified names:", TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE, 0);
+        fullyQualifiedNames.setRequired(true);
+        requireFullyQualifiedName(fullyQualifiedNames, viewCalculator);
+
+        // Other name
+        EditorPatternModel otherNames = createDescriptionColumn(viewCalculator,
+                "Other names:", TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE, 1);
+
+        // Definition
+        EditorPatternModel definitions = createDescriptionColumn(viewCalculator,
+                "Definition:", TinkarTerm.DEFINITION_DESCRIPTION_TYPE, 2);
+
+        descriptionSection.getPatterns().addAll(fullyQualifiedNames, otherNames, definitions);
+
+        hideSemanticSeparators(descriptionSection);
+    }
+
+    /**
+     * One column of the Description section: the Description pattern placed in the passed in column,
+     * titled, showing only the descriptions holding the passed in description type, and of those only
+     * their text.
+     */
+    private static EditorPatternModel createDescriptionColumn(ViewCalculator viewCalculator, String title,
+                                                              EntityProxy.Concept descriptionType,
+                                                              int columnIndex) {
+        EditorPatternModel descriptionColumn =
+                new EditorPatternModel(viewCalculator, TinkarTerm.DESCRIPTION_PATTERN.nid());
+        descriptionColumn.setTitle(title);
+        descriptionColumn.setTitleVisible(true);
+        descriptionColumn.setColumnIndex(columnIndex);
+
+        filterByDescriptionType(descriptionColumn, descriptionType, viewCalculator);
+        showDescriptionTextOnly(descriptionColumn, viewCalculator);
+
+        return descriptionColumn;
+    }
+
+    /**
+     * Shows only the semantics holding {@code descriptionType} in the Description pattern's
+     * "Description type" field (see {@link EditorPatternSemanticFilter}).
+     */
+    private static void filterByDescriptionType(EditorPatternModel descriptionPattern,
+                                                EntityProxy.Concept descriptionType,
+                                                ViewCalculator viewCalculator) {
+        ensureLocallyResolvable(viewCalculator, descriptionType);
+
+        viewCalculator.latestPatternEntityVersion(TinkarTerm.DESCRIPTION_PATTERN).ifPresent(patternVersion -> {
+            EditorPatternSemanticFilter descriptionTypeFilter = new EditorPatternSemanticFilter();
+            descriptionTypeFilter.getFieldConstraints().put(
+                    patternVersion.indexForMeaning(TinkarTerm.DESCRIPTION_TYPE),
+                    descriptionType);
+            descriptionPattern.getSemanticFilters().add(descriptionTypeFilter);
+        });
+    }
+
+    /**
+     * Reduces the pattern's displayed fields to the description's text, shown without its field title:
+     * the column's own title names what the text is.
+     */
+    private static void showDescriptionTextOnly(EditorPatternModel descriptionPattern,
+                                                ViewCalculator viewCalculator) {
+        viewCalculator.latestPatternEntityVersion(TinkarTerm.DESCRIPTION_PATTERN).ifPresent(patternVersion -> {
+            int textFieldIndex = patternVersion.indexForMeaning(TinkarTerm.TEXT_FOR_DESCRIPTION);
+            descriptionPattern.getVisibleFields().removeIf(field -> field.getIndex() != textFieldIndex);
+            descriptionPattern.getVisibleFields().forEach(textField -> {
+                // The fields were laid out one per row in pattern order, so the text field kept the row
+                // of its index — with the fields above it gone, it moves up to the first row.
+                textField.setRowIndex(0);
+                textField.setTitleVisible(false);
+            });
+        });
     }
 
     /**
@@ -174,9 +294,11 @@ public final class StandardEditorWindows {
     }
 
     /**
-     * The Description pattern, required and refined so at least one of its semantics is a fully
-     * qualified name. Shared by the standard Concept and Pattern windows: neither a concept nor a
-     * pattern can be created without a fully qualified name.
+     * The Description pattern as the standard Pattern window places it — showing every description of
+     * the pattern in one column — required and refined so at least one of its semantics is a fully
+     * qualified name: a pattern can't be created without one, just as a concept can't (the Concept
+     * window carries that same requirement on its fully qualified name column, see
+     * {@link #populateConceptDescriptionSection}).
      */
     private static EditorPatternModel createRequiredDescriptionPattern(ViewCalculator viewCalculator) {
         ensureLocallyResolvable(viewCalculator, TinkarTerm.DESCRIPTION_PATTERN);
@@ -243,7 +365,7 @@ public final class StandardEditorWindows {
 
     private static EditorSectionModel createPatternDescriptionSection(ViewCalculator viewCalculator) {
         EditorSectionModel descriptionSection = new EditorSectionModel();
-        descriptionSection.setName("Description");
+        descriptionSection.setName(DESCRIPTION_SECTION_NAME);
         descriptionSection.getPatterns().add(createRequiredDescriptionPattern(viewCalculator));
         return descriptionSection;
     }

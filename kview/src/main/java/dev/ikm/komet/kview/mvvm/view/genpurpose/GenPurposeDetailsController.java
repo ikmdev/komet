@@ -932,6 +932,15 @@ public class GenPurposeDetailsController {
                         semanticLabel.hoverProperty().subscribe(() -> {
                             PatternSemanticsPresenter patternSemanticsPresenter = semanticEntityToPatternSemanticsPresenter.get(semantic);
 
+                            if (patternSemanticsPresenter == null) {
+                                // The popup lists every semantic of the pattern, while the details area
+                                // shows only the ones passing the pattern's display filters — e.g. the
+                                // standard Concept window's Description columns, which between them show
+                                // fully qualified names, other names and definitions, so a description of
+                                // any other type has no view to preview.
+                                return;
+                            }
+
                             if (semanticLabel.isHover()) {
                                 patternSemanticsPresenter.setPreviewingSemantic(semantic);
                             } else {
