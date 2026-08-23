@@ -84,6 +84,25 @@ public abstract class KLReadOnlyMultiComponentControlSkin<C extends KLReadOnlyMu
         promptTextLabel.getStyleClass().add("prompt-text");
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * {@code SkinBase} sizes children with {@code prefHeight(-1)}, which for the wrapping component
+     * nodes always reports a single line each. The height is computed from the width actually
+     * available instead, so all of the wrapped lines are shown.
+     */
+    @Override
+    protected double computePrefHeight(double width, double topInset, double rightInset, double bottomInset, double leftInset) {
+        double contentWidth = width == -1 ? -1 : width - leftInset - rightInset;
+        return topInset + mainContainer.prefHeight(contentWidth) + bottomInset;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected double computeMinHeight(double width, double topInset, double rightInset, double bottomInset, double leftInset) {
+        return computePrefHeight(width, topInset, rightInset, bottomInset, leftInset);
+    }
+
     protected void removeUIItem(ComponentItem componentItem) {
         Node componentRow = componentUIItems.get(componentItem);
         componentsContainer.getChildren().remove(componentRow);

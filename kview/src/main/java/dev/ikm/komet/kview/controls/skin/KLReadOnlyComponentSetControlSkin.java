@@ -40,6 +40,9 @@ public class KLReadOnlyComponentSetControlSkin extends KLReadOnlyMultiComponentC
 
     private void addNewUIItem(ComponentItem componentItem) {
         ComponentItemNode componentItemNode = ComponentItemNodeFactory.create(componentItem);
+        // A component's description can be arbitrarily long, so it wraps onto as many lines as it
+        // needs instead of running past the field's — and the card's — edge.
+        componentItemNode.setWrapText(true);
         componentsContainer.getChildren().add(componentItemNode);
         componentUIItems.put(componentItem, componentItemNode);
 

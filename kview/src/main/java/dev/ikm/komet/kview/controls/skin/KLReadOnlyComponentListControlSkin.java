@@ -8,6 +8,7 @@ import javafx.collections.ListChangeListener;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 
 public class KLReadOnlyComponentListControlSkin extends KLReadOnlyMultiComponentControlSkin<KLReadOnlyComponentListControl> {
 
@@ -46,9 +47,15 @@ public class KLReadOnlyComponentListControlSkin extends KLReadOnlyMultiComponent
 
         Label numberLabel = new Label();
         numberLabel.getStyleClass().add("number-label");
+        // HBox shrinks every child when the row is narrower than its content, and the wrapping
+        // component alongside always asks for more width than the field has. Hold the ordinal at
+        // its natural width so it never ellipsizes away to "…".
+        numberLabel.setMinWidth(Region.USE_PREF_SIZE);
 
-        // Component (Icon + Text)
+        // Component (Icon + Text). A component's description can be arbitrarily long, so it wraps
+        // onto as many lines as it needs instead of running past the field's — and the card's — edge.
         ComponentItemNode componentUIItem = ComponentItemNodeFactory.create(componentItem);
+        componentUIItem.setWrapText(true);
 
         componentRow.getChildren().addAll(
             numberLabel,
