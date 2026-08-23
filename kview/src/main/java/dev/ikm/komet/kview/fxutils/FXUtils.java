@@ -310,4 +310,47 @@ public abstract class FXUtils {
         }
     }
 
+    /**
+     * Distributes {@code availableSize} among items that ask for {@code prefSizes}: every item gets
+     * at most the size it prefers, and an item only gets less than that when the items asking for
+     * more than an equal share cannot all be satisfied — those tall items then share whatever the
+     * shorter ones left over.
+     *
+     * @param prefSizes     the size each item prefers, in item order
+     * @param availableSize the size to distribute between them
+     * @return the size allotted to each item, in the same order
+     */
+    public static double[] capAtFairShare(double[] prefSizes, double availableSize) {
+        int itemCount = prefSizes.length;
+        double[] sizes = new double[itemCount];
+        boolean[] keepsPref = new boolean[itemCount];
+        double remaining = Math.max(0, availableSize);
+        int uncapped = itemCount;
+
+        // Settle the items that fit within the current fair share; every item settled frees up
+        // share for the rest, so iterate until a full pass settles nothing.
+        boolean settledAny = true;
+        while (settledAny && uncapped > 0) {
+            settledAny = false;
+            double fairShare = remaining / uncapped;
+            for (int i = 0; i < itemCount; i++) {
+                if (!keepsPref[i] && prefSizes[i] <= fairShare) {
+                    keepsPref[i] = true;
+                    sizes[i] = prefSizes[i];
+                    remaining -= prefSizes[i];
+                    uncapped--;
+                    settledAny = true;
+                }
+            }
+        }
+        if (uncapped > 0) {
+            double fairShare = remaining / uncapped;
+            for (int i = 0; i < itemCount; i++) {
+                if (!keepsPref[i]) {
+                    sizes[i] = fairShare;
+                }
+            }
+        }
+        return sizes;
+    }
 }

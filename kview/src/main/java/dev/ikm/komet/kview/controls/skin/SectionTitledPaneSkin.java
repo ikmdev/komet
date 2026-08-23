@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.SectionTitledPane;
+import dev.ikm.komet.kview.fxutils.FXUtils;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
@@ -204,17 +205,31 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
         }
 
         /**
+         * The height the content wants, which is every row's preferred height stacked up. Measured
+         * from the children rather than from the row constraints: those hold the heights the grid's
+         * current height allowed (see {@link #applyRowConstraints()}), so a grid that was once
+         * squeezed would go on asking for the squeezed height and never get its room back.
+         */
+        @Override
+        protected double computePrefHeight(double width) {
+            double contentWidth = width < 0 ? -1 : width - snappedLeftInset() - snappedRightInset();
+            double[] rowPrefHeights = rowPrefHeights(contentWidth);
+            double prefHeight = Math.max(0, rowPrefHeights.length - 1) * getVgap();
+            for (double rowPrefHeight : rowPrefHeights) {
+                prefHeight += rowPrefHeight;
+            }
+            return snappedTopInset() + prefHeight + snappedBottomInset();
+        }
+
+        /**
          * Recomputes the fixed per-row heights for the current size and content and installs them
          * as this grid's row constraints. Guarded so constraints are only touched when the heights
          * actually change — installing them re-requests layout, and the guard is what lets that
          * follow-up pass settle.
          */
         private void applyRowConstraints() {
-            List<Node> children = getManagedChildren();
-            int rowCount = 0;
-            for (Node child : children) {
-                rowCount = Math.max(rowCount, rowIndexOf(child) + 1);
-            }
+            double[] rowPrefHeights = rowPrefHeights(getWidth() - snappedLeftInset() - snappedRightInset());
+            int rowCount = rowPrefHeights.length;
             if (rowCount == 0) {
                 if (appliedRowHeights.length > 0) {
                     appliedRowHeights = new double[0];
@@ -223,25 +238,9 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
                 return;
             }
 
-            // Column widths are uniform (see numberColumnsProperty subscription: every column
-            // gets the same percentWidth), so each child's width — which its preferred height
-            // may depend on — follows from its column span alone.
-            int columnCount = Math.max(1, getColumnConstraints().size());
-            double contentWidth = getWidth() - snappedLeftInset() - snappedRightInset();
-            double columnWidth = (contentWidth - getHgap() * (columnCount - 1)) / columnCount;
-
-            double[] rowPrefHeights = new double[rowCount];
-            for (Node child : children) {
-                Integer span = GridPane.getColumnSpan(child);
-                int columnSpan = span == null ? 1 : span;
-                double cellWidth = columnWidth * columnSpan + getHgap() * (columnSpan - 1);
-                int row = rowIndexOf(child);
-                rowPrefHeights[row] = Math.max(rowPrefHeights[row], child.prefHeight(cellWidth));
-            }
-
             double availableHeight = getHeight() - snappedTopInset() - snappedBottomInset()
                     - getVgap() * (rowCount - 1);
-            double[] rowHeights = capAtFairShare(rowPrefHeights, availableHeight);
+            double[] rowHeights = FXUtils.capAtFairShare(rowPrefHeights, availableHeight);
             for (int i = 0; i < rowHeights.length; i++) {
                 rowHeights[i] = snapSizeY(rowHeights[i]);
             }
@@ -264,48 +263,46 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
             getRowConstraints().setAll(constraints);
         }
 
+        /**
+         * The preferred height of each row — the tallest preferred height among the children in it
+         * — measured at the width the passed in content width leaves each cell. A negative content
+         * width (the grid is being measured without one) leaves the children to their own
+         * unconstrained preferred height.
+         */
+        private double[] rowPrefHeights(double contentWidth) {
+            List<Node> children = getManagedChildren();
+            int rowCount = 0;
+            for (Node child : children) {
+                rowCount = Math.max(rowCount, rowIndexOf(child) + 1);
+            }
+            if (rowCount == 0) {
+                return new double[0];
+            }
+
+            // Column widths are uniform (see numberColumnsProperty subscription: every column
+            // gets the same percentWidth), so each child's width — which its preferred height
+            // may depend on — follows from its column span alone.
+            int columnCount = Math.max(1, getColumnConstraints().size());
+            double columnWidth = contentWidth < 0
+                    ? -1
+                    : (contentWidth - getHgap() * (columnCount - 1)) / columnCount;
+
+            double[] rowPrefHeights = new double[rowCount];
+            for (Node child : children) {
+                Integer span = GridPane.getColumnSpan(child);
+                int columnSpan = span == null ? 1 : span;
+                double cellWidth = columnWidth < 0
+                        ? -1
+                        : columnWidth * columnSpan + getHgap() * (columnSpan - 1);
+                int row = rowIndexOf(child);
+                rowPrefHeights[row] = Math.max(rowPrefHeights[row], child.prefHeight(cellWidth));
+            }
+            return rowPrefHeights;
+        }
+
         private static int rowIndexOf(Node child) {
             Integer rowIndex = GridPane.getRowIndex(child);
             return rowIndex == null ? 0 : rowIndex;
-        }
-
-        /**
-         * Allocates the available height among the rows: every row gets at most its preferred
-         * height, and a row only gets less when the rows that need more than an equal split
-         * cannot be satisfied — those tall rows then share what the short rows left over.
-         */
-        private static double[] capAtFairShare(double[] prefHeights, double availableHeight) {
-            int rowCount = prefHeights.length;
-            double[] heights = new double[rowCount];
-            boolean[] keepsPref = new boolean[rowCount];
-            double remaining = Math.max(0, availableHeight);
-            int uncapped = rowCount;
-
-            // Settle the rows that fit within the current fair share; every row settled frees
-            // up share for the rest, so iterate until a full pass settles nothing.
-            boolean settledAny = true;
-            while (settledAny && uncapped > 0) {
-                settledAny = false;
-                double fairShare = remaining / uncapped;
-                for (int i = 0; i < rowCount; i++) {
-                    if (!keepsPref[i] && prefHeights[i] <= fairShare) {
-                        keepsPref[i] = true;
-                        heights[i] = prefHeights[i];
-                        remaining -= prefHeights[i];
-                        uncapped--;
-                        settledAny = true;
-                    }
-                }
-            }
-            if (uncapped > 0) {
-                double fairShare = remaining / uncapped;
-                for (int i = 0; i < rowCount; i++) {
-                    if (!keepsPref[i]) {
-                        heights[i] = fairShare;
-                    }
-                }
-            }
-            return heights;
         }
 
         private boolean heightsChanged(double[] rowHeights) {

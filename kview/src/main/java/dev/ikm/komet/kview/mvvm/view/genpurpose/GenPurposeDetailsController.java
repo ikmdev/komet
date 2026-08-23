@@ -43,6 +43,7 @@ import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
+import dev.ikm.komet.kview.controls.ContentSizedSplitPane;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.KlWindowControlToolbar;
@@ -201,7 +202,7 @@ public class GenPurposeDetailsController {
     @FXML
     StampViewControl stampViewControl;
     @FXML
-    private SplitPane mainContent;
+    private ContentSizedSplitPane mainContent;
     @FXML
     private BorderPane detailsOuterBorderPane;
     @FXML
@@ -269,7 +270,9 @@ public class GenPurposeDetailsController {
 
         // When the window resizes vertically only the bottom section should grow or shrink; the
         // SplitPane's default is to spread the delta across every section proportionally, so pin
-        // all items except the last one.
+        // all items except the last one. This takes over once the user has claimed the sections'
+        // sizing by dragging a divider — until then ContentSizedSplitPane sizes every section to
+        // its content and hands the leftover height to that same last section.
         mainContent.getItems().subscribe(() -> {
             List<Node> items = mainContent.getItems();
             items.forEach(item -> SplitPane.setResizableWithParent(item, item == items.getLast()));
