@@ -14,6 +14,7 @@ import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.property.KlPropertySet;
 import dev.ikm.komet.layout.editor.property.TablePatternProperties;
 import dev.ikm.tinkar.component.FeatureDefinition;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.Field;
@@ -22,6 +23,8 @@ import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 
 public class PatternSemanticsTablePresenter extends AbstractPatternSemanticsPresenter implements PatternSemanticsPresenter {
+
+    private static final Logger LOG = LoggerFactory.getLogger(PatternSemanticsTablePresenter.class);
 
     private final ObservableComposer composer;
     private final ViewProperties viewProperties;
@@ -100,10 +105,20 @@ public class PatternSemanticsTablePresenter extends AbstractPatternSemanticsPres
         // Creating an editable version via composeSemantic()/getEditableVersion() would track this
         // semantic in the shared composer's transaction, causing a spurious new version to be
         // written for every displayed semantic when any single semantic is committed.
-        ObservableSemanticVersion latestVersion = getObservableSemanticFromSemanticEntity(semanticEntity);
+        Latest<ObservableSemanticVersion> latestVersion =
+                latestVersionForView(semanticEntity, viewProperties.calculator());
+        if (latestVersion.isAbsent()) {
+            // The view holds no version of this semantic. The Standard factory renders a
+            // "No version for view" line in the semantic's place; a table row has no equivalent —
+            // its cells are per column, and the columns come from the fields of the rows — so the
+            // semantic is left out of the table rather than listed as a blank row.
+            LOG.debug("Semantic {} has no version for the current view; not listed in the table",
+                    semanticEntity.nid());
+            return;
+        }
 
         List<SemanticField> fields = new ArrayList<>();
-        for (ObservableField<?> observableField : latestVersion.fields()) {
+        for (ObservableField<?> observableField : latestVersion.get().fields()) {
             for (EditorFieldModel editorFieldModel : editorPatternModel.getVisibleFields()) {
                 if (observableField.indexInPattern() == editorFieldModel.getIndex()) {
                     SemanticField field = createField(observableField, editorFieldModel);

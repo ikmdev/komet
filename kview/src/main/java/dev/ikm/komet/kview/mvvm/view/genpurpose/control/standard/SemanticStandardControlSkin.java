@@ -2,6 +2,8 @@ package dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard;
 
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import javafx.beans.binding.Bindings;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -15,6 +17,12 @@ public class SemanticStandardControlSkin extends SkinBase<SemanticStandardContro
     private final GridPane fieldsContainer = new GridPane();
 
     /**
+     * Shown instead of the fields grid while the control carries placeholder text — a semantic with
+     * no version for the current view has no field values to render.
+     */
+    private final Label placeholderLabel = new Label();
+
+    /**
      * Constructor for all SkinBase instances.
      *
      * @param control The control for which this Skin should attach to.
@@ -22,11 +30,16 @@ public class SemanticStandardControlSkin extends SkinBase<SemanticStandardContro
     public SemanticStandardControlSkin(SemanticStandardControl control) {
         super(control);
 
-        getChildren().add(fieldsContainer);
-
         fieldsContainer.getStyleClass().add("fields-container");
+        placeholderLabel.getStyleClass().add("no-version-label");
 
         Bindings.bindContent(fieldsContainer.getChildren(), control.getFields());
+
+        control.placeholderTextProperty().subscribe(placeholderText -> {
+            boolean showPlaceholder = placeholderText != null && !placeholderText.isEmpty();
+            placeholderLabel.setText(placeholderText);
+            getChildren().setAll(showPlaceholder ? placeholderLabel : fieldsContainer);
+        });
 
         control.numberColumnsProperty().subscribe(numberColumns -> {
             List<ColumnConstraints> columns = new ArrayList<>();
@@ -63,6 +76,7 @@ public class SemanticStandardControlSkin extends SkinBase<SemanticStandardContro
     protected double computePrefHeight(double width, double topInset, double rightInset,
                                        double bottomInset, double leftInset) {
         double contentWidth = width < 0 ? -1 : width - leftInset - rightInset;
-        return topInset + fieldsContainer.prefHeight(contentWidth) + bottomInset;
+        Node content = getChildren().isEmpty() ? fieldsContainer : getChildren().getFirst();
+        return topInset + content.prefHeight(contentWidth) + bottomInset;
     }
 }

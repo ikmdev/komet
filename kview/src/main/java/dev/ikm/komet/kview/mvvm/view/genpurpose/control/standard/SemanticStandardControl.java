@@ -5,6 +5,8 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
@@ -41,6 +43,18 @@ public class SemanticStandardControl extends Control {
     // -- read only fields
     private ObservableList<KLReadOnlyBaseControl> readOnlyFields = FXCollections.observableArrayList();
     public  ObservableList<KLReadOnlyBaseControl> getFields() { return readOnlyFields; }
+
+    // -- placeholder text
+    /**
+     * Text rendered in place of this semantic's fields. Set when the semantic has no version for the
+     * current view: there are no field values to lay out, so the semantic shows one muted line saying
+     * so — the treatment the classic concept window gives such a semantic. Null (the default) renders
+     * the fields.
+     */
+    private final StringProperty placeholderText = new SimpleStringProperty();
+    public String getPlaceholderText() { return placeholderText.get(); }
+    public StringProperty placeholderTextProperty() { return placeholderText; }
+    public void setPlaceholderText(String placeholderText) { this.placeholderText.set(placeholderText); }
 
     // -- number columns
     private IntegerProperty numberColumns = new SimpleIntegerProperty();

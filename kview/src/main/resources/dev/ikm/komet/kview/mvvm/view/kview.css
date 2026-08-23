@@ -6863,6 +6863,14 @@ Styling a context menu for kview ui/ux controls
     -fx-font-size: 12px;
 }
 
+/* Same muted line for a semantic the current view holds no version of: it has no field values to
+   lay out, so it says so where its fields would render (the classic concept window's wording). */
+.gen-purpose-window .pattern-container .semantics-container .semantic-view .no-version-label {
+    -fx-text-fill: -Grey-7;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+}
+
 .gen-purpose-window .pattern-container .semantics-container > .separator  > .line {
     -fx-border-width: 0, 0 0 1px 0;
     -fx-border-style: solid, solid;

@@ -11,6 +11,7 @@ import dev.ikm.komet.layout.PatternSemanticsPresenter;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.property.StandardPatternProperties;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.Field;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.SemanticEntity;
@@ -23,6 +24,12 @@ import java.util.Map;
 import java.util.UUID;
 
 public class PatternSemanticsStandardPresenter extends AbstractPatternSemanticsPresenter implements PatternSemanticsPresenter {
+
+    /**
+     * Shown in place of a semantic's fields when the view holds no version of it — the wording the
+     * classic concept window uses for the same situation.
+     */
+    private static final String NO_VERSION_FOR_VIEW_TEXT = "No version for view";
 
     /**
      * Given a SemanticEntity what's its associated Semantic Control.
@@ -93,15 +100,18 @@ public class PatternSemanticsStandardPresenter extends AbstractPatternSemanticsP
         // Creating an editable version via composeSemantic()/getEditableVersion() would track this
         // semantic in the shared composer's transaction, causing a spurious new version to be
         // written for every displayed semantic when any single semantic is committed.
-        ObservableSemanticVersion latestVersion = getObservableSemanticFromSemanticEntity(semanticEntity);
+        Latest<ObservableSemanticVersion> latestVersion =
+                latestVersionForView(semanticEntity, viewProperties.calculator());
 
-        for (ObservableField<?> observableField : latestVersion.fields()) {
-            for (EditorFieldModel editorFieldModel : editorPatternModel.getVisibleFields()) {
-                if (observableField.indexInPattern() == editorFieldModel.getIndex()) {
-                    addFieldView(observableField, editorFieldModel, semanticViewControl);
+        latestVersion.ifPresentOrElse(version -> {
+            for (ObservableField<?> observableField : version.fields()) {
+                for (EditorFieldModel editorFieldModel : editorPatternModel.getVisibleFields()) {
+                    if (observableField.indexInPattern() == editorFieldModel.getIndex()) {
+                        addFieldView(observableField, editorFieldModel, semanticViewControl);
+                    }
                 }
             }
-        }
+        }, () -> semanticViewControl.setPlaceholderText(NO_VERSION_FOR_VIEW_TEXT));
 
         // The column count is a Standard-factory property; bind it from the pattern's factory property set.
         semanticViewControl.numberColumnsProperty().bind(factoryProperties.numberColumnsProperty());
