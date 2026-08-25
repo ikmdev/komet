@@ -50,7 +50,7 @@ public final class StandardEditorWindows {
      * re-seeded from the current code, so application-shipped windows never go stale in the
      * preferences. User-authored windows live in the user-windows folder and are untouched.
      */
-    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 7;
+    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 8;
 
     /** Preferences key holding the version the seeded standard windows were created from. */
     private static final String STANDARD_WINDOWS_VERSION_KEY = "STANDARD-WINDOWS-VERSION";
@@ -105,7 +105,8 @@ public final class StandardEditorWindows {
 
     /**
      * The standard Concept window: a main "Description" section laying the Description pattern out in
-     * three columns — fully qualified names, other names and definitions (see
+     * two rows — fully qualified names and other names side by side, definitions spanning both
+     * columns below them (see
      * {@link #populateConceptDescriptionSection}) — plus an "Axiom" section with the Inferred
      * definition pattern on top and the Stated definition pattern below it. The fully qualified name
      * column and the Stated definition pattern are required when the window is opened in the Journal
@@ -147,13 +148,14 @@ public final class StandardEditorWindows {
 
     /**
      * Lays the passed in section out as the standard Concept window's Description section: the
-     * Description pattern placed once per column — fully qualified names, other names, definitions —
-     * each column showing only the descriptions of its own type (see
+     * Description pattern placed once per description type over two rows — fully qualified names and
+     * other names side by side on the first row, definitions spanning both columns on the row below —
+     * each placement showing only the descriptions of its own type (see
      * {@link EditorPatternSemanticFilter}) under its own title, and only their text (the language,
-     * case significance and description type of every row would repeat what the column already says).
-     * No column separates its descriptions with a line (see {@link #hideSemanticSeparators}).
+     * case significance and description type of every row would repeat what the placement already says).
+     * No placement separates its descriptions with a line (see {@link #hideSemanticSeparators}).
      *
-     * <p>The fully qualified name column is the required one, refined so the concept can only be
+     * <p>The fully qualified name placement is the required one, refined so the concept can only be
      * created once it has a fully qualified name — the same requirement the section carried when it
      * held a single unfiltered Description pattern.
      */
@@ -165,7 +167,7 @@ public final class StandardEditorWindows {
         // authored title of the first pattern placed in it ("Fully qualified names:").
         descriptionSection.setName(DESCRIPTION_SECTION_NAME);
 
-        descriptionSection.setNumberColumns(3);
+        descriptionSection.setNumberColumns(2);
 
         // FQN
         EditorPatternModel fullyQualifiedNames = createDescriptionColumn(viewCalculator,
@@ -179,7 +181,9 @@ public final class StandardEditorWindows {
 
         // Definition
         EditorPatternModel definitions = createDescriptionColumn(viewCalculator,
-                "Definition:", TinkarTerm.DEFINITION_DESCRIPTION_TYPE, 2);
+                "Definition:", TinkarTerm.DEFINITION_DESCRIPTION_TYPE, 0);
+        definitions.setRowIndex(1);
+        definitions.setColumnSpan(2);
 
         descriptionSection.getPatterns().addAll(fullyQualifiedNames, otherNames, definitions);
 
