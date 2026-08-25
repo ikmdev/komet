@@ -3,6 +3,7 @@ package dev.ikm.komet.layout.editor;
 import dev.ikm.komet.layout.KlPatternSemanticsFactories;
 import dev.ikm.komet.layout.PatternDefinitionSeeder;
 import dev.ikm.komet.layout.PatternDefinitionTerms;
+import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternRequirement;
 import dev.ikm.komet.layout.editor.model.EditorPatternSemanticFilter;
@@ -50,7 +51,7 @@ public final class StandardEditorWindows {
      * re-seeded from the current code, so application-shipped windows never go stale in the
      * preferences. User-authored windows live in the user-windows folder and are untouched.
      */
-    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 8;
+    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 9;
 
     /** Preferences key holding the version the seeded standard windows were created from. */
     private static final String STANDARD_WINDOWS_VERSION_KEY = "STANDARD-WINDOWS-VERSION";
@@ -148,19 +149,39 @@ public final class StandardEditorWindows {
 
     /**
      * Lays the passed in section out as the standard Concept window's Description section: the
-     * Description pattern placed once per description type over two rows — fully qualified names and
-     * other names side by side on the first row, definitions spanning both columns on the row below —
-     * each placement showing only the descriptions of its own type (see
-     * {@link EditorPatternSemanticFilter}) under its own title, and only their text (the language,
-     * case significance and description type of every row would repeat what the placement already says).
-     * No placement separates its descriptions with a line (see {@link #hideSemanticSeparators}).
-     *
-     * <p>The fully qualified name placement is the required one, refined so the concept can only be
-     * created once it has a fully qualified name — the same requirement the section carried when it
-     * held a single unfiltered Description pattern.
+     * name columns both standard windows share (see {@link #populateDescriptionNameColumns}), plus
+     * the Description pattern placed a third time for the definitions, spanning both columns on the
+     * row below the names.
      */
     private static void populateConceptDescriptionSection(ViewCalculator viewCalculator,
                                                           EditorSectionModel descriptionSection) {
+        populateDescriptionNameColumns(viewCalculator, descriptionSection);
+
+        // Definition
+        EditorPatternModel definitions = createDescriptionColumn(viewCalculator,
+                "Definition:", TinkarTerm.DEFINITION_DESCRIPTION_TYPE, 0);
+        definitions.setRowIndex(1);
+        definitions.setColumnSpan(2);
+        descriptionSection.getPatterns().add(definitions);
+
+        hideSemanticSeparators(descriptionSection);
+    }
+
+    /**
+     * Lays the passed in section out as the two-column Description row both standard windows share:
+     * the Description pattern placed once per column — fully qualified names on the left, other
+     * names on the right — each placement showing only the descriptions of its own type (see
+     * {@link EditorPatternSemanticFilter}) under its own title, and only their text (the language,
+     * case significance and description type of every row would repeat what the placement already
+     * says). Separators are the caller's concern (see {@link #hideSemanticSeparators}), applied once
+     * every pattern is placed.
+     *
+     * <p>The fully qualified name placement is the required one, refined so the window's component
+     * can only be created once it has a fully qualified name — the same requirement the section
+     * carried when it held a single unfiltered Description pattern.
+     */
+    private static void populateDescriptionNameColumns(ViewCalculator viewCalculator,
+                                                       EditorSectionModel descriptionSection) {
         ensureLocallyResolvable(viewCalculator, TinkarTerm.DESCRIPTION_PATTERN);
 
         // Named here rather than left to the section's auto-naming, which would take the name from the
@@ -179,15 +200,7 @@ public final class StandardEditorWindows {
         EditorPatternModel otherNames = createDescriptionColumn(viewCalculator,
                 "Other names:", TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE, 1);
 
-        // Definition
-        EditorPatternModel definitions = createDescriptionColumn(viewCalculator,
-                "Definition:", TinkarTerm.DEFINITION_DESCRIPTION_TYPE, 0);
-        definitions.setRowIndex(1);
-        definitions.setColumnSpan(2);
-
-        descriptionSection.getPatterns().addAll(fullyQualifiedNames, otherNames, definitions);
-
-        hideSemanticSeparators(descriptionSection);
+        descriptionSection.getPatterns().addAll(fullyQualifiedNames, otherNames);
     }
 
     /**
@@ -248,12 +261,14 @@ public final class StandardEditorWindows {
 
     /**
      * The standard Pattern window: the pattern is defined through the pattern-definition patterns —
-     * a "Pattern Definition" section with the Meaning and Purpose pattern, a "Description" section
-     * with the Description pattern, and a "Fields" section with the Fields pattern shown as a table
-     * (one row per field of the pattern being defined). The Meaning and Purpose and Description
-     * patterns are required when the window is opened in the Journal in create mode, and — as in the
-     * Concept window — the Description pattern additionally requires one of its semantics to be the
-     * pattern's fully qualified name; Fields is not required (a membership pattern has no fields).
+     * a "Pattern Definition" section with the Meaning and Purpose pattern laid out in two columns
+     * (meaning left, purpose right), a "Description" section laying the Description pattern out in
+     * the same two name columns as the Concept window (see
+     * {@link #populateDescriptionNameColumns}), and a "Fields" section with the Fields pattern shown
+     * as a table (one row per field of the pattern being defined). The Meaning and Purpose pattern and the fully
+     * qualified name column are required when the window is opened in the Journal in create mode —
+     * so, as in the Concept window, the pattern can only be created once it has a fully qualified
+     * name; Fields is not required (a membership pattern has no fields).
      * Unlike the Concept window it keeps the default grey
      * chrome (see the concept-window-theme rules in kview.css, applied only to
      * {@link EditorWindowType#STANDARD_CONCEPT}).
@@ -295,23 +310,6 @@ public final class StandardEditorWindows {
         statedDefinitionPattern.setRowIndex(1);
         axiomSection.getPatterns().addAll(inferredDefinitionPattern, statedDefinitionPattern);
         return axiomSection;
-    }
-
-    /**
-     * The Description pattern as the standard Pattern window places it — showing every description of
-     * the pattern in one column — required and refined so at least one of its semantics is a fully
-     * qualified name: a pattern can't be created without one, just as a concept can't (the Concept
-     * window carries that same requirement on its fully qualified name column, see
-     * {@link #populateConceptDescriptionSection}).
-     */
-    private static EditorPatternModel createRequiredDescriptionPattern(ViewCalculator viewCalculator) {
-        ensureLocallyResolvable(viewCalculator, TinkarTerm.DESCRIPTION_PATTERN);
-
-        EditorPatternModel descriptionPattern =
-                new EditorPatternModel(viewCalculator, TinkarTerm.DESCRIPTION_PATTERN.nid());
-        descriptionPattern.setRequired(true);
-        requireFullyQualifiedName(descriptionPattern, viewCalculator);
-        return descriptionPattern;
     }
 
     /**
@@ -369,8 +367,8 @@ public final class StandardEditorWindows {
 
     private static EditorSectionModel createPatternDescriptionSection(ViewCalculator viewCalculator) {
         EditorSectionModel descriptionSection = new EditorSectionModel();
-        descriptionSection.setName(DESCRIPTION_SECTION_NAME);
-        descriptionSection.getPatterns().add(createRequiredDescriptionPattern(viewCalculator));
+        populateDescriptionNameColumns(viewCalculator, descriptionSection);
+        hideSemanticSeparators(descriptionSection);
         return descriptionSection;
     }
 
@@ -379,6 +377,17 @@ public final class StandardEditorWindows {
         EditorPatternModel meaningAndPurposePattern = new EditorPatternModel(viewCalculator,
                 PatternDefinitionTerms.MEANING_AND_PURPOSE_PATTERN.nid());
         meaningAndPurposePattern.setRequired(true);
+
+        // The pattern's two fields side by side — meaning in the left column, purpose in the right
+        // (the pattern defines them in that order) — rather than stacked one per row.
+        if (meaningAndPurposePattern.getFactoryProperties() instanceof StandardPatternProperties standardProperties) {
+            standardProperties.setNumberColumns(2);
+        }
+        for (EditorFieldModel field : meaningAndPurposePattern.getVisibleFields()) {
+            field.setRowIndex(0);
+            field.setColumnIndex(field.getIndex());
+        }
+
         definitionSection.getPatterns().add(meaningAndPurposePattern);
     }
 }
