@@ -77,7 +77,7 @@ public class PatternSemanticsTablePresenter extends AbstractPatternSemanticsPres
 
         patternSemanticsControl.setEntityProxyToComponentItem(entityProxy -> {
             String description = viewCalculator.languageCalculator()
-                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
+                    .getDescriptionTextOrNid(entityProxy.nid());
             Image identicon = Identicon.generateIdenticonImage(entityProxy.publicId());
 
             boolean isConcept = EntityHandle.get(entityProxy.publicId()).isConcept();
@@ -89,7 +89,7 @@ public class PatternSemanticsTablePresenter extends AbstractPatternSemanticsPres
             Image icon = Identicon.generateIdenticonImage(entityProxy.publicId());
 
             String description = viewCalculator.languageCalculator()
-                    .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
+                    .getDescriptionTextOrNid(entityProxy.nid());
 
             boolean isConcept = EntityHandle.get(entityProxy.publicId()).isConcept();
 
