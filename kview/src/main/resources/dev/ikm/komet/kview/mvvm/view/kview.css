@@ -6737,6 +6737,20 @@ Styling a context menu for kview ui/ux controls
     -fx-background-insets: 0;
 }
 
+/* ── The gap a collapsed Section keeps below it ─────────────────────────────────────────────
+   The divider below a collapsed Section has nothing left to drag — the Section above it is at its
+   title bar and can neither give nor take height — so it stops reserving the width a grabbable
+   divider needs and keeps only this gap. This is the one knob for that gap; widen or tighten it
+   here. A divider measures itself by its horizontal insets whichever way the pane is oriented,
+   so the gap is the two of them together.
+   The horizontal space is what influences the height the divider has.
+
+   Every other divider keeps the rule above, so the spacing around an expanded Section is
+   untouched. The pseudo-class is set in ContentSizedSplitPane. */
+.gen-purpose-window .split-pane > .split-pane-divider:below-collapsed {
+    -fx-padding: 0 2px 0 2px;
+}
+
 /* Sections */
 .gen-purpose-window .section-titled-pane .section-titled-pane-container {
     /* 12px sides = the shared content gutter (same inset as the banner title / Komet ID) */

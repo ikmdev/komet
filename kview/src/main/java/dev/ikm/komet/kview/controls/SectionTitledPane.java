@@ -22,6 +22,10 @@ public class SectionTitledPane<T> extends TitledPane {
 
     public SectionTitledPane() {
         getStyleClass().add("section-titled-pane");
+
+        // A section opens and closes at once. TitledPane's own transition runs for a fixed 350ms
+        // that is neither settable nor styleable, which is too slow.
+        setAnimated(false);
     }
 
     @Override

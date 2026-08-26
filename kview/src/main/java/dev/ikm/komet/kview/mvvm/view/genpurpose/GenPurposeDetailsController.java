@@ -167,6 +167,13 @@ public class GenPurposeDetailsController {
     private static final PseudoClass FIELD_TITLES_HIDDEN_PSEUDO_CLASS = PseudoClass.getPseudoClass("field-titles-hidden");
 
     /**
+     * Key a collapsed section keeps the content height it gave up under, so expanding it again
+     * hands the window back the very height its collapse closed (see
+     * {@link #resizeWindowWithSection(SectionTitledPane, boolean)}).
+     */
+    private static final String COLLAPSED_CONTENT_HEIGHT_KEY = "gen-purpose-collapsed-content-height";
+
+    /**
      * Given a Pattern what is the Section that has it as its Reference Component.
      */
     private final Map<EditorPatternModel, SectionTitledPane<EntityFacade>> patternReferenceComponentToSectionTitledPane = new HashMap<>();
@@ -397,6 +404,14 @@ public class GenPurposeDetailsController {
         clipChildren(slideoutTrayPane, 0);
         contentViewPane.setLayoutX(-width);
         slideoutTrayPane.setMaxWidth(0);
+
+        // The tray takes the height the window gives it and must not ask for a height of its own.
+        // Left to report one, it ratchets the window: the tray is a Pane, so its preferred height is
+        // its content's, and the content's preferred height is bound to the tray's height just below
+        // — the tray would go on asking for whatever height it already had, and the window could
+        // never shrink back once its sections did (komet-desktop#159).
+        slideoutTrayPane.setMinHeight(0);
+        slideoutTrayPane.setPrefHeight(0);
 
         Region contentRegion = contentViewPane;
         // binding the child's height to the preferred height of hte parent
@@ -857,12 +872,49 @@ public class GenPurposeDetailsController {
 
         sectionModelToTitledPane.put(sectionModel, titledPane);
 
+        // Collapsing a section closes the window by the height the section's content occupied, so
+        // that height leaves the window instead of turning into blank space at the bottom of the
+        // last section (komet-desktop#159).
+        titledPane.expandedProperty().subscribe((_, isExpanded) -> resizeWindowWithSection(titledPane, isExpanded));
+
         // When this section's resolved reference component changes, cascade to any section that anchors
         // on it (i.e. whose reference pattern is displayed in this section), so downstream sections in a
         // reference-component chain re-resolve and re-populate (see komet-desktop #3).
         titledPane.selectedReferenceComponentProperty().subscribe(() -> refreshSectionsAnchoredOn(sectionModel));
 
         return titledPane;
+    }
+
+    /**
+     * Closes or opens the window by the height a section's content occupies, as that section
+     * collapses or expands. Without this a window carrying a height of its own — one restored from a
+     * saved state, or one the user has resized — keeps that height, and the height the collapsed
+     * section gave up simply becomes blank space at the bottom of the last section
+     * (komet-desktop#159).
+     *
+     * <p>A window that carries no height of its own is sized to its content, so it follows the
+     * collapse on its own and is left alone.
+     */
+    private void resizeWindowWithSection(SectionTitledPane<EntityFacade> section, boolean expanded) {
+        final double windowHeight = detailsOuterBorderPane.getPrefHeight();
+        if (windowHeight <= 0 || !(section.getContent() instanceof Region content)) {
+            return;
+        }
+
+        final double delta;
+        if (expanded) {
+            // Give back exactly what collapsing took away. A section that opens for the first time
+            // (one that started collapsed) never gave anything up, so it takes what its content asks for.
+            Object heightGivenUp = section.getProperties().remove(COLLAPSED_CONTENT_HEIGHT_KEY);
+            delta = heightGivenUp instanceof Number number
+                    ? number.doubleValue()
+                    : content.prefHeight(content.getWidth());
+        } else {
+            delta = -content.getHeight();
+            section.getProperties().put(COLLAPSED_CONTENT_HEIGHT_KEY, content.getHeight());
+        }
+
+        detailsOuterBorderPane.setPrefHeight(Math.min(KLWorkspace.MAX_WINDOW_HEIGHT, windowHeight + delta));
     }
 
     private SectionSemanticsComboBoxCell createSectionSemanticsComboBoxCell(ViewProperties viewProperties) {
