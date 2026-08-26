@@ -30,6 +30,13 @@ import dev.ikm.komet.framework.activity.ActivityStream;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
+import dev.ikm.tinkar.common.service.RemoteReasonerService;
+import dev.ikm.tinkar.common.id.PublicIds;
+import org.eclipse.collections.api.factory.primitive.IntLists;
+import org.eclipse.collections.api.factory.primitive.IntSets;
+import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.list.primitive.ImmutableIntList;
+import org.eclipse.collections.api.list.primitive.MutableIntList;
 import dev.ikm.tinkar.reasoner.service.ClassifierResults;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -187,6 +194,105 @@ public class ReasonerResultsController {
                 };
             }
         };
+    }
+
+    /**
+     * Populates the panel from a classification that ran on a remote datastore.
+     *
+     * <p>A separate entry point rather than adapting the outcome into {@link ClassifierResults}:
+     * that type is built from local nids and a full {@code ViewCoordinateRecord}, and a remote
+     * run has neither. In particular the remote service sends the size of the classification
+     * concept set but not its members — they number in the hundreds of thousands and this panel
+     * only ever displays the count — so constructing a ClassifierResults would mean inventing a
+     * list of the right length, which would be a lie to anything that later read it.
+     *
+     * <p>The concept sets that ARE sent arrive as public IDs and are resolved to local nids
+     * here, so the same tree-building tasks as the local path can be reused.
+     */
+    public void setRemoteResults(RemoteReasonerService.RemoteReasonerOutcome outcome) {
+        if (!Platform.isFxApplicationThread()) {
+            Platform.runLater(() -> setRemoteResults(outcome));
+            return;
+        }
+        if (outcome == null) {
+            setResults(null);
+            return;
+        }
+
+        // Same treatment as the local path: a count, then disabled and collapsed.
+        this.conceptSetPane.setText(String.format("Concept set size: %,d",
+                outcome.classifiedConceptCount()));
+        this.conceptSetPane.setDisable(true);
+        this.conceptSetPane.setExpanded(false);
+
+        // Cycles are not reported by the remote service, so there is nothing to show rather
+        // than nothing found — say so instead of implying a clean result.
+        cyclesPane.setText(cyclesPane.getText() + ": not reported remotely");
+        cyclesPane.setDisable(true);
+
+        ImmutableIntList orphans = toNids(outcome.orphans());
+        if (orphans.isEmpty()) {
+            orphansPane.setText(orphansPane.getText() + ": none");
+            orphansPane.setDisable(true);
+        } else {
+            orphansPane.setText(orphansPane.getText() + ": "
+                    + NumberFormat.getInstance().format(orphans.size()));
+            TinkExecutor.threadPool().submit(new PrepareConceptSetTask("Sorting list of orphans",
+                    IntSets.immutable.ofAll(orphans), orphanList.getItems(), this.viewProperties));
+        }
+
+        Set<ImmutableIntList> equivalentSets = outcome.equivalentSets().stream()
+                .map(this::toNids)
+                .collect(java.util.stream.Collectors.toSet());
+        if (equivalentSets.isEmpty()) {
+            equivalenciesPane.setText(equivalenciesPane.getText() + ": none");
+            equivalenciesPane.setDisable(true);
+        } else {
+            equivalenciesPane.setText(equivalenciesPane.getText() + ": "
+                    + NumberFormat.getInstance().format(equivalentSets.size()));
+            TinkExecutor.threadPool().submit(new PrepareClassifierEquivalenciesTask(
+                    Sets.immutable.ofAll(equivalentSets), equivalenciesTree, this.viewProperties));
+        }
+
+        ImmutableIntList inferredChanges = toNids(outcome.conceptsWithInferredChanges());
+        if (inferredChanges.isEmpty()) {
+            inferredChangesPane.setText(inferredChangesPane.getText() + ": none");
+            inferredChangesPane.setDisable(true);
+        } else {
+            inferredChangesPane.setText(inferredChangesPane.getText() + ": "
+                    + NumberFormat.getInstance().format(inferredChanges.size()));
+            TinkExecutor.threadPool().submit(new PrepareConceptSetTask(
+                    "Sorting list of inferred changes", IntSets.immutable.ofAll(inferredChanges),
+                    inferredChangesList.getItems(), this.viewProperties));
+        }
+
+        // Pre-rendered on the server: these describe the coordinate the remote run used, which
+        // is not necessarily this client's.
+        stampTextArea.setText(outcome.stampCoordinateText());
+        logicTextArea.setText(outcome.logicCoordinateText());
+        editTextArea.setText(outcome.editCoordinateText());
+
+        // Advance the view to the remote commit so the newly written inferences are visible,
+        // matching applyCommitTimeToView on the local path.
+        if (outcome.commitTime() > 0 && viewProperties != null) {
+            viewProperties.parentView().stampCoordinate().timeProperty().set(outcome.commitTime());
+            viewProperties.nodeView().stampCoordinate().timeProperty().set(outcome.commitTime());
+        }
+    }
+
+    /**
+     * Resolves public IDs to this store's nids. In gRPC mode an unknown concept is fetched on
+     * demand, so this can block — callers run it off the UI thread.
+     */
+    private ImmutableIntList toNids(java.util.List<java.util.List<java.util.UUID>> publicIds) {
+        MutableIntList nids = IntLists.mutable.empty();
+        for (java.util.List<java.util.UUID> uuids : publicIds) {
+            if (uuids.isEmpty()) {
+                continue;
+            }
+            nids.add(PrimitiveData.nid(PublicIds.of(uuids.toArray(new java.util.UUID[0]))));
+        }
+        return nids.toImmutable();
     }
 
     public void setResults(ClassifierResults classifierResults) {

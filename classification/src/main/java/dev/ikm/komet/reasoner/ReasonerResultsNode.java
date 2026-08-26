@@ -38,6 +38,9 @@ import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.common.service.RemoteReasonerService;
+import dev.ikm.tinkar.common.service.ServiceLifecycleManager;
+import dev.ikm.komet.reasoner.ui.RunRemoteReasonerTask;
 import dev.ikm.komet.reasoner.ui.RunReasonerFullTask;
 import dev.ikm.komet.reasoner.ui.RunReasonerIncrementalTask;
 import dev.ikm.tinkar.common.alert.AlertStreams;
@@ -190,6 +193,15 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 	private void runFullReasoner() {
 //		if (!confirmRun("full"))
 //			return;
+		// A remote datastore classifies on the server: the local ReasonerService SPI is a
+		// stateful pipeline over a local entity store, and in that mode there is no such store
+		// to run it against. Absence of the service is what marks the datastore as local.
+		Optional<RemoteReasonerService> remote =
+				ServiceLifecycleManager.get().getRunningService(RemoteReasonerService.class);
+		if (remote.isPresent()) {
+			runFullReasonerRemotely(remote.get());
+			return;
+		}
 		TinkExecutor.threadPool().execute(() -> {
 			// TODO use a factory for the service and then create here
             LOG.info("Starting full reasoner with coordinate: \n\n " + getViewProperties().calculator().viewCoordinateRecord());
@@ -219,6 +231,42 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 			}
 
 			LOG.info(String.format("Concept count: %,d in %s", conceptCount, task.durationString()));
+		});
+	}
+
+	/**
+	 * Triggers the classification on the remote datastore and feeds the shared progress UI from
+	 * the phases it reports.
+	 *
+	 * <p>The remote pipeline reports the same four phases, in the same order and wording, as the
+	 * local one, so a user sees the same progress either way — the difference is where the work
+	 * happens, not what the run looks like.
+	 */
+	private void runFullReasonerRemotely(RemoteReasonerService remoteReasonerService) {
+		TinkExecutor.threadPool().execute(() -> {
+			LOG.info("Starting full reasoner on the remote datastore");
+			RunRemoteReasonerTask task = new RunRemoteReasonerTask(
+					remoteReasonerService, resultsController::setRemoteResults);
+			TaskWrapper<RemoteReasonerService.RemoteReasonerOutcome> javafxTask = TaskWrapper.make(task);
+			Future<RemoteReasonerService.RemoteReasonerOutcome> future =
+					ProgressHelper.progress(javafxTask, "Cancel Reasoner");
+			try {
+				RemoteReasonerService.RemoteReasonerOutcome outcome = future.get();
+				LOG.info(String.format("Concept count: %,d in %s",
+						outcome.classifiedConceptCount(), task.durationString()));
+			} catch (ExecutionException e) {
+				AlertStreams.dispatchToRoot(e);
+			} catch (InterruptedException ie) {
+				Thread.currentThread().interrupt();
+				LOG.info(ie.getMessage(), ie);
+			} catch (CancellationException ce) {
+				// Cancels the local wait only: the server keeps classifying, because the RPC has
+				// no cancellation hook yet. The user stops watching, not the work.
+				LOG.info(ce.getMessage(), ce);
+				task.updateMessage("Stopped waiting for the remote reasoner");
+				task.cancel();
+				ProgressHelper.cancel(javafxTask);
+			}
 		});
 	}
 
