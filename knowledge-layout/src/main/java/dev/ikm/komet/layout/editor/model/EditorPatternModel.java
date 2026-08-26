@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -199,12 +200,13 @@ public class EditorPatternModel extends EditorGridNodeModel {
                 .map(EditorPatternSemanticFilter::fromPreferenceString)
                 .toList());
 
-        // The fields the author kept. The constructor laid out one per field definition, so this drops
-        // the ones that were removed. A layout stored before fields could be removed has no list and
-        // keeps them all.
+        // The fields the author kept, in the order the author arranged them. The constructor laid out
+        // one per field definition, so this drops the ones that were removed and restores the stored
+        // order. A layout stored before fields could be removed has no list and keeps them all.
         patternPreferences.getOptionalList(FIELDS_LIST).ifPresent(shownFieldIndexes -> {
-            List<Integer> indexes = shownFieldIndexes.stream().map(Integer::valueOf).toList();
-            visibleFields.removeIf(field -> !indexes.contains(field.getIndex()));
+            List<Integer> savedIndexes = shownFieldIndexes.stream().map(Integer::valueOf).toList();
+            visibleFields.removeIf(field -> !savedIndexes.contains(field.getIndex()));
+            visibleFields.sort(Comparator.comparingInt(field -> savedIndexes.indexOf(field.getIndex())));
         });
 
         for (EditorFieldModel fieldModel : getVisibleFields()) {
@@ -302,7 +304,8 @@ public class EditorPatternModel extends EditorGridNodeModel {
                 .map(EditorPatternSemanticFilter::toPreferenceString)
                 .toList());
 
-        // the fields shown, so that the ones the author removed from the layout stay removed
+        // the fields shown, in display order, so that the ones the author removed from the layout
+        // stay removed and the order the author arranged them in is kept
         patternPreferences.putList(FIELDS_LIST, visibleFields.stream()
                 .map(field -> String.valueOf(field.getIndex()))
                 .toList());

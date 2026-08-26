@@ -10,6 +10,7 @@ import dev.ikm.komet.layout.editor.model.EditorSupplementalAreaModel;
 import dev.ikm.komet.layout.editor.property.StandardPatternProperties;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class KlEditorWindowControlFactory {
     private static final HashMap<EditorWindowBaseControl, EditorModelBase> windowControlToModel = new HashMap<>();
@@ -64,10 +65,22 @@ public class KlEditorWindowControlFactory {
 
         updateMaps(editorPatternModel, patternTableViewControl);
 
-        // A table renders each field as a column header (no FieldViewControls).
+        // A table renders each field as a column header (no FieldViewControls); each column carries
+        // the field it stands for.
         for (EditorFieldModel fieldModel : editorPatternModel.getVisibleFields()) {
-            patternTableViewControl.addColumn(fieldModel.titleProperty());
+            patternTableViewControl.addColumn(fieldModel.titleProperty()).setUserData(fieldModel);
         }
+
+        // Dragging a column header is how the author reorders a table pattern's fields, so write the
+        // column order back into the model — the order save persists and the journal renders in.
+        patternTableViewControl.getColumns().subscribe(() -> {
+            List<EditorFieldModel> fieldOrder = patternTableViewControl.getColumns().stream()
+                    .map(column -> (EditorFieldModel) column.getUserData())
+                    .toList();
+            if (!fieldOrder.equals(editorPatternModel.getVisibleFields())) {
+                editorPatternModel.getVisibleFields().setAll(fieldOrder);
+            }
+        });
 
         return patternTableViewControl;
     }

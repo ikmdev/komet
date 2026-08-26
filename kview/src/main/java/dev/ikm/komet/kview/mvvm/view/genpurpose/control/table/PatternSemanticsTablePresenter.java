@@ -117,9 +117,11 @@ public class PatternSemanticsTablePresenter extends AbstractPatternSemanticsPres
             return;
         }
 
+        // The outer loop is the editor model's fields so the row's fields — and with them the table's
+        // columns — come out in the order the author arranged the fields in, not in pattern order.
         List<SemanticField> fields = new ArrayList<>();
-        for (ObservableField<?> observableField : latestVersion.get().fields()) {
-            for (EditorFieldModel editorFieldModel : editorPatternModel.getVisibleFields()) {
+        for (EditorFieldModel editorFieldModel : editorPatternModel.getVisibleFields()) {
+            for (ObservableField<?> observableField : latestVersion.get().fields()) {
                 if (observableField.indexInPattern() == editorFieldModel.getIndex()) {
                     SemanticField field = createField(observableField, editorFieldModel);
                     fields.add(field);
