@@ -7351,6 +7351,9 @@ Styling a context menu for kview ui/ux controls
 
 .gen-purpose-window .table-view .table-cell.semantic-identicon-cell {
     -fx-alignment: top-center;
+    /* The left/right padding drives the column width: the cell fixes its column to
+       identicon + insets, so this is the space left on each side of the identicon. */
+    -fx-padding: 2px 6px 2px 6px;
 }
 
 .gen-purpose-window .table-view .column-header.identicon-column .label {

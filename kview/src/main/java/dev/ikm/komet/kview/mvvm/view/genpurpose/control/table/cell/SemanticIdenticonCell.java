@@ -6,6 +6,7 @@ import dev.ikm.komet.kview.controls.ComponentItemNodeFactory;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.SemanticRow;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
 import javafx.scene.image.Image;
 
 import java.util.function.Function;
@@ -42,6 +43,24 @@ public class SemanticIdenticonCell extends TableCell<SemanticRow, Integer> {
         setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
 
         getStyleClass().add("semantic-identicon-cell");
+
+        // The column hugs the content: its width is the identicon's preferred width plus the
+        // cell's insets, so the CSS padding on .semantic-identicon-cell alone decides how much
+        // space is left on each side.
+        tableColumnProperty().subscribe(this::updateColumnWidth);
+        paddingProperty().subscribe(this::updateColumnWidth);
+        componentItemNode.layoutBoundsProperty().subscribe(this::updateColumnWidth);
+    }
+
+    private void updateColumnWidth() {
+        TableColumn<SemanticRow, Integer> column = getTableColumn();
+        if (column == null) {
+            return;
+        }
+        double width = snappedLeftInset() + componentItemNode.prefWidth(-1) + snappedRightInset();
+        column.setMinWidth(width);
+        column.setPrefWidth(width);
+        column.setMaxWidth(width);
     }
 
     @Override

@@ -182,10 +182,6 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
                 cellData.getValue().semanticNidProperty());
         identiconColumn.setCellFactory(_ -> new SemanticIdenticonCell(getSkinnable().getNidToComponentItem()));
 
-        final int identiconColumnWidth = 40;
-        identiconColumn.setPrefWidth(identiconColumnWidth);
-        identiconColumn.setMinWidth(identiconColumnWidth);
-        identiconColumn.setMaxWidth(identiconColumnWidth);
         identiconColumn.getStyleClass().add("identicon-column");
         return identiconColumn;
     }
