@@ -27,9 +27,7 @@ public class PatternBrowserItem {
     }
 
     private String retrieveDisplayName(PatternFacade patternFacade) {
-        Optional<String> optionalStringRegularName = viewCalculator.getRegularDescriptionText(patternFacade);
-        Optional<String> optionalStringFQN = viewCalculator.getFullyQualifiedNameText(patternFacade);
-        return optionalStringRegularName.orElseGet(optionalStringFQN::get);
+        return viewCalculator.getDescriptionTextOrNid(patternFacade);
     }
 
     public String getTitle() { return title; }
