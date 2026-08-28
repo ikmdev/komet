@@ -235,6 +235,12 @@ public class GenPurposeDetailsController {
     private BorderPane propertiesBorderPane;
     private GenPurposePropertiesController propertiesController;
     private EditorWindowModel editorWindowModel;
+    /**
+     * The kind of component this window frames ("Concept", "Pattern" or "Semantic") — set in
+     * {@link #init} from the authored window type. Names the component in the create-mode hint
+     * and the publish toast.
+     */
+    private String componentKindString;
     private ViewProperties viewProperties;
     @InjectViewModel
     private GenPurposeViewModel genPurposeViewModel;
@@ -265,9 +271,11 @@ public class GenPurposeDetailsController {
                 FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW, detailsOuterBorderPane,
                 windowControlToolbar.getCoordinatesMenuButton(), this::updateView);
 
-        // Wire the toolbar's behaviour: the close button takes an action, while the properties panel
-        // reacts to the toggle's selected state (driven by user clicks or setPropertiesSelected).
+        // Wire the toolbar's behaviour: the close and Publish buttons take actions, while the
+        // properties panel reacts to the toggle's selected state (driven by user clicks or
+        // setPropertiesSelected).
         windowControlToolbar.setOnCloseAction(this::closeConceptWindow);
+        windowControlToolbar.setOnPublishAction(this::publish);
         windowControlToolbar.propertiesSelectedProperty()
                 .subscribe((w) -> onPropertiesToggleChanged(windowControlToolbar.isPropertiesSelected()));
 
@@ -287,7 +295,7 @@ public class GenPurposeDetailsController {
 
         // Ghost-window styling while in create mode: the window frames a component that doesn't
         // exist yet, so the chrome dims and the frame dashes (see :create-mode in kview.css) and
-        // the DRAFT chip + hint appear. Submitting flips the mode to EDIT, which clears all of it.
+        // the DRAFT chip + hint appear. Publishing flips the mode to EDIT, which clears all of it.
         genPurposeViewModel.modeProperty().subscribe(mode -> {
             boolean creating = mode == FormMode.CREATE;
             detailsOuterBorderPane.pseudoClassStateChanged(CREATE_MODE, creating);
@@ -304,11 +312,24 @@ public class GenPurposeDetailsController {
             SemanticEntity<SemanticEntityVersion> semantic = evt.getSemantic();
 
             if (evt.getEventType() == GenPurposeEvent.PUBLISH) {
-                // In create mode the component only truly gets created once every required
-                // pattern has at least one semantic. Until then, skip the commit — the submitted
-                // semantic stays uncommitted in the composer's open transaction (alongside the
-                // lazily created reference concept) and commits together with it later. The details
-                // area still refreshes so the submitted (still uncommitted) field values show.
+                if (usesPublishFlow()) {
+                    // Publish-flow window: a submit only stages the change — the saved (still
+                    // uncommitted) version stays in the composer's open transaction, alongside,
+                    // in create mode, the lazily created reference component, until the toolbar's
+                    // Publish button commits everything together (see publish). The details area
+                    // refreshes so the submitted field values show, the required chips re-evaluate
+                    // and the Publish button follows the staged changes.
+                    reloadSemanticViews(semantic);
+                    updateRequiredChips();
+                    return;
+                }
+
+                // Without the Publish flow, the submit itself commits. In create mode the
+                // component only truly gets created once every required pattern has at least one
+                // semantic. Until then, skip the commit — the submitted semantic stays uncommitted
+                // in the composer's open transaction (alongside the lazily created reference
+                // concept) and commits together with it later. The details area still refreshes
+                // so the submitted (still uncommitted) field values show.
                 if (genPurposeViewModel.getMode() == FormMode.CREATE && !allRequiredPatternsSatisfied()) {
                     reloadSemanticViews(semantic);
                     // The submitted semantic now shows in the details area — flip its section's
@@ -589,9 +610,9 @@ public class GenPurposeDetailsController {
      * classic concept window's "Add Necessary Set" / "Add Sufficient Set" actions: the set holds
      * an is-a to "Anonymous concept", the placeholder chip the user then replaces in the inline
      * axiom tree. The new semantic is submitted through the window's PUBLISH flow — the same
-     * path a properties-panel submit takes: edit mode commits right away, create mode defers the
-     * commit until every required pattern is satisfied, and the details area re-renders bound to
-     * the new semantic either way. In create mode the window may not have a reference component
+     * path a properties-panel submit takes: it stages in the composer's open transaction until
+     * the toolbar's Publish button commits it ({@link #publish}), and the details area re-renders
+     * bound to the new semantic. In create mode the window may not have a reference component
      * yet — the seeded definition brings it into existence, exactly like authoring the first
      * semantic through the section pencil ({@link #onCreateSemantic}).
      */
@@ -620,9 +641,11 @@ public class GenPurposeDetailsController {
         SemanticEntity<SemanticEntityVersion> semantic = EntityHandle.get(semanticEditor.getEntity().nid())
                 .asSemantic().orElseThrow();
 
-        // The PUBLISH handler runs synchronously and flips a CREATE window to EDIT only when the
-        // seeded set was the last unmet requirement and the concept actually got committed —
-        // announce that like the properties panel's submit does.
+        // Outside the Publish flow the PUBLISH handler runs synchronously and flips a CREATE
+        // window to EDIT when the seeded set was the last unmet requirement and the concept
+        // actually got committed — announce that like the properties panel's submit does. (In
+        // the Publish-flow window the mode only flips on the toolbar's Publish button, so the
+        // condition below stays false and this stays quiet.)
         boolean wasCreateMode = genPurposeViewModel.getMode() == FormMode.CREATE;
         EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
                 new GenPurposeEvent(this, GenPurposeEvent.PUBLISH, List.of(seededDefinition), semantic));
@@ -738,13 +761,21 @@ public class GenPurposeDetailsController {
         }
 
         // The create-mode hint names the kind of component this window will create.
-        String componentKind = switch (editorWindowModel.getWindowType()) {
+        componentKindString = switch (editorWindowModel.getWindowType()) {
             case STANDARD_CONCEPT -> "Concept";
             case STANDARD_PATTERN -> "Pattern";
             case STANDARD_SEMANTIC, SEMANTICS -> "Semantic";
         };
-        createModeHintLabel.setText("This " + componentKind
-                + " doesn't exist yet - it's created when you fill out the required semantics and submit.");
+        createModeHintLabel.setText("This " + componentKindString
+                + " doesn't exist yet - it's created when you fill out the required semantics and "
+                + (usesPublishFlow() ? "hit Publish." : "submit."));
+
+        // The Publish UX — the toolbar Publish button and staged-until-published changes — is
+        // scoped to the standard Pattern window for now; the other window types keep committing
+        // on each properties-panel submit (see the PUBLISH event handler and the fields
+        // controller's submit toast, both of which branch on this).
+        windowControlToolbar.setPublishVisible(usesPublishFlow());
+        genPurposeViewModel.setPropertyValue(ViewModelKey.PUBLISH_FLOW, usesPublishFlow());
 
         // Apply the Window settings authored in the KL editor (this window shares the same model).
         applyEditorWindowSettings();
@@ -1268,6 +1299,9 @@ public class GenPurposeDetailsController {
                 "Edit Semantic Details"
         );
 
+        // The Publish button follows the transaction's staged changes (see updatePublishState).
+        composer.hasUncommittedChangesProperty().subscribe(this::updatePublishState);
+
         genPurposeViewModel.setPropertyValue(ViewModelKey.COMPOSER, composer);
     }
 
@@ -1346,8 +1380,8 @@ public class GenPurposeDetailsController {
      * Refreshes each section's required-pattern chip (see the REQUIRED / "✓ REQUIREMENT MET"
      * chip in the section title bar): shown in create mode on sections hosting a required
      * pattern, flipping to satisfied once every required pattern in the section is satisfied
-     * ({@link #isRequiredPatternSatisfied}) — the same check that gates the component's
-     * creation on submit.
+     * ({@link #isRequiredPatternSatisfied}) — the same check that gates the Publish button in
+     * create mode, so the button re-evaluates with the chips.
      */
     private void updateRequiredChips() {
         boolean createMode = genPurposeViewModel.getMode() == FormMode.CREATE;
@@ -1362,6 +1396,66 @@ public class GenPurposeDetailsController {
                         .allMatch(this::isRequiredPatternSatisfied));
             }
         });
+        updatePublishState();
+    }
+
+    /**
+     * Whether this window uses the toolbar Publish flow: changes stage in the composer's open
+     * transaction until the Publish button commits them. Scoped to the standard Pattern window
+     * for now — the other window types keep the classic commit-on-submit flow (and hide the
+     * Publish button) until they adopt the Publish UX too.
+     */
+    private boolean usesPublishFlow() {
+        return editorWindowModel != null
+                && editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN;
+    }
+
+    /**
+     * Recomputes the toolbar Publish button's enablement and tooltip. Publishing needs staged
+     * changes in the composer's open transaction, and in create mode additionally every required
+     * pattern satisfied ({@link #allRequiredPatternsSatisfied}) — the component only comes into
+     * existence complete. Runs whenever those inputs may have moved: with the required chips
+     * (mode changes, PUBLISH submits, inline stated-definition edits) and on the composer's
+     * change tracking (see {@link #initializeComposer}).
+     */
+    private void updatePublishState() {
+        boolean hasStagedChanges = composer != null && composer.hasUncommittedChanges();
+        boolean disabled;
+        String publishTooltip;
+        if (genPurposeViewModel.getMode() == FormMode.CREATE) {
+            disabled = !hasStagedChanges || !allRequiredPatternsSatisfied();
+            publishTooltip = disabled ? "Complete the required semantics to publish" : "Publish";
+        } else {
+            disabled = !hasStagedChanges;
+            publishTooltip = disabled ? "No changes to publish" : "Publish";
+        }
+        windowControlToolbar.setPublishDisable(disabled);
+        windowControlToolbar.setPublishTooltip(publishTooltip);
+    }
+
+    /**
+     * Runs when the toolbar's Publish button is pressed — the window's single commit point.
+     * Commits the composer's open transaction, finalizing everything staged since the last
+     * publish: submitted semantic versions and, in create mode, the lazily created reference
+     * component itself. A CREATE window becomes an EDIT window on its first publish.
+     */
+    private void publish() {
+        boolean wasCreateMode = genPurposeViewModel.getMode() == FormMode.CREATE;
+
+        composer.commit();
+        composer = null;
+        initializeComposer();
+
+        if (wasCreateMode) {
+            genPurposeViewModel.setMode(FormMode.EDIT);
+        }
+        // The commit finalized the staged entities (in create mode the window's reference
+        // component itself) — refresh the banner/identifier/STAMP from the committed state.
+        updateView();
+        updatePublishState();
+
+        toast().show(Toast.Status.SUCCESS,
+                wasCreateMode ? componentKindString + " created" : "Changes published");
     }
 
     /**

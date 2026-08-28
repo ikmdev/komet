@@ -1367,6 +1367,44 @@ selected(active) - dark black
     -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.45), 7, 0.5, 0, 0);
 }
 
+/* The Publish button is the window's primary action, so unlike its icon-button neighbors it
+   gets a filled accent plate. The generic ".concept-header-control .button" rule further down
+   boxes buttons to icon-only 28x28 — this label-only button undoes that (text-only, computed
+   width). Its hover/armed rules below double as the override of the generic white-backplate
+   hover above (same properties, later and more specific). */
+.kl-window-control-toolbar .concept-header-control .button.publish-button {
+    -fx-background-color: -Secondary-05;
+    -fx-background-insets: 0;
+    -fx-background-radius: 5;
+    -fx-text-fill: -Grey-White;
+    -fx-font-family: "Open Sans SemiBold";
+    -fx-font-size: 13px;
+    -fx-padding: 4 14 4 14;
+    -fx-content-display: text-only;
+    -fx-min-width: -1;
+    -fx-pref-width: -1;
+    -fx-max-width: -1;
+}
+
+.kl-window-control-toolbar .concept-header-control .button.publish-button:hover {
+    -fx-background-color: -Secondary-04;
+    -fx-background-radius: 5;
+}
+
+.kl-window-control-toolbar .concept-header-control .button.publish-button:armed {
+    -fx-background-color: -Secondary-06;
+    -fx-background-radius: 5;
+}
+
+/* Disabled keeps full opacity (instead of modena's 0.4 fade) and ghosts the plate itself:
+   the label must stay readable against the bar so the plate tooltip's "why disabled"
+   explanation has a legible anchor. */
+.kl-window-control-toolbar .concept-header-control .button.publish-button:disabled {
+    -fx-opacity: 1.0;
+    -fx-background-color: rgba(255, 255, 255, 0.10);
+    -fx-text-fill: rgba(255, 255, 255, 0.42);
+}
+
 .kl-window-control-toolbar .concept-header-control {
     -fx-cursor: open-hand;
 }
@@ -6551,7 +6589,7 @@ Styling a context menu for kview ui/ux controls
  ******************************************************************************/
 
 /* Ghost window while in create mode: the window frames a component that doesn't exist yet
-   (it's committed when the user submits, which flips the window back to edit mode). The
+   (it's committed when the user hits Publish, which flips the window back to edit mode). The
    chrome dims to a washed-out version of the window blue and the window's outside edges get
    a dashed outline in a single mid-blue (-create-mode-dash-color below). The body frame
    also wraps the slideout trays, so an open properties bumpout stays inside the dashes.

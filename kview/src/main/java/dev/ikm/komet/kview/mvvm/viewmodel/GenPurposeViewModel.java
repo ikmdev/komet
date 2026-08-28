@@ -30,6 +30,7 @@ public class GenPurposeViewModel extends FormViewModel {
                 .addProperty(ViewModelKey.FIELD_INDEX, Integer.valueOf(-1))
                 .addProperty(ViewModelKey.DEFAULT_FIELDS_HASH, (Integer) null)
                 .addProperty(ViewModelKey.COMPOSER, (ObservableComposer) null)
+                .addProperty(ViewModelKey.PUBLISH_FLOW, Boolean.FALSE)
         ;
     }
 

@@ -85,5 +85,10 @@ public enum ViewModelKey {
     DEFAULT_FIELDS_HASH,
 
     /** {@code ObservableComposer} for the general-purpose editing flow. */
-    COMPOSER
+    COMPOSER,
+
+    /** Whether the window uses the toolbar Publish flow — changes stage in the composer's
+     *  transaction until the Publish button commits them (currently the standard Pattern
+     *  window only). Boolean. */
+    PUBLISH_FLOW
 }

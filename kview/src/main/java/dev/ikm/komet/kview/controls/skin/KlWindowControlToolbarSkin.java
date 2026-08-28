@@ -41,9 +41,9 @@ import javafx.scene.text.Text;
 /**
  * Default skin for {@link KlWindowControlToolbar}. Builds the whole control bar as two stacked rows:
  * the title tab on top (the drag-dots icon, the window title and the DRAFT chip), and below it the
- * control row — the coordinate menu and timeline toggle on the leading edge, a growing spacer, then
- * the {@code PROPERTY} label, properties toggle, a vertical separator and the close button on the
- * trailing edge — and binds each piece to the control's state and action hooks.
+ * control row — the coordinate menu, Publish button and timeline toggle on the leading edge, a
+ * growing spacer, then the {@code PROPERTY} label, properties toggle, a vertical separator and the
+ * close button on the trailing edge — and binds each piece to the control's state and action hooks.
  * <p>
  * All visuals come from CSS (see the {@code .kl-window-control-toolbar}, {@code .lidr-rounded-tab} and
  * {@code .concept-header-control} rules in {@code kview.css}); the skin sets only style classes and
@@ -96,6 +96,28 @@ public class KlWindowControlToolbarSkin extends SkinBase<KlWindowControlToolbar>
         coordinatePlate.visibleProperty().bind(control.coordinateVisibleProperty());
         coordinatePlate.managedProperty().bind(control.coordinateVisibleProperty());
 
+        // Publish button — the window's primary action, the only filled control on the bar
+        // (see .publish-button in kview.css).
+        Button publishButton = new Button("Publish");
+        publishButton.setMnemonicParsing(false);
+        publishButton.getStyleClass().add("publish-button");
+        publishButton.disableProperty().bind(control.publishDisableProperty());
+        publishButton.setOnAction(event -> {
+            Runnable onPublish = control.getOnPublishAction();
+            if (onPublish != null) {
+                onPublish.run();
+            }
+        });
+
+        // A disabled button shows no tooltips, so the tooltip lives on this always-enabled container —
+        // it is what explains why publishing is unavailable (see publishTooltipProperty).
+        StackPane publishContainer = new StackPane(publishButton);
+        Tooltip publishTooltip = new Tooltip();
+        publishTooltip.textProperty().bind(control.publishTooltipProperty());
+        Tooltip.install(publishContainer, publishTooltip);
+        publishContainer.visibleProperty().bind(control.publishVisibleProperty());
+        publishContainer.managedProperty().bind(control.publishVisibleProperty());
+
         // Timeline (time travel) toggle.
         ToggleButton timelineToggleButton = new ToggleButton();
         timelineToggleButton.setMnemonicParsing(false);
@@ -110,7 +132,7 @@ public class KlWindowControlToolbarSkin extends SkinBase<KlWindowControlToolbar>
 
         // The leading buttons get their own container so the gap between them can be styled
         // (via -fx-spacing) independently of the bar's own spacing.
-        HBox leadingButtonsContainer = new HBox(coordinatePlate, timelineToggleButton);
+        HBox leadingButtonsContainer = new HBox(coordinatePlate, publishContainer, timelineToggleButton);
         leadingButtonsContainer.getStyleClass().add("leading-buttons-container");
 
         Region spacer = new Region();
@@ -170,6 +192,7 @@ public class KlWindowControlToolbarSkin extends SkinBase<KlWindowControlToolbar>
             boolean dragHover = tab.isHover()
                     || (container.isHover()
                             && !coordinatePlate.isHover()
+                            && !publishContainer.isHover()
                             && !timelineToggleButton.isHover()
                             && !propertiesToggleButton.isHover()
                             && !closeButton.isHover());
@@ -179,6 +202,7 @@ public class KlWindowControlToolbarSkin extends SkinBase<KlWindowControlToolbar>
         tab.hoverProperty().subscribe(updateDragHover);
         container.hoverProperty().subscribe(updateDragHover);
         coordinatePlate.hoverProperty().subscribe(updateDragHover);
+        publishContainer.hoverProperty().subscribe(updateDragHover);
         timelineToggleButton.hoverProperty().subscribe(updateDragHover);
         propertiesToggleButton.hoverProperty().subscribe(updateDragHover);
         closeButton.hoverProperty().subscribe(updateDragHover);
