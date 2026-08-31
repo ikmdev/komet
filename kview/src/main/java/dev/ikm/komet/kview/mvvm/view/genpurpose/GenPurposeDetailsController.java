@@ -898,8 +898,14 @@ public class GenPurposeDetailsController {
 
         titledPane.setOnEditAction(actionEvent -> onEditAction(actionEvent, sectionModel));
 
+        // Besides needing something to edit against, the pencil honors the pattern's editability
+        // authored in the KL Editor: a not-editable pattern only accepts semantic additions and
+        // edits while the window is still in create mode.
         titledPane.editEnabledProperty().bind(sectionModel.referenceComponentProperty().isNull()
-                .or(Bindings.isNotEmpty(titledPane.getReferenceComponents())));
+                .or(Bindings.isNotEmpty(titledPane.getReferenceComponents()))
+                .and(Bindings.createBooleanBinding(
+                        () -> canEditSectionSemantics(sectionModel),
+                        genPurposeViewModel.modeProperty(), sectionModel.getPatterns())));
 
         sectionModelToTitledPane.put(sectionModel, titledPane);
 
@@ -965,6 +971,32 @@ public class GenPurposeDetailsController {
         return sectionSemanticsComboBoxCell;
     }
 
+    /**
+     * The section's stated definition pattern, or null when the section doesn't hold it.
+     */
+    private EditorPatternModel sectionStatedPattern(EditorSectionModel sectionModel) {
+        return sectionModel.getPatterns().stream()
+                .filter(pattern -> pattern.getNid() == statedAxiomsPatternNid())
+                .findFirst().orElse(null);
+    }
+
+    /**
+     * Whether the section's semantics can be added or edited right now. In create mode they always
+     * can; once the window is in edit mode the pattern the section's edit popup operates on (see
+     * {@link #onEditAction}) must be authored as editable in the KL Editor.
+     */
+    private boolean canEditSectionSemantics(EditorSectionModel sectionModel) {
+        if (genPurposeViewModel.getMode() == FormMode.CREATE) {
+            return true;
+        }
+
+        EditorPatternModel statedPattern = sectionStatedPattern(sectionModel);
+        EditorPatternModel editPattern = statedPattern != null
+                ? statedPattern
+                : sectionModel.getPatterns().isEmpty() ? null : sectionModel.getPatterns().getFirst();
+        return editPattern == null || editPattern.isEditable();
+    }
+
     private void onEditAction(ActionEvent actionEvent, EditorSectionModel sectionModel) {
         SectionEditPopup popup = new SectionEditPopup();
 
@@ -995,9 +1027,7 @@ public class GenPurposeDetailsController {
         // ones offered for editing (never the reasoner-owned inferred definition's), and its
         // create entries seed the definition with a set instead of the generic "Create new
         // Semantic" — the classic concept window's axiom + menu.
-        EditorPatternModel statedPattern = sectionModel.getPatterns().stream()
-                .filter(pattern -> pattern.getNid() == statedAxiomsPatternNid())
-                .findFirst().orElse(null);
+        EditorPatternModel statedPattern = sectionStatedPattern(sectionModel);
         EditorPatternModel editPattern = statedPattern != null
                 ? statedPattern
                 : sectionModel.getPatterns().getFirst();
