@@ -57,6 +57,26 @@ public class KLComponentControlFactory {
         return componentControl;
     }
 
+    /**
+     * Creates a {@link KLComponentComboBoxControl} for a component field that is constrained to a
+     * predefined set of concepts: the user picks one of the given options instead of searching the
+     * whole data store.
+     *
+     * @param viewCalculator the calculator used to render the options' names
+     * @param componentOptions the components the user may choose from
+     */
+    public static KLComponentComboBoxControl createComponentComboBoxControl(ViewCalculator viewCalculator,
+                                                                            List<EntityProxy> componentOptions) {
+        KLComponentComboBoxControl componentComboBoxControl = new KLComponentComboBoxControl();
+
+        // add the function to render the component name
+        componentComboBoxControl.setComponentNameRenderer(createComponentNameRenderer(viewCalculator));
+
+        componentComboBoxControl.getItems().setAll(componentOptions);
+
+        return componentComboBoxControl;
+    }
+
     public static <T extends IntIdCollection> KLComponentCollectionControl createComponentListControl(ViewCalculator viewCalculator) {
         KLComponentCollectionControl<T> componentListControl = new KLComponentCollectionControl<>();
         NavigationCalculator navigationCalculator = viewCalculator.navigationCalculator();
