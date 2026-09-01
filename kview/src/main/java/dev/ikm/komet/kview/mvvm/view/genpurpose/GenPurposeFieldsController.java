@@ -56,7 +56,6 @@ import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityBinding;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.application.Platform;
@@ -381,15 +380,11 @@ public class GenPurposeFieldsController {
             currentEditStamp = editableVersion.getEditStamp();
 
             ObservableList<ObservableField.Editable<?>> editables = editableVersion.getEditableFields();
-            // Generate UI nodes from editable fields
+            // Generate UI nodes from editable fields. A new semantic's component fields already
+            // start as BLANK_CONCEPT (ObservableComposer.generateDefaultFieldValues); any other
+            // value was set deliberately — e.g. seeded from a section's display filter — so no
+            // create-mode blanking here.
             for (ObservableField.Editable editableField : editables) {
-                if (genPurposeViewModel.getMode() == FormMode.CREATE && editableField.getValue() instanceof EntityProxy) {
-                    // Set default blank concept for new semantics
-                    @SuppressWarnings("unchecked")
-                    ObservableField.Editable<EntityProxy> proxyField = (ObservableField.Editable<EntityProxy>) editableField;
-                    proxyField.setValue(BLANK_CONCEPT);
-                }
-
                 Field field = editableField.field();
                 KlField<?> klField = createEditableKlField(
                         (FieldRecord<?>) field,

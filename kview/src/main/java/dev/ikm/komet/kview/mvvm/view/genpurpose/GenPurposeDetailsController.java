@@ -71,6 +71,7 @@ import dev.ikm.komet.layout.editor.EditorWindowManager;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternRequirement;
+import dev.ikm.komet.layout.editor.model.EditorPatternSemanticFilter;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowType;
@@ -94,6 +95,7 @@ import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
@@ -134,6 +136,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
 
 public class GenPurposeDetailsController {
@@ -550,15 +553,27 @@ public class GenPurposeDetailsController {
      *
      * @param referenceComponent the Reference Component of the Semantic that is going to be created
      * @param pattern the Pattern of the Semantic that is going to be created
+     * @param fieldSeeds the concepts to seed fields with, keyed by the field's index in the Pattern
+     *                   — a display filter's constraints (see {@link #addCreateEntries})
      * @return The uncommited Semantic
      */
-    private SemanticEntity<SemanticEntityVersion> createUncommitedSemantic(EntityFacade referenceComponent, PatternFacade pattern) {
+    private SemanticEntity<SemanticEntityVersion> createUncommitedSemantic(EntityFacade referenceComponent, PatternFacade pattern,
+            Map<Integer, EntityProxy> fieldSeeds) {
         ObservableEntity observableReferenceComponent = ObservableEntityHandle.get(referenceComponent.nid()).expectEntity();
         ObservablePattern observablePattern = ObservableEntityHandle.get(pattern.nid()).expectPattern();
 
         initializeComposer();
 
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor = composer.composeSemantic(PublicIds.newRandom(), observableReferenceComponent, observablePattern);
+
+        // Seed the fields the create entry's display filter constrains, so the new semantic passes
+        // that filter and shows up in the filtered view it was created from.
+        fieldSeeds.forEach((fieldIndex, filterConcept) -> {
+            @SuppressWarnings("unchecked")
+            ObservableField.Editable<EntityProxy> editableField = (ObservableField.Editable<EntityProxy>)
+                    semanticEditor.getEditableVersion().getEditableFields().get(fieldIndex);
+            editableField.setValue(filterConcept);
+        });
 
         semanticEditor.save(); // Save to create an uncommitted version
 
@@ -1025,8 +1040,8 @@ public class GenPurposeDetailsController {
 
         // The stated definition pattern takes over its section's popup: its semantics are the
         // ones offered for editing (never the reasoner-owned inferred definition's), and its
-        // create entries seed the definition with a set instead of the generic "Create new
-        // Semantic" — the classic concept window's axiom + menu.
+        // create entries seed the definition with a set instead of the per-pattern "Add …"
+        // entries — the classic concept window's axiom + menu.
         EditorPatternModel statedPattern = sectionStatedPattern(sectionModel);
         EditorPatternModel editPattern = statedPattern != null
                 ? statedPattern
@@ -1079,10 +1094,14 @@ public class GenPurposeDetailsController {
                         () -> createSeededStatedDefinition(sectionModel, statedPattern, true)));
             }
         } else {
-            popup.getCreateActions().add(new SectionEditPopup.CreateAction("Create new Semantic", () -> {
-                initializeComposer();
-                onCreateSemantic(actionEvent, sectionModel, refComponent);
-            }));
+            for (EditorPatternModel patternModel : sectionModel.getPatterns()) {
+                // Once in edit mode, only patterns authored as editable in the KL Editor accept
+                // new semantics.
+                if (genPurposeViewModel.getMode() != FormMode.CREATE && !patternModel.isEditable()) {
+                    continue;
+                }
+                addCreateEntries(popup, actionEvent, sectionModel, patternModel, refComponent);
+            }
         }
 
         // Show Popup
@@ -1094,7 +1113,64 @@ public class GenPurposeDetailsController {
         popup.show(sectionTitledPane, screenPoint.getX(), screenPoint.getY());
     }
 
-    private void onCreateSemantic(ActionEvent actionEvent, EditorSectionModel sectionModelOfPattern, EntityFacade refComponent) {
+    /**
+     * Adds the section popup's "Add …" create entries for one pattern of the section. A pattern
+     * without display filters gets one entry named after the pattern; a filtered pattern gets one
+     * entry per filter, named after the concept(s) the filter selects on — e.g. "Add Fully
+     * qualified name" for a Description pattern filtered to fully qualified names — and that
+     * entry's new semantic is seeded with the filter's field constraints, so it comes out passing
+     * the filter it was created from. Either way a trailing "Pattern" word is dropped from the
+     * entry's name.
+     */
+    private void addCreateEntries(SectionEditPopup popup, ActionEvent actionEvent,
+            EditorSectionModel sectionModel, EditorPatternModel patternModel, EntityFacade refComponent) {
+        if (patternModel.getSemanticFilters().isEmpty()) {
+            popup.getCreateActions().add(new SectionEditPopup.CreateAction(
+                    "Add " + stripPatternSuffix(patternModel.getTitle()), () -> {
+                        initializeComposer();
+                        onCreateSemantic(actionEvent, sectionModel, patternModel, refComponent, Map.of());
+                    }));
+            return;
+        }
+
+        for (EditorPatternSemanticFilter filter : patternModel.getSemanticFilters()) {
+            String filterConceptNames = filter.getFieldConstraints().values().stream()
+                    .map(filterConcept -> getViewProperties().calculator()
+                            .getPreferredDescriptionTextWithFallbackOrNid(filterConcept.nid()))
+                    .distinct()
+                    .collect(Collectors.joining(", "));
+            // A filter constraining nothing selects every semantic — its entry falls back to the
+            // pattern's name.
+            String entryName = filterConceptNames.isEmpty()
+                    ? patternModel.getTitle()
+                    : filterConceptNames;
+
+            // Snapshot the constraints at popup-build time; they seed the new semantic's fields.
+            Map<Integer, EntityProxy> fieldSeeds = Map.copyOf(filter.getFieldConstraints());
+            popup.getCreateActions().add(new SectionEditPopup.CreateAction(
+                    "Add " + stripPatternSuffix(entryName), () -> {
+                        initializeComposer();
+                        onCreateSemantic(actionEvent, sectionModel, patternModel, refComponent, fieldSeeds);
+                    }));
+        }
+    }
+
+    /**
+     * The passed in name without a trailing "Pattern" word — "Description Pattern" makes the
+     * create entry "Add Description". A name that is nothing but that word is kept whole.
+     */
+    private static String stripPatternSuffix(String name) {
+        String trimmed = name.strip();
+        int suffixStart = trimmed.length() - "Pattern".length();
+        boolean endsWithPatternWord = suffixStart > 0
+                && Character.isWhitespace(trimmed.charAt(suffixStart - 1))
+                && trimmed.regionMatches(true, suffixStart, "Pattern", 0, "Pattern".length());
+        return endsWithPatternWord ? trimmed.substring(0, suffixStart).strip() : trimmed;
+    }
+
+    private void onCreateSemantic(ActionEvent actionEvent, EditorSectionModel sectionModelOfPattern,
+                                  EditorPatternModel editorPatternModel, EntityFacade refComponent,
+                                  Map<Integer, EntityProxy> fieldSeeds) {
         // Lazy reference-component creation: in create mode the window has no component yet — the
         // first semantic the user authors brings the new component into existence with it. Both
         // join the composer's transaction, so submitting the semantic commits them together.
@@ -1102,11 +1178,10 @@ public class GenPurposeDetailsController {
             refComponent = createUncommitedReferenceComponent();
         }
 
-        EditorPatternModel editorPatternModel = sectionModelOfPattern.getPatterns().getFirst();
         PatternFacade patternFacade = PatternFacade.make(editorPatternModel.getNid());
 
         // Create uncommited Semantic
-        SemanticEntity<SemanticEntityVersion> uncommitedSemantic = createUncommitedSemantic(refComponent, patternFacade);
+        SemanticEntity<SemanticEntityVersion> uncommitedSemantic = createUncommitedSemantic(refComponent, patternFacade, fieldSeeds);
 
         PatternSemanticsPresenter patternSemanticsPresenter = editorPatternModelToPatternPresenter.get(editorPatternModel);
 
