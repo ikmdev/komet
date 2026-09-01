@@ -41,12 +41,13 @@ import javafx.scene.text.Text;
 /**
  * Default skin for {@link KlWindowControlToolbar}. Builds the whole control bar as two stacked rows:
  * the title tab on top (the drag-dots icon, the window title and the DRAFT chip), and below it the
- * control row — the coordinate menu, Publish button and timeline toggle on the leading edge, a
- * growing spacer, then the {@code PROPERTY} label, properties toggle, a vertical separator and the
- * close button on the trailing edge — and binds each piece to the control's state and action hooks.
+ * control row — the coordinate menu and Publish button on the leading edge, a growing spacer, then
+ * the timeline toggle, a vertical separator, the {@code PROPERTY} label, properties toggle, another
+ * vertical separator and the close button on the trailing edge — and binds each piece to the
+ * control's state and action hooks.
  * <p>
  * All visuals come from CSS (see the {@code .kl-window-control-toolbar}, {@code .lidr-rounded-tab} and
- * {@code .concept-header-control} rules in {@code kview.css}); the skin sets only style classes and
+ * {@code .window-header-control} rules in {@code kview.css}); the skin sets only style classes and
  * layout constraints, never inline style.
  */
 public class KlWindowControlToolbarSkin extends SkinBase<KlWindowControlToolbar> {
@@ -132,7 +133,7 @@ public class KlWindowControlToolbarSkin extends SkinBase<KlWindowControlToolbar>
 
         // The leading buttons get their own container so the gap between them can be styled
         // (via -fx-spacing) independently of the bar's own spacing.
-        HBox leadingButtonsContainer = new HBox(coordinatePlate, publishContainer, timelineToggleButton);
+        HBox leadingButtonsContainer = new HBox(coordinatePlate, publishContainer);
         leadingButtonsContainer.getStyleClass().add("leading-buttons-container");
 
         Region spacer = new Region();
@@ -159,6 +160,12 @@ public class KlWindowControlToolbarSkin extends SkinBase<KlWindowControlToolbar>
         propertiesToggleButton.setGraphic(new Group(toggleBody, toggleKnob));
         propertiesToggleButton.selectedProperty().bindBidirectional(control.propertiesSelectedProperty());
 
+        // Separates the timeline toggle from the properties controls; hides with the toggle.
+        Separator timelineSeparator = new Separator(Orientation.VERTICAL);
+        timelineSeparator.getStyleClass().add("thin-vertical-separator");
+        timelineSeparator.visibleProperty().bind(control.timelineVisibleProperty());
+        timelineSeparator.managedProperty().bind(control.timelineVisibleProperty());
+
         Separator separator = new Separator(Orientation.VERTICAL);
         separator.getStyleClass().add("thin-vertical-separator");
 
@@ -175,10 +182,12 @@ public class KlWindowControlToolbarSkin extends SkinBase<KlWindowControlToolbar>
         });
 
         HBox container = new HBox();
-        container.getStyleClass().addAll("concept-header-control", "rounded-upper-right-only");
+        container.getStyleClass().addAll("window-header-control", "rounded-upper-right-only");
         container.getChildren().addAll(
                 leadingButtonsContainer,
                 spacer,
+                timelineToggleButton,
+                timelineSeparator,
                 propertyLabel,
                 propertiesToggleButton,
                 separator,
