@@ -7294,10 +7294,24 @@ Styling a context menu for kview ui/ux controls
  * Pattern Semantics Table                                                     *
  ******************************************************************************/
 
+/* The outer border lives on the control rather than the TableView: a border painted
+   by the TableView's own background layers leaves a pixel-snapping gap between the
+   header row and the border at fractional HiDPI scales, showing as a white hairline
+   along the table's right edge. With the TableView flush (no border, no padding) the
+   header row spans the full width and there is no gap to show through. */
+.gen-purpose-window .pattern-semantics-table {
+    -fx-border-color: #ddd; /* table_view_border_color */
+    -fx-border-width: 1px;
+}
+
 .gen-purpose-window .table-view {
     header_background_color: #DCE3F1;
     table_view_border_color: #ddd;
     table_view_body_border_color: #e9e9e9;
+
+    -fx-background-color: white;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
 
     edit_mode_background_color: #f4fbf0;
     edit_mode_border_color: #66bb38;
@@ -7346,6 +7360,22 @@ Styling a context menu for kview ui/ux controls
 
 .table-view .show-hide-columns-button {
     -fx-background-color: header_background_color;
+}
+
+/* Replace modena's "+" glyph on the table-menu button with a filled funnel
+   (Feather "filter" polygon). */
+.gen-purpose-window .table-view .show-hide-column-image {
+    -fx-shape: "M22 3L2 3L10 12.46L10 19L14 21L14 12.46Z";
+    -fx-padding: 5.25px 5.85px 5.25px 5.85px; /* glyph size: each side is half a glyph dimension */
+}
+
+.gen-purpose-window .table-view .show-hide-columns-button {
+    -fx-padding: 0 8px 0 0;
+    -fx-cursor: hand;
+}
+
+.gen-purpose-window .table-view .show-hide-columns-button:hover .show-hide-column-image {
+    -fx-background-color: #2E3240; /* text_color */
 }
 
 /********************************  Body  **********************************/

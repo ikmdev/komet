@@ -48,8 +48,14 @@
     -fx-padding: 4 8 4 8;
 }
 
-.component-combo-box-control .component-combo-box > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover,
-.component-combo-box-control .component-combo-box > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected {
-    -fx-background-color: #f4fbf0;
+.component-combo-box-control .component-combo-box > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover {
+    -fx-background-color: -Grey-4;
+    -fx-text-fill: #111;
+}
+
+.component-combo-box-control .component-combo-box > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected,
+.component-combo-box-control .component-combo-box > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected:hover {
+    -fx-background-color: -Secondary-05;
+    -fx-text-fill: white;
 }
 
