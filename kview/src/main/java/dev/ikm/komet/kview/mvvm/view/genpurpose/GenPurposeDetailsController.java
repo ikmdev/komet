@@ -71,6 +71,7 @@ import dev.ikm.komet.layout.editor.EditorWindowManager;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternRequirement;
+import dev.ikm.komet.layout.editor.model.EditorPatternSemanticFilter;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowType;
@@ -94,6 +95,7 @@ import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
@@ -134,6 +136,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
 
 public class GenPurposeDetailsController {
@@ -235,6 +238,12 @@ public class GenPurposeDetailsController {
     private BorderPane propertiesBorderPane;
     private GenPurposePropertiesController propertiesController;
     private EditorWindowModel editorWindowModel;
+    /**
+     * The kind of component this window frames ("Concept", "Pattern" or "Semantic") — set in
+     * {@link #init} from the authored window type. Names the component in the create-mode hint
+     * and the publish toast.
+     */
+    private String componentKindString;
     private ViewProperties viewProperties;
     @InjectViewModel
     private GenPurposeViewModel genPurposeViewModel;
@@ -265,9 +274,11 @@ public class GenPurposeDetailsController {
                 FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW, detailsOuterBorderPane,
                 windowControlToolbar.getCoordinatesMenuButton(), this::updateView);
 
-        // Wire the toolbar's behaviour: the close button takes an action, while the properties panel
-        // reacts to the toggle's selected state (driven by user clicks or setPropertiesSelected).
+        // Wire the toolbar's behaviour: the close and Publish buttons take actions, while the
+        // properties panel reacts to the toggle's selected state (driven by user clicks or
+        // setPropertiesSelected).
         windowControlToolbar.setOnCloseAction(this::closeConceptWindow);
+        windowControlToolbar.setOnPublishAction(this::publish);
         windowControlToolbar.propertiesSelectedProperty()
                 .subscribe((w) -> onPropertiesToggleChanged(windowControlToolbar.isPropertiesSelected()));
 
@@ -287,7 +298,7 @@ public class GenPurposeDetailsController {
 
         // Ghost-window styling while in create mode: the window frames a component that doesn't
         // exist yet, so the chrome dims and the frame dashes (see :create-mode in kview.css) and
-        // the DRAFT chip + hint appear. Submitting flips the mode to EDIT, which clears all of it.
+        // the DRAFT chip + hint appear. Publishing flips the mode to EDIT, which clears all of it.
         genPurposeViewModel.modeProperty().subscribe(mode -> {
             boolean creating = mode == FormMode.CREATE;
             detailsOuterBorderPane.pseudoClassStateChanged(CREATE_MODE, creating);
@@ -304,11 +315,24 @@ public class GenPurposeDetailsController {
             SemanticEntity<SemanticEntityVersion> semantic = evt.getSemantic();
 
             if (evt.getEventType() == GenPurposeEvent.PUBLISH) {
-                // In create mode the component only truly gets created once every required
-                // pattern has at least one semantic. Until then, skip the commit — the submitted
-                // semantic stays uncommitted in the composer's open transaction (alongside the
-                // lazily created reference concept) and commits together with it later. The details
-                // area still refreshes so the submitted (still uncommitted) field values show.
+                if (usesPublishFlow()) {
+                    // Publish-flow window: a submit only stages the change — the saved (still
+                    // uncommitted) version stays in the composer's open transaction, alongside,
+                    // in create mode, the lazily created reference component, until the toolbar's
+                    // Publish button commits everything together (see publish). The details area
+                    // refreshes so the submitted field values show, the required chips re-evaluate
+                    // and the Publish button follows the staged changes.
+                    reloadSemanticViews(semantic);
+                    updateRequiredChips();
+                    return;
+                }
+
+                // Without the Publish flow, the submit itself commits. In create mode the
+                // component only truly gets created once every required pattern has at least one
+                // semantic. Until then, skip the commit — the submitted semantic stays uncommitted
+                // in the composer's open transaction (alongside the lazily created reference
+                // concept) and commits together with it later. The details area still refreshes
+                // so the submitted (still uncommitted) field values show.
                 if (genPurposeViewModel.getMode() == FormMode.CREATE && !allRequiredPatternsSatisfied()) {
                     reloadSemanticViews(semantic);
                     // The submitted semantic now shows in the details area — flip its section's
@@ -529,15 +553,27 @@ public class GenPurposeDetailsController {
      *
      * @param referenceComponent the Reference Component of the Semantic that is going to be created
      * @param pattern the Pattern of the Semantic that is going to be created
+     * @param fieldSeeds the concepts to seed fields with, keyed by the field's index in the Pattern
+     *                   — a display filter's constraints (see {@link #addCreateEntries})
      * @return The uncommited Semantic
      */
-    private SemanticEntity<SemanticEntityVersion> createUncommitedSemantic(EntityFacade referenceComponent, PatternFacade pattern) {
+    private SemanticEntity<SemanticEntityVersion> createUncommitedSemantic(EntityFacade referenceComponent, PatternFacade pattern,
+            Map<Integer, EntityProxy> fieldSeeds) {
         ObservableEntity observableReferenceComponent = ObservableEntityHandle.get(referenceComponent.nid()).expectEntity();
         ObservablePattern observablePattern = ObservableEntityHandle.get(pattern.nid()).expectPattern();
 
         initializeComposer();
 
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor = composer.composeSemantic(PublicIds.newRandom(), observableReferenceComponent, observablePattern);
+
+        // Seed the fields the create entry's display filter constrains, so the new semantic passes
+        // that filter and shows up in the filtered view it was created from.
+        fieldSeeds.forEach((fieldIndex, filterConcept) -> {
+            @SuppressWarnings("unchecked")
+            ObservableField.Editable<EntityProxy> editableField = (ObservableField.Editable<EntityProxy>)
+                    semanticEditor.getEditableVersion().getEditableFields().get(fieldIndex);
+            editableField.setValue(filterConcept);
+        });
 
         semanticEditor.save(); // Save to create an uncommitted version
 
@@ -589,9 +625,9 @@ public class GenPurposeDetailsController {
      * classic concept window's "Add Necessary Set" / "Add Sufficient Set" actions: the set holds
      * an is-a to "Anonymous concept", the placeholder chip the user then replaces in the inline
      * axiom tree. The new semantic is submitted through the window's PUBLISH flow — the same
-     * path a properties-panel submit takes: edit mode commits right away, create mode defers the
-     * commit until every required pattern is satisfied, and the details area re-renders bound to
-     * the new semantic either way. In create mode the window may not have a reference component
+     * path a properties-panel submit takes: it stages in the composer's open transaction until
+     * the toolbar's Publish button commits it ({@link #publish}), and the details area re-renders
+     * bound to the new semantic. In create mode the window may not have a reference component
      * yet — the seeded definition brings it into existence, exactly like authoring the first
      * semantic through the section pencil ({@link #onCreateSemantic}).
      */
@@ -620,9 +656,11 @@ public class GenPurposeDetailsController {
         SemanticEntity<SemanticEntityVersion> semantic = EntityHandle.get(semanticEditor.getEntity().nid())
                 .asSemantic().orElseThrow();
 
-        // The PUBLISH handler runs synchronously and flips a CREATE window to EDIT only when the
-        // seeded set was the last unmet requirement and the concept actually got committed —
-        // announce that like the properties panel's submit does.
+        // Outside the Publish flow the PUBLISH handler runs synchronously and flips a CREATE
+        // window to EDIT when the seeded set was the last unmet requirement and the concept
+        // actually got committed — announce that like the properties panel's submit does. (In
+        // the Publish-flow window the mode only flips on the toolbar's Publish button, so the
+        // condition below stays false and this stays quiet.)
         boolean wasCreateMode = genPurposeViewModel.getMode() == FormMode.CREATE;
         EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
                 new GenPurposeEvent(this, GenPurposeEvent.PUBLISH, List.of(seededDefinition), semantic));
@@ -738,13 +776,21 @@ public class GenPurposeDetailsController {
         }
 
         // The create-mode hint names the kind of component this window will create.
-        String componentKind = switch (editorWindowModel.getWindowType()) {
+        componentKindString = switch (editorWindowModel.getWindowType()) {
             case STANDARD_CONCEPT -> "Concept";
             case STANDARD_PATTERN -> "Pattern";
             case STANDARD_SEMANTIC, SEMANTICS -> "Semantic";
         };
-        createModeHintLabel.setText("This " + componentKind
-                + " doesn't exist yet - it's created when you fill out the required semantics and submit.");
+        createModeHintLabel.setText("This " + componentKindString
+                + " doesn't exist yet - it's created when you fill out the required values and "
+                + (usesPublishFlow() ? "hit Publish." : "submit."));
+
+        // The Publish UX — the toolbar Publish button and staged-until-published changes — is
+        // scoped to the standard Pattern window for now; the other window types keep committing
+        // on each properties-panel submit (see the PUBLISH event handler and the fields
+        // controller's submit toast, both of which branch on this).
+        windowControlToolbar.setPublishVisible(usesPublishFlow());
+        genPurposeViewModel.setPropertyValue(ViewModelKey.PUBLISH_FLOW, usesPublishFlow());
 
         // Apply the Window settings authored in the KL editor (this window shares the same model).
         applyEditorWindowSettings();
@@ -867,8 +913,14 @@ public class GenPurposeDetailsController {
 
         titledPane.setOnEditAction(actionEvent -> onEditAction(actionEvent, sectionModel));
 
+        // Besides needing something to edit against, the pencil honors the pattern's editability
+        // authored in the KL Editor: a not-editable pattern only accepts semantic additions and
+        // edits while the window is still in create mode.
         titledPane.editEnabledProperty().bind(sectionModel.referenceComponentProperty().isNull()
-                .or(Bindings.isNotEmpty(titledPane.getReferenceComponents())));
+                .or(Bindings.isNotEmpty(titledPane.getReferenceComponents()))
+                .and(Bindings.createBooleanBinding(
+                        () -> canEditSectionSemantics(sectionModel),
+                        genPurposeViewModel.modeProperty(), sectionModel.getPatterns())));
 
         sectionModelToTitledPane.put(sectionModel, titledPane);
 
@@ -934,6 +986,32 @@ public class GenPurposeDetailsController {
         return sectionSemanticsComboBoxCell;
     }
 
+    /**
+     * The section's stated definition pattern, or null when the section doesn't hold it.
+     */
+    private EditorPatternModel sectionStatedPattern(EditorSectionModel sectionModel) {
+        return sectionModel.getPatterns().stream()
+                .filter(pattern -> pattern.getNid() == statedAxiomsPatternNid())
+                .findFirst().orElse(null);
+    }
+
+    /**
+     * Whether the section's semantics can be added or edited right now. In create mode they always
+     * can; once the window is in edit mode the pattern the section's edit popup operates on (see
+     * {@link #onEditAction}) must be authored as editable in the KL Editor.
+     */
+    private boolean canEditSectionSemantics(EditorSectionModel sectionModel) {
+        if (genPurposeViewModel.getMode() == FormMode.CREATE) {
+            return true;
+        }
+
+        EditorPatternModel statedPattern = sectionStatedPattern(sectionModel);
+        EditorPatternModel editPattern = statedPattern != null
+                ? statedPattern
+                : sectionModel.getPatterns().isEmpty() ? null : sectionModel.getPatterns().getFirst();
+        return editPattern == null || editPattern.isEditable();
+    }
+
     private void onEditAction(ActionEvent actionEvent, EditorSectionModel sectionModel) {
         SectionEditPopup popup = new SectionEditPopup();
 
@@ -962,11 +1040,9 @@ public class GenPurposeDetailsController {
 
         // The stated definition pattern takes over its section's popup: its semantics are the
         // ones offered for editing (never the reasoner-owned inferred definition's), and its
-        // create entries seed the definition with a set instead of the generic "Create new
-        // Semantic" — the classic concept window's axiom + menu.
-        EditorPatternModel statedPattern = sectionModel.getPatterns().stream()
-                .filter(pattern -> pattern.getNid() == statedAxiomsPatternNid())
-                .findFirst().orElse(null);
+        // create entries seed the definition with a set instead of the per-pattern "Add …"
+        // entries — the classic concept window's axiom + menu.
+        EditorPatternModel statedPattern = sectionStatedPattern(sectionModel);
         EditorPatternModel editPattern = statedPattern != null
                 ? statedPattern
                 : sectionModel.getPatterns().getFirst();
@@ -1007,21 +1083,39 @@ public class GenPurposeDetailsController {
                     });
         }
 
+        List<CreateEntry> createEntries = new ArrayList<>();
         if (statedPattern != null) {
             // A concept has at most one stated definition — offer the seeds only until it
             // exists (afterwards more sets are added inline, on the tree's root row). Sufficient
             // before necessary, matching the classic concept window's menu.
             if (popup.getItems().isEmpty()) {
-                popup.getCreateActions().add(new SectionEditPopup.CreateAction("Add sufficient set",
-                        () -> createSeededStatedDefinition(sectionModel, statedPattern, false)));
-                popup.getCreateActions().add(new SectionEditPopup.CreateAction("Add necessary set",
-                        () -> createSeededStatedDefinition(sectionModel, statedPattern, true)));
+                createEntries.add(new CreateEntry(statedPattern, Map.of(),
+                        new SectionEditPopup.CreateAction("Add sufficient set",
+                                () -> createSeededStatedDefinition(sectionModel, statedPattern, false))));
+                createEntries.add(new CreateEntry(statedPattern, Map.of(),
+                        new SectionEditPopup.CreateAction("Add necessary set",
+                                () -> createSeededStatedDefinition(sectionModel, statedPattern, true))));
             }
         } else {
-            popup.getCreateActions().add(new SectionEditPopup.CreateAction("Create new Semantic", () -> {
-                initializeComposer();
-                onCreateSemantic(actionEvent, sectionModel, refComponent);
-            }));
+            for (EditorPatternModel patternModel : sectionModel.getPatterns()) {
+                // Once in edit mode, only patterns authored as editable in the KL Editor accept
+                // new semantics.
+                if (genPurposeViewModel.getMode() != FormMode.CREATE && !patternModel.isEditable()) {
+                    continue;
+                }
+                addCreateEntries(createEntries, actionEvent, sectionModel, patternModel, refComponent);
+            }
+        }
+        createEntries.forEach(entry -> popup.getCreateActions().add(entry.createAction()));
+
+        // With no semantic to edit, the popup would only offer its create entries — when one of
+        // them is the obvious choice it runs straight away instead of asking.
+        if (popup.getItems().isEmpty()) {
+            CreateEntry directEntry = directCreateEntry(sectionModel, createEntries);
+            if (directEntry != null) {
+                directEntry.createAction().action().run();
+                return;
+            }
         }
 
         // Show Popup
@@ -1033,7 +1127,130 @@ public class GenPurposeDetailsController {
         popup.show(sectionTitledPane, screenPoint.getX(), screenPoint.getY());
     }
 
-    private void onCreateSemantic(ActionEvent actionEvent, EditorSectionModel sectionModelOfPattern, EntityFacade refComponent) {
+    /**
+     * Adds the section popup's "Add …" create entries for one pattern of the section to the passed
+     * in list. A pattern without display filters gets one entry named after the pattern; a
+     * filtered pattern gets one entry per filter, named after the concept(s) the filter selects on
+     * — e.g. "Add Fully qualified name" for a Description pattern filtered to fully qualified
+     * names — and that entry's new semantic is seeded with the filter's field constraints, so it
+     * comes out passing the filter it was created from. Either way a trailing "Pattern" word is
+     * dropped from the entry's name.
+     */
+    private void addCreateEntries(List<CreateEntry> createEntries, ActionEvent actionEvent,
+            EditorSectionModel sectionModel, EditorPatternModel patternModel, EntityFacade refComponent) {
+        if (patternModel.getSemanticFilters().isEmpty()) {
+            createEntries.add(new CreateEntry(patternModel, Map.of(), new SectionEditPopup.CreateAction(
+                    "Add " + stripPatternSuffix(patternModel.getTitle()), () -> {
+                        initializeComposer();
+                        onCreateSemantic(actionEvent, sectionModel, patternModel, refComponent, Map.of());
+                    })));
+            return;
+        }
+
+        for (EditorPatternSemanticFilter filter : patternModel.getSemanticFilters()) {
+            String filterConceptNames = filter.getFieldConstraints().values().stream()
+                    .map(filterConcept -> getViewProperties().calculator()
+                            .getPreferredDescriptionTextWithFallbackOrNid(filterConcept.nid()))
+                    .distinct()
+                    .collect(Collectors.joining(", "));
+            // A filter constraining nothing selects every semantic — its entry falls back to the
+            // pattern's name.
+            String entryName = filterConceptNames.isEmpty()
+                    ? patternModel.getTitle()
+                    : filterConceptNames;
+
+            // Snapshot the constraints at popup-build time; they seed the new semantic's fields.
+            Map<Integer, EntityProxy> fieldSeeds = Map.copyOf(filter.getFieldConstraints());
+            createEntries.add(new CreateEntry(patternModel, fieldSeeds, new SectionEditPopup.CreateAction(
+                    "Add " + stripPatternSuffix(entryName), () -> {
+                        initializeComposer();
+                        onCreateSemantic(actionEvent, sectionModel, patternModel, refComponent, fieldSeeds);
+                    })));
+        }
+    }
+
+    /**
+     * One "Add …" entry of a section's edit popup, kept with the pattern it creates a semantic of
+     * and the field values that new semantic starts out with (the constraints of the display
+     * filter the entry was built from, keyed by field index — empty for an unfiltered pattern),
+     * so {@link #directCreateEntry} can tell which entry meets a requirement.
+     */
+    private record CreateEntry(EditorPatternModel pattern, Map<Integer, EntityProxy> fieldSeeds,
+                               SectionEditPopup.CreateAction createAction) {
+    }
+
+    /**
+     * The create entry the section's pencil button runs right away, skipping the popup, when the
+     * section has no semantic to edit — or null when the user has to choose. A lone entry is the
+     * only thing the popup could offer, so it runs. Otherwise the section's unmet required
+     * patterns decide: the entry seeded to meet the pattern's first unmet requirement (see
+     * {@link EditorPatternRequirement}), or the pattern's single entry when it has no refinement
+     * or no entry is seeded to meet it (the user then picks the field values in the form).
+     * Several candidates — the stated definition's two set seeds, a required pattern with two
+     * filters and no refinement — leave the choice to the popup.
+     */
+    private CreateEntry directCreateEntry(EditorSectionModel sectionModel, List<CreateEntry> createEntries) {
+        if (createEntries.size() == 1) {
+            return createEntries.getFirst();
+        }
+
+        for (EditorPatternModel pattern : sectionModel.getPatterns()) {
+            if (!pattern.isRequired() || isRequiredPatternSatisfied(pattern)) {
+                continue;
+            }
+            List<CreateEntry> patternEntries = createEntries.stream()
+                    .filter(entry -> entry.pattern() == pattern)
+                    .toList();
+            List<CreateEntry> candidates = patternEntries;
+
+            List<EntityFacade> semantics = getSemanticsOfPattern(pattern);
+            for (EditorPatternRequirement requirement : pattern.getRequirements()) {
+                if (isRequirementMet(semantics, requirement)) {
+                    continue;
+                }
+                List<CreateEntry> meetingRequirement = patternEntries.stream()
+                        .filter(entry -> seedsMeet(entry.fieldSeeds(), requirement))
+                        .toList();
+                if (!meetingRequirement.isEmpty()) {
+                    candidates = meetingRequirement;
+                }
+                break;
+            }
+
+            if (candidates.size() == 1) {
+                return candidates.getFirst();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Whether a semantic seeded with the passed in field values (field index to concept) would
+     * match the requirement's field constraints.
+     */
+    private static boolean seedsMeet(Map<Integer, EntityProxy> fieldSeeds, EditorPatternRequirement requirement) {
+        return requirement.getFieldConstraints().entrySet().stream().allMatch(constraint -> {
+            EntityProxy seed = fieldSeeds.get(constraint.getKey());
+            return seed != null && seed.nid() == constraint.getValue().nid();
+        });
+    }
+
+    /**
+     * The passed in name without a trailing "Pattern" word — "Description Pattern" makes the
+     * create entry "Add Description". A name that is nothing but that word is kept whole.
+     */
+    private static String stripPatternSuffix(String name) {
+        String trimmed = name.strip();
+        int suffixStart = trimmed.length() - "Pattern".length();
+        boolean endsWithPatternWord = suffixStart > 0
+                && Character.isWhitespace(trimmed.charAt(suffixStart - 1))
+                && trimmed.regionMatches(true, suffixStart, "Pattern", 0, "Pattern".length());
+        return endsWithPatternWord ? trimmed.substring(0, suffixStart).strip() : trimmed;
+    }
+
+    private void onCreateSemantic(ActionEvent actionEvent, EditorSectionModel sectionModelOfPattern,
+                                  EditorPatternModel editorPatternModel, EntityFacade refComponent,
+                                  Map<Integer, EntityProxy> fieldSeeds) {
         // Lazy reference-component creation: in create mode the window has no component yet — the
         // first semantic the user authors brings the new component into existence with it. Both
         // join the composer's transaction, so submitting the semantic commits them together.
@@ -1041,11 +1258,10 @@ public class GenPurposeDetailsController {
             refComponent = createUncommitedReferenceComponent();
         }
 
-        EditorPatternModel editorPatternModel = sectionModelOfPattern.getPatterns().getFirst();
         PatternFacade patternFacade = PatternFacade.make(editorPatternModel.getNid());
 
         // Create uncommited Semantic
-        SemanticEntity<SemanticEntityVersion> uncommitedSemantic = createUncommitedSemantic(refComponent, patternFacade);
+        SemanticEntity<SemanticEntityVersion> uncommitedSemantic = createUncommitedSemantic(refComponent, patternFacade, fieldSeeds);
 
         PatternSemanticsPresenter patternSemanticsPresenter = editorPatternModelToPatternPresenter.get(editorPatternModel);
 
@@ -1268,6 +1484,9 @@ public class GenPurposeDetailsController {
                 "Edit Semantic Details"
         );
 
+        // The Publish button follows the transaction's staged changes (see updatePublishState).
+        composer.hasUncommittedChangesProperty().subscribe(this::updatePublishState);
+
         genPurposeViewModel.setPropertyValue(ViewModelKey.COMPOSER, composer);
     }
 
@@ -1346,8 +1565,8 @@ public class GenPurposeDetailsController {
      * Refreshes each section's required-pattern chip (see the REQUIRED / "✓ REQUIREMENT MET"
      * chip in the section title bar): shown in create mode on sections hosting a required
      * pattern, flipping to satisfied once every required pattern in the section is satisfied
-     * ({@link #isRequiredPatternSatisfied}) — the same check that gates the component's
-     * creation on submit.
+     * ({@link #isRequiredPatternSatisfied}) — the same check that gates the Publish button in
+     * create mode, so the button re-evaluates with the chips.
      */
     private void updateRequiredChips() {
         boolean createMode = genPurposeViewModel.getMode() == FormMode.CREATE;
@@ -1362,6 +1581,66 @@ public class GenPurposeDetailsController {
                         .allMatch(this::isRequiredPatternSatisfied));
             }
         });
+        updatePublishState();
+    }
+
+    /**
+     * Whether this window uses the toolbar Publish flow: changes stage in the composer's open
+     * transaction until the Publish button commits them. Scoped to the standard Pattern window
+     * for now — the other window types keep the classic commit-on-submit flow (and hide the
+     * Publish button) until they adopt the Publish UX too.
+     */
+    private boolean usesPublishFlow() {
+        return editorWindowModel != null
+                && editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN;
+    }
+
+    /**
+     * Recomputes the toolbar Publish button's enablement and tooltip. Publishing needs staged
+     * changes in the composer's open transaction, and in create mode additionally every required
+     * pattern satisfied ({@link #allRequiredPatternsSatisfied}) — the component only comes into
+     * existence complete. Runs whenever those inputs may have moved: with the required chips
+     * (mode changes, PUBLISH submits, inline stated-definition edits) and on the composer's
+     * change tracking (see {@link #initializeComposer}).
+     */
+    private void updatePublishState() {
+        boolean hasStagedChanges = composer != null && composer.hasUncommittedChanges();
+        boolean disabled;
+        String publishTooltip;
+        if (genPurposeViewModel.getMode() == FormMode.CREATE) {
+            disabled = !hasStagedChanges || !allRequiredPatternsSatisfied();
+            publishTooltip = disabled ? "Complete the required semantics to publish" : "Publish";
+        } else {
+            disabled = !hasStagedChanges;
+            publishTooltip = disabled ? "No changes to publish" : "Publish";
+        }
+        windowControlToolbar.setPublishDisable(disabled);
+        windowControlToolbar.setPublishTooltip(publishTooltip);
+    }
+
+    /**
+     * Runs when the toolbar's Publish button is pressed — the window's single commit point.
+     * Commits the composer's open transaction, finalizing everything staged since the last
+     * publish: submitted semantic versions and, in create mode, the lazily created reference
+     * component itself. A CREATE window becomes an EDIT window on its first publish.
+     */
+    private void publish() {
+        boolean wasCreateMode = genPurposeViewModel.getMode() == FormMode.CREATE;
+
+        composer.commit();
+        composer = null;
+        initializeComposer();
+
+        if (wasCreateMode) {
+            genPurposeViewModel.setMode(FormMode.EDIT);
+        }
+        // The commit finalized the staged entities (in create mode the window's reference
+        // component itself) — refresh the banner/identifier/STAMP from the committed state.
+        updateView();
+        updatePublishState();
+
+        toast().show(Toast.Status.SUCCESS,
+                wasCreateMode ? componentKindString + " created" : "Changes published");
     }
 
     /**
@@ -1401,9 +1680,16 @@ public class GenPurposeDetailsController {
                 && semantics.stream().noneMatch(this::definesNecessaryOrSufficientSet)) {
             return false;
         }
-        return pattern.getRequirements().stream().allMatch(requirement ->
-                semantics.stream().filter(semantic -> matchesRequirement(semantic, requirement)).count()
-                        >= requirement.getMinCount());
+        return pattern.getRequirements().stream().allMatch(requirement -> isRequirementMet(semantics, requirement));
+    }
+
+    /**
+     * Whether at least the requirement's minimum count of the passed in semantics match its field
+     * constraints ({@link #matchesRequirement}).
+     */
+    private boolean isRequirementMet(List<EntityFacade> semantics, EditorPatternRequirement requirement) {
+        return semantics.stream().filter(semantic -> matchesRequirement(semantic, requirement)).count()
+                >= requirement.getMinCount();
     }
 
     /**

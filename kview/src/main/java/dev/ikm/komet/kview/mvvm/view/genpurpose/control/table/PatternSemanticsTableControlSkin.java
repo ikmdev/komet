@@ -9,7 +9,9 @@ import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
+import javafx.geometry.Orientation;
 import javafx.scene.Node;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.SkinBase;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumnBase;
@@ -33,6 +35,21 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
 
     private static final String TABLE_HEADER_ROW = "TableHeaderRow";
     private static final String SHOW_GRID_LINES_STYLE_CLASS = "show-grid-lines";
+    private static final String TABLE_ROW_CELL_STYLE_CLASS = ".table-row-cell";
+    private static final String SCROLL_BAR_STYLE_CLASS = ".scroll-bar";
+
+    /** Number of empty filler rows kept visible below the last semantic row. */
+    private static final int TRAILING_EMPTY_ROW_COUNT = 2;
+
+    /** Row-height stand-in until a first row has been laid out; self-corrects from then on. */
+    private static final double INITIAL_ROW_HEIGHT_ESTIMATE = 44;
+
+    /**
+     * Ceiling on the content-derived table height. Beyond it the table scrolls internally instead
+     * of growing — a table sized to hundreds of semantics would realize a row node for every one
+     * of them, forfeiting the virtualization.
+     */
+    private static final double MAX_TABLE_HEIGHT = 600;
 
     private static final String COLUMN_HEADER_STYLE_CLASS = ".column-header";
     private static final String FIELD_PURPOSE_KEY = "fieldPurpose";
@@ -81,6 +98,76 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
         // Honor the factory-configured properties.
         control.headerVisibleProperty().subscribe(this::updateHeaderVisibility);
         control.gridLinesVisibleProperty().subscribe(this::updateGridLinesVisibility);
+    }
+
+    @Override
+    protected void layoutChildren(double contentX, double contentY, double contentWidth, double contentHeight) {
+        super.layoutChildren(contentX, contentY, contentWidth, contentHeight);
+        updateTableHeightToContent();
+    }
+
+    @Override
+    protected double computeMaxHeight(double width, double topInset, double rightInset, double bottomInset, double leftInset) {
+        // A taller parent must not stretch the table: any extra height would fill up with
+        // additional empty filler rows beyond the TRAILING_EMPTY_ROW_COUNT sized for.
+        return computePrefHeight(width, topInset, rightInset, bottomInset, leftInset);
+    }
+
+    /**
+     * Sizes the table to its content — every semantic row plus {@link #TRAILING_EMPTY_ROW_COUNT}
+     * empty filler rows — instead of the fixed pref height a TableView defaults to, which fills
+     * whatever is left over with empty rows. Rows are measured from what the previous layout pass
+     * realized (their heights vary: a component-collection cell stacks its components), with the
+     * average standing in for rows not realized yet, so the height set here converges within a
+     * pulse or two of rows appearing or changing. Growth stops at {@link #MAX_TABLE_HEIGHT}; past
+     * it the table scrolls its rows internally.
+     */
+    private void updateTableHeightToContent() {
+        int itemCount = tableView.getItems().size();
+
+        double dataRowsHeight = 0;
+        int measuredDataRows = 0;
+        double emptyRowHeight = 0;
+        for (Node node : tableView.lookupAll(TABLE_ROW_CELL_STYLE_CLASS)) {
+            if (node instanceof TableRow<?> row && row.isVisible() && row.getIndex() >= 0 && row.getHeight() > 0) {
+                if (row.getIndex() < itemCount) {
+                    dataRowsHeight += row.getHeight();
+                    measuredDataRows++;
+                } else {
+                    emptyRowHeight = row.getHeight();
+                }
+            }
+        }
+
+        double estimatedRowHeight = measuredDataRows > 0
+                ? dataRowsHeight / measuredDataRows : INITIAL_ROW_HEIGHT_ESTIMATE;
+        dataRowsHeight += (itemCount - measuredDataRows) * estimatedRowHeight;
+        if (emptyRowHeight == 0) {
+            emptyRowHeight = estimatedRowHeight;
+        }
+
+        double desiredHeight = snapSizeY(Math.min(MAX_TABLE_HEIGHT,
+                tableView.getInsets().getTop() + tableView.getInsets().getBottom()
+                        + getHeaderHeight() + dataRowsHeight + TRAILING_EMPTY_ROW_COUNT * emptyRowHeight
+                        + getHorizontalScrollBarHeight()));
+        if (Math.abs(tableView.getPrefHeight() - desiredHeight) > 1) {
+            tableView.setPrefHeight(desiredHeight);
+        }
+    }
+
+    private double getHeaderHeight() {
+        Region header = (Region) tableView.lookup(TABLE_HEADER_ROW);
+        return (header == null || !header.isVisible()) ? 0 : header.getHeight();
+    }
+
+    private double getHorizontalScrollBarHeight() {
+        for (Node node : tableView.lookupAll(SCROLL_BAR_STYLE_CLASS)) {
+            if (node instanceof ScrollBar scrollBar
+                    && scrollBar.getOrientation() == Orientation.HORIZONTAL && scrollBar.isVisible()) {
+                return scrollBar.getHeight();
+            }
+        }
+        return 0;
     }
 
     private void updateHeaderVisibility(boolean visible) {
@@ -182,10 +269,6 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
                 cellData.getValue().semanticNidProperty());
         identiconColumn.setCellFactory(_ -> new SemanticIdenticonCell(getSkinnable().getNidToComponentItem()));
 
-        final int identiconColumnWidth = 40;
-        identiconColumn.setPrefWidth(identiconColumnWidth);
-        identiconColumn.setMinWidth(identiconColumnWidth);
-        identiconColumn.setMaxWidth(identiconColumnWidth);
         identiconColumn.getStyleClass().add("identicon-column");
         return identiconColumn;
     }

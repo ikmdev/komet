@@ -52,8 +52,8 @@ public class SectionEditPopup extends PopupControl {
     }
 
     /**
-     * The entries of the popup's create area, shown above the EDIT SEMANTIC list — typically a
-     * single "Create new Semantic" entry, or the set-creation entries of the axiom section.
+     * The entries of the popup's create area, shown above the EDIT SEMANTIC list — typically an
+     * "Add …" entry per pattern of the section, or the set-creation entries of the axiom section.
      */
     private final ObservableList<CreateAction> createActions = FXCollections.observableArrayList();
     public ObservableList<CreateAction> getCreateActions() { return createActions; }

@@ -169,7 +169,7 @@
                         <Insets left="5.0" right="5.0" />
                     </padding>
                     <styleClass>
-                        <String fx:value="concept-header-control" />
+                        <String fx:value="window-header-control" />
                         <String fx:value="rounded-upper-right-only" />
                     </styleClass>
                 </HBox>

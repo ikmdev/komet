@@ -149,6 +149,14 @@ public class KLEditorPreferences {
         public static String PATTERN_TITLE = "pattern-title";
 
         public static String PATTERN_TITLE_VISIBLE = "pattern-title-visible";
+
+        /**
+         * Whether the Pattern's semantics can still be added and edited once the window is in edit
+         * mode. A Pattern that isn't editable only accepts semantic changes while the window is in
+         * create mode.
+         */
+        public static String PATTERN_EDITABLE = "pattern-editable";
+
         public static String PATTERN_SEMANTICS_FACTORY = "pattern-semantics-factory";
 
         /**

@@ -1,6 +1,7 @@
 package dev.ikm.komet.layout.editor;
 
 import dev.ikm.komet.layout.KlPatternSemanticsFactories;
+import dev.ikm.komet.layout.KlTerms;
 import dev.ikm.komet.layout.PatternDefinitionSeeder;
 import dev.ikm.komet.layout.PatternDefinitionTerms;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
@@ -21,6 +22,7 @@ import dev.ikm.tinkar.terms.TinkarTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 
@@ -51,7 +53,7 @@ public final class StandardEditorWindows {
      * re-seeded from the current code, so application-shipped windows never go stale in the
      * preferences. User-authored windows live in the user-windows folder and are untouched.
      */
-    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 9;
+    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 11;
 
     /** Preferences key holding the version the seeded standard windows were created from. */
     private static final String STANDARD_WINDOWS_VERSION_KEY = "STANDARD-WINDOWS-VERSION";
@@ -265,7 +267,8 @@ public final class StandardEditorWindows {
      * (meaning left, purpose right), a "Description" section laying the Description pattern out in
      * the same two name columns as the Concept window (see
      * {@link #populateDescriptionNameColumns}), and a "Fields" section with the Fields pattern shown
-     * as a table (one row per field of the pattern being defined). The Meaning and Purpose pattern and the fully
+     * as a table (one row per field of the pattern being defined, showing the field's meaning and
+     * then its data type — the field-purpose column is left out). The Meaning and Purpose pattern and the fully
      * qualified name column are required when the window is opened in the Journal in create mode —
      * so, as in the Concept window, the pattern can only be created once it has a fully qualified
      * name; Fields is not required (a membership pattern has no fields).
@@ -361,8 +364,26 @@ public final class StandardEditorWindows {
                 PatternDefinitionTerms.FIELDS_PATTERN.nid());
         KlPatternSemanticsFactories.byClassName(KlPatternSemanticsFactories.TABLE_FACTORY_CLASS_NAME)
                 .ifPresent(fieldsPattern::setFactory);
+        arrangeFieldColumns(fieldsPattern, viewCalculator);
         fieldsSection.getPatterns().add(fieldsPattern);
         return fieldsSection;
+    }
+
+    /**
+     * Arranges the Fields pattern's placement so the Fields table shows each field as its meaning
+     * followed by its data type: the "Field purpose" field is removed, and the meaning field is
+     * moved in front of the data-type field (the pattern defines data type first, meaning last).
+     */
+    private static void arrangeFieldColumns(EditorPatternModel fieldsPattern,
+                                            ViewCalculator viewCalculator) {
+        viewCalculator.latestPatternEntityVersion(PatternDefinitionTerms.FIELDS_PATTERN).ifPresent(patternVersion -> {
+            int purposeFieldIndex = patternVersion.indexForMeaning(KlTerms.FIELD_PURPOSE);
+            fieldsPattern.getVisibleFields().removeIf(field -> field.getIndex() == purposeFieldIndex);
+
+            int meaningFieldIndex = patternVersion.indexForMeaning(KlTerms.FIELD_MEANING);
+            fieldsPattern.getVisibleFields().sort(Comparator.comparingInt(
+                    field -> field.getIndex() == meaningFieldIndex ? -1 : field.getIndex()));
+        });
     }
 
     private static EditorSectionModel createPatternDescriptionSection(ViewCalculator viewCalculator) {

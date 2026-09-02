@@ -6,6 +6,7 @@ import dev.ikm.komet.layout.KlPatternSemanticsFactory;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.property.KlPropertySet;
 import javafx.geometry.HPos;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContentDisplay;
@@ -31,6 +32,7 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
     private final ToggleSwitch titleVisibleTSwitch;
 
     private final ToggleSwitch requiredTSwitch;
+    private final ToggleSwitch editableTSwitch;
     private final PatternRequirementsView requirementsView = new PatternRequirementsView();
 
     private final PatternSemanticFiltersView semanticFiltersView = new PatternSemanticFiltersView();
@@ -124,6 +126,20 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         displayGridPane.add(displayComboBox, 1, 0);
 
         populateDisplayComboBox();
+
+        // - "Editable" row in grid, laid out like the property-set toggles (label column, control
+        // column). When off, the Pattern's semantics can only be added or edited while the window
+        // is in create mode in the Journal.
+        Label editableLabel = new Label("Editable");
+        GridPane.setHalignment(editableLabel, HPos.RIGHT);
+        GridPane.setMargin(editableLabel, new Insets(8, 0, 0, 0));
+        displayGridPane.add(editableLabel, 0, 1);
+
+        editableTSwitch = new ToggleSwitch();
+        editableTSwitch.setSelected(true);
+        editableTSwitch.getStyleClass().add("editable");
+        GridPane.setMargin(editableTSwitch, new Insets(8, 0, 0, 0));
+        displayGridPane.add(editableTSwitch, 1, 1);
 
         interactionContainer.getChildren().addAll(
                 interactionTitleLabel,
@@ -253,6 +269,7 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
             identifierTextField.textProperty().unbindBidirectional(previouslyShownModel.identifierProperty());
             titleVisibleTSwitch.selectedProperty().unbindBidirectional(previouslyShownModel.titleVisibleProperty());
             requiredTSwitch.selectedProperty().unbindBidirectional(previouslyShownModel.requiredProperty());
+            editableTSwitch.selectedProperty().unbindBidirectional(previouslyShownModel.editableProperty());
             displayComboBox.valueProperty().unbindBidirectional(previouslyShownModel.factoryProperty());
 
             if (factoryPropertiesSubscription != null) {
@@ -263,6 +280,7 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         titleTextField.textProperty().bindBidirectional(currentlyShownModel.titleProperty());
         titleVisibleTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.titleVisibleProperty());
         requiredTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.requiredProperty());
+        editableTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.editableProperty());
         requirementsView.setPattern(currentlyShownModel);
         semanticFiltersView.setPattern(currentlyShownModel);
 

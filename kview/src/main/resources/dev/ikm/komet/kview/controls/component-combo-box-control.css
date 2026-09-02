@@ -1,0 +1,61 @@
+@import "../mvvm/view/kview.css";
+
+.component-combo-box-control {
+    -fx-font-family: "Noto Sans";
+
+    -fx-text-fill: -Grey-8;
+}
+
+.component-combo-box-control .main-container {
+    -fx-spacing: 6px;
+}
+
+.component-combo-box-control .title {
+    -fx-font-size: 1.166667em; /* 14 */
+}
+
+.component-combo-box-control > .main-container > .combo-box-base {
+    -fx-font-size: 1.166667em; /* 14 */
+    -fx-background-color: -Grey-5, white;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 4px, 4px;
+    -fx-padding: 0.166667em 0 0.166667em 0; /* 2 0 2 0 */
+}
+
+.component-combo-box-control .combo-box-base > .arrow-button > .arrow {
+    -fx-shape: "M7.41 8.29508L6 9.70508L12 15.7051L18 9.70508L16.59 8.29508L12 12.8751L7.41 8.29508Z";
+    -fx-background-color: #4277d8;
+}
+
+.component-combo-box-control > .main-container > .combo-box-base:focused   {
+    -fx-background-color: #8ab4f8, white;
+    -fx-background-insets: 0, 2;
+}
+
+.component-combo-box-control:disabled {
+    -fx-opacity: 0.4;
+}
+
+/* --- Popup options --- */
+.component-combo-box-control .component-combo-box > .combo-box-popup > .list-view {
+    -fx-background-color: -Grey-5, white;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 4px;
+}
+
+.component-combo-box-control .component-combo-box > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-background-color: white;
+    -fx-padding: 4 8 4 8;
+}
+
+.component-combo-box-control .component-combo-box > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover {
+    -fx-background-color: -Grey-4;
+    -fx-text-fill: #111;
+}
+
+.component-combo-box-control .component-combo-box > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected,
+.component-combo-box-control .component-combo-box > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected:hover {
+    -fx-background-color: -Secondary-05;
+    -fx-text-fill: white;
+}
+

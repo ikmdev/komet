@@ -1295,8 +1295,8 @@ selected(active) - dark black
     -fx-max-width: -default-width;
 }
 
-/* The horizontal header control above the concept details view */
-.concept-header-control {
+/* The horizontal header control above a details window's view */
+.window-header-control {
     -icon-paint: -Grey-10;
     -fx-spacing: 4;
     -fx-alignment: center;
@@ -1316,12 +1316,12 @@ selected(active) - dark black
  * Knowledge Layout Window Toolbar                                             *
  ******************************************************************************/
 
-.kl-window-control-toolbar .concept-header-control {
+.kl-window-control-toolbar .window-header-control {
     /* The bar's fill goes through -bar-color (themes override just the color) so the
        :drag-hover tint below can derive from whichever theme is active. */
     -bar-color: -Natural-Grey-Main;
     -fx-background-color: -bar-color;
-    -fx-padding: 0 5 0 12;
+    -fx-padding: 0 5 0 5;
 }
 
 .kl-window-control-toolbar .properties-toggle {
@@ -1330,14 +1330,14 @@ selected(active) - dark black
     -fx-font-size: 13px;
 }
 
-.kl-window-control-toolbar .concept-header-control .leading-buttons-container {
-    -fx-spacing: 12px;
+.kl-window-control-toolbar .window-header-control .leading-buttons-container {
+    -fx-spacing: 8px;
     -fx-alignment: center-left;
 }
 
 /* The coordinate button is shaped as its own glyph (-fx-shape), so its backplate lives on
    this plate wrapper, sized to match the other 28px button boxes. */
-.kl-window-control-toolbar .concept-header-control .coordinate-plate {
+.kl-window-control-toolbar .window-header-control .coordinate-plate {
     -plate-size: 28px;
     -fx-min-width: -plate-size;
     -fx-pref-width: -plate-size;
@@ -1347,42 +1347,80 @@ selected(active) - dark black
     -fx-max-height: -plate-size;
 }
 
-.kl-window-control-toolbar .concept-header-control .coordinate-plate:hover,
-.kl-window-control-toolbar .concept-header-control .button:hover,
-.kl-window-control-toolbar .concept-header-control .toggle-button.timeline:hover {
+.kl-window-control-toolbar .window-header-control .coordinate-plate:hover,
+.kl-window-control-toolbar .window-header-control .button:hover,
+.kl-window-control-toolbar .window-header-control .toggle-button.timeline:hover {
     -fx-background-color: rgba(255, 255, 255, 0.16);
     -fx-background-radius: 5;
 }
 
-.kl-window-control-toolbar .concept-header-control .coordinate-plate:pressed,
-.kl-window-control-toolbar .concept-header-control .button:armed,
-.kl-window-control-toolbar .concept-header-control .toggle-button.timeline:armed {
+.kl-window-control-toolbar .window-header-control .coordinate-plate:pressed,
+.kl-window-control-toolbar .window-header-control .button:armed,
+.kl-window-control-toolbar .window-header-control .toggle-button.timeline:armed {
     -fx-background-color: rgba(255, 255, 255, 0.28);
     -fx-background-radius: 5;
 }
 
 /* The properties switch graphic outgrows its button box, so a backplate would sit behind
    only part of it — it gets a soft halo instead. */
-.kl-window-control-toolbar .concept-header-control .properties-toggle-button:hover {
+.kl-window-control-toolbar .window-header-control .properties-toggle-button:hover {
     -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.45), 7, 0.5, 0, 0);
 }
 
-.kl-window-control-toolbar .concept-header-control {
+/* The Publish button is the window's primary action, so unlike its icon-button neighbors it
+   gets a filled accent plate. The generic ".window-header-control .button" rule further down
+   boxes buttons to icon-only 28x28 — this label-only button undoes that (text-only, computed
+   width). Its hover/armed rules below double as the override of the generic white-backplate
+   hover above (same properties, later and more specific). */
+.kl-window-control-toolbar .window-header-control .button.publish-button {
+    -fx-background-color: -Secondary-05;
+    -fx-background-insets: 0;
+    -fx-background-radius: 5;
+    -fx-text-fill: -Grey-White;
+    -fx-font-family: "Open Sans SemiBold";
+    -fx-font-size: 13px;
+    -fx-padding: 4 14 4 14;
+    -fx-content-display: text-only;
+    -fx-min-width: -1;
+    -fx-pref-width: -1;
+    -fx-max-width: -1;
+}
+
+.kl-window-control-toolbar .window-header-control .button.publish-button:hover {
+    -fx-background-color: -Secondary-04;
+    -fx-background-radius: 5;
+}
+
+.kl-window-control-toolbar .window-header-control .button.publish-button:armed {
+    -fx-background-color: -Secondary-06;
+    -fx-background-radius: 5;
+}
+
+/* Disabled keeps full opacity (instead of modena's 0.4 fade) and ghosts the plate itself:
+   the label must stay readable against the bar so the plate tooltip's "why disabled"
+   explanation has a legible anchor. */
+.kl-window-control-toolbar .window-header-control .button.publish-button:disabled {
+    -fx-opacity: 1.0;
+    -fx-background-color: rgba(255, 255, 255, 0.10);
+    -fx-text-fill: rgba(255, 255, 255, 0.42);
+}
+
+.kl-window-control-toolbar .window-header-control {
     -fx-cursor: open-hand;
 }
 
-.kl-window-control-toolbar .concept-header-control:pressed {
+.kl-window-control-toolbar .window-header-control:pressed {
     -fx-cursor: closed-hand;
 }
 
-.kl-window-control-toolbar .concept-header-control:drag-hover {
+.kl-window-control-toolbar .window-header-control:drag-hover {
     -fx-background-color: derive(-bar-color, 5%);
 }
 
 /* Buttons keep the arrow cursor, masking the bar's hand cursor while over them. */
-.kl-window-control-toolbar .concept-header-control .coordinate-plate,
-.kl-window-control-toolbar .concept-header-control .button,
-.kl-window-control-toolbar .concept-header-control .toggle-button {
+.kl-window-control-toolbar .window-header-control .coordinate-plate,
+.kl-window-control-toolbar .window-header-control .button,
+.kl-window-control-toolbar .window-header-control .toggle-button {
     -fx-cursor: default;
 }
 
@@ -1400,7 +1438,7 @@ selected(active) - dark black
     -fx-background-color: derive(-tab-color, 10%);
 }
 
-.concept-header-control .spacer1  {
+.window-header-control .spacer1  {
     -fx-background-color: transparent;
     -fx-min-height: 40;
     -fx-pref-height: 40;
@@ -1411,8 +1449,8 @@ selected(active) - dark black
     -fx-max-width: 56;
 }
 
-.concept-header-control .button,
-.concept-header-control .toggle-button {
+.window-header-control .button,
+.window-header-control .toggle-button {
     /* defaults for buttons */
     -default-width: 28px;
     -default-height: 28px;
@@ -1443,7 +1481,7 @@ selected(active) - dark black
 .pencil-icon-description {
     -fx-fill: -Secondary-05;
 }
-/*.concept-header-control .button .icon {*/
+/*.window-header-control .button .icon {*/
 /*    -fx-background-color: -icon-paint;*/
 /*}*/
 .coordinate {
@@ -1479,7 +1517,7 @@ selected(active) - dark black
     -fx-shape: "M5.48405 3.25783C5.48405 4.58102 4.4114 5.65367 3.08822 5.65367C1.76503 5.65367 0.692383 4.58102 0.692383 3.25783C0.692383 1.93465 1.76503 0.862 3.08822 0.862C4.4114 0.862 5.48405 1.93465 5.48405 3.25783ZM3.98405 3.25783C3.98405 3.75259 3.58297 4.15367 3.08822 4.15367C2.59346 4.15367 2.19238 3.75259 2.19238 3.25783C2.19238 2.76308 2.59346 2.362 3.08822 2.362C3.58297 2.362 3.98405 2.76308 3.98405 3.25783Z M7.32433 2.3358C6.81807 2.3358 6.40766 2.7462 6.40766 3.25246C6.40766 3.75872 6.81807 4.16913 7.32433 4.16913L16.3955 4.16913C16.9018 4.16913 17.3122 3.75872 17.3122 3.25246C17.3122 2.7462 16.9018 2.3358 16.3955 2.3358L7.32433 2.3358Z M7.32433 8.08334C6.81807 8.08334 6.40766 8.49375 6.40766 9.00001C6.40766 9.50627 6.81807 9.91668 7.32433 9.91668L16.3955 9.91668C16.9018 9.91668 17.3122 9.50627 17.3122 9.00001C17.3122 8.49375 16.9018 8.08335 16.3955 8.08335L7.32433 8.08334Z M7.32433 13.8309C6.81807 13.8309 6.40766 14.2413 6.40766 14.7476C6.40766 15.2538 6.81807 15.6642 7.32433 15.6642H16.3955C16.9018 15.6642 17.3122 15.2538 17.3122 14.7476C17.3122 14.2413 16.9018 13.8309 16.3955 13.8309L7.32433 13.8309Z M3.08822 11.3959C4.4114 11.3959 5.48405 10.3232 5.48405 9.00002C5.48405 7.67684 4.4114 6.60419 3.08822 6.60419C1.76503 6.60419 0.692383 7.67684 0.692383 9.00002C0.692383 10.3232 1.76503 11.3959 3.08822 11.3959ZM3.08822 9.89585C3.58297 9.89585 3.98405 9.49478 3.98405 9.00002C3.98405 8.50527 3.58297 8.10419 3.08822 8.10419C2.59346 8.10419 2.19238 8.50527 2.19238 9.00002C2.19238 9.49478 2.59346 9.89585 3.08822 9.89585Z M5.48405 14.7425C5.48405 16.0657 4.4114 17.1383 3.08822 17.1383C1.76503 17.1383 0.692383 16.0657 0.692383 14.7425C0.692383 13.4193 1.76503 12.3467 3.08822 12.3467C4.4114 12.3467 5.48405 13.4193 5.48405 14.7425ZM3.98405 14.7425C3.98405 15.2373 3.58297 15.6383 3.08822 15.6383C2.59346 15.6383 2.19238 15.2373 2.19238 14.7425C2.19238 14.2478 2.59346 13.8467 3.08822 13.8467C3.58297 13.8467 3.98405 14.2478 3.98405 14.7425Z";
 }
 
-.concept-header-control .spacer2  {
+.window-header-control .spacer2  {
     -fx-background-color: transparent;
     -fx-min-height: 40;
     -fx-pref-height: 40;
@@ -1564,7 +1602,7 @@ selected(active) - dark black
     -fx-shape: "M11.8337 1.8415L10.6587 0.666504L6.00033 5.32484L1.34199 0.666504L0.166992 1.8415L4.82533 6.49984L0.166992 11.1582L1.34199 12.3332L6.00033 7.67484L10.6587 12.3332L11.8337 11.1582L7.17533 6.49984L11.8337 1.8415Z";
 }
 
-.concept-header-control .spacer3  {
+.window-header-control .spacer3  {
     -fx-background-color: transparent;
     -fx-min-height: 40;
     -fx-pref-height: 40;
@@ -6542,7 +6580,7 @@ Styling a context menu for kview ui/ux controls
     -tab-color: derive(-Secondary-06, -25%);
 }
 
-.gen-purpose-window.concept-window-theme .kl-window-control-toolbar .concept-header-control {
+.gen-purpose-window.concept-window-theme .kl-window-control-toolbar .window-header-control {
     -bar-color: -Secondary-06;
 }
 
@@ -6551,7 +6589,7 @@ Styling a context menu for kview ui/ux controls
  ******************************************************************************/
 
 /* Ghost window while in create mode: the window frames a component that doesn't exist yet
-   (it's committed when the user submits, which flips the window back to edit mode). The
+   (it's committed when the user hits Publish, which flips the window back to edit mode). The
    chrome dims to a washed-out version of the window blue and the window's outside edges get
    a dashed outline in a single mid-blue (-create-mode-dash-color below). The body frame
    also wraps the slideout trays, so an open properties bumpout stays inside the dashes.
@@ -6569,7 +6607,7 @@ Styling a context menu for kview ui/ux controls
     -tab-color: #5C74A0; /* dimmed derive(-Secondary-06, -25%), hue kept */
 }
 
-.gen-purpose-window.concept-window-theme:create-mode .kl-window-control-toolbar .concept-header-control {
+.gen-purpose-window.concept-window-theme:create-mode .kl-window-control-toolbar .window-header-control {
     -bar-color: #7E95BC; /* dimmed -Secondary-06, hue kept */
 }
 
@@ -6585,7 +6623,7 @@ Styling a context menu for kview ui/ux controls
 /* Dark dashes around the toolbar: top edge (visible to the right of the tab — the tab row
    paints above via -fx-view-order and covers the rest) and the sides, with the top-right
    corner following the toolbar's rounded-upper-right-only radius. */
-.gen-purpose-window:create-mode .kl-window-control-toolbar .concept-header-control {
+.gen-purpose-window:create-mode .kl-window-control-toolbar .window-header-control {
     -fx-border-color: -create-mode-dash-color;
     -fx-border-width: 2 2 0 2;
     -fx-border-insets: -2 -2 0 -2; /* drawn outside: no layout shift */
@@ -7256,10 +7294,24 @@ Styling a context menu for kview ui/ux controls
  * Pattern Semantics Table                                                     *
  ******************************************************************************/
 
+/* The outer border lives on the control rather than the TableView: a border painted
+   by the TableView's own background layers leaves a pixel-snapping gap between the
+   header row and the border at fractional HiDPI scales, showing as a white hairline
+   along the table's right edge. With the TableView flush (no border, no padding) the
+   header row spans the full width and there is no gap to show through. */
+.gen-purpose-window .pattern-semantics-table {
+    -fx-border-color: #ddd; /* table_view_border_color */
+    -fx-border-width: 1px;
+}
+
 .gen-purpose-window .table-view {
     header_background_color: #DCE3F1;
     table_view_border_color: #ddd;
     table_view_body_border_color: #e9e9e9;
+
+    -fx-background-color: white;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
 
     edit_mode_background_color: #f4fbf0;
     edit_mode_border_color: #66bb38;
@@ -7310,6 +7362,22 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: header_background_color;
 }
 
+/* Replace modena's "+" glyph on the table-menu button with a filled funnel
+   (Feather "filter" polygon). */
+.gen-purpose-window .table-view .show-hide-column-image {
+    -fx-shape: "M22 3L2 3L10 12.46L10 19L14 21L14 12.46Z";
+    -fx-padding: 5.25px 5.85px 5.25px 5.85px; /* glyph size: each side is half a glyph dimension */
+}
+
+.gen-purpose-window .table-view .show-hide-columns-button {
+    -fx-padding: 0 8px 0 0;
+    -fx-cursor: hand;
+}
+
+.gen-purpose-window .table-view .show-hide-columns-button:hover .show-hide-column-image {
+    -fx-background-color: #2E3240; /* text_color */
+}
+
 /********************************  Body  **********************************/
 
 .gen-purpose-window .table-view .table-cell {
@@ -7351,6 +7419,9 @@ Styling a context menu for kview ui/ux controls
 
 .gen-purpose-window .table-view .table-cell.semantic-identicon-cell {
     -fx-alignment: top-center;
+    /* The left/right padding drives the column width: the cell fixes its column to
+       identicon + insets, so this is the space left on each side of the identicon. */
+    -fx-padding: 2px 6px 2px 6px;
 }
 
 .gen-purpose-window .table-view .column-header.identicon-column .label {

@@ -56,7 +56,6 @@ import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityBinding;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.application.Platform;
@@ -91,6 +90,7 @@ import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.COMPOSER;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.REF_COMPONENT;
+import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.PUBLISH_FLOW;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.WINDOW_TOPIC;
 import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
 import static dev.ikm.tinkar.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
@@ -380,15 +380,11 @@ public class GenPurposeFieldsController {
             currentEditStamp = editableVersion.getEditStamp();
 
             ObservableList<ObservableField.Editable<?>> editables = editableVersion.getEditableFields();
-            // Generate UI nodes from editable fields
+            // Generate UI nodes from editable fields. A new semantic's component fields already
+            // start as BLANK_CONCEPT (ObservableComposer.generateDefaultFieldValues); any other
+            // value was set deliberately — e.g. seeded from a section's display filter — so no
+            // create-mode blanking here.
             for (ObservableField.Editable editableField : editables) {
-                if (genPurposeViewModel.getMode() == FormMode.CREATE && editableField.getValue() instanceof EntityProxy) {
-                    // Set default blank concept for new semantics
-                    @SuppressWarnings("unchecked")
-                    ObservableField.Editable<EntityProxy> proxyField = (ObservableField.Editable<EntityProxy>) editableField;
-                    proxyField.setValue(BLANK_CONCEPT);
-                }
-
                 Field field = editableField.field();
                 KlField<?> klField = createEditableKlField(
                         (FieldRecord<?>) field,
@@ -613,16 +609,21 @@ public class GenPurposeFieldsController {
 //                enableDisableButtons();
 
                 // Persist the edited field values as an uncommitted version. The PUBLISH handler
-                // may defer the commit (create mode with required patterns still missing a
-                // semantic), and the details area re-renders from the stored version — so the
-                // values must be saved, not left pending in the editable overlay until commit.
+                // may not commit right away — in the Publish-flow window it stages until the
+                // toolbar's Publish button, and otherwise create mode defers until every required
+                // pattern is satisfied — and the details area re-renders from the stored version,
+                // so the values must be saved, not left pending in the editable overlay.
                 semanticEditor.save();
 
-                // In create mode this submit may be the one that brings the window's reference
-                // concept into existence (it commits together with the semantic). The PUBLISH event
-                // below is handled synchronously and flips a CREATE window to EDIT only when it
-                // actually commits — while required patterns are still missing a semantic it defers
-                // the commit, leaving the mode at CREATE.
+                // Whether this window stages changes until the toolbar's Publish button commits
+                // them (currently the standard Pattern window only).
+                boolean publishFlow = Boolean.TRUE.equals(
+                        genPurposeViewModel.getPropertyValue(PUBLISH_FLOW));
+
+                // Outside the Publish flow this submit may be the one that brings the window's
+                // reference concept into existence (it commits together with the semantic). The
+                // PUBLISH event below is handled synchronously and flips a CREATE window to EDIT
+                // only when it actually commits.
                 boolean wasCreateMode = genPurposeViewModel.getMode() == FormMode.CREATE;
 
                 // Publish event to refresh details area
@@ -631,19 +632,25 @@ public class GenPurposeFieldsController {
                         new GenPurposeEvent(actionEvent.getSource(), PUBLISH, fieldValues, currentEditingSemantic)
                 );
 
-                boolean createdConcept = wasCreateMode && genPurposeViewModel.getMode() == FormMode.EDIT;
-
-                // Submitting finishes the create/edit flow, so close the properties bumpout.
+                // Submitting finishes the edit form, so close the properties bumpout.
                 EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
                         new KLPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
 
-                // Show success message (unless creation was deferred because required patterns
-                // are still missing a semantic — the window's create-mode hint covers that).
-                if (!wasCreateMode || createdConcept) {
-                    String submitMessage = createdConcept
-                            ? "Concept created"
-                            : "Semantic Details Edited Successfully";
-                    toast().show(Toast.Status.SUCCESS, submitMessage);
+                if (publishFlow) {
+                    // Point at the Publish button as the remaining step (in create mode the
+                    // window's create-mode hint already says so).
+                    if (!wasCreateMode) {
+                        toast().show(Toast.Status.SUCCESS, "Changes saved - hit Publish to apply them");
+                    }
+                } else {
+                    // Show success message (unless creation was deferred because required patterns
+                    // are still missing a semantic — the window's create-mode hint covers that).
+                    boolean createdConcept = wasCreateMode && genPurposeViewModel.getMode() == FormMode.EDIT;
+                    if (!wasCreateMode || createdConcept) {
+                        toast().show(Toast.Status.SUCCESS, createdConcept
+                                ? "Concept created"
+                                : "Semantic Details Edited Successfully");
+                    }
                 }
 
                 // Cleanup and reset

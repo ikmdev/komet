@@ -40,6 +40,7 @@ import java.util.prefs.BackingStoreException;
 import static dev.ikm.komet.preferences.KLEditorPreferences.ListKey.FIELDS_LIST;
 import static dev.ikm.komet.preferences.KLEditorPreferences.ListKey.PATTERN_LIST;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_COMPONENT;
+import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_EDITABLE;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_REQUIREMENTS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_SEMANTICS_FACTORY;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_SEMANTIC_FILTERS;
@@ -181,6 +182,7 @@ public class EditorPatternModel extends EditorGridNodeModel {
         // as resolved by the constructor.
         patternPreferences.get(PATTERN_TITLE).ifPresent(this::setTitle);
         patternPreferences.getBoolean(PATTERN_TITLE_VISIBLE).ifPresent(this::setTitleVisible);
+        patternPreferences.getBoolean(PATTERN_EDITABLE).ifPresent(this::setEditable);
 
         loadFactory(patternPreferences);
 
@@ -281,6 +283,9 @@ public class EditorPatternModel extends EditorGridNodeModel {
         // title visible
         patternPreferences.putBoolean(PATTERN_TITLE_VISIBLE, isTitleVisible());
 
+        // editable
+        patternPreferences.putBoolean(PATTERN_EDITABLE, isEditable());
+
         // factory
         KlPatternSemanticsFactory klPatternSemanticsFactory = getFactory();
         String className = klPatternSemanticsFactory == null ? "" : klPatternSemanticsFactory.getClass().getName();
@@ -377,6 +382,18 @@ public class EditorPatternModel extends EditorGridNodeModel {
     public boolean isTitleVisible() { return titleVisible.get(); }
     public BooleanProperty titleVisibleProperty() { return titleVisible; }
     public void setTitleVisible(boolean titleVisible) { this.titleVisible.set(titleVisible); }
+
+    // -- editable
+    /**
+     * Whether this Pattern's semantics can still be added and edited once its window is in edit
+     * mode in the Journal. While the window is in create mode semantics can always be added and
+     * edited; a Pattern that isn't editable stops accepting semantic changes once the window's
+     * component exists.
+     */
+    private final BooleanProperty editable = new SimpleBooleanProperty(true);
+    public boolean isEditable() { return editable.get(); }
+    public BooleanProperty editableProperty() { return editable; }
+    public void setEditable(boolean editable) { this.editable.set(editable); }
 
     // -- fields
     /**

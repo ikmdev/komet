@@ -32,6 +32,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextBoundsType;
 import network.ike.docs.konceptcore.KonceptKind;
 
 import java.util.List;
@@ -72,15 +73,11 @@ public class ComponentItemNode extends Region {
     private final Label textLabel = new Label();
     /** The label's graphic: [sigil][status][identicon], leading the name. */
     private final HBox graphicBox = new HBox(4, sigilBox, statusBox, iconImageView);
-    /** Single-line sample for measuring the label font's descent (wrap-mode graphic alignment). */
-    private final Text lineMeasurer = new Text("Ag");
-
     /**
-     * Optical fine-tune of the wrap-mode graphic bottom relative to the first line's bottom, in
-     * pixels (negative = up). The geometric line bottom includes the font's descent, which is
-     * empty space on a line without descenders, so flush-with-the-letters sits a touch higher.
+     * Uppercase sample measured with visual bounds, so its height is the label font's cap height
+     * (wrap-mode graphic alignment).
      */
-    private static final double WRAP_GRAPHIC_BOTTOM_NUDGE = -3;
+    private final Text capMeasurer = new Text("H");
 
     private Circle circleClip;
 
@@ -97,6 +94,8 @@ public class ComponentItemNode extends Region {
      *=========================================================================*/
 
     public ComponentItemNode() {
+        capMeasurer.setBoundsType(TextBoundsType.VISUAL);
+
         iconImageView.setFitHeight(16);
         iconImageView.setFitWidth(16);
 
@@ -321,23 +320,28 @@ public class ComponentItemNode extends Region {
                 -1, HPos.LEFT, VPos.CENTER);
         // The label skin centers its graphic against the whole text block, so on a wrapped
         // multi-line title the glyphs would float between the lines. Shift them so the graphic's
-        // bottom sits on the bottom of the first text line. Measured off the skin's actual layout —
-        // the label is forced to lay out now (already sized above; the later pass is a no-op) so
-        // the skin-placed text and graphic positions for this pass can be read back.
+        // vertical center sits on the visual center of the first line's letters — the cap-height
+        // midpoint above the baseline — so the text reads as centered around the identicon. The
+        // geometric line box is no use as an anchor: its ascent leading and descent are empty
+        // space on most lines, sitting the letters below its center. Measured off the skin's
+        // actual layout — the label is forced to lay out now (already sized above; the later
+        // pass is a no-op) so the skin-placed text and graphic positions for this pass can be
+        // read back.
         if (isWrapText() && getDropHintText() == null) {
             textLabel.layout();
             for (Node child : textLabel.getChildrenUnmodifiable()) {
                 if (child instanceof Text textNode) {
                     // Top edge in label coords (minY folds away the textOrigin convention), plus
-                    // the first line's ascent, is the baseline; the font's descent below it ends
-                    // the first line.
+                    // the first line's ascent, is the baseline; the letters' visual box spans the
+                    // cap height above it.
                     double baselineY = textNode.getLayoutY() + textNode.getLayoutBounds().getMinY()
                             + textNode.getBaselineOffset();
-                    lineMeasurer.setFont(textNode.getFont());
-                    double descent = lineMeasurer.getLayoutBounds().getHeight()
-                            - lineMeasurer.getBaselineOffset();
-                    double graphicBottom = graphicBox.getLayoutY() + graphicBox.getLayoutBounds().getHeight();
-                    graphicBox.setTranslateY(baselineY + descent + WRAP_GRAPHIC_BOTTOM_NUDGE - graphicBottom);
+                    capMeasurer.setFont(textNode.getFont());
+                    double capHeight = capMeasurer.getLayoutBounds().getHeight();
+                    double lettersCenter = baselineY - capHeight / 2;
+                    double graphicCenter = graphicBox.getLayoutY()
+                            + graphicBox.getLayoutBounds().getHeight() / 2;
+                    graphicBox.setTranslateY(lettersCenter - graphicCenter);
                     break;
                 }
             }

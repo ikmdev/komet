@@ -29,8 +29,8 @@ import javafx.scene.control.Skin;
 /**
  * The control bar shown at the top of a Knowledge Layout chapter window. It hosts the window's
  * title tab (the drag-dots icon, the {@link #titleProperty() title} and an optional DRAFT chip)
- * on its top row, and below it the coordinate menu, the timeline toggle, the properties toggle
- * and the window close button.
+ * on its top row, and below it the coordinate menu, the Publish button, the timeline toggle,
+ * the properties toggle and the window close button.
  * <p>
  * The buttons are created and laid out by {@link KlWindowControlToolbarSkin}. Rather than exposing those
  * buttons, the control offers an action-oriented API: callers register <em>what</em> should happen (e.g.
@@ -83,6 +83,51 @@ public class KlWindowControlToolbar extends Control {
      */
     public void setOnCloseAction(Runnable onClose) { this.onCloseAction.set(onClose); }
     public Runnable getOnCloseAction() { return onCloseAction.get(); }
+
+    // -- on publish action
+    private final ObjectProperty<Runnable> onPublishAction = new SimpleObjectProperty<>();
+
+    /**
+     * Sets the action run when the Publish button is pressed.
+     *
+     * @param onPublish the action, or {@code null} to clear it
+     */
+    public void setOnPublishAction(Runnable onPublish) { this.onPublishAction.set(onPublish); }
+    public Runnable getOnPublishAction() { return onPublishAction.get(); }
+
+    // -- publish visible
+    private final BooleanProperty publishVisible = new SimpleBooleanProperty(this, "publishVisible", false);
+
+    /**
+     * Controls whether the Publish button is shown. Both the visibility and the managed state of
+     * the underlying button follow this property. Off by default — only windows that adopt the
+     * Publish flow turn it on.
+     */
+    public BooleanProperty publishVisibleProperty() { return publishVisible; }
+    public boolean isPublishVisible() { return publishVisible.get(); }
+    public void setPublishVisible(boolean value) { publishVisible.set(value); }
+
+    // -- publish disable
+    /**
+     * The disable state of the Publish button. Callers drive it from whether there is anything
+     * to publish — the button starts disabled until a caller says otherwise.
+     */
+    private final BooleanProperty publishDisable = new SimpleBooleanProperty(this, "publishDisable", true);
+    public BooleanProperty publishDisableProperty() { return publishDisable; }
+    public boolean isPublishDisable() { return publishDisable.get(); }
+    public void setPublishDisable(boolean value) { publishDisable.set(value); }
+
+    // -- publish tooltip
+    /**
+     * The Publish button's tooltip text. The skin installs the tooltip beside the button rather
+     * than on it, so it shows while the button is disabled too — callers set it to say why
+     * publishing is unavailable ("Complete the required semantics to publish") as well as the
+     * plain enabled text.
+     */
+    private final StringProperty publishTooltip = new SimpleStringProperty(this, "publishTooltip", "Publish");
+    public StringProperty publishTooltipProperty() { return publishTooltip; }
+    public String getPublishTooltip() { return publishTooltip.get(); }
+    public void setPublishTooltip(String value) { publishTooltip.set(value); }
 
     // -- properties selected
     private final BooleanProperty propertiesSelected = new SimpleBooleanProperty(this, "propertiesSelected", false);

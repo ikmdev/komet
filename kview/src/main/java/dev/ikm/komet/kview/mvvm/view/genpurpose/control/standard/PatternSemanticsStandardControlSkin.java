@@ -123,7 +123,7 @@ public class PatternSemanticsStandardControlSkin extends SkinBase<PatternSemanti
         if (semantics.isEmpty()) {
             // A pattern with no semantic shows a single muted placeholder line where its
             // semantic's fields would render.
-            Label noSemanticLabel = new Label("No semantic");
+            Label noSemanticLabel = new Label("[empty]");
             noSemanticLabel.getStyleClass().add("no-semantic-label");
             semanticsContainer.getChildren().add(noSemanticLabel);
             return;
