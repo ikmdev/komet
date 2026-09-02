@@ -25,8 +25,9 @@ import java.util.Set;
  * An editable list of {@link EditorSemanticConstraintBase} rules for a Pattern, as shown in the
  * {@link PatternPropertiesPane}: a demoted title, one row per rule, and an "add" link. Each rule
  * shows as a one-line summary that expands in place into an editor with one row per Pattern field —
- * concept-typed fields get a {@link KLComponentControl} so the field value to match can be entered
- * with inline type-ahead search (or drag and drop), other fields accept any value (see
+ * concept-typed fields with a predefined set of values get a combo box of those values, the other
+ * concept-typed fields a {@link KLComponentControl} so the field value to match can be entered
+ * with inline type-ahead search (or drag and drop), and the remaining fields accept any value (see
  * {@link FieldConstraintsEditor}).
  *
  * <p>Subclasses supply what differs between the two kinds of rule: which list of the Pattern they

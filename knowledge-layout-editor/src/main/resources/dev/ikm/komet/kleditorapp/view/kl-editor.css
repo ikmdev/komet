@@ -718,6 +718,63 @@
     -fx-text-fill: #999;
 }
 
+/* KL component combo box inside a constraint rule (fields with a predefined set of concepts):
+   same white box, thin border and 12px type as the component control below */
+.right-properties-pane .constraint-rules .component-combo-box-control > .main-container > .combo-box-base {
+    -fx-font-size: 12px;
+    -fx-background-color: white;
+    -fx-background-insets: 0;
+    -fx-background-radius: 4;
+    -fx-border-color: #d8d8d8;
+    -fx-border-radius: 4;
+    -fx-padding: 0;
+}
+
+/* Hover: darker border and blue arrow, hinting the box opens on click (the clear button has
+   its own grey hover pill) */
+.right-properties-pane .constraint-rules .component-combo-box-control > .main-container > .combo-box-base:hover {
+    -fx-background-color: #f7f9fc;
+    -fx-background-insets: 0;
+    -fx-border-color: #9CAABF;
+    -fx-cursor: hand;
+}
+
+.right-properties-pane .constraint-rules .component-combo-box-control > .main-container > .combo-box-base:hover > .arrow-button > .arrow {
+    -fx-background-color: #1035AC;
+}
+
+.right-properties-pane .constraint-rules .component-combo-box-control > .main-container > .combo-box-base:focused {
+    -fx-background-color: white;
+    -fx-background-insets: 0;
+    -fx-border-color: #1035AC;
+}
+
+.right-properties-pane .constraint-rules .component-combo-box-control > .main-container > .combo-box-base > .list-cell {
+    -fx-font-size: 12px;
+    -fx-text-fill: #333;
+    -fx-padding: 5 8 5 8;
+}
+
+.right-properties-pane .constraint-rules .component-combo-box-control:clearable > .main-container > .combo-box-base > .list-cell {
+    -fx-padding: 5 34 5 8; /* room for the clear button overlaid before the arrow (its width + gap) */
+}
+
+.right-properties-pane .constraint-rules .component-combo-box-control > .clear-button:hover {
+    -fx-background-color: #ececec;
+}
+
+.right-properties-pane .constraint-rules .component-combo-box-control > .main-container > .combo-box-base > .arrow-button {
+    -fx-padding: 0 6 0 0;
+}
+
+.right-properties-pane .constraint-rules .component-combo-box-control > .main-container > .combo-box-base > .arrow-button > .arrow {
+    -fx-background-color: #8a8a8a;
+}
+
+.right-properties-pane .constraint-rules .component-combo-box-control .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-font-size: 12px;
+}
+
 /* Lighter KL component control inside a constraint rule: drop the gray slab around the
    search/selected boxes, thin out the border, shrink the type to 12px, and hide the
    (action-less) filter button */

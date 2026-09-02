@@ -27,6 +27,18 @@
     -fx-background-color: #4277d8;
 }
 
+/* Hover: darker border and arrow, hinting the box opens on click (distinct from the clear
+   button's own hover pill) */
+.component-combo-box-control > .main-container > .combo-box-base:hover {
+    -fx-background-color: -Grey-7, white;
+    -fx-background-insets: 0, 1;
+    -fx-cursor: hand;
+}
+
+.component-combo-box-control > .main-container > .combo-box-base:hover > .arrow-button > .arrow {
+    -fx-background-color: #1035AC;
+}
+
 .component-combo-box-control > .main-container > .combo-box-base:focused   {
     -fx-background-color: #8ab4f8, white;
     -fx-background-insets: 0, 2;
@@ -34,6 +46,33 @@
 
 .component-combo-box-control:disabled {
     -fx-opacity: 0.4;
+}
+
+/* --- Clear button (clearable controls): sits inside the combo box, before the arrow button --- */
+.component-combo-box-control:clearable > .main-container > .combo-box-base > .list-cell {
+    -fx-padding: 4 34 4 8; /* keep the text clear of the overlaid clear button (its width + gap) */
+}
+
+.component-combo-box-control > .clear-button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 3;
+    -fx-border-color: transparent;
+    -fx-padding: 3;
+}
+
+.component-combo-box-control > .clear-button:hover {
+    -fx-background-color: -Grey-4;
+}
+
+.component-combo-box-control > .clear-button > .clear-icon {
+    -fx-scale-shape: true;
+    -fx-background-color: #8a8a8a;
+    -fx-min-width: 9;
+    -fx-max-width: 9;
+    -fx-min-height: 9;
+    -fx-max-height: 9;
+    -fx-shape: "M15.8337 5.34199L14.6587 4.16699L10.0003 8.82533L5.34199 4.16699L4.16699 5.34199L8.82533 10.0003L4.16699 14.6587L5.34199 15.8337L10.0003 11.1753L14.6587 15.8337L15.8337 14.6587L11.1753 10.0003L15.8337 5.34199Z";
 }
 
 /* --- Popup options --- */

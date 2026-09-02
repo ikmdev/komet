@@ -2,12 +2,15 @@ package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLComponentComboBoxControlSkin;
 import dev.ikm.tinkar.terms.EntityProxy;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.css.PseudoClass;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
@@ -28,7 +31,15 @@ public class KLComponentComboBoxControl extends Control {
 
     public KLComponentComboBoxControl() {
         getStyleClass().add("component-combo-box-control");
-        getStylesheets().add(getUserAgentStylesheet());
+
+        // The stylesheet goes on the scene rather than on the control so that — as with
+        // KLComponentControl — a hosting application's stylesheet can restyle the control by
+        // selector specificity (a control's own stylesheets would outrank the scene's).
+        sceneProperty().subscribe(newScene -> {
+            if (newScene != null && !newScene.getStylesheets().contains(getUserAgentStylesheet())) {
+                newScene.getStylesheets().add(getUserAgentStylesheet());
+            }
+        });
     }
 
     // -- title
@@ -72,6 +83,25 @@ public class KLComponentComboBoxControl extends Control {
     public final StringProperty promptTextProperty() { return promptText; }
     public String getPromptText() { return promptText.get(); }
     public void setPromptText(String value) { this.promptText.set(value); }
+
+    // -- clearable
+    private static final PseudoClass CLEARABLE_PSEUDO_CLASS = PseudoClass.getPseudoClass("clearable");
+
+    /**
+     * Whether the user may clear the {@link #valueProperty() value} back to {@code null}: when true a
+     * clear button shows inside the combo box, before its arrow button, while a value is chosen.
+     * Off by default — a field that must hold one of its options has no "no value" state.
+     * Mirrored as the {@code :clearable} pseudo-class for styling.
+     */
+    private final BooleanProperty clearable = new SimpleBooleanProperty(this, "clearable", false) {
+        @Override
+        protected void invalidated() {
+            pseudoClassStateChanged(CLEARABLE_PSEUDO_CLASS, get());
+        }
+    };
+    public final BooleanProperty clearableProperty() { return clearable; }
+    public final boolean isClearable() { return clearable.get(); }
+    public final void setClearable(boolean value) { clearable.set(value); }
 
     /** {@inheritDoc} */
     @Override

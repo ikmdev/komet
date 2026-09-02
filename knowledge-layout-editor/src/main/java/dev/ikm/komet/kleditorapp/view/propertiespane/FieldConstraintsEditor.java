@@ -1,8 +1,11 @@
 package dev.ikm.komet.kleditorapp.view.propertiespane;
 
+import dev.ikm.komet.kview.controls.KLComponentComboBoxControl;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentControlFactory;
+import dev.ikm.komet.kview.klfields.ComponentFieldOptions;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.collections.ObservableMap;
@@ -10,7 +13,9 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
@@ -19,9 +24,13 @@ import static dev.ikm.tinkar.terms.TinkarTerm.CONCEPT_FIELD;
 /**
  * The per-field constraint editor shared by the rules of {@link PatternRequirementsView} and
  * {@link PatternSemanticFiltersView}: one row per Pattern field — the field's name above its
- * constraint editor, so names aren't truncated by the pane's narrow width. Concept-typed fields get a
+ * constraint editor, so names aren't truncated by the pane's narrow width. Concept-typed fields
+ * whose values come from a predefined set of concepts (description type, case significance,
+ * language, ... — the same rule set the KL windows' semantic editors use, see
+ * {@link ComponentFieldOptions}) get a clearable {@link KLComponentComboBoxControl} to pick the
+ * constraint concept from (clearing it lifts the constraint); other concept-typed fields get a
  * {@link KLComponentControl} so the constraint concept can be entered with inline type-ahead search
- * (or drag and drop); other fields accept any value.
+ * (or drag and drop); the remaining fields accept any value.
  *
  * <p>The rows are the Pattern's fields as the database defines them
  * ({@link EditorPatternModel#getFieldDefinitions()}), not the fields laid out in the editor window:
@@ -59,8 +68,48 @@ class FieldConstraintsEditor extends VBox {
             return anyValueLabel;
         }
 
-        KLComponentControl componentControl =
-                KLComponentControlFactory.createComponentControl(pattern.getViewCalculator());
+        ViewCalculator viewCalculator = pattern.getViewCalculator();
+        Optional<List<EntityProxy>> componentOptions = ComponentFieldOptions.componentOptions(viewCalculator, field);
+        return componentOptions
+                .map(options -> createComboBoxNode(viewCalculator, constraints, field, options))
+                .orElseGet(() -> createComponentControlNode(viewCalculator, constraints, field));
+    }
+
+    /**
+     * A combo box of the given options for a field constrained to a predefined set of concepts,
+     * clearable so the constraint can be lifted again.
+     */
+    private static Node createComboBoxNode(ViewCalculator viewCalculator,
+                                           ObservableMap<Integer, EntityProxy> constraints,
+                                           FieldDefinitionRecord field,
+                                           List<EntityProxy> options) {
+        KLComponentComboBoxControl comboBoxControl =
+                KLComponentControlFactory.createComponentComboBoxControl(viewCalculator, options);
+        comboBoxControl.setPromptText("Any value");
+        comboBoxControl.setClearable(true);
+        comboBoxControl.setMaxWidth(Double.MAX_VALUE);
+
+        comboBoxControl.setValue(constraints.get(field.indexInPattern()));
+
+        comboBoxControl.valueProperty().subscribe(() -> {
+            EntityProxy value = comboBoxControl.getValue();
+            if (value == null) {
+                constraints.remove(field.indexInPattern());
+            } else {
+                constraints.put(field.indexInPattern(), value);
+            }
+        });
+
+        return comboBoxControl;
+    }
+
+    /**
+     * A free-form component control for a field that may be constrained to any concept.
+     */
+    private static Node createComponentControlNode(ViewCalculator viewCalculator,
+                                                   ObservableMap<Integer, EntityProxy> constraints,
+                                                   FieldDefinitionRecord field) {
+        KLComponentControl componentControl = KLComponentControlFactory.createComponentControl(viewCalculator);
         componentControl.setMaxWidth(Double.MAX_VALUE);
 
         EntityProxy constraint = constraints.get(field.indexInPattern());
