@@ -782,7 +782,7 @@ public class GenPurposeDetailsController {
             case STANDARD_SEMANTIC, SEMANTICS -> "Semantic";
         };
         createModeHintLabel.setText("This " + componentKindString
-                + " doesn't exist yet - it's created when you fill out the required semantics and "
+                + " doesn't exist yet - it's created when you fill out the required values and "
                 + (usesPublishFlow() ? "hit Publish." : "submit."));
 
         // The Publish UX — the toolbar Publish button and staged-until-published changes — is
