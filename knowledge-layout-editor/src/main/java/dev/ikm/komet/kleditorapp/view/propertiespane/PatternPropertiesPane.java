@@ -32,7 +32,7 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
     private final ToggleSwitch titleVisibleTSwitch;
 
     private final ToggleSwitch requiredTSwitch;
-    private final ToggleSwitch editableTSwitch;
+    private final ToggleSwitch allowNewSemanticsTSwitch;
     private final PatternRequirementsView requirementsView = new PatternRequirementsView();
 
     private final PatternSemanticFiltersView semanticFiltersView = new PatternSemanticFiltersView();
@@ -127,19 +127,19 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
 
         populateDisplayComboBox();
 
-        // - "Editable" row in grid, laid out like the property-set toggles (label column, control
-        // column). When off, the Pattern's semantics can only be added or edited while the window
-        // is in create mode in the Journal.
-        Label editableLabel = new Label("Editable");
-        GridPane.setHalignment(editableLabel, HPos.RIGHT);
-        GridPane.setMargin(editableLabel, new Insets(8, 0, 0, 0));
-        displayGridPane.add(editableLabel, 0, 1);
+        // - "Add semantics in edit mode" row in grid, laid out like the property-set toggles (label
+        // column, control column). When off, new semantics of the Pattern can only be added while
+        // the window is in create mode in the Journal; existing semantics stay editable.
+        Label allowNewSemanticsLabel = new Label("Add semantics in edit mode");
+        GridPane.setHalignment(allowNewSemanticsLabel, HPos.RIGHT);
+        GridPane.setMargin(allowNewSemanticsLabel, new Insets(8, 0, 0, 0));
+        displayGridPane.add(allowNewSemanticsLabel, 0, 1);
 
-        editableTSwitch = new ToggleSwitch();
-        editableTSwitch.setSelected(true);
-        editableTSwitch.getStyleClass().add("editable");
-        GridPane.setMargin(editableTSwitch, new Insets(8, 0, 0, 0));
-        displayGridPane.add(editableTSwitch, 1, 1);
+        allowNewSemanticsTSwitch = new ToggleSwitch();
+        allowNewSemanticsTSwitch.setSelected(true);
+        allowNewSemanticsTSwitch.getStyleClass().add("allow-new-semantics");
+        GridPane.setMargin(allowNewSemanticsTSwitch, new Insets(8, 0, 0, 0));
+        displayGridPane.add(allowNewSemanticsTSwitch, 1, 1);
 
         interactionContainer.getChildren().addAll(
                 interactionTitleLabel,
@@ -269,7 +269,7 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
             identifierTextField.textProperty().unbindBidirectional(previouslyShownModel.identifierProperty());
             titleVisibleTSwitch.selectedProperty().unbindBidirectional(previouslyShownModel.titleVisibleProperty());
             requiredTSwitch.selectedProperty().unbindBidirectional(previouslyShownModel.requiredProperty());
-            editableTSwitch.selectedProperty().unbindBidirectional(previouslyShownModel.editableProperty());
+            allowNewSemanticsTSwitch.selectedProperty().unbindBidirectional(previouslyShownModel.allowNewSemanticsProperty());
             displayComboBox.valueProperty().unbindBidirectional(previouslyShownModel.factoryProperty());
 
             if (factoryPropertiesSubscription != null) {
@@ -280,7 +280,7 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         titleTextField.textProperty().bindBidirectional(currentlyShownModel.titleProperty());
         titleVisibleTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.titleVisibleProperty());
         requiredTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.requiredProperty());
-        editableTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.editableProperty());
+        allowNewSemanticsTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.allowNewSemanticsProperty());
         requirementsView.setPattern(currentlyShownModel);
         semanticFiltersView.setPattern(currentlyShownModel);
 

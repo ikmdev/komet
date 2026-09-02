@@ -913,14 +913,8 @@ public class GenPurposeDetailsController {
 
         titledPane.setOnEditAction(actionEvent -> onEditAction(actionEvent, sectionModel));
 
-        // Besides needing something to edit against, the pencil honors the pattern's editability
-        // authored in the KL Editor: a not-editable pattern only accepts semantic additions and
-        // edits while the window is still in create mode.
         titledPane.editEnabledProperty().bind(sectionModel.referenceComponentProperty().isNull()
-                .or(Bindings.isNotEmpty(titledPane.getReferenceComponents()))
-                .and(Bindings.createBooleanBinding(
-                        () -> canEditSectionSemantics(sectionModel),
-                        genPurposeViewModel.modeProperty(), sectionModel.getPatterns())));
+                .or(Bindings.isNotEmpty(titledPane.getReferenceComponents())));
 
         sectionModelToTitledPane.put(sectionModel, titledPane);
 
@@ -996,20 +990,12 @@ public class GenPurposeDetailsController {
     }
 
     /**
-     * Whether the section's semantics can be added or edited right now. In create mode they always
-     * can; once the window is in edit mode the pattern the section's edit popup operates on (see
-     * {@link #onEditAction}) must be authored as editable in the KL Editor.
+     * Whether new semantics of the pattern can be added right now. In create mode they always can;
+     * once the window is in edit mode the pattern must allow new semantics, as authored in the KL
+     * Editor. Existing semantics stay editable either way.
      */
-    private boolean canEditSectionSemantics(EditorSectionModel sectionModel) {
-        if (genPurposeViewModel.getMode() == FormMode.CREATE) {
-            return true;
-        }
-
-        EditorPatternModel statedPattern = sectionStatedPattern(sectionModel);
-        EditorPatternModel editPattern = statedPattern != null
-                ? statedPattern
-                : sectionModel.getPatterns().isEmpty() ? null : sectionModel.getPatterns().getFirst();
-        return editPattern == null || editPattern.isEditable();
+    private boolean canAddSemantics(EditorPatternModel patternModel) {
+        return genPurposeViewModel.getMode() == FormMode.CREATE || patternModel.isAllowNewSemantics();
     }
 
     private void onEditAction(ActionEvent actionEvent, EditorSectionModel sectionModel) {
@@ -1086,9 +1072,10 @@ public class GenPurposeDetailsController {
         List<CreateEntry> createEntries = new ArrayList<>();
         if (statedPattern != null) {
             // A concept has at most one stated definition — offer the seeds only until it
-            // exists (afterwards more sets are added inline, on the tree's root row). Sufficient
-            // before necessary, matching the classic concept window's menu.
-            if (popup.getItems().isEmpty()) {
+            // exists (afterwards more sets are added inline, on the tree's root row), and only
+            // while the pattern accepts new semantics. Sufficient before necessary, matching the
+            // classic concept window's menu.
+            if (popup.getItems().isEmpty() && canAddSemantics(statedPattern)) {
                 createEntries.add(new CreateEntry(statedPattern, Map.of(),
                         new SectionEditPopup.CreateAction("Add sufficient set",
                                 () -> createSeededStatedDefinition(sectionModel, statedPattern, false))));
@@ -1098,9 +1085,9 @@ public class GenPurposeDetailsController {
             }
         } else {
             for (EditorPatternModel patternModel : sectionModel.getPatterns()) {
-                // Once in edit mode, only patterns authored as editable in the KL Editor accept
-                // new semantics.
-                if (genPurposeViewModel.getMode() != FormMode.CREATE && !patternModel.isEditable()) {
+                // Once in edit mode, only patterns authored in the KL Editor as allowing new
+                // semantics accept them.
+                if (!canAddSemantics(patternModel)) {
                     continue;
                 }
                 addCreateEntries(createEntries, actionEvent, sectionModel, patternModel, refComponent);
@@ -1109,8 +1096,12 @@ public class GenPurposeDetailsController {
         createEntries.forEach(entry -> popup.getCreateActions().add(entry.createAction()));
 
         // With no semantic to edit, the popup would only offer its create entries — when one of
-        // them is the obvious choice it runs straight away instead of asking.
+        // them is the obvious choice it runs straight away instead of asking, and with none left
+        // to offer (the patterns don't accept new semantics anymore) there is nothing to show.
         if (popup.getItems().isEmpty()) {
+            if (createEntries.isEmpty()) {
+                return;
+            }
             CreateEntry directEntry = directCreateEntry(sectionModel, createEntries);
             if (directEntry != null) {
                 directEntry.createAction().action().run();
