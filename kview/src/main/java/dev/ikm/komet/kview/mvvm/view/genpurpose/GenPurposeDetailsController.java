@@ -1083,15 +1083,18 @@ public class GenPurposeDetailsController {
                     });
         }
 
+        List<CreateEntry> createEntries = new ArrayList<>();
         if (statedPattern != null) {
             // A concept has at most one stated definition — offer the seeds only until it
             // exists (afterwards more sets are added inline, on the tree's root row). Sufficient
             // before necessary, matching the classic concept window's menu.
             if (popup.getItems().isEmpty()) {
-                popup.getCreateActions().add(new SectionEditPopup.CreateAction("Add sufficient set",
-                        () -> createSeededStatedDefinition(sectionModel, statedPattern, false)));
-                popup.getCreateActions().add(new SectionEditPopup.CreateAction("Add necessary set",
-                        () -> createSeededStatedDefinition(sectionModel, statedPattern, true)));
+                createEntries.add(new CreateEntry(statedPattern, Map.of(),
+                        new SectionEditPopup.CreateAction("Add sufficient set",
+                                () -> createSeededStatedDefinition(sectionModel, statedPattern, false))));
+                createEntries.add(new CreateEntry(statedPattern, Map.of(),
+                        new SectionEditPopup.CreateAction("Add necessary set",
+                                () -> createSeededStatedDefinition(sectionModel, statedPattern, true))));
             }
         } else {
             for (EditorPatternModel patternModel : sectionModel.getPatterns()) {
@@ -1100,7 +1103,18 @@ public class GenPurposeDetailsController {
                 if (genPurposeViewModel.getMode() != FormMode.CREATE && !patternModel.isEditable()) {
                     continue;
                 }
-                addCreateEntries(popup, actionEvent, sectionModel, patternModel, refComponent);
+                addCreateEntries(createEntries, actionEvent, sectionModel, patternModel, refComponent);
+            }
+        }
+        createEntries.forEach(entry -> popup.getCreateActions().add(entry.createAction()));
+
+        // With no semantic to edit, the popup would only offer its create entries — when one of
+        // them is the obvious choice it runs straight away instead of asking.
+        if (popup.getItems().isEmpty()) {
+            CreateEntry directEntry = directCreateEntry(sectionModel, createEntries);
+            if (directEntry != null) {
+                directEntry.createAction().action().run();
+                return;
             }
         }
 
@@ -1114,22 +1128,22 @@ public class GenPurposeDetailsController {
     }
 
     /**
-     * Adds the section popup's "Add …" create entries for one pattern of the section. A pattern
-     * without display filters gets one entry named after the pattern; a filtered pattern gets one
-     * entry per filter, named after the concept(s) the filter selects on — e.g. "Add Fully
-     * qualified name" for a Description pattern filtered to fully qualified names — and that
-     * entry's new semantic is seeded with the filter's field constraints, so it comes out passing
-     * the filter it was created from. Either way a trailing "Pattern" word is dropped from the
-     * entry's name.
+     * Adds the section popup's "Add …" create entries for one pattern of the section to the passed
+     * in list. A pattern without display filters gets one entry named after the pattern; a
+     * filtered pattern gets one entry per filter, named after the concept(s) the filter selects on
+     * — e.g. "Add Fully qualified name" for a Description pattern filtered to fully qualified
+     * names — and that entry's new semantic is seeded with the filter's field constraints, so it
+     * comes out passing the filter it was created from. Either way a trailing "Pattern" word is
+     * dropped from the entry's name.
      */
-    private void addCreateEntries(SectionEditPopup popup, ActionEvent actionEvent,
+    private void addCreateEntries(List<CreateEntry> createEntries, ActionEvent actionEvent,
             EditorSectionModel sectionModel, EditorPatternModel patternModel, EntityFacade refComponent) {
         if (patternModel.getSemanticFilters().isEmpty()) {
-            popup.getCreateActions().add(new SectionEditPopup.CreateAction(
+            createEntries.add(new CreateEntry(patternModel, Map.of(), new SectionEditPopup.CreateAction(
                     "Add " + stripPatternSuffix(patternModel.getTitle()), () -> {
                         initializeComposer();
                         onCreateSemantic(actionEvent, sectionModel, patternModel, refComponent, Map.of());
-                    }));
+                    })));
             return;
         }
 
@@ -1147,12 +1161,78 @@ public class GenPurposeDetailsController {
 
             // Snapshot the constraints at popup-build time; they seed the new semantic's fields.
             Map<Integer, EntityProxy> fieldSeeds = Map.copyOf(filter.getFieldConstraints());
-            popup.getCreateActions().add(new SectionEditPopup.CreateAction(
+            createEntries.add(new CreateEntry(patternModel, fieldSeeds, new SectionEditPopup.CreateAction(
                     "Add " + stripPatternSuffix(entryName), () -> {
                         initializeComposer();
                         onCreateSemantic(actionEvent, sectionModel, patternModel, refComponent, fieldSeeds);
-                    }));
+                    })));
         }
+    }
+
+    /**
+     * One "Add …" entry of a section's edit popup, kept with the pattern it creates a semantic of
+     * and the field values that new semantic starts out with (the constraints of the display
+     * filter the entry was built from, keyed by field index — empty for an unfiltered pattern),
+     * so {@link #directCreateEntry} can tell which entry meets a requirement.
+     */
+    private record CreateEntry(EditorPatternModel pattern, Map<Integer, EntityProxy> fieldSeeds,
+                               SectionEditPopup.CreateAction createAction) {
+    }
+
+    /**
+     * The create entry the section's pencil button runs right away, skipping the popup, when the
+     * section has no semantic to edit — or null when the user has to choose. A lone entry is the
+     * only thing the popup could offer, so it runs. Otherwise the section's unmet required
+     * patterns decide: the entry seeded to meet the pattern's first unmet requirement (see
+     * {@link EditorPatternRequirement}), or the pattern's single entry when it has no refinement
+     * or no entry is seeded to meet it (the user then picks the field values in the form).
+     * Several candidates — the stated definition's two set seeds, a required pattern with two
+     * filters and no refinement — leave the choice to the popup.
+     */
+    private CreateEntry directCreateEntry(EditorSectionModel sectionModel, List<CreateEntry> createEntries) {
+        if (createEntries.size() == 1) {
+            return createEntries.getFirst();
+        }
+
+        for (EditorPatternModel pattern : sectionModel.getPatterns()) {
+            if (!pattern.isRequired() || isRequiredPatternSatisfied(pattern)) {
+                continue;
+            }
+            List<CreateEntry> patternEntries = createEntries.stream()
+                    .filter(entry -> entry.pattern() == pattern)
+                    .toList();
+            List<CreateEntry> candidates = patternEntries;
+
+            List<EntityFacade> semantics = getSemanticsOfPattern(pattern);
+            for (EditorPatternRequirement requirement : pattern.getRequirements()) {
+                if (isRequirementMet(semantics, requirement)) {
+                    continue;
+                }
+                List<CreateEntry> meetingRequirement = patternEntries.stream()
+                        .filter(entry -> seedsMeet(entry.fieldSeeds(), requirement))
+                        .toList();
+                if (!meetingRequirement.isEmpty()) {
+                    candidates = meetingRequirement;
+                }
+                break;
+            }
+
+            if (candidates.size() == 1) {
+                return candidates.getFirst();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Whether a semantic seeded with the passed in field values (field index to concept) would
+     * match the requirement's field constraints.
+     */
+    private static boolean seedsMeet(Map<Integer, EntityProxy> fieldSeeds, EditorPatternRequirement requirement) {
+        return requirement.getFieldConstraints().entrySet().stream().allMatch(constraint -> {
+            EntityProxy seed = fieldSeeds.get(constraint.getKey());
+            return seed != null && seed.nid() == constraint.getValue().nid();
+        });
     }
 
     /**
@@ -1600,9 +1680,16 @@ public class GenPurposeDetailsController {
                 && semantics.stream().noneMatch(this::definesNecessaryOrSufficientSet)) {
             return false;
         }
-        return pattern.getRequirements().stream().allMatch(requirement ->
-                semantics.stream().filter(semantic -> matchesRequirement(semantic, requirement)).count()
-                        >= requirement.getMinCount());
+        return pattern.getRequirements().stream().allMatch(requirement -> isRequirementMet(semantics, requirement));
+    }
+
+    /**
+     * Whether at least the requirement's minimum count of the passed in semantics match its field
+     * constraints ({@link #matchesRequirement}).
+     */
+    private boolean isRequirementMet(List<EntityFacade> semantics, EditorPatternRequirement requirement) {
+        return semantics.stream().filter(semantic -> matchesRequirement(semantic, requirement)).count()
+                >= requirement.getMinCount();
     }
 
     /**
