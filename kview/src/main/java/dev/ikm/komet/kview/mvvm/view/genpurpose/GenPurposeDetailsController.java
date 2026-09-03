@@ -1042,7 +1042,7 @@ public class GenPurposeDetailsController {
 
                         semanticLabel.setOnMouseClicked(_ -> {
                             initializeComposer();
-                            showEditSemanticFieldsPanel(actionEvent, semantic);
+                            showEditSemanticFieldsPanel(actionEvent, semantic, editPattern);
                             popup.hide();
                         });
 
@@ -1276,15 +1276,21 @@ public class GenPurposeDetailsController {
         }
 
         // Show Edit Panel to the right
-        showEditSemanticFieldsPanel(actionEvent, uncommitedSemantic);
+        showEditSemanticFieldsPanel(actionEvent, uncommitedSemantic, editorPatternModel);
     }
 
-    private void showEditSemanticFieldsPanel(Event event, SemanticEntity<SemanticEntityVersion> semanticEntity) {
+    /**
+     * Opens the properties panel on the semantic's edit form. The pattern model is the KL Editor's
+     * placement of the semantic's pattern, whose fields say how the form's fields behave (e.g.
+     * whether they can still be edited in edit mode).
+     */
+    private void showEditSemanticFieldsPanel(Event event, SemanticEntity<SemanticEntityVersion> semanticEntity,
+                                             EditorPatternModel editorPatternModel) {
         // Notify bump out (right side) to display edit fields in Semantic Editing mode
         EvtBusFactory.getDefaultEvtBus()
                 .publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
                         new KLPropertyPanelEvent(event.getSource(),
-                                SHOW_EDIT_SEMANTIC_FIELDS, semanticEntity));
+                                SHOW_EDIT_SEMANTIC_FIELDS, semanticEntity, editorPatternModel));
         // Notify to open properties bump out.
         EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), new KLPropertyPanelEvent(event.getSource(), OPEN_PANEL));
 

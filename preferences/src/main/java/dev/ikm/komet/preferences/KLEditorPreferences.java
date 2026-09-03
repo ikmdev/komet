@@ -157,6 +157,15 @@ public class KLEditorPreferences {
          */
         public static String PATTERN_ALLOW_NEW_SEMANTICS = "pattern-allow-new-semantics";
 
+        /**
+         * List of the Pattern's fields, by index in the Pattern, that can no longer be edited once the
+         * window is in edit mode. Such a field is shown but can't be changed on a committed semantic;
+         * while a semantic is being created every field can be filled in. Kept per Pattern rather than
+         * per laid-out field so it covers the fields removed from the layout too. No entries means
+         * every field stays editable.
+         */
+        public static String PATTERN_NON_EDITABLE_FIELDS = "pattern-non-editable-fields";
+
         public static String PATTERN_SEMANTICS_FACTORY = "pattern-semantics-factory";
 
         /**

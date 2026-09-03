@@ -32,7 +32,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.prefs.BackingStoreException;
@@ -41,6 +43,7 @@ import static dev.ikm.komet.preferences.KLEditorPreferences.ListKey.FIELDS_LIST;
 import static dev.ikm.komet.preferences.KLEditorPreferences.ListKey.PATTERN_LIST;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_ALLOW_NEW_SEMANTICS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_COMPONENT;
+import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_NON_EDITABLE_FIELDS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_REQUIREMENTS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_SEMANTICS_FACTORY;
 import static dev.ikm.komet.preferences.KLEditorPreferences.PatternKey.PATTERN_SEMANTIC_FILTERS;
@@ -119,11 +122,13 @@ public class EditorPatternModel extends EditorGridNodeModel {
                 ? ((PatternVersionRecord) optionalLatest.get()).fieldDefinitions()
                 : Lists.immutable.empty();
 
-        // -- lay out one field per definition; the author can then remove the ones they don't want shown
+        // -- lay out one field per definition; the author can then remove the ones they don't want shown.
+        // Every field starts editable, shown or not.
         fieldDefinitions.forEachWithIndex((fieldDefinition, index) -> {
             EditorFieldModel editorFieldModel = new EditorFieldModel(viewCalculator, fieldDefinition);
             visibleFields.add(editorFieldModel);
             editorFieldModel.setRowIndex(index);
+            fieldEditable.put(fieldDefinition.indexInPattern(), new SimpleBooleanProperty(true));
         });
 
         parentGridProperty().bind(parentSectionProperty());
@@ -214,6 +219,13 @@ public class EditorPatternModel extends EditorGridNodeModel {
         for (EditorFieldModel fieldModel : getVisibleFields()) {
             fieldModel.load(patternPreferences, viewCalculator);
         }
+
+        // The fields the author made not editable, whether or not they are shown. An index the
+        // Pattern no longer defines a field at is skipped.
+        patternPreferences.getList(PATTERN_NON_EDITABLE_FIELDS).stream()
+                .map(Integer::valueOf)
+                .filter(fieldEditable::containsKey)
+                .forEach(fieldIndex -> fieldEditable.get(fieldIndex).set(false));
     }
 
     private void loadFactory(KometPreferences patternPreferences) {
@@ -318,6 +330,13 @@ public class EditorPatternModel extends EditorGridNodeModel {
         for (EditorFieldModel fieldModel : getVisibleFields()) {
             fieldModel.save(patternPreferences);
         }
+
+        // the fields made not editable — the exceptions, so that a layout with none stored keeps
+        // every field editable
+        patternPreferences.putList(PATTERN_NON_EDITABLE_FIELDS, fieldEditable.entrySet().stream()
+                .filter(entry -> !entry.getValue().get())
+                .map(entry -> String.valueOf(entry.getKey()))
+                .toList());
     }
 
     private String retrieveDisplayName(PatternFacade patternFacade) {
@@ -413,6 +432,19 @@ public class EditorPatternModel extends EditorGridNodeModel {
      * {@link EditorPatternSemanticFilter}, which can constrain a field whether or not it is shown.
      */
     public ImmutableList<FieldDefinitionRecord> getFieldDefinitions() { return fieldDefinitions; }
+
+    // -- field editable
+    /**
+     * Whether each field this Pattern is defined with can still be edited once its window is in edit
+     * mode in the Journal, by index in the Pattern. Kept per field definition rather than on the
+     * laid-out {@link EditorFieldModel} so it covers the fields removed from the layout too: a field
+     * that isn't shown is still edited in the Journal's edit form. While a semantic is being created
+     * every field can be filled in; a field that isn't editable is then shown but can't be changed on
+     * a committed semantic. Every field defaults to editable.
+     */
+    private final Map<Integer, BooleanProperty> fieldEditable = new LinkedHashMap<>();
+    public BooleanProperty fieldEditableProperty(int fieldIndex) { return fieldEditable.get(fieldIndex); }
+    public boolean isFieldEditable(int fieldIndex) { return fieldEditable.get(fieldIndex).get(); }
 
     // -- requirements
     /**

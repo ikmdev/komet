@@ -36,6 +36,7 @@ import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
 import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.FormMode;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
+import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.version.field.KlField;
 import dev.ikm.tinkar.common.id.PublicIds;
@@ -151,6 +152,12 @@ public class GenPurposeFieldsController {
 
     private SemanticEntity<SemanticEntityVersion> currentEditingSemantic;
 
+    /**
+     * The KL Editor model of the pattern the semantic being edited is edited as. Its fields carry how
+     * the form's fields were authored to behave, e.g. whether they can still be edited in edit mode.
+     */
+    private EditorPatternModel editorPatternModel;
+
 //    private void enableDisableButtons() {
 //        boolean emptyFields = checkForEmptyFields();
 //        int uncommittedHash = calculateHashValue(getObservableEditables(), getStampCalculator());
@@ -246,7 +253,7 @@ public class GenPurposeFieldsController {
 
         Subscriber<KLPropertyPanelEvent> propertyEventSubscriber = evt -> {
             if (evt.getEventType() == KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS) {
-                setupEditSemanticDetails(evt.getSemantic());
+                setupEditSemanticDetails(evt.getSemantic(), evt.getEditorPatternModel());
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
@@ -271,7 +278,8 @@ public class GenPurposeFieldsController {
     }
 
 
-    private void setupEditSemanticDetails(SemanticEntity<SemanticEntityVersion> semanticEntity) {
+    private void setupEditSemanticDetails(SemanticEntity<SemanticEntityVersion> semanticEntity,
+                                          EditorPatternModel editorPatternModel) {
         // Clear previous controls that might be there from previously editing another Semantic
         nodes.clear();
         klFields.clear();
@@ -279,6 +287,7 @@ public class GenPurposeFieldsController {
         observableEntityHandle = ObservableEntityHandle.get(semanticEntity.nid());
 
         currentEditingSemantic = semanticEntity;
+        this.editorPatternModel = editorPatternModel;
 
         this.observableEntityHandle.ifSemantic(observableSemantic -> {
             observableEntitySnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
@@ -400,6 +409,9 @@ public class GenPurposeFieldsController {
                             readyToEditVersion.get(), submitButton.disableProperty().get());
                 });
                 getKlFields().add(klField);
+                // A field authored in the KL Editor as not editable in edit mode is still shown in
+                // the form, but can't be changed.
+                klField.fxObject().setDisable(!canEditField(editableField.getObservableFeature().indexInPattern()));
                 // Generate node using the underlying ObservableField (read-only view)
                 nodes.add(klField.fxObject());
             }
@@ -410,6 +422,21 @@ public class GenPurposeFieldsController {
         //Set the hascode for the committed values.
 //        enableDisableButtons();
         loadVBox();
+    }
+
+    /**
+     * Whether the field at the given index in the pattern can be edited in the form right now. While
+     * the window is in create mode, and for a semantic that is still being created (no committed
+     * version yet), every field can — its values have to be filled in somewhere. Once the window is
+     * in edit mode a committed semantic's field can only be edited if it was authored as editable in
+     * the KL Editor (authored per pattern, so it covers fields not shown in the layout too).
+     */
+    private boolean canEditField(int fieldIndex) {
+        if (genPurposeViewModel.getMode() == FormMode.CREATE
+                || currentEditingSemantic.versions().stream().allMatch(SemanticEntityVersion::uncommitted)) {
+            return true;
+        }
+        return editorPatternModel.isFieldEditable(fieldIndex);
     }
 
     /**

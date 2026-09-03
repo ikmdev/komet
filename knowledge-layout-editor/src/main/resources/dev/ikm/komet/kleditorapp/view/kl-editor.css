@@ -702,6 +702,20 @@
     -fx-text-fill: #555;
 }
 
+/* Editable fields list (INTERACTION): a title set apart from the field rows under it — bold and
+   darker than the field names, which are the muted 12px labels above — then one field per row, its
+   name on the left, its toggle on the right edge */
+.right-properties-pane .pattern-properties .editable-fields .fields-title {
+    -fx-font-family: "Noto Sans Bold";
+    -fx-font-size: 12px;
+    -fx-text-fill: #333;
+    -fx-padding: 0 0 2 0;
+}
+
+.right-properties-pane .pattern-properties .constraint-rules .editable-field-row {
+    -fx-spacing: 6;
+}
+
 .right-properties-pane .pattern-properties .constraint-rules .any-value {
     -fx-font-size: 12px;
     -fx-text-fill: #999;

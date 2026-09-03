@@ -31,6 +31,7 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
 
     private final ToggleSwitch requiredTSwitch;
     private final ToggleSwitch allowNewSemanticsTSwitch;
+    private final PatternEditableFieldsView editableFieldsView = new PatternEditableFieldsView();
     private final PatternRequirementsView requirementsView = new PatternRequirementsView();
 
     private final PatternSemanticFiltersView semanticFiltersView = new PatternSemanticFiltersView();
@@ -133,9 +134,12 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         allowNewSemanticsTSwitch.getStyleClass().add("allow-new-semantics");
         displayGridPane.add(allowNewSemanticsTSwitch, 1, 1);
 
+        // - Which of the Pattern's fields stay editable in edit mode — every field the Pattern
+        // defines, since a field removed from the layout can't be selected to be authored on.
         interactionContainer.getChildren().addAll(
                 interactionTitleLabel,
-                displayGridPane
+                displayGridPane,
+                editableFieldsView
         );
 
         // Separator
@@ -273,6 +277,7 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         titleVisibleTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.titleVisibleProperty());
         requiredTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.requiredProperty());
         allowNewSemanticsTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.allowNewSemanticsProperty());
+        editableFieldsView.setPattern(currentlyShownModel);
         requirementsView.setPattern(currentlyShownModel);
         semanticFiltersView.setPattern(currentlyShownModel);
 

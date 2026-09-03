@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.events.genpurpose;
 
+import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.events.Evt;
@@ -23,6 +24,7 @@ public class KLPropertyPanelEvent extends Evt {
 
     /*** private variables ***/
     private SemanticEntity<SemanticEntityVersion> semanticEntity;
+    private EditorPatternModel editorPatternModel;
     private PatternFacade patternFacade;
     private EntityFacade referenceComponent;
 
@@ -37,16 +39,21 @@ public class KLPropertyPanelEvent extends Evt {
     }
 
     /**
-     * Creates a KLPropertyPanelEvent that receives a semantic. Typically used with EvtType SHOW_EDIT_SEMANTIC_FIELDS in
-     * which case the semanticEntity passed in is the semantic to edit.
+     * Creates a KLPropertyPanelEvent that receives the semantic to edit along with the KL Editor model
+     * of the Pattern it is edited as, whose fields carry how the semantic's fields were authored to
+     * behave (e.g. whether they can still be edited in edit mode). Typically used with EvtType
+     * SHOW_EDIT_SEMANTIC_FIELDS.
      *
      * @param source the source of the event
      * @param eventType the event type
      * @param semanticEntity the Semantic to edit
+     * @param editorPatternModel the KL Editor model of the Pattern the Semantic is edited as
      */
-    public KLPropertyPanelEvent(Object source, EvtType<KLPropertyPanelEvent> eventType, SemanticEntity<SemanticEntityVersion> semanticEntity) {
+    public KLPropertyPanelEvent(Object source, EvtType<KLPropertyPanelEvent> eventType, SemanticEntity<SemanticEntityVersion> semanticEntity,
+                                EditorPatternModel editorPatternModel) {
         super(source, eventType);
         this.semanticEntity = semanticEntity;
+        this.editorPatternModel = editorPatternModel;
     }
 
     /**
@@ -68,6 +75,8 @@ public class KLPropertyPanelEvent extends Evt {
     public SemanticEntity<SemanticEntityVersion> getSemantic() {
         return semanticEntity;
     }
+
+    public EditorPatternModel getEditorPatternModel() { return editorPatternModel; }
 
     public PatternFacade getPatternFacade() { return patternFacade; }
 
