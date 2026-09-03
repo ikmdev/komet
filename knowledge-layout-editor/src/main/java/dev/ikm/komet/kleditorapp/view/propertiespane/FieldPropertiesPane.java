@@ -11,14 +11,11 @@ import dev.ikm.komet.layout.area.KlAreaForIntIdSet;
 import dev.ikm.komet.layout.area.KlAreaForInteger;
 import dev.ikm.komet.layout.area.KlAreaForString;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
-import javafx.geometry.HPos;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 
@@ -77,20 +74,7 @@ public class FieldPropertiesPane extends GridNodePropertiesPane<EditorFieldModel
         gridTitleLabel.getStyleClass().add("group-title");
 
         // GridPane
-        GridPane gridPane = new GridPane();
-        gridPane.setHgap(8);
-        gridPane.setVgap(8);
-
-        // Column constraints
-        ColumnConstraints col1 = new ColumnConstraints();
-        col1.setMinWidth(10);
-        col1.setPrefWidth(100);
-
-        ColumnConstraints col2 = new ColumnConstraints();
-        col2.setMinWidth(10);
-        col2.setHgrow(Priority.ALWAYS);
-
-        gridPane.getColumnConstraints().addAll(col1, col2);
+        GridPane gridPane = new PropertyGridPane();
 
         // Row constraints
         for (int i = 0; i < 3; i++) {
@@ -101,13 +85,11 @@ public class FieldPropertiesPane extends GridNodePropertiesPane<EditorFieldModel
         }
 
         // "Display" label in grid
-        Label displayLabel = new Label("Display");
-        GridPane.setHalignment(displayLabel, HPos.RIGHT);
+        Label displayLabel = new Label("Display:");
         gridPane.add(displayLabel, 0, 0);
 
         // "Display" ComboBox in grid
         displayComboBox = new ComboBox<>();
-        displayComboBox.setMaxWidth(Double.MAX_VALUE);
         gridPane.add(displayComboBox, 1, 0);
 
         fieldMainContainer.getChildren().addAll(

@@ -8,15 +8,12 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
-import javafx.geometry.HPos;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 
 /**
@@ -47,20 +44,9 @@ public final class KlPropertySetEditor {
      * @return a grid of labelled controls, one row per property
      */
     public static Node create(KlPropertySet propertySet) {
-        GridPane container = new GridPane();
+        GridPane container = new PropertyGridPane();
         container.getStyleClass().add(CONTAINER_STYLE_CLASS);
-        container.setHgap(8);
         container.setVgap(4);
-
-        ColumnConstraints labelColumn = new ColumnConstraints();
-        labelColumn.setMinWidth(10);
-        labelColumn.setPrefWidth(100);
-
-        ColumnConstraints controlColumn = new ColumnConstraints();
-        controlColumn.setMinWidth(10);
-        controlColumn.setHgrow(Priority.ALWAYS);
-
-        container.getColumnConstraints().addAll(labelColumn, controlColumn);
 
         if (propertySet == null) {
             return container;
@@ -73,8 +59,7 @@ public final class KlPropertySetEditor {
                 continue;
             }
 
-            Label label = new Label(item.displayName());
-            GridPane.setHalignment(label, HPos.RIGHT);
+            Label label = new Label(item.displayName() + ":");
 
             RowConstraints row = new RowConstraints();
             row.setMinHeight(10);
@@ -108,7 +93,6 @@ public final class KlPropertySetEditor {
 
         if (type == String.class) {
             TextField textField = new TextField();
-            textField.setMaxWidth(Double.MAX_VALUE);
             textField.textProperty().bindBidirectional((StringProperty) property);
             return textField;
         }
@@ -117,7 +101,6 @@ public final class KlPropertySetEditor {
             IntegerProperty integerProperty = (IntegerProperty) property;
             Spinner<Integer> spinner = new Spinner<>(Integer.MIN_VALUE, Integer.MAX_VALUE, integerProperty.get());
             spinner.setEditable(true);
-            spinner.setMaxWidth(Double.MAX_VALUE);
             spinner.getValueFactory().valueProperty().bindBidirectional(integerProperty.asObject());
             return spinner;
         }
@@ -126,7 +109,6 @@ public final class KlPropertySetEditor {
             DoubleProperty doubleProperty = (DoubleProperty) property;
             Spinner<Double> spinner = new Spinner<>(-Double.MAX_VALUE, Double.MAX_VALUE, doubleProperty.get(), 1.0);
             spinner.setEditable(true);
-            spinner.setMaxWidth(Double.MAX_VALUE);
             spinner.getValueFactory().valueProperty().bindBidirectional(doubleProperty.asObject());
             return spinner;
         }
@@ -145,7 +127,6 @@ public final class KlPropertySetEditor {
         Property<?> property = item.property();
 
         ComboBox comboBox = new ComboBox<>(FXCollections.observableArrayList(item.choices()));
-        comboBox.setMaxWidth(Double.MAX_VALUE);
 
         if (type == Integer.class) {
             comboBox.valueProperty().bindBidirectional(((IntegerProperty) property).asObject());
@@ -161,7 +142,6 @@ public final class KlPropertySetEditor {
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static Node createEnumEditor(Class<?> type, Property<?> property) {
         ComboBox comboBox = new ComboBox<>(FXCollections.observableArrayList(type.getEnumConstants()));
-        comboBox.setMaxWidth(Double.MAX_VALUE);
         comboBox.valueProperty().bindBidirectional(property);
         return comboBox;
     }

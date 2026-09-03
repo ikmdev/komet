@@ -439,6 +439,21 @@
     -fx-background-radius: 16px;
 }
 
+/* Property grids (label column, control column): controls keep a width of their own, anchored
+   to the right edge, instead of stretching across the pane — the label column takes the rest, so
+   labels are never cut short. Combos still grow past the minimum to fit their widest item. */
+.right-properties-pane .property-grid > .combo-box {
+    -fx-min-width: 130px;
+}
+
+.right-properties-pane .property-grid > .spinner {
+    -fx-pref-width: 90px;
+}
+
+.right-properties-pane .property-grid > .text-field {
+    -fx-pref-width: 190px;
+}
+
 /******************************************************************************
  * Window Properties Pane                                                     *
  ******************************************************************************/
@@ -492,10 +507,6 @@
     -fx-vgap: 10;
 }
 
-.right-properties-pane .section-properties GridPane > .label {
-    -fx-padding: 0 5 0 0;
-}
-
 .right-properties-pane .section-properties .section-main-container .separator {
     -fx-pref-width: 200px;
 }
@@ -543,10 +554,6 @@
 .right-properties-pane .pattern-properties .pattern-name-container {
     -fx-spacing: 3px;
     -fx-font-size: 13px;
-}
-
-.right-properties-pane .pattern-properties GridPane > .label {
-    -fx-padding: 0 5 0 0;
 }
 
 .right-properties-pane .pattern-properties .pattern-main-container .separator {
@@ -863,10 +870,6 @@
 
 .right-properties-pane .field-properties .field-main-container {
     -fx-spacing: 8;
-}
-
-.right-properties-pane .field-properties GridPane > .label {
-    -fx-padding: 0 5 0 0;
 }
 
 .right-properties-pane .field-properties .section-main-container .separator {

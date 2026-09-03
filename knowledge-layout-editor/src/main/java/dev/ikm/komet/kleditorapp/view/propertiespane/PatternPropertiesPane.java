@@ -5,8 +5,6 @@ import dev.ikm.komet.layout.KlPatternSemanticsFactories;
 import dev.ikm.komet.layout.KlPatternSemanticsFactory;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.property.KlPropertySet;
-import javafx.geometry.HPos;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContentDisplay;
@@ -14,11 +12,11 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.util.Subscription;
 
@@ -48,10 +46,11 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
     public PatternPropertiesPane() {
         super(true);
 
-        // Section name container
+        // Title container: the title and its Visible toggle form one group, the identifier another,
+        // with a wider gap between the two so the toggle reads as belonging to the title
         VBox titleContainer = new VBox();
         titleContainer.getStyleClass().addAll("sub-section", "title-container");
-        titleContainer.setSpacing(4);
+        titleContainer.setSpacing(16);
 
         Label titleLabel = new Label("Pattern Title:");
         titleTextField = new TextField();
@@ -67,13 +66,15 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
 
         titleTextField.editableProperty().bind(titleVisibleTSwitch.selectedProperty());
 
-        titleContainer.getChildren().addAll(
-                titleLabel,
-                titleTextField,
-                titleVisibleTSwitch,
-                identifierLabel,
-                identifierTextField
-        );
+        VBox titleGroup = new VBox(titleLabel, titleTextField, titleVisibleTSwitch);
+        titleGroup.getStyleClass().add("title-group");
+        titleGroup.setSpacing(4);
+
+        VBox identifierGroup = new VBox(identifierLabel, identifierTextField);
+        identifierGroup.getStyleClass().add("identifier-group");
+        identifierGroup.setSpacing(4);
+
+        titleContainer.getChildren().addAll(titleGroup, identifierGroup);
 
         // Separator
         Separator separator = new Separator();
@@ -98,31 +99,25 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         interactionTitleLabel.getStyleClass().add("group-title");
 
         // Display GridPane
-        GridPane displayGridPane = new GridPane();
-        displayGridPane.setHgap(8);
-        displayGridPane.setVgap(8);
+        GridPane displayGridPane = new PropertyGridPane();
+        displayGridPane.setVgap(4);
 
-        // - Column constraints
-        ColumnConstraints col1 = new ColumnConstraints();
-        col1.setMinWidth(10);
-        col1.setPrefWidth(100);
-
-        ColumnConstraints col2 = new ColumnConstraints();
-        col2.setMinWidth(10);
-        col2.setHgrow(Priority.ALWAYS);
-
-        displayGridPane.getColumnConstraints().addAll(col1, col2);
+        // - Rows sized like the property-set rows below, so the two sections space their rows alike
+        for (int i = 0; i < 2; i++) {
+            RowConstraints row = new RowConstraints();
+            row.setMinHeight(10);
+            row.setPrefHeight(30);
+            displayGridPane.getRowConstraints().add(row);
+        }
 
         // - "Display" label in grid
-        Label displayLabel = new Label("Display");
-        GridPane.setHalignment(displayLabel, HPos.RIGHT);
+        Label displayLabel = new Label("Display:");
         displayGridPane.add(displayLabel, 0, 0);
 
         // - "Display" ComboBox in grid
         displayComboBox = new ComboBox<>();
         displayComboBox.setCellFactory(_ -> createDisplayCell());
         displayComboBox.setButtonCell(createDisplayCell());
-        displayComboBox.setMaxWidth(Double.MAX_VALUE);
         displayGridPane.add(displayComboBox, 1, 0);
 
         populateDisplayComboBox();
@@ -130,15 +125,12 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         // - "Add semantics in edit mode" row in grid, laid out like the property-set toggles (label
         // column, control column). When off, new semantics of the Pattern can only be added while
         // the window is in create mode in the Journal; existing semantics stay editable.
-        Label allowNewSemanticsLabel = new Label("Add semantics in edit mode");
-        GridPane.setHalignment(allowNewSemanticsLabel, HPos.RIGHT);
-        GridPane.setMargin(allowNewSemanticsLabel, new Insets(8, 0, 0, 0));
+        Label allowNewSemanticsLabel = new Label("Add semantics in edit mode:");
         displayGridPane.add(allowNewSemanticsLabel, 0, 1);
 
         allowNewSemanticsTSwitch = new ToggleSwitch();
         allowNewSemanticsTSwitch.setSelected(true);
         allowNewSemanticsTSwitch.getStyleClass().add("allow-new-semantics");
-        GridPane.setMargin(allowNewSemanticsTSwitch, new Insets(8, 0, 0, 0));
         displayGridPane.add(allowNewSemanticsTSwitch, 1, 1);
 
         interactionContainer.getChildren().addAll(
@@ -176,7 +168,7 @@ public class PatternPropertiesPane extends GridNodePropertiesPane<EditorPatternM
         dataPropertiesTitleLabel.getStyleClass().add("group-title");
 
         // Required row: label on the left edge, toggle on the right edge
-        Label requiredLabel = new Label("Required");
+        Label requiredLabel = new Label("Required:");
 
         Region requiredSpacer = new Region();
         HBox.setHgrow(requiredSpacer, Priority.ALWAYS);

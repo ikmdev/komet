@@ -5,12 +5,9 @@ import dev.ikm.komet.layout.editor.model.EditorGridNodeModel;
 import dev.ikm.komet.layout.editor.model.ParentGridModel;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.FXCollections;
-import javafx.geometry.HPos;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.util.Subscription;
 
@@ -40,20 +37,7 @@ public class GridNodePropertiesPane<D extends EditorGridNodeModel> extends Contr
         positioningLabel.getStyleClass().add("group-title");
 
         // GridPane
-        positioningGridPane = new GridPane();
-        positioningGridPane.setHgap(8);
-        positioningGridPane.setVgap(8);
-
-        // Column constraints
-        ColumnConstraints positionColumnConstraints1 = new ColumnConstraints();
-        positionColumnConstraints1.setMinWidth(10);
-        positionColumnConstraints1.setPrefWidth(100);
-
-        ColumnConstraints positionColumnConstraints2 = new ColumnConstraints();
-        positionColumnConstraints2.setMinWidth(10);
-        positionColumnConstraints2.setHgrow(Priority.ALWAYS);
-
-        positioningGridPane.getColumnConstraints().addAll(positionColumnConstraints1, positionColumnConstraints2);
+        positioningGridPane = new PropertyGridPane();
 
         RowConstraints row = new RowConstraints();
         row.setMinHeight(10);
@@ -61,43 +45,35 @@ public class GridNodePropertiesPane<D extends EditorGridNodeModel> extends Contr
         positioningGridPane.getRowConstraints().add(row);
 
         // Column Position
-        Label columnPositionLabel = new Label("Column Position");
-        GridPane.setHalignment(columnPositionLabel, HPos.RIGHT);
+        Label columnPositionLabel = new Label("Column Position:");
         positioningGridPane.add(columnPositionLabel, 0, 0);
 
         // - Column Position ComboBox
         columnPositionCB.setItems(FXCollections.observableArrayList(List.of(1, 2, 3)));
-        columnPositionCB.setMaxWidth(Double.MAX_VALUE);
         positioningGridPane.add(columnPositionCB, 1, 0);
 
         // Row Position
-        Label rowLabel = new Label("Row Position");
-        GridPane.setHalignment(rowLabel, HPos.RIGHT);
+        Label rowLabel = new Label("Row Position:");
         positioningGridPane.add(rowLabel, 0, 1);
 
         // - Row Position ComboBox
         rowPositionCB.setItems((FXCollections.observableArrayList(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))));
-        rowPositionCB.setMaxWidth(Double.MAX_VALUE);
         positioningGridPane.add(rowPositionCB, 1, 1);
 
         // Column Span
-        Label columnSpanLabel = new Label("Column Span");
-        GridPane.setHalignment(columnSpanLabel, HPos.RIGHT);
+        Label columnSpanLabel = new Label("Column Span:");
         positioningGridPane.add(columnSpanLabel, 0, 2);
 
         // - Column Span ComboBox
         columnSpanCB.setItems((FXCollections.observableArrayList(List.of(1, 2, 3))));
-        columnSpanCB.setMaxWidth(Double.MAX_VALUE);
         positioningGridPane.add(columnSpanCB, 1, 2);
 
         // Row Span
-        Label rowSpanLabel = new Label("Row Span");
-        GridPane.setHalignment(rowSpanLabel, HPos.RIGHT);
+        Label rowSpanLabel = new Label("Row Span:");
         positioningGridPane.add(rowSpanLabel, 0, 3);
 
         // - Row Span ComboBox
         rowSpanCB.setItems((FXCollections.observableArrayList(List.of(1, 2, 3))));
-        rowSpanCB.setMaxWidth(Double.MAX_VALUE);
         positioningGridPane.add(rowSpanCB, 1, 3);
     }
 

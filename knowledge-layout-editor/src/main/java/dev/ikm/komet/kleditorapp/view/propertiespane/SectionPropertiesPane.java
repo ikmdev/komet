@@ -8,15 +8,12 @@ import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.FXCollections;
-import javafx.geometry.HPos;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 
@@ -61,15 +58,13 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
         GridPane gridLayoutGridPane = createGridPane();
 
         // "Column(s)" label in grid
-        Label columnsLabel = new Label("Column(s)");
-        GridPane.setHalignment(columnsLabel, HPos.RIGHT);
+        Label columnsLabel = new Label("Column(s):");
         gridLayoutGridPane.add(columnsLabel, 0, 0);
 
         // ComboBox in grid
         columnsComboBox = new ComboBox<>();
         columnsComboBox.setItems(FXCollections.observableArrayList(List.of(1, 2, 3)));
         columnsComboBox.getSelectionModel().select((Integer)1);
-        columnsComboBox.setMaxWidth(Double.MAX_VALUE);
         gridLayoutGridPane.add(columnsComboBox, 1, 0);
 
         Separator separator2 = new Separator();
@@ -83,8 +78,7 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
         GridPane interactionGridPane = createGridPane();
 
         // - start collapsed
-        Label startCollapedLabel = new Label("Start Collapsed");
-        GridPane.setHalignment(startCollapedLabel, HPos.RIGHT);
+        Label startCollapedLabel = new Label("Start Collapsed:");
         interactionGridPane.add(startCollapedLabel, 0, 0);
 
         startCollapsedTS = new ToggleSwitch();
@@ -158,20 +152,7 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
     }
 
     private static GridPane createGridPane() {
-        GridPane gridPane = new GridPane();
-        gridPane.setHgap(8);
-        gridPane.setVgap(8);
-
-        // Column constraints
-        ColumnConstraints col1 = new ColumnConstraints();
-        col1.setMinWidth(10);
-        col1.setPrefWidth(100);
-
-        ColumnConstraints col2 = new ColumnConstraints();
-        col2.setMinWidth(10);
-        col2.setHgrow(Priority.ALWAYS);
-
-        gridPane.getColumnConstraints().addAll(col1, col2);
+        GridPane gridPane = new PropertyGridPane();
 
         // Row constraints
         RowConstraints row = new RowConstraints();
