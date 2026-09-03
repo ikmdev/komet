@@ -2,10 +2,10 @@ package dev.ikm.komet.kleditorapp.view.propertiespane;
 
 import dev.ikm.komet.kleditorapp.view.ControlBasePropertiesPane;
 import dev.ikm.komet.kleditorapp.view.SelectionManager;
-import dev.ikm.komet.layout.editor.EditorWindowBaseControl;
 import dev.ikm.komet.layout.editor.Selectable;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
+import dev.ikm.komet.kleditorapp.view.control.FieldColumnControl;
 import dev.ikm.komet.kleditorapp.view.control.FieldViewControl;
 import dev.ikm.komet.kleditorapp.view.control.PatternEditorControlBase;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
@@ -67,8 +67,8 @@ public class PropertiesPane extends Region {
         selectionManager.selectedControlProperty().subscribe(() -> {
             Selectable selected = selectionManager.getSelectedControl();
 
-            // The whole Window is selectable too, but it isn't an EditorWindowBaseControl
-            // and its model isn't registered in the control<->model factory map, so handle it directly.
+            // The whole Window is selectable too, but its model isn't registered in the
+            // control<->model factory map, so handle it directly.
             if (selected instanceof EditorWindowControl) {
                 setTitle("Window");
                 setCurrentPropertiesPane(windowPropertiesPane);
@@ -76,8 +76,7 @@ public class PropertiesPane extends Region {
                 return;
             }
 
-            EditorWindowBaseControl control = (EditorWindowBaseControl) selected;
-            switch (control) {
+            switch (selected) {
                 case SectionViewControl sectionView -> {
                     setTitle(sectionView.getTagText());
                     setCurrentPropertiesPane(sectionPropertiesPane);
@@ -86,7 +85,9 @@ public class PropertiesPane extends Region {
                     setTitle("Pattern");
                     setCurrentPropertiesPane(patternPropertiesPane);
                 }
-                case FieldViewControl fieldView -> {
+                // A field has the same properties whether it shows as a tile of a standard pattern or
+                // as a column of a table pattern.
+                case FieldViewControl _, FieldColumnControl _ -> {
                     setTitle("Field");
                     setCurrentPropertiesPane(fieldPropertiesPane);
                 }
@@ -96,7 +97,7 @@ public class PropertiesPane extends Region {
                 }
                 default -> System.out.println("TODO...");
             }
-            currentPropertiesPane.initControl(KlEditorWindowControlFactory.getModel(control));
+            currentPropertiesPane.initControl(KlEditorWindowControlFactory.getModel(selected));
 
         });
     }

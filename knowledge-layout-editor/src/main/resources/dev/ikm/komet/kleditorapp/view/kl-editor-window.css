@@ -337,13 +337,26 @@
 
 /********************************  Header  **********************************/
 
+/* Top and left borders are always drawn (transparent by default) so a header's geometry doesn't
+   change when they show, on hover and selection. */
 .window .section-view .pattern-table-view .pattern-table .column-header,
 .window .section-view .pattern-table-view .pattern-table .filler {
     -fx-background-color: #DCE3F1;
     -fx-background-insets: 0;
 
-    -fx-border-color: #ddd;
-    -fx-border-width: 0 1px 2px 0;
+    -fx-border-color: transparent #ddd #ddd transparent;
+    -fx-border-width: 1px 1px 2px 1px;
+}
+
+/* A column stands for a field: hovering and selecting a column header mirrors the field tiles
+   of the standard pattern view (see .field-view above). */
+.window .section-view .pattern-table-view .pattern-table .column-header:hover {
+    -fx-border-color: rgba(98, 137, 247, 0.5);
+}
+
+.window .section-view .pattern-table-view .pattern-table .column-header.selected {
+    -fx-border-color: #5dcf16;
+    -fx-background-color: #f4fbf0;
 }
 
 .window .section-view .pattern-table-view .pattern-table .column-header .label {

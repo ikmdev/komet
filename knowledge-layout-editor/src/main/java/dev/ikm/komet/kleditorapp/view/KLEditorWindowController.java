@@ -1,14 +1,17 @@
 package dev.ikm.komet.kleditorapp.view;
 
 import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
+import dev.ikm.komet.kleditorapp.view.control.FieldColumnControl;
 import dev.ikm.komet.kleditorapp.view.control.FieldViewControl;
 import dev.ikm.komet.kleditorapp.view.control.PatternStandardEditorControl;
 import dev.ikm.komet.kleditorapp.view.control.PatternEditorControlBase;
+import dev.ikm.komet.kleditorapp.view.control.PatternTableEditorControl;
 import dev.ikm.komet.kleditorapp.view.control.SectionViewControl;
 import dev.ikm.komet.kleditorapp.view.control.SupplementalAreaViewControl;
 import dev.ikm.komet.kleditorapp.view.control.KlEditorWindowControlFactory;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
+import dev.ikm.komet.layout.editor.model.EditorModelBase;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorSupplementalAreaModel;
@@ -135,7 +138,9 @@ public class KLEditorWindowController {
         SectionViewControl sectionViewControl = (SectionViewControl) KlEditorWindowControlFactory.getView(editorSectionModel);
         PatternEditorControlBase oldView = (PatternEditorControlBase) KlEditorWindowControlFactory.getView(patternModel);
 
-        boolean wasSelected = SelectionManager.instance().getSelectedControl() == oldView;
+        // Selection is kept by model: the selected pattern, or one of its fields (a tile in one
+        // representation, a column in the other), resolves to its new view once re-rendered.
+        EditorModelBase selectedModel = KlEditorWindowControlFactory.getModel(SelectionManager.instance().getSelectedControl());
 
         // createEditorControl re-registers the model -> view mapping, so build the replacement first.
         PatternEditorControlBase newView = createPatternEditorControl(patternModel);
@@ -147,8 +152,8 @@ public class KLEditorWindowController {
             sectionViewControl.getPatterns().add(newView);
         }
 
-        if (wasSelected) {
-            SelectionManager.instance().setSelectedControl(newView);
+        if (selectedModel != null) {
+            SelectionManager.instance().setSelectedControl(KlEditorWindowControlFactory.getView(selectedModel));
         }
     }
 
@@ -182,12 +187,17 @@ public class KLEditorWindowController {
 
     private void onPatternModelFieldsChanged(EditorPatternModel patternModel,
                                              ListChangeListener.Change<? extends EditorFieldModel> change) {
-        // Field tiles only exist in the standard pattern view; other representations (e.g. the table) build
-        // their own columns from the model when (re)rendered. Resolve the current view on each change so this
-        // keeps working after the pattern is re-rendered with a different factory's editor control.
-        if (!(KlEditorWindowControlFactory.getView(patternModel) instanceof PatternStandardEditorControl patternStandardEditorControl)) {
-            return;
+        // Resolve the current view on each change so this keeps working after the pattern is re-rendered
+        // with a different factory's editor control.
+        switch (KlEditorWindowControlFactory.getView(patternModel)) {
+            case PatternStandardEditorControl standardView -> syncFieldViews(standardView, change);
+            case PatternTableEditorControl tableView -> syncFieldColumns(tableView, patternModel, change);
+            default -> { }
         }
+    }
+
+    private void syncFieldViews(PatternStandardEditorControl patternStandardEditorControl,
+                                ListChangeListener.Change<? extends EditorFieldModel> change) {
         while(change.next()) {
             if (change.wasAdded()) {
                 for (EditorFieldModel fieldModel : change.getAddedSubList()) {
@@ -199,6 +209,35 @@ public class KLEditorWindowController {
                     FieldViewControl fieldViewControl = (FieldViewControl) KlEditorWindowControlFactory.getView(fieldModel);
                     patternStandardEditorControl.getFields().remove(fieldViewControl);
                 });
+            }
+        }
+    }
+
+    /**
+     * Keeps a table pattern's columns in step with the model's fields, in the model's order. A column
+     * drag-reorder is written into the model by the table's factory, so it comes back here as a change
+     * the columns already reflect and is left alone.
+     */
+    private void syncFieldColumns(PatternTableEditorControl patternTableEditorControl, EditorPatternModel patternModel,
+                                  ListChangeListener.Change<? extends EditorFieldModel> change) {
+        List<EditorModelBase> columnOrder = patternTableEditorControl.getFields().stream()
+                .map(KlEditorWindowControlFactory::getModel)
+                .toList();
+        if (columnOrder.equals(patternModel.getVisibleFields())) {
+            return;
+        }
+        while (change.next()) {
+            if (change.wasRemoved()) {
+                change.getRemoved().forEach(fieldModel -> {
+                    FieldColumnControl fieldColumnControl = (FieldColumnControl) KlEditorWindowControlFactory.getView(fieldModel);
+                    patternTableEditorControl.getFields().remove(fieldColumnControl);
+                });
+            }
+            if (change.wasAdded()) {
+                int index = change.getFrom();
+                for (EditorFieldModel fieldModel : change.getAddedSubList()) {
+                    patternTableEditorControl.getFields().add(index++, KlEditorWindowControlFactory.createFieldColumn(fieldModel));
+                }
             }
         }
     }

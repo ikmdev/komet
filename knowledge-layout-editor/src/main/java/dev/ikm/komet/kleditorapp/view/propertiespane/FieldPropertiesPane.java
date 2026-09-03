@@ -11,6 +11,7 @@ import dev.ikm.komet.layout.area.KlAreaForIntIdSet;
 import dev.ikm.komet.layout.area.KlAreaForInteger;
 import dev.ikm.komet.layout.area.KlAreaForString;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
+import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
@@ -19,6 +20,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 
+import java.util.List;
 import java.util.ServiceLoader;
 
 import static dev.ikm.tinkar.terms.TinkarTerm.BOOLEAN_FIELD;
@@ -40,6 +42,7 @@ public class FieldPropertiesPane extends GridNodePropertiesPane<EditorFieldModel
     private final ComboBox<String> displayComboBox;
     private final ToggleSwitch titleVisibleTSwitch;
     private final TextField titleTextField;
+    private final Separator positioningSeparator;
 
     public FieldPropertiesPane() {
         super(true);
@@ -62,8 +65,8 @@ public class FieldPropertiesPane extends GridNodePropertiesPane<EditorFieldModel
         titleContainer.getChildren().addAll(titleLabel, titleTextField, titleVisibleTSwitch);
 
         // Separator
-        Separator separator = new Separator();
-        separator.setPrefWidth(200);
+        positioningSeparator = new Separator();
+        positioningSeparator.setPrefWidth(200);
 
         // Separator
         Separator separator2 = new Separator();
@@ -94,7 +97,7 @@ public class FieldPropertiesPane extends GridNodePropertiesPane<EditorFieldModel
 
         fieldMainContainer.getChildren().addAll(
                 titleContainer,
-                separator,
+                positioningSeparator,
                 positioningLabel,
                 positioningGridPane,
                 separator2,
@@ -156,6 +159,14 @@ public class FieldPropertiesPane extends GridNodePropertiesPane<EditorFieldModel
 
         titleTextField.setText(currentlyShownModel.getTitle());
         titleVisibleTSwitch.selectedProperty().bindBidirectional(currentlyShownModel.titleVisibleProperty());
+
+        // A field of a table pattern is a column, not a cell of a grid: it has no position to set, and its
+        // title is the column header, which is always shown.
+        boolean inGrid = currentlyShownModel.getParentGrid() != null;
+        for (Node gridOnlyNode : List.of(titleVisibleTSwitch, positioningSeparator, positioningLabel, positioningGridPane)) {
+            gridOnlyNode.setVisible(inGrid);
+            gridOnlyNode.setManaged(inGrid);
+        }
 
         populateDisplayComboBox(currentlyShownModel);
     }

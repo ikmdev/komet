@@ -1,6 +1,6 @@
 package dev.ikm.komet.kleditorapp.view.control;
 
-import dev.ikm.komet.layout.editor.EditorWindowBaseControl;
+import dev.ikm.komet.layout.editor.Selectable;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorGridNodeModel;
 import dev.ikm.komet.layout.editor.model.EditorModelBase;
@@ -13,8 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public class KlEditorWindowControlFactory {
-    private static final HashMap<EditorWindowBaseControl, EditorModelBase> windowControlToModel = new HashMap<>();
-    private static final HashMap<EditorModelBase, EditorWindowBaseControl> modelToWindowControl = new HashMap<>();
+    private static final HashMap<Selectable, EditorModelBase> windowControlToModel = new HashMap<>();
+    private static final HashMap<EditorModelBase, Selectable> modelToWindowControl = new HashMap<>();
 
     public static SectionViewControl createSectionView(EditorSectionModel editorSectionModel) {
         SectionViewControl sectionViewControl = new SectionViewControl();
@@ -65,20 +65,22 @@ public class KlEditorWindowControlFactory {
 
         updateMaps(editorPatternModel, patternTableViewControl);
 
-        // A table renders each field as a column header (no FieldViewControls); each column carries
-        // the field it stands for.
+        // A table renders each field as a column (no FieldViewControls); the column is what the author
+        // selects to edit the field.
         for (EditorFieldModel fieldModel : editorPatternModel.getVisibleFields()) {
-            patternTableViewControl.addColumn(fieldModel.titleProperty()).setUserData(fieldModel);
+            patternTableViewControl.getFields().add(createFieldColumn(fieldModel));
         }
 
         // Dragging a column header is how the author reorders a table pattern's fields, so write the
         // column order back into the model — the order save persists and the journal renders in.
-        patternTableViewControl.getColumns().subscribe(() -> {
-            List<EditorFieldModel> fieldOrder = patternTableViewControl.getColumns().stream()
-                    .map(column -> (EditorFieldModel) column.getUserData())
+        patternTableViewControl.getFields().subscribe(() -> {
+            List<EditorModelBase> fieldOrder = patternTableViewControl.getFields().stream()
+                    .map(KlEditorWindowControlFactory::getModel)
                     .toList();
             if (!fieldOrder.equals(editorPatternModel.getVisibleFields())) {
-                editorPatternModel.getVisibleFields().setAll(fieldOrder);
+                editorPatternModel.getVisibleFields().setAll(fieldOrder.stream()
+                        .map(EditorFieldModel.class::cast)
+                        .toList());
             }
         });
 
@@ -97,6 +99,19 @@ public class KlEditorWindowControlFactory {
         return fieldViewControl;
     }
 
+    /**
+     * Creates the column standing for a field in a table pattern view — the table counterpart of
+     * {@link #createFieldView(EditorFieldModel)}. A column has no grid position, so only the title is bound.
+     */
+    public static FieldColumnControl createFieldColumn(EditorFieldModel editorFieldModel) {
+        FieldColumnControl fieldColumnControl = new FieldColumnControl();
+        fieldColumnControl.textProperty().bind(editorFieldModel.titleProperty());
+
+        updateMaps(editorFieldModel, fieldColumnControl);
+
+        return fieldColumnControl;
+    }
+
     public static SupplementalAreaViewControl createSupplementalAreaView(EditorSupplementalAreaModel model) {
         SupplementalAreaViewControl view = new SupplementalAreaViewControl();
 
@@ -109,17 +124,17 @@ public class KlEditorWindowControlFactory {
         return view;
     }
 
-    public static EditorModelBase getModel(EditorWindowBaseControl editorWindowBaseControl) {
-        return windowControlToModel.get(editorWindowBaseControl);
+    public static EditorModelBase getModel(Selectable editorWindowControl) {
+        return windowControlToModel.get(editorWindowControl);
     }
 
-    public static EditorWindowBaseControl getView(EditorModelBase editorModelBase) {
+    public static Selectable getView(EditorModelBase editorModelBase) {
         return modelToWindowControl.get(editorModelBase);
     }
 
-    private static void updateMaps(EditorModelBase editorModelBase, EditorWindowBaseControl editorWindowBaseControl) {
-        windowControlToModel.put(editorWindowBaseControl, editorModelBase);
-        modelToWindowControl.put(editorModelBase, editorWindowBaseControl);
+    private static void updateMaps(EditorModelBase editorModelBase, Selectable editorWindowControl) {
+        windowControlToModel.put(editorWindowControl, editorModelBase);
+        modelToWindowControl.put(editorModelBase, editorWindowControl);
     }
 
     private static void bindGridNodeProperties(EditorGridNodeModel gridNodeModel, GridBaseControl gridBaseControl) {
