@@ -53,7 +53,7 @@ public final class StandardEditorWindows {
      * re-seeded from the current code, so application-shipped windows never go stale in the
      * preferences. User-authored windows live in the user-windows folder and are untouched.
      */
-    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 11;
+    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 12;
 
     /** Preferences key holding the version the seeded standard windows were created from. */
     private static final String STANDARD_WINDOWS_VERSION_KEY = "STANDARD-WINDOWS-VERSION";
@@ -271,7 +271,10 @@ public final class StandardEditorWindows {
      * then its data type — the field-purpose column is left out). The Meaning and Purpose pattern and the fully
      * qualified name column are required when the window is opened in the Journal in create mode —
      * so, as in the Concept window, the pattern can only be created once it has a fully qualified
-     * name; Fields is not required (a membership pattern has no fields).
+     * name; Fields is not required (a membership pattern has no fields). Once the pattern exists
+     * (the window is in edit mode) neither the Meaning and Purpose pattern nor the Fields pattern
+     * accepts new semantics — a pattern has one meaning and purpose, and its fields are fixed — and a
+     * committed field's data type can no longer be changed.
      * Unlike the Concept window it keeps the default grey
      * chrome (see the concept-window-theme rules in kview.css, applied only to
      * {@link EditorWindowType#STANDARD_CONCEPT}).
@@ -365,8 +368,22 @@ public final class StandardEditorWindows {
         KlPatternSemanticsFactories.byClassName(KlPatternSemanticsFactories.TABLE_FACTORY_CLASS_NAME)
                 .ifPresent(fieldsPattern::setFactory);
         arrangeFieldColumns(fieldsPattern, viewCalculator);
+        // The fields of a committed pattern are fixed: no field can be added once the pattern exists,
+        // and an existing field keeps its data type (its meaning can still be corrected).
+        fieldsPattern.setAllowNewSemantics(false);
+        fixFieldDataType(fieldsPattern, viewCalculator);
         fieldsSection.getPatterns().add(fieldsPattern);
         return fieldsSection;
+    }
+
+    /**
+     * Makes the Fields pattern's "Field data type" field not editable, so the data type of a committed
+     * field is shown in the Journal's edit form but can't be changed (see
+     * {@link EditorPatternModel#fieldEditableProperty(int)}).
+     */
+    private static void fixFieldDataType(EditorPatternModel fieldsPattern, ViewCalculator viewCalculator) {
+        viewCalculator.latestPatternEntityVersion(PatternDefinitionTerms.FIELDS_PATTERN).ifPresent(patternVersion ->
+                fieldsPattern.fieldEditableProperty(patternVersion.indexForMeaning(KlTerms.FIELD_DATA_TYPE)).set(false));
     }
 
     /**
@@ -398,6 +415,9 @@ public final class StandardEditorWindows {
         EditorPatternModel meaningAndPurposePattern = new EditorPatternModel(viewCalculator,
                 PatternDefinitionTerms.MEANING_AND_PURPOSE_PATTERN.nid());
         meaningAndPurposePattern.setRequired(true);
+        // A pattern has exactly one meaning and purpose: the semantic created with the pattern can be
+        // edited, but no second one can be added once the pattern exists.
+        meaningAndPurposePattern.setAllowNewSemantics(false);
 
         // The pattern's two fields side by side — meaning in the left column, purpose in the right
         // (the pattern defines them in that order) — rather than stacked one per row.
