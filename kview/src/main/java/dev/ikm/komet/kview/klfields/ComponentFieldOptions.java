@@ -15,8 +15,11 @@
  */
 package dev.ikm.komet.kview.klfields;
 
+import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
+import dev.ikm.komet.layout.KlTerms;
 import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -83,6 +86,13 @@ public final class ComponentFieldOptions {
             return Optional.of(sortedByName(viewCalculator,
                     Stream.of(FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE, REGULAR_NAME_DESCRIPTION_TYPE,
                             DEFINITION_DESCRIPTION_TYPE)));
+        }
+        // The data type of a pattern field (the Fields pattern of the pattern-definition patterns) is
+        // one of the data types the field editors support: the same fixed set the classic Pattern
+        // window offers in its data type drop-down (DataModelHelper.fetchFieldDefinitionDataTypes).
+        if (conceptNid == KlTerms.FIELD_DATA_TYPE.nid()) {
+            return Optional.of(sortedByName(viewCalculator,
+                    DataModelHelper.fetchFieldDefinitionDataTypes().stream().map(ConceptEntity::toProxy)));
         }
         return optionsParentForConcept(conceptNid)
                 .map(parent -> sortedByName(viewCalculator, fetchDescendents(viewCalculator, parent)));
