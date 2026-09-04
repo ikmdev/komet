@@ -342,8 +342,14 @@ public class NextGenSearchController {
                                 // means it cannot look the label up locally, so use the name the
                                 // service resolved -- displayName() prefers the highlighted
                                 // preferred name, matching what the local branch shows.
+                                // Positionally aligned with the semantics list built below,
+                                // so the cell can pair each row with its own identity.
+                                List<List<UUID>> semanticUuids = g.matchingSemantics().stream()
+                                        .map(m -> m.publicId().stream().map(UUID::fromString).toList())
+                                        .toList();
                                 SearchPanelController.NidTextRecord key =
-                                        new SearchPanelController.NidTextRecord(0, g.displayName(), g.active(), uuids);
+                                        new SearchPanelController.NidTextRecord(
+                                                0, g.displayName(), g.active(), uuids, semanticUuids);
                                 List<LatestVersionSearchResult> semantics = g.matchingSemantics().stream()
                                         .map(m -> new LatestVersionSearchResult(
                                                 new Latest<>(SemanticEntityVersion.class),

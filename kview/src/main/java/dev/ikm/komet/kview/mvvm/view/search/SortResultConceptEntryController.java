@@ -30,12 +30,15 @@ import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import dev.ikm.komet.layout.editor.StandardEditorWindows;
+import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.common.service.RemoteConceptSearchService;
@@ -87,7 +90,7 @@ public class SortResultConceptEntryController extends AbstractBasicController {
     private Label retiredLabel;
 
     @FXML
-    private ListView<LatestVersionSearchResult> descriptionsListView;
+    private ListView<DescriptionSemanticRow> descriptionsListView;
 
     @FXML
     private Node dragIndicator;
@@ -143,7 +146,7 @@ public class SortResultConceptEntryController extends AbstractBasicController {
         });
 
         descriptionsListView.setFixedCellSize(LIST_VIEW_CELL_SIZE);
-        descriptionsListView.getItems().addListener((ListChangeListener<? super LatestVersionSearchResult>) change -> updateListViewPrefHeight());
+        descriptionsListView.getItems().addListener((ListChangeListener<? super DescriptionSemanticRow>) change -> updateListViewPrefHeight());
         updateListViewPrefHeight();
 
         descriptionsListView.setCellFactory(param -> new DescriptionSemanticListCell());
@@ -203,7 +206,24 @@ public class SortResultConceptEntryController extends AbstractBasicController {
         HighlightedSegments.renderHighlightedInto(componentTextFlow, highlightedTopText);
     }
 
-    public ObservableList<LatestVersionSearchResult> getDescriptionListViewItems() { return descriptionsListView.getItems(); }
+    public ObservableList<DescriptionSemanticRow> getDescriptionListViewItems() { return descriptionsListView.getItems(); }
+
+    /**
+     * One row of the expanded description-semantics list.
+     *
+     * <p>{@code publicIds} is populated only for rows from a remote search service, whose
+     * {@code result} carries an absent {@link Latest} because there is no local entity
+     * behind it. It is the row's only identity in that case; locally sourced rows leave it
+     * empty and resolve identity from the result's own version.
+     *
+     * @param result    the search result backing this row
+     * @param publicIds UUIDs of the matched semantic, for remote rows
+     */
+    public record DescriptionSemanticRow(LatestVersionSearchResult result, List<UUID> publicIds) {
+        public DescriptionSemanticRow(LatestVersionSearchResult result) {
+            this(result, List.of());
+        }
+    }
 
     @Override
     public void updateView() {
@@ -288,7 +308,7 @@ public class SortResultConceptEntryController extends AbstractBasicController {
      *                                                                         *
      **************************************************************************/
 
-    class DescriptionSemanticListCell extends ListCell<LatestVersionSearchResult> {
+    class DescriptionSemanticListCell extends ListCell<DescriptionSemanticRow> {
         private HBox cellContainer = new HBox();
         private TextFlow textFlow = new TextFlow();
         private ImageView identicon = new ImageView();
@@ -326,17 +346,32 @@ public class SortResultConceptEntryController extends AbstractBasicController {
         }
 
         @Override
-        protected void updateItem(LatestVersionSearchResult item, boolean empty) {
+        protected void updateItem(DescriptionSemanticRow item, boolean empty) {
             if (item == null || empty) {
                 setGraphic(null);
+                identicon.setImage(null);
                 currentNid = -1;
             } else {
-                item.latestVersion().ifPresent(semanticEntityVersion -> {
+                // Reset first: cells are recycled, and a remote row resolves neither the
+                // image nor the nid, so a stale one would otherwise show the previous
+                // row's icon and open the previous row's semantic on double-click.
+                identicon.setImage(null);
+                currentNid = -1;
+
+                LatestVersionSearchResult result = item.result();
+                if (result.latestVersion() != null && result.latestVersion().isPresent()) {
+                    SemanticEntityVersion semanticEntityVersion = result.latestVersion().get();
                     identicon.setImage(Identicon.generateIdenticonImage(semanticEntityVersion.publicId()));
                     currentNid = semanticEntityVersion.nid();
                     setUpDraggable(cellContainer, semanticEntityVersion.entity(), getDragAndDropType(semanticEntityVersion.entity()));
-                });
-                HighlightedSegments.renderHighlightedInto(textFlow, item.highlightedString());
+                } else if (!item.publicIds().isEmpty()) {
+                    // Remote row: no local entity, so the public ID sent with the match is
+                    // the only identity available. Enough to draw the icon; opening and
+                    // dragging still need a real entity and stay disabled.
+                    identicon.setImage(Identicon.generateIdenticonImage(
+                            PublicIds.of(item.publicIds().toArray(new UUID[0]))));
+                }
+                HighlightedSegments.renderHighlightedInto(textFlow, result.highlightedString());
                 setGraphic(cellContainer);
             }
         }

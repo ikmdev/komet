@@ -20,6 +20,7 @@ import org.carlfx.cognitive.loader.JFXNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -111,7 +112,8 @@ public class SearchCellTopComponent extends SearchCellBase {
                     controller.setData(entity);
                     controller.setComponentText(highlightedTitle(topText));
 
-                    controller.getDescriptionListViewItems().setAll(mapEntry.getValue());
+                    controller.getDescriptionListViewItems().setAll(
+                            descriptionRows(mapEntry.getValue(), List.of()));
 
                     if (entityVersion.active()) {
                         controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
@@ -133,7 +135,8 @@ public class SearchCellTopComponent extends SearchCellBase {
                     controller.setData(null);
                     controller.setRemotePublicIds(nidTextRecord.publicIds());
                     controller.setComponentText(nidTextRecord.text());
-                    controller.getDescriptionListViewItems().setAll(mapEntry.getValue());
+                    controller.getDescriptionListViewItems().setAll(
+                            descriptionRows(mapEntry.getValue(), nidTextRecord.semanticPublicIds()));
                     if (nidTextRecord.active()) {
                         controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());
                     } else if (!controller.getRetiredHBox().getChildren().contains(controller.getRetiredLabel())) {
@@ -146,6 +149,28 @@ public class SearchCellTopComponent extends SearchCellBase {
                 }
             }
         }
+    }
+
+    /**
+     * Pairs each search result with the public ID of the semantic it matched.
+     *
+     * <p>The two lists arrive positionally aligned — the service returns the matches in
+     * one order and they are carried through unchanged — so they are zipped once here
+     * rather than having the cell look IDs up by row index. {@code semanticPublicIds} is
+     * empty for locally sourced results, which resolve identity from their own version.
+     *
+     * @param results           the matched semantics for one concept
+     * @param semanticPublicIds UUIDs per result, or empty for local results
+     * @return one row per result, in the same order
+     */
+    private static List<SortResultConceptEntryController.DescriptionSemanticRow> descriptionRows(
+            List<LatestVersionSearchResult> results, List<List<UUID>> semanticPublicIds) {
+        List<SortResultConceptEntryController.DescriptionSemanticRow> rows = new ArrayList<>(results.size());
+        for (int i = 0; i < results.size(); i++) {
+            List<UUID> ids = i < semanticPublicIds.size() ? semanticPublicIds.get(i) : List.of();
+            rows.add(new SortResultConceptEntryController.DescriptionSemanticRow(results.get(i), ids));
+        }
+        return rows;
     }
 
     /**
