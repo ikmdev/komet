@@ -21,4 +21,11 @@ public class KlTerms {
     public static final EntityProxy.Concept FIELD_DATA_TYPE = EntityProxy.Concept.make("Field data type", UUID.fromString("acc001dd-3430-42fb-ad6c-bf787a0211b9"));
     public static final EntityProxy.Concept FIELD_VALUE = EntityProxy.Concept.make("Field value", UUID.fromString("7249ce90-c93d-45b6-91eb-7b3674440a5e"));
 
+    /**
+     * STAMP module of a pattern's defaults semantic (see {@code PatternFieldDefaults}):
+     * the semantic holding the values new semantics of that pattern start with. Keeping the defaults semantics
+     * in their own module keeps them apart from terminology content — a view can leave the module out.
+     */
+    public static final EntityProxy.Concept FIELD_DEFAULTS_MODULE = EntityProxy.Concept.make("Field defaults module", UUID.fromString("ac383ac9-6b2f-48f7-aa7d-5f7ce27b7ab7"));
+
 }

@@ -1591,6 +1591,26 @@ selected(active) - dark black
     -fx-fill: white;
 }
 
+/* Field defaults button in the KL window control row: a pushpin. */
+.field-defaults-icon {
+    -width-size: 12;
+    -height-size: 15;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-background-color: -Grey-2;
+    -fx-shape: "M4 0H12V2H11V8L14 11V13H9V20H7V13H2V11L5 8V2H4V0ZM7 2V8.83L4.83 11H11.17L9 8.83V2H7Z";
+}
+
+.button.field-defaults:hover {
+    -fx-background-color: -Primary-05;
+}
+
+.button.field-defaults:hover .field-defaults-icon {
+    -fx-background-color: white;
+}
+
 .close-window {
     -width-size: 12;
     -height-size: 13;

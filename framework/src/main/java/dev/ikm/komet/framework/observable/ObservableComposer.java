@@ -29,6 +29,7 @@ import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
 import static dev.ikm.tinkar.terms.TinkarTerm.STRING_FIELD;
 
+import dev.ikm.tinkar.common.id.IntIdCollection;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.id.Nid;
 import dev.ikm.tinkar.common.id.PublicId;
@@ -682,6 +683,30 @@ public final class ObservableComposer {
             }
         });
         return (T) fieldsValues;
+    }
+
+    /**
+     * Whether a field value is the one {@link #generateDefaultFieldValues} starts a field of its type
+     * with — nothing has been entered yet: the blank concept for a component field, an empty string,
+     * zero, {@code false}, an empty component collection, an empty byte array, an empty logical
+     * definition (the root vertex only), or {@code null} for a data type with no starting value.
+     *
+     * @param value the field value to test
+     * @return whether the value is a field's starting value rather than something entered
+     */
+    public static boolean isDefaultFieldValue(Object value) {
+        return switch (value) {
+            case null -> true;
+            case EntityFacade entity -> PublicId.equals(entity.publicId(), BLANK_CONCEPT.publicId());
+            case String text -> text.isEmpty();
+            case Integer number -> number == 0;
+            case Float number -> number == 0.0F;
+            case Boolean flag -> !flag;
+            case IntIdCollection ids -> ids.isEmpty();
+            case byte[] bytes -> bytes.length == 0;
+            case DiTreeEntity tree -> tree.vertexCount() <= 1;
+            default -> false;
+        };
     }
 
     /**

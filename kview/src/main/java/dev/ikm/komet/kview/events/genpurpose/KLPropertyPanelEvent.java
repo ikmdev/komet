@@ -1,5 +1,7 @@
 package dev.ikm.komet.kview.events.genpurpose;
 
+import dev.ikm.komet.framework.observable.ObservableComposer;
+
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -22,11 +24,20 @@ public class KLPropertyPanelEvent extends Evt {
     public static final EvtType<KLPropertyPanelEvent> CONFIRMATION_PANEL = new EvtType<>(SHOW_PANEL, "CONFIRMATION_PANEL");
     public static final EvtType<KLPropertyPanelEvent> NO_SELECTION_MADE_PANEL = new EvtType<>(SHOW_PANEL, "NO_SELECTION_MADE_PANEL");
 
+    /**
+     * Shows the pattern's defaults semantic in the DEFAULTS tab's edit form — sent by the window
+     * when the tab is selected or the toolbar's field-defaults button pressed. Carries the
+     * defaults semantic, the composer it is edited through and the form title.
+     */
+    public static final EvtType<KLPropertyPanelEvent> SHOW_PATTERN_FIELD_DEFAULTS = new EvtType<>(SHOW_PANEL, "SHOW_PATTERN_FIELD_DEFAULTS");
+
     /*** private variables ***/
     private SemanticEntity<SemanticEntityVersion> semanticEntity;
     private EditorPatternModel editorPatternModel;
     private PatternFacade patternFacade;
     private EntityFacade referenceComponent;
+    private ObservableComposer composer;
+    private String formTitle;
 
     /**
      *
@@ -57,6 +68,21 @@ public class KLPropertyPanelEvent extends Evt {
     }
 
     /**
+     * Shows the edit form for a semantic that is composed outside the window's own composer — a
+     * pattern's defaults semantic, which commits in its own module — under its own title.
+     *
+     * @param composer  the composer the form edits the semantic through
+     * @param formTitle the form's title, in place of "Pattern Fields"
+     */
+    public KLPropertyPanelEvent(Object source, EvtType<KLPropertyPanelEvent> eventType, SemanticEntity<SemanticEntityVersion> semanticEntity,
+                                ObservableComposer composer, String formTitle) {
+        super(source, eventType);
+        this.semanticEntity = semanticEntity;
+        this.composer = composer;
+        this.formTitle = formTitle;
+    }
+
+    /**
      * Creates a KLPropertyPanelEvent that receives a Reference Component and Pattern. Typically used with EvtType SHOW_ADD_SEMANTIC
      * in which case the referenceComponent and the pattern passed in are the Reference Component and the Pattern of the
      * Semantic that is to be created.
@@ -79,6 +105,12 @@ public class KLPropertyPanelEvent extends Evt {
     public EditorPatternModel getEditorPatternModel() { return editorPatternModel; }
 
     public PatternFacade getPatternFacade() { return patternFacade; }
+
+    /** The composer the form edits the semantic through; null for the window's own composer. */
+    public ObservableComposer getComposer() { return composer; }
+
+    /** The form's title; null for the default one. */
+    public String getFormTitle() { return formTitle; }
 
     public EntityFacade getReferenceComponent() { return referenceComponent; }
 }

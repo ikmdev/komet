@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.KlWindowControlToolbar;
+import javafx.beans.binding.BooleanBinding;
 import javafx.css.PseudoClass;
 import javafx.geometry.Orientation;
 import javafx.scene.Group;
@@ -131,6 +132,23 @@ public class KlWindowControlToolbarSkin extends SkinBase<KlWindowControlToolbar>
         timelineToggleButton.managedProperty().bind(control.timelineVisibleProperty());
         timelineToggleButton.selectedProperty().bindBidirectional(control.timelineSelectedProperty());
 
+        // Field defaults: opens the properties panel on the pattern's field defaults (one-shot).
+        Button fieldDefaultsButton = new Button();
+        fieldDefaultsButton.setMnemonicParsing(false);
+        fieldDefaultsButton.getStyleClass().add("field-defaults");
+        Region fieldDefaultsIcon = new Region();
+        fieldDefaultsIcon.getStyleClass().addAll("icon", "field-defaults-icon");
+        fieldDefaultsButton.setGraphic(fieldDefaultsIcon);
+        fieldDefaultsButton.setTooltip(new Tooltip("Field default values"));
+        fieldDefaultsButton.visibleProperty().bind(control.fieldDefaultsVisibleProperty());
+        fieldDefaultsButton.managedProperty().bind(control.fieldDefaultsVisibleProperty());
+        fieldDefaultsButton.setOnAction(event -> {
+            Runnable onFieldDefaults = control.getOnFieldDefaultsAction();
+            if (onFieldDefaults != null) {
+                onFieldDefaults.run();
+            }
+        });
+
         // The leading buttons get their own container so the gap between them can be styled
         // (via -fx-spacing) independently of the bar's own spacing.
         HBox leadingButtonsContainer = new HBox(coordinatePlate, publishContainer);
@@ -160,11 +178,13 @@ public class KlWindowControlToolbarSkin extends SkinBase<KlWindowControlToolbar>
         propertiesToggleButton.setGraphic(new Group(toggleBody, toggleKnob));
         propertiesToggleButton.selectedProperty().bindBidirectional(control.propertiesSelectedProperty());
 
-        // Separates the timeline toggle from the properties controls; hides with the toggle.
+        // Separates the field-defaults button and timeline toggle from the properties controls;
+        // hides when neither is shown.
         Separator timelineSeparator = new Separator(Orientation.VERTICAL);
         timelineSeparator.getStyleClass().add("thin-vertical-separator");
-        timelineSeparator.visibleProperty().bind(control.timelineVisibleProperty());
-        timelineSeparator.managedProperty().bind(control.timelineVisibleProperty());
+        BooleanBinding leadsProperties = control.timelineVisibleProperty().or(control.fieldDefaultsVisibleProperty());
+        timelineSeparator.visibleProperty().bind(leadsProperties);
+        timelineSeparator.managedProperty().bind(leadsProperties);
 
         Separator separator = new Separator(Orientation.VERTICAL);
         separator.getStyleClass().add("thin-vertical-separator");
@@ -186,6 +206,7 @@ public class KlWindowControlToolbarSkin extends SkinBase<KlWindowControlToolbar>
         container.getChildren().addAll(
                 leadingButtonsContainer,
                 spacer,
+                fieldDefaultsButton,
                 timelineToggleButton,
                 timelineSeparator,
                 propertyLabel,

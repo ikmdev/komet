@@ -64,6 +64,7 @@ public final class PatternDefinitionSeeder {
         ensureConcept(composer, KlTerms.FIELD_DATA_TYPE);
         ensureConcept(composer, KlTerms.FIELD_PURPOSE);
         ensureConcept(composer, KlTerms.FIELD_MEANING);
+        ensureConcept(composer, KlTerms.FIELD_DEFAULTS_MODULE);
 
         ensurePattern(composer, PatternDefinitionTerms.MEANING_AND_PURPOSE_PATTERN,
                 PatternDefinitionTerms.MEANING_AND_PURPOSE, PatternDefinitionTerms.PATTERN_DEFINITION,

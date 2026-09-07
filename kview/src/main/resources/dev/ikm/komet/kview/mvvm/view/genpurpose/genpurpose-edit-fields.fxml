@@ -23,7 +23,7 @@
    <top>
       <HBox styleClass="fields-title-bar" BorderPane.alignment="CENTER">
          <children>
-            <Label styleClass="lidr-device-title-label" text="Pattern Fields" />
+            <Label fx:id="formTitleLabel" styleClass="lidr-device-title-label" text="Pattern Fields" />
          </children>
       </HBox>
    </top>

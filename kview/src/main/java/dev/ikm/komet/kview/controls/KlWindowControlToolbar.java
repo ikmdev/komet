@@ -54,6 +54,12 @@ public class KlWindowControlToolbar extends Control {
         return new KlWindowControlToolbarSkin(this);
     }
 
+    /***************************************************************************
+     *                                                                         *
+     * Properties                                                              *
+     *                                                                         *
+     **************************************************************************/
+
     // -- title
     /**
      * The text shown in the window's title tab, on the toolbar's top row.
@@ -83,6 +89,22 @@ public class KlWindowControlToolbar extends Control {
      */
     public void setOnCloseAction(Runnable onClose) { this.onCloseAction.set(onClose); }
     public Runnable getOnCloseAction() { return onCloseAction.get(); }
+
+    // -- properties selected
+    private final BooleanProperty propertiesSelected = new SimpleBooleanProperty(this, "propertiesSelected", false);
+
+    /**
+     * The selected state of the properties toggle. The skin binds the toggle button to this property
+     * bidirectionally, so callers may read it, set it to drive the toggle, bind to it, or subscribe to it
+     * to react when the panel is opened or closed.
+     */
+    public BooleanProperty propertiesSelectedProperty() { return propertiesSelected; }
+    public boolean isPropertiesSelected() { return propertiesSelected.get(); }
+    public void setPropertiesSelected(boolean value) { propertiesSelected.set(value); }
+
+    /***************************************************************************
+     * Publish Button                                                          *
+     **************************************************************************/
 
     // -- on publish action
     private final ObjectProperty<Runnable> onPublishAction = new SimpleObjectProperty<>();
@@ -129,24 +151,11 @@ public class KlWindowControlToolbar extends Control {
     public String getPublishTooltip() { return publishTooltip.get(); }
     public void setPublishTooltip(String value) { publishTooltip.set(value); }
 
-    // -- properties selected
-    private final BooleanProperty propertiesSelected = new SimpleBooleanProperty(this, "propertiesSelected", false);
-
-    /**
-     * The selected state of the properties toggle. The skin binds the toggle button to this property
-     * bidirectionally, so callers may read it, set it to drive the toggle, bind to it, or subscribe to it
-     * to react when the panel is opened or closed.
-     */
-    public BooleanProperty propertiesSelectedProperty() { return propertiesSelected; }
-    public boolean isPropertiesSelected() { return propertiesSelected.get(); }
-    public void setPropertiesSelected(boolean value) { propertiesSelected.set(value); }
-
     /***************************************************************************
-     *                                                                         *
      * Timeline toggle                                                         *
-     *                                                                         *
      **************************************************************************/
 
+    // -- timeline selected
     private final BooleanProperty timelineSelected = new SimpleBooleanProperty(this, "timelineSelected", false);
 
     /**
@@ -156,17 +165,6 @@ public class KlWindowControlToolbar extends Control {
     public BooleanProperty timelineSelectedProperty() { return timelineSelected; }
     public boolean isTimelineSelected() { return timelineSelected.get(); }
     public void setTimelineSelected(boolean value) { timelineSelected.set(value); }
-
-    // -- coordinate visible
-    private final BooleanProperty coordinateVisible = new SimpleBooleanProperty(this, "coordinateVisible", true);
-
-    /**
-     * Controls whether the coordinate menu is shown. Both the visibility and the managed state of the
-     * underlying button follow this property.
-     */
-    public BooleanProperty coordinateVisibleProperty() { return coordinateVisible; }
-    public boolean isCoordinateVisible() { return coordinateVisible.get(); }
-    public void setCoordinateVisible(boolean value) { coordinateVisible.set(value); }
 
     // -- timeline visible
     private final BooleanProperty timelineVisible = new SimpleBooleanProperty(this, "timelineVisible", true);
@@ -178,6 +176,32 @@ public class KlWindowControlToolbar extends Control {
     public BooleanProperty timelineVisibleProperty() { return timelineVisible; }
     public boolean isTimelineVisible() { return timelineVisible.get(); }
     public void setTimelineVisible(boolean value) { timelineVisible.set(value); }
+
+    /***************************************************************************
+     * Field defaults button                                                   *
+     **************************************************************************/
+
+    // -- field defaults visible
+    private final BooleanProperty fieldDefaultsVisible = new SimpleBooleanProperty(this, "fieldDefaultsVisible", false);
+
+    /**
+     * Whether the field-defaults button — which opens the properties panel on the pattern's field
+     * defaults — is shown. Off by default; the standard Pattern window turns it on once its pattern
+     * exists.
+     */
+    public BooleanProperty fieldDefaultsVisibleProperty() { return fieldDefaultsVisible; }
+    public boolean isFieldDefaultsVisible() { return fieldDefaultsVisible.get(); }
+    public void setFieldDefaultsVisible(boolean value) { fieldDefaultsVisible.set(value); }
+
+    // -- on field defaults action
+    private final ObjectProperty<Runnable> onFieldDefaultsAction = new SimpleObjectProperty<>();
+
+    /** The action the field-defaults button runs — a one-shot action, the button holds no state. */
+    public ObjectProperty<Runnable> onFieldDefaultsActionProperty() { return onFieldDefaultsAction; }
+    public void setOnFieldDefaultsAction(Runnable onFieldDefaults) { this.onFieldDefaultsAction.set(onFieldDefaults); }
+    public Runnable getOnFieldDefaultsAction() { return onFieldDefaultsAction.get(); }
+
+
 
     /***************************************************************************
      * Coordinate menu                                                         *
@@ -201,4 +225,15 @@ public class KlWindowControlToolbar extends Control {
     public MenuButton getCoordinatesMenuButton() {
         return coordinatesMenuButton;
     }
+
+    // -- coordinate visible
+    private final BooleanProperty coordinateVisible = new SimpleBooleanProperty(this, "coordinateVisible", true);
+
+    /**
+     * Controls whether the coordinate menu is shown. Both the visibility and the managed state of the
+     * underlying button follow this property.
+     */
+    public BooleanProperty coordinateVisibleProperty() { return coordinateVisible; }
+    public boolean isCoordinateVisible() { return coordinateVisible.get(); }
+    public void setCoordinateVisible(boolean value) { coordinateVisible.set(value); }
 }

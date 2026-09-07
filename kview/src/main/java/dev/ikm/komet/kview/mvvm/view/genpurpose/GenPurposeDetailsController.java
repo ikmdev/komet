@@ -19,6 +19,7 @@ import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.CLOSE_P
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.NO_SELECTION_MADE_PANEL;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
+import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.SHOW_PATTERN_FIELD_DEFAULTS;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
@@ -59,6 +60,7 @@ import dev.ikm.komet.kview.controls.ComponentItemNodeFactory;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl.Tab;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SectionSemanticsComboBoxCell;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard.SemanticStandardControl;
@@ -82,6 +84,8 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
+import dev.ikm.komet.layout.KlTerms;
+import dev.ikm.komet.layout.PatternFieldDefaults;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
@@ -279,6 +283,7 @@ public class GenPurposeDetailsController {
         // setPropertiesSelected).
         windowControlToolbar.setOnCloseAction(this::closeConceptWindow);
         windowControlToolbar.setOnPublishAction(this::publish);
+        windowControlToolbar.setOnFieldDefaultsAction(this::openPatternFieldDefaults);
         windowControlToolbar.propertiesSelectedProperty()
                 .subscribe((w) -> onPropertiesToggleChanged(windowControlToolbar.isPropertiesSelected()));
 
@@ -310,6 +315,15 @@ public class GenPurposeDetailsController {
 
         // Setup Properties Bump out view
         setupProperties();
+
+        // Selecting the panel's DEFAULTS tab loads the pattern's field defaults into it (the tab
+        // is only offered in the standard Pattern window once the pattern exists, see init).
+        PropertiesTabsControl propertiesTabs = propertiesController.getPropertiesTabs();
+        propertiesTabs.selectedTabProperty().subscribe(() -> {
+            if (propertiesTabs.getSelectedTab() == Tab.DEFAULTS) {
+                showPatternFieldDefaults();
+            }
+        });
 
         Subscriber<GenPurposeEvent> refreshSubscriber = evt -> {
             SemanticEntity<SemanticEntityVersion> semantic = evt.getSemantic();
@@ -566,6 +580,12 @@ public class GenPurposeDetailsController {
 
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor = composer.composeSemantic(PublicIds.newRandom(), observableReferenceComponent, observablePattern);
 
+        // Start from the pattern's field defaults — the values a new semantic of this pattern
+        // begins with in every window (see PatternFieldDefaults) — before the create entry's
+        // filter seeds below, which take precedence over them.
+        PatternFieldDefaults.applyDefaults(semanticEditor.getEditableVersion().getEditableFields(),
+                PatternFieldDefaults.defaultValues(pattern.nid(), getViewProperties().calculator()).castToList());
+
         // Seed the fields the create entry's display filter constrains, so the new semantic passes
         // that filter and shows up in the filtered view it was created from.
         fieldSeeds.forEach((fieldIndex, filterConcept) -> {
@@ -773,6 +793,18 @@ public class GenPurposeDetailsController {
             detailsOuterBorderPane.getStyleClass().add("concept-window-theme");
             propertiesController.getPropertiesTabs().getTabs().setAll(
                     Tab.ADD_EDIT, Tab.HIERARCHY, Tab.HISTORY, Tab.COMMENTS);
+        } else if (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN) {
+            // The standard Pattern window also edits its pattern's field defaults — the values
+            // new semantics of the pattern start with in every KL window (see PatternFieldDefaults)
+            // — once the pattern exists: the DEFAULTS tab and the toolbar's field-defaults button
+            // appear when the window leaves create mode.
+            genPurposeViewModel.modeProperty().subscribe(mode -> {
+                boolean patternExists = mode == FormMode.EDIT;
+                propertiesController.getPropertiesTabs().getTabs().setAll(patternExists
+                        ? List.of(Tab.ADD_EDIT, Tab.DEFAULTS, Tab.COMMENTS)
+                        : List.of(Tab.ADD_EDIT, Tab.COMMENTS));
+                windowControlToolbar.setFieldDefaultsVisible(patternExists);
+            });
         }
 
         // The create-mode hint names the kind of component this window will create.
@@ -1037,6 +1069,11 @@ public class GenPurposeDetailsController {
             // Populate the Popup
             EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(),
                     editPattern.getNid(), (semantic) -> {
+                        // The pattern's defaults semantic is edited through its own entry
+                        // below, never as one of the pattern's semantics.
+                        if (PatternFieldDefaults.isDefaultsSemantic(semantic)) {
+                            return;
+                        }
                         KometLabel semanticLabel = new KometLabel(semantic, viewProperties);
                         semanticLabel.setShowTooltip(true);
 
@@ -1455,12 +1492,95 @@ public class GenPurposeDetailsController {
         // EditorPatternSemanticFilter), e.g. a Description pattern showing only fully qualified names.
         EntityService.get().forEachSemanticForComponentOfPattern(referenceComponent.nid(), patternEntity.nid(),
                 (semantic) -> {
+                    // A pattern's defaults semantic is a semantic of the pattern referencing
+                    // the pattern itself; it holds the defaults, not content (see PatternFieldDefaults).
+                    if (PatternFieldDefaults.isDefaultsSemantic(semantic)) {
+                        return;
+                    }
                     if (!editorPatternModel.displaysSemantic(semantic.nid(), getViewProperties().calculator())) {
                         return;
                     }
                     patternSemanticsPresenter.addNewSemantic(semantic);
                     semanticEntityToPatternSemanticsPresenter.put(semantic, patternSemanticsPresenter);
                 });
+    }
+
+    /**
+     * Composer for the window pattern's defaults semantic (see {@link PatternFieldDefaults}).
+     * The defaults semantic commits in the defaults module rather than the edit coordinate's
+     * default module, so it gets a transaction of its own. It is created on first use and handed
+     * to the DEFAULTS form, whose Publish button commits it — the defaults are not part of the
+     * window's own staged changes. The instance is kept for the window's lifetime: a committed
+     * composer opens a fresh transaction on its next compose.
+     */
+    private ObservableComposer defaultsComposer;
+
+    private void initializeDefaultsComposer() {
+        if (defaultsComposer != null) {
+            return;
+        }
+        var editCoordinate = getViewProperties().nodeView().editCoordinate();
+        defaultsComposer = ObservableComposer.create(
+                getViewProperties().calculator(),
+                State.ACTIVE,
+                editCoordinate.getAuthorForChanges(),
+                KlTerms.FIELD_DEFAULTS_MODULE,
+                editCoordinate.getDefaultPath(),
+                "Edit pattern field defaults"
+        );
+    }
+
+    /**
+     * The toolbar's field-defaults button: selects the panel's DEFAULTS tab, whose selection loads
+     * the defaults (see {@link #setupProperties}). When the tab is already selected — the panel
+     * remembers it across a close — there is no selection change to react to, so the defaults
+     * are loaded directly.
+     */
+    private void openPatternFieldDefaults() {
+        PropertiesTabsControl propertiesTabs = propertiesController.getPropertiesTabs();
+        if (propertiesTabs.getSelectedTab() == Tab.DEFAULTS) {
+            showPatternFieldDefaults();
+        } else {
+            propertiesTabs.setSelectedTab(Tab.DEFAULTS);
+        }
+    }
+
+    /**
+     * Opens the properties panel on its DEFAULTS tab, showing the window pattern's
+     * defaults semantic — created, uncommitted, when the pattern has none yet — in the regular semantic
+     * form: one editor per field of the pattern, a field left blank meaning no default. Runs when
+     * the panel's DEFAULTS tab is selected (see {@link #setupProperties}); only the standard
+     * Pattern window in edit mode offers the tab. The form's own Publish button commits the edit
+     * through the defaults composer.
+     */
+    private void showPatternFieldDefaults() {
+        EntityFacade pattern = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+        if (pattern == null) {
+            // Create mode: the pattern doesn't exist yet, so neither can its defaults (the tab and
+            // button only show once it does — this is the tab remembered across a panel reopen).
+            return;
+        }
+        initializeDefaultsComposer();
+
+        // Before composing: composing mints the defaults semantic's nid, after which the store knows the
+        // identity whether or not a semantic has been written under it.
+        boolean defaultsSemanticExists = PatternFieldDefaults.defaultsSemantic(pattern.nid()).isPresent();
+
+        ObservablePattern observablePattern = ObservableEntityHandle.get(pattern.nid()).expectPattern();
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> defaultsSemanticComposer =
+                defaultsComposer.composeSemantic(PatternFieldDefaults.defaultsSemanticId(pattern.publicId()),
+                        observablePattern, observablePattern);
+        if (!defaultsSemanticExists) {
+            defaultsSemanticComposer.save(); // Save to create an uncommitted version
+        }
+        SemanticEntity<SemanticEntityVersion> defaultsSemantic = EntityHandle.get(defaultsSemanticComposer.getEntity().nid()).asSemantic()
+                .orElseThrow(() -> new IllegalStateException("The defaults semantic is not a semantic"));
+
+        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
+                new KLPropertyPanelEvent(this, SHOW_PATTERN_FIELD_DEFAULTS, defaultsSemantic,
+                        defaultsComposer, "Field Default Values"));
+        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
+                new KLPropertyPanelEvent(this, OPEN_PANEL));
     }
 
     private void initializeComposer() {

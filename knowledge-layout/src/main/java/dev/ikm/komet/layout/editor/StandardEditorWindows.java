@@ -53,7 +53,7 @@ public final class StandardEditorWindows {
      * re-seeded from the current code, so application-shipped windows never go stale in the
      * preferences. User-authored windows live in the user-windows folder and are untouched.
      */
-    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 12;
+    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 13;
 
     /** Preferences key holding the version the seeded standard windows were created from. */
     private static final String STANDARD_WINDOWS_VERSION_KEY = "STANDARD-WINDOWS-VERSION";
@@ -284,7 +284,6 @@ public final class StandardEditorWindows {
         EditorWindowModel window = new EditorWindowModel();
         window.setTitle(PATTERN_WINDOW_2);
         window.setWindowType(EditorWindowType.STANDARD_PATTERN);
-        window.setTimelineVisible(true);
 
         // Definition
         EditorSectionModel definitionSection = window.getMainSection();

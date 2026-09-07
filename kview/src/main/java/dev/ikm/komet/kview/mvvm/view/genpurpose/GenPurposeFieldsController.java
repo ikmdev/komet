@@ -68,6 +68,7 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.VBox;
@@ -102,6 +103,9 @@ import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
 public class GenPurposeFieldsController {
 
     private static final Logger LOG = LoggerFactory.getLogger(GenPurposeFieldsController.class);
+
+    /** The form title while editing one of the section pattern's semantics. */
+    private static final String DEFAULT_FORM_TITLE = "Pattern Fields";
 
     /**
      * Provide the standard Confirm Clear dialog title for use in other classes
@@ -158,6 +162,31 @@ public class GenPurposeFieldsController {
      */
     private EditorPatternModel editorPatternModel;
 
+    /**
+     * The composer the semantic being edited is composed through when it is not the window's own —
+     * a pattern's defaults semantic commits in its own module (see
+     * {@link KLPropertyPanelEvent#getComposer()}); null while editing through the window's composer.
+     */
+    private ObservableComposer formComposer;
+
+    @FXML
+    private Label formTitleLabel;
+
+    /**
+     * Whether this form instance is the properties panel's DEFAULTS tab, editing the pattern's
+     * defaults semantic (see {@link KLPropertyPanelEvent#SHOW_PATTERN_FIELD_DEFAULTS}), rather
+     * than its ADD/EDIT tab editing the section patterns' semantics. Each instance answers only
+     * its own show event.
+     */
+    private boolean defaultsForm;
+
+    public void setDefaultsForm(boolean defaultsForm) {
+        this.defaultsForm = defaultsForm;
+        // The defaults form publishes on its own button (see submit) rather than staging for the
+        // toolbar's Publish, so its button says what it does.
+        submitButton.setText(defaultsForm ? "Publish" : "Submit");
+    }
+
 //    private void enableDisableButtons() {
 //        boolean emptyFields = checkForEmptyFields();
 //        int uncommittedHash = calculateHashValue(getObservableEditables(), getStampCalculator());
@@ -174,7 +203,7 @@ public class GenPurposeFieldsController {
     }
 
     private ObservableComposer getComposer() {
-        return genPurposeViewModel.getPropertyValue(COMPOSER);
+        return formComposer != null ? formComposer : genPurposeViewModel.getPropertyValue(COMPOSER);
     }
 
     /**
@@ -252,8 +281,12 @@ public class GenPurposeFieldsController {
 //        }
 
         Subscriber<KLPropertyPanelEvent> propertyEventSubscriber = evt -> {
-            if (evt.getEventType() == KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS) {
-                setupEditSemanticDetails(evt.getSemantic(), evt.getEditorPatternModel());
+            boolean ownEvent = defaultsForm
+                    ? evt.getEventType() == KLPropertyPanelEvent.SHOW_PATTERN_FIELD_DEFAULTS
+                    : evt.getEventType() == KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
+            if (ownEvent) {
+                setupEditSemanticDetails(evt.getSemantic(), evt.getEditorPatternModel(),
+                        evt.getComposer(), evt.getFormTitle());
             }
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
@@ -278,8 +311,16 @@ public class GenPurposeFieldsController {
     }
 
 
+    /**
+     * @param editorPatternModel the KL Editor model of the pattern the semantic is edited as; null
+     *                           for a semantic with no placement in the layout (a pattern's
+     *                           defaults semantic), whose fields are all editable
+     * @param composer           the composer to edit the semantic through; null for the window's own
+     * @param formTitle          the form's title; null for the default "Pattern Fields"
+     */
     private void setupEditSemanticDetails(SemanticEntity<SemanticEntityVersion> semanticEntity,
-                                          EditorPatternModel editorPatternModel) {
+                                          EditorPatternModel editorPatternModel,
+                                          ObservableComposer composer, String formTitle) {
         // Clear previous controls that might be there from previously editing another Semantic
         nodes.clear();
         klFields.clear();
@@ -288,6 +329,8 @@ public class GenPurposeFieldsController {
 
         currentEditingSemantic = semanticEntity;
         this.editorPatternModel = editorPatternModel;
+        this.formComposer = composer;
+        formTitleLabel.setText(formTitle != null ? formTitle : DEFAULT_FORM_TITLE);
 
         this.observableEntityHandle.ifSemantic(observableSemantic -> {
             observableEntitySnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
@@ -436,7 +479,9 @@ public class GenPurposeFieldsController {
                 || currentEditingSemantic.versions().stream().allMatch(SemanticEntityVersion::uncommitted)) {
             return true;
         }
-        return editorPatternModel.isFieldEditable(fieldIndex);
+        // A semantic with no placement in the layout (a pattern's defaults semantic) has no
+        // authored restrictions.
+        return editorPatternModel == null || editorPatternModel.isFieldEditable(fieldIndex);
     }
 
     /**
@@ -641,6 +686,19 @@ public class GenPurposeFieldsController {
                 // pattern is satisfied — and the details area re-renders from the stored version,
                 // so the values must be saved, not left pending in the editable overlay.
                 semanticEditor.save();
+
+                if (defaultsForm) {
+                    // The pattern's field defaults publish right here: they are not part of the
+                    // window's own staged changes, and they only take effect once published (see
+                    // PatternFieldDefaults.defaultsSemanticVersion), so there is nothing to gain
+                    // from staging them until the toolbar's Publish button.
+                    getComposer().commit();
+                    EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
+                            new KLPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+                    toast().show(Toast.Status.SUCCESS, "Field defaults published");
+                    readyToEditVersion.set(false);
+                    return;
+                }
 
                 // Whether this window stages changes until the toolbar's Publish button commits
                 // them (currently the standard Pattern window only).

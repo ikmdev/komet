@@ -46,7 +46,9 @@ public class PropertiesTabsControl extends Control {
         HIERARCHY,
         INSTANCES,
         HISTORY,
-        COMMENTS
+        COMMENTS,
+        /** The pattern's field default values (standard Pattern window only). */
+        DEFAULTS
     }
 
     public PropertiesTabsControl() {

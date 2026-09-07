@@ -75,6 +75,12 @@ public class GenPurposePropertiesController {
 
     private JFXNode<Pane, SemanticFieldsController> editFieldsJfxNode;
 
+    /**
+     * The DEFAULTS tab's form — a second instance of the edit-fields form, editing the pattern's
+     * defaults semantic (standard Pattern window only).
+     */
+    private JFXNode<Pane, GenPurposeFieldsController> defaultsFieldsJfxNode;
+
     public GenPurposePropertiesController(GenPurposeViewModel genPurposeViewModel) {
         this.genPurposeViewModel = genPurposeViewModel;
 
@@ -106,6 +112,13 @@ public class GenPurposePropertiesController {
             .addNamedViewModel(new NamedVm("genPurposeViewModel", genPurposeViewModel));
 
         editFieldsJfxNode = FXMLMvvmLoader.make(config);
+
+        // The DEFAULTS tab gets its own form instance, so editing the pattern's field defaults
+        // never disturbs a semantic edit in progress on the ADD/EDIT tab.
+        Config defaultsConfig = new Config(this.getClass().getResource("genpurpose-edit-fields.fxml"))
+            .addNamedViewModel(new NamedVm("genPurposeViewModel", genPurposeViewModel));
+        defaultsFieldsJfxNode = FXMLMvvmLoader.make(defaultsConfig);
+        defaultsFieldsJfxNode.controller().setDefaultsForm(true);
 
         JFXNode<Pane, ConfirmationPaneController> closePropsJfxNode = FXMLMvvmLoader.make(CONFIRMATION_PANE_FXML_URL);
         closePropsPane = closePropsJfxNode.node();
@@ -139,7 +152,21 @@ public class GenPurposePropertiesController {
 
         showPanelSubscriber = evt -> {
             LOG.info("Show Panel by event type: " + evt.getEventType());
-            propertiesTabs.setSelectedTab(Tab.ADD_EDIT);
+
+            if (evt.getEventType() == KLPropertyPanelEvent.SHOW_PATTERN_FIELD_DEFAULTS) {
+                // The window loaded the defaults form through this event (the DEFAULTS tab was
+                // selected, or the toolbar's field-defaults button pressed): show it under its tab.
+                propertiesTabs.setSelectedTab(Tab.DEFAULTS);
+                contentBorderPane.setCenter(defaultsFieldsJfxNode.node());
+                return;
+            }
+
+            // Every other panel event belongs to the ADD/EDIT tab. (OPEN_PANEL and CLOSE_PANEL
+            // reach here too; they must not move the selection away from the DEFAULTS tab.)
+            if (evt.getEventType() != KLPropertyPanelEvent.OPEN_PANEL
+                    && evt.getEventType() != KLPropertyPanelEvent.CLOSE_PANEL) {
+                propertiesTabs.setSelectedTab(Tab.ADD_EDIT);
+            }
 
             if (evt.getEventType() == KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS) {
                 genPurposeViewModel.setPropertyValue(FIELD_INDEX, -1);
