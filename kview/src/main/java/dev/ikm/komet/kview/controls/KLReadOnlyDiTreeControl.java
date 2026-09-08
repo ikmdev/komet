@@ -2,10 +2,13 @@ package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLReadOnlyDiTreeControlSkin;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.css.PseudoClass;
 import javafx.scene.control.Skin;
 
 import java.util.function.IntFunction;
@@ -23,12 +26,48 @@ import java.util.function.IntFunction;
  * meanings without a dedicated rendering resolve their text through the
  * {@link #descriptionResolverProperty()}. Both are expected to be supplied by the owning
  * {@code KlField} from its view calculator.</p>
+ *
+ * <p>Resting the pointer on a concept chip peeks at that concept's own stated definition in a
+ * transient popover, rendered by a nested instance of this control so the peek can be continued
+ * from the concepts inside it. The definition is looked up through the
+ * {@link #definitionResolverProperty()}; a control without one shows no peeks.</p>
  */
 public class KLReadOnlyDiTreeControl extends KLReadOnlyBaseSingleValueControl<DiTreeEntity> {
+
+    private static final PseudoClass COMPACT_MODE_PSEUDO_CLASS = PseudoClass.getPseudoClass("compact-mode");
 
     public KLReadOnlyDiTreeControl() {
         getStyleClass().add("read-only-ditree-control");
     }
+
+    // -- definition resolver
+    /**
+     * Resolves a concept nid into the stated logical definition shown when its chip is peeked,
+     * or {@code null} when the concept has none — then the chip shows no peek. Unset (the
+     * default) turns peeking off altogether.
+     */
+    private final ObjectProperty<IntFunction<DiTreeEntity>> definitionResolver =
+            new SimpleObjectProperty<>(this, "definitionResolver");
+    public final IntFunction<DiTreeEntity> getDefinitionResolver() { return definitionResolver.get(); }
+    public final ObjectProperty<IntFunction<DiTreeEntity>> definitionResolverProperty() { return definitionResolver; }
+    public final void setDefinitionResolver(IntFunction<DiTreeEntity> resolver) { definitionResolver.set(resolver); }
+
+    // -- compact mode
+    /**
+     * Whether the control renders compactly, for a host that already frames the definition:
+     * no read-only marker and no wash behind the tree (the {@code :compact-mode} pseudo-class).
+     * The definition peek sets this on the nested control inside its popover; the window body
+     * leaves it off.
+     */
+    private final BooleanProperty compactMode = new SimpleBooleanProperty(this, "compactMode") {
+        @Override
+        protected void invalidated() {
+            pseudoClassStateChanged(COMPACT_MODE_PSEUDO_CLASS, get());
+        }
+    };
+    public final boolean isCompactMode() { return compactMode.get(); }
+    public final BooleanProperty compactModeProperty() { return compactMode; }
+    public final void setCompactMode(boolean value) { compactMode.set(value); }
 
     // -- component item resolver
     /**

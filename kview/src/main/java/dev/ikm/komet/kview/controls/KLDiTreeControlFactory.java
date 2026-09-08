@@ -4,6 +4,7 @@ import dev.ikm.komet.framework.Identicon;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.uuid.UuidUtil;
+import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityHandle;
 import javafx.scene.image.Image;
@@ -36,6 +37,8 @@ public final class KLDiTreeControlFactory {
             return new ComponentItem(description, identicon, publicId, entityHandle.isConcept());
         });
         control.setDescriptionResolver(viewCalculator::getDescriptionTextOrNid);
+        control.setDefinitionResolver(nid ->
+                viewCalculator.getAxiomTreeForEntity(nid, PremiseType.STATED).orElse(null));
         control.setComponentSlotFactory(() -> KLComponentControlFactory.createComponentControl(viewCalculator));
         // Seeds for newly added property sets, mirroring the classic axiom control's
         // AddPropertySet / AddDataPropertySet / AddIntervalPropertySet actions

@@ -101,6 +101,9 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
         control.valueProperty().subscribe(this::rebuildTree);
         control.componentItemResolverProperty().subscribe(() -> rebuildTree(control.getValue()));
         control.rootConceptNidProperty().subscribe(() -> rebuildTree(control.getValue()));
+        // Compact mode drops the marker: the host frames the definition already. Applied now as
+        // well, since the flag may be set before the skin exists.
+        control.compactModeProperty().subscribe(compact -> NodeUtils.setShowing(readOnlyIndicator, !compact));
 
         // CSS
         treeContainer.getStyleClass().add("ditree-container");
@@ -336,8 +339,9 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
 
     /**
      * Builds the chip for a concept in the tree. The default is a read-only
-     * {@link ComponentItemNode} with the hover drag handle; the editing subclass overrides this to
-     * add click-to-edit behavior.
+     * {@link ComponentItemNode} with the hover drag handle and the hover definition peek
+     * ({@link DiTreeDefinitionPeek}); the editing subclass overrides this to add click-to-edit
+     * behavior.
      *
      * @param vertex     the vertex the chip belongs to: the concept reference vertex itself for
      *                   {@link ChipKind#CONCEPT_REFERENCE} and {@link ChipKind#ROLE_RESTRICTION},
@@ -349,6 +353,7 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
         ComponentItemNode itemNode =
                 ComponentItemNodeFactory.create(getSkinnable().getComponentItemResolver().apply(conceptNid));
         itemNode.setShowDragHandleOnHover(true);
+        DiTreeDefinitionPeek.install(itemNode, conceptNid, getSkinnable());
         return itemNode;
     }
 

@@ -9,6 +9,7 @@ import dev.ikm.komet.kview.controls.KLReadOnlyDiTreeControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.layout.version.field.KlDirectedTreeField;
 import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import javafx.scene.image.Image;
@@ -33,6 +34,8 @@ public class KlReadOnlyDiTreeField extends BaseDefaultKlField<DiTreeEntity> impl
             return new ComponentItem(description, identicon, publicId, entityHandle.isConcept());
         });
         control.setDescriptionResolver(observableView::getDescriptionTextOrNid);
+        control.setDefinitionResolver(nid ->
+                observableView.calculator().getAxiomTreeForEntity(nid, PremiseType.STATED).orElse(null));
         control.setTitle(getTitle());
         int semanticNid = observableDiTreeField.field().nid();
         control.setRootConceptNid(EntityHandle.getSemanticOrThrow(semanticNid).referencedComponentNid());

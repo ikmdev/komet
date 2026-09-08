@@ -22,6 +22,8 @@ module dev.ikm.komet.kview.test {
     requires dev.ikm.komet.framework;
     requires dev.ikm.komet.kview;
     requires dev.ikm.tinkar.entity;
+    requires dev.ikm.tinkar.common;
+    requires dev.ikm.tinkar.terms;
     requires org.carlfx.axonic;
     requires org.carlfx.cognitive;
 
@@ -41,6 +43,9 @@ module dev.ikm.komet.kview.test {
     exports dev.ikm.komet.kview.state.test;
     exports dev.ikm.komet.kview.mvvm.viewmodel.test;
     opens dev.ikm.komet.kview.mvvm.viewmodel.test;
+
+    exports dev.ikm.komet.kview.controls.test;
+    opens dev.ikm.komet.kview.controls.test;
 
     exports dev.ikm.komet.kview.mvvm.view.changeset.exchange.test;
     opens dev.ikm.komet.kview.mvvm.view.changeset.exchange.test;

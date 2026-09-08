@@ -203,3 +203,114 @@
     -fx-background-color: #f4fbf0;
     -fx-border-color: #66bb38;
 }
+
+/* ---------------------------------------------------------------------------------------------
+   Definition peek (DiTreeDefinitionPeek): resting the pointer on a chip opens its concept's stated
+   definition in a popover, rendered by a nested control in compact mode (:compact-mode). The
+   popover frames the definition, so the nested control drops the wash (and, in the skin, the
+   marker) and sits flush. */
+.read-only-ditree-control:compact-mode .main-container {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+/* The popover frame: a flat 1px stroke in the chips' border color on a solid white fill, with a
+   soft shadow. ControlsFX's default is a semi-transparent fill under a top-to-bottom gradient
+   stroke, which fades the top corners out and lets the page bleed through. */
+.popover.ditree-peek > .border {
+    -fx-stroke: #b8c1d0;
+    -fx-stroke-width: 1;
+    /* The frame path runs on whole pixels, so a centered 1px stroke smears over two pixels at
+       half strength; inside the edge it lands on one pixel, crisp like the chips' borders. */
+    -fx-stroke-type: inside;
+    -fx-fill: white;
+    /* Cast downward only (offset = radius): the shadow must not reach above the arrow tip.
+       The popup window covers its shadow too, and a window over the chip takes the pointer,
+       which un-hovers the chip and closes the popover it just opened (DiTreeDefinitionPeek). */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.25), 8, 0.15, 0, 8);
+}
+
+/* The skin's content pane wears the style class "content", which the owner window's komet.css
+   paints white everywhere (`.content { white }`): clipped to the frame, it would sit over the
+   inside stroke and hide the outline. The frame's own fill is the white. */
+.popover.ditree-peek > .content {
+    -fx-background-color: transparent;
+}
+
+/* The popover content is outside any control, so it carries this stylesheet itself. */
+.ditree-peek-popover {
+    -fx-padding: 6 8 8 8;
+    -fx-spacing: 4px;
+    -fx-min-width: 300px;
+}
+
+.ditree-peek-popover .ditree-peek-toolbar {
+    -fx-spacing: 4px;
+    -fx-padding: 0 0 2 0;
+}
+
+/* The premise pill, in the read-only marker's voice. */
+.ditree-peek-popover .ditree-peek-kind {
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 9px;
+    -fx-text-fill: #8a97a4;
+    -fx-padding: 0 6 0 6;
+    -fx-background-color: white;
+    -fx-background-radius: 999px;
+    -fx-border-width: 1px;
+    -fx-border-color: #b8c1d0;
+    -fx-border-radius: 999px;
+}
+
+.ditree-peek-popover .ditree-peek-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 3px;
+    -fx-padding: 0;
+    -fx-min-width: 18px;
+    -fx-max-width: 18px;
+    -fx-min-height: 18px;
+    -fx-max-height: 18px;
+}
+.ditree-peek-popover .ditree-peek-button:hover {
+    -fx-background-color: #f4f4f4;
+}
+.ditree-peek-popover .ditree-peek-pin-button:selected,
+.ditree-peek-popover .ditree-peek-pin-button:selected:hover {
+    -fx-background-color: #deebff;
+}
+
+.ditree-peek-popover .ditree-peek-pin-icon {
+    -fx-background-color: #8a97a4;
+    -fx-shape: "M9.5 1.5l5 5-1.4 1.4-.9-.9-3.1 3.1.4 2.4-1.4 1.4-2.6-2.6L2 14.8l-.8-.8 3.5-3.5-2.6-2.6 1.4-1.4 2.4.4 3.1-3.1-.9-.9z";
+    -fx-min-width: 11px;
+    -fx-max-width: 11px;
+    -fx-min-height: 11px;
+    -fx-max-height: 11px;
+}
+.ditree-peek-popover .ditree-peek-pin-button:selected .ditree-peek-pin-icon {
+    -fx-background-color: #4A7AD2;
+}
+
+.ditree-peek-popover .ditree-peek-close-icon {
+    -fx-background-color: #8a97a4;
+    -fx-shape: "M15.8337 5.34199L14.6587 4.16699L10.0003 8.82533L5.34199 4.16699L4.16699 5.34199L8.82533 10.0003L4.16699 14.6587L5.34199 15.8337L10.0003 11.1753L14.6587 15.8337L15.8337 14.6587L11.1753 10.0003L15.8337 5.34199Z";
+    -fx-min-width: 9px;
+    -fx-max-width: 9px;
+    -fx-min-height: 9px;
+    -fx-max-height: 9px;
+}
+.ditree-peek-popover .ditree-peek-close-button:hover .ditree-peek-close-icon {
+    -fx-background-color: #2E3240;
+}
+
+/* The nested tree scrolls past a cap, so a long definition does not run off the screen. */
+.ditree-peek-popover .ditree-peek-scroll {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-max-height: 420px;
+}
+.ditree-peek-popover .ditree-peek-scroll > .viewport {
+    -fx-background-color: transparent;
+}
