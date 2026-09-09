@@ -374,9 +374,29 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
         }
     }
 
-    public record NidTextRecord(int nid, String text, boolean active, List<UUID> publicIds) {
+    /**
+     * A top-level search result row.
+     *
+     * <p>{@code publicIds} and {@code semanticPublicIds} exist for results that came from
+     * a remote search service, where {@code nid} is meaningless — nids are assigned per
+     * data store, so a remote row has no local entity to resolve identity from. Locally
+     * sourced rows leave both empty and resolve everything from {@code nid} instead.
+     *
+     * @param nid               the local nid, or 0 for a remote row
+     * @param text              display label, which may carry {@code <B>…</B>} markup
+     * @param active            whether the concept is active
+     * @param publicIds         UUIDs of the concept, for remote rows
+     * @param semanticPublicIds UUIDs of each matched semantic, positionally aligned with
+     *                          the row's description list, for remote rows
+     */
+    public record NidTextRecord(int nid, String text, boolean active, List<UUID> publicIds,
+                                List<List<UUID>> semanticPublicIds) {
         public NidTextRecord(int nid, String text, boolean active) {
-            this(nid, text, active, List.of());
+            this(nid, text, active, List.of(), List.of());
+        }
+
+        public NidTextRecord(int nid, String text, boolean active, List<UUID> publicIds) {
+            this(nid, text, active, publicIds, List.of());
         }
     }
 }
