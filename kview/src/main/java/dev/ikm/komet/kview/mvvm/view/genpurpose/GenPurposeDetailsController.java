@@ -72,7 +72,6 @@ import dev.ikm.komet.layout.PatternSemanticsPresenter;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
-import dev.ikm.komet.layout.editor.model.EditorPatternRequirement;
 import dev.ikm.komet.layout.editor.model.EditorPatternSemanticFilter;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
@@ -93,7 +92,6 @@ import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
-import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpressionBuilder;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
@@ -102,7 +100,6 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
@@ -136,6 +133,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -658,7 +656,7 @@ public class GenPurposeDetailsController {
             refComponent = createUncommitedReferenceComponent();
         }
 
-        DiTreeEntity seededDefinition = seedDefinition(necessary);
+        DiTreeEntity seededDefinition = StatedDefinitionSeeds.seedDefinition(necessary);
 
         initializeComposer();
         ObservableEntity observableReferenceComponent = ObservableEntityHandle.get(refComponent.nid()).expectEntity();
@@ -687,25 +685,6 @@ public class GenPurposeDetailsController {
         if (wasCreateMode && genPurposeViewModel.getMode() == FormMode.EDIT) {
             toast().show(Toast.Status.SUCCESS, "Concept created");
         }
-    }
-
-    /**
-     * A definition holding one necessary or sufficient set whose only member is an is-a to
-     * "Anonymous concept" — the same seed the classic concept window writes
-     * ({@code ConceptViewModel.createConcept}).
-     */
-    private static DiTreeEntity seedDefinition(boolean necessary) {
-        LogicalExpressionBuilder builder = new LogicalExpressionBuilder();
-        if (necessary) {
-            builder.NecessarySet(builder.And(builder.ConceptAxiom(TinkarTerm.ANONYMOUS_CONCEPT.nid())));
-        } else {
-            builder.SufficientSet(builder.And(builder.ConceptAxiom(TinkarTerm.ANONYMOUS_CONCEPT.nid())));
-        }
-        return switch (builder.build().sourceGraph()) {
-            case DiTreeEntity tree -> tree;
-            case DiTreeEntity.Builder treeBuilder -> treeBuilder.build();
-            default -> throw new IllegalStateException("Unexpected source graph type");
-        };
     }
 
     private void setupProperties() {
@@ -1139,9 +1118,11 @@ public class GenPurposeDetailsController {
             if (createEntries.isEmpty()) {
                 return;
             }
-            CreateEntry directEntry = directCreateEntry(sectionModel, createEntries);
-            if (directEntry != null) {
-                directEntry.createAction().action().run();
+            Optional<CreateEntry> directRunEntry = PatternRequirementUtils.getDirectRunEntry(sectionModel.getPatterns(),
+                    createEntries, this::getSemanticsOfPattern, getViewProperties().calculator(),
+                    statedAxiomsPatternNid());
+            if (directRunEntry.isPresent()) {
+                directRunEntry.get().createAction().action().run();
                 return;
             }
         }
@@ -1168,7 +1149,7 @@ public class GenPurposeDetailsController {
             EditorSectionModel sectionModel, EditorPatternModel patternModel, EntityFacade refComponent) {
         if (patternModel.getSemanticFilters().isEmpty()) {
             createEntries.add(new CreateEntry(patternModel, Map.of(), new SectionEditPopup.CreateAction(
-                    "Add " + stripPatternSuffix(patternModel.getTitle()), () -> {
+                    "Add " + PatternUIUtils.stripPatternSuffix(patternModel.getTitle()), () -> {
                         initializeComposer();
                         onCreateSemantic(actionEvent, sectionModel, patternModel, refComponent, Map.of());
                     })));
@@ -1190,7 +1171,7 @@ public class GenPurposeDetailsController {
             // Snapshot the constraints at popup-build time; they seed the new semantic's fields.
             Map<Integer, EntityProxy> fieldSeeds = Map.copyOf(filter.getFieldConstraints());
             createEntries.add(new CreateEntry(patternModel, fieldSeeds, new SectionEditPopup.CreateAction(
-                    "Add " + stripPatternSuffix(entryName), () -> {
+                    "Add " + PatternUIUtils.stripPatternSuffix(entryName), () -> {
                         initializeComposer();
                         onCreateSemantic(actionEvent, sectionModel, patternModel, refComponent, fieldSeeds);
                     })));
@@ -1199,81 +1180,12 @@ public class GenPurposeDetailsController {
 
     /**
      * One "Add …" entry of a section's edit popup, kept with the pattern it creates a semantic of
-     * and the field values that new semantic starts out with (the constraints of the display
-     * filter the entry was built from, keyed by field index — empty for an unfiltered pattern),
-     * so {@link #directCreateEntry} can tell which entry meets a requirement.
+     * and the field values that new semantic starts out with, so
+     * {@link PatternRequirementUtils#getDirectRunEntry} can tell which entry meets a requirement.
      */
     private record CreateEntry(EditorPatternModel pattern, Map<Integer, EntityProxy> fieldSeeds,
-                               SectionEditPopup.CreateAction createAction) {
-    }
-
-    /**
-     * The create entry the section's pencil button runs right away, skipping the popup, when the
-     * section has no semantic to edit — or null when the user has to choose. A lone entry is the
-     * only thing the popup could offer, so it runs. Otherwise the section's unmet required
-     * patterns decide: the entry seeded to meet the pattern's first unmet requirement (see
-     * {@link EditorPatternRequirement}), or the pattern's single entry when it has no refinement
-     * or no entry is seeded to meet it (the user then picks the field values in the form).
-     * Several candidates — the stated definition's two set seeds, a required pattern with two
-     * filters and no refinement — leave the choice to the popup.
-     */
-    private CreateEntry directCreateEntry(EditorSectionModel sectionModel, List<CreateEntry> createEntries) {
-        if (createEntries.size() == 1) {
-            return createEntries.getFirst();
-        }
-
-        for (EditorPatternModel pattern : sectionModel.getPatterns()) {
-            if (!pattern.isRequired() || isRequiredPatternSatisfied(pattern)) {
-                continue;
-            }
-            List<CreateEntry> patternEntries = createEntries.stream()
-                    .filter(entry -> entry.pattern() == pattern)
-                    .toList();
-            List<CreateEntry> candidates = patternEntries;
-
-            List<EntityFacade> semantics = getSemanticsOfPattern(pattern);
-            for (EditorPatternRequirement requirement : pattern.getRequirements()) {
-                if (isRequirementMet(semantics, requirement)) {
-                    continue;
-                }
-                List<CreateEntry> meetingRequirement = patternEntries.stream()
-                        .filter(entry -> seedsMeet(entry.fieldSeeds(), requirement))
-                        .toList();
-                if (!meetingRequirement.isEmpty()) {
-                    candidates = meetingRequirement;
-                }
-                break;
-            }
-
-            if (candidates.size() == 1) {
-                return candidates.getFirst();
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Whether a semantic seeded with the passed in field values (field index to concept) would
-     * match the requirement's field constraints.
-     */
-    private static boolean seedsMeet(Map<Integer, EntityProxy> fieldSeeds, EditorPatternRequirement requirement) {
-        return requirement.getFieldConstraints().entrySet().stream().allMatch(constraint -> {
-            EntityProxy seed = fieldSeeds.get(constraint.getKey());
-            return seed != null && seed.nid() == constraint.getValue().nid();
-        });
-    }
-
-    /**
-     * The passed in name without a trailing "Pattern" word — "Description Pattern" makes the
-     * create entry "Add Description". A name that is nothing but that word is kept whole.
-     */
-    private static String stripPatternSuffix(String name) {
-        String trimmed = name.strip();
-        int suffixStart = trimmed.length() - "Pattern".length();
-        boolean endsWithPatternWord = suffixStart > 0
-                && Character.isWhitespace(trimmed.charAt(suffixStart - 1))
-                && trimmed.regionMatches(true, suffixStart, "Pattern", 0, "Pattern".length());
-        return endsWithPatternWord ? trimmed.substring(0, suffixStart).strip() : trimmed;
+                               SectionEditPopup.CreateAction createAction)
+            implements PatternRequirementUtils.SeededEntry {
     }
 
     private void onCreateSemantic(ActionEvent actionEvent, EditorSectionModel sectionModelOfPattern,
@@ -1779,57 +1691,12 @@ public class GenPurposeDetailsController {
     }
 
     /**
-     * Whether a required pattern's requirement is met: at least one semantic against its
-     * section's resolved reference component, plus — when the pattern carries requirement
-     * refinements authored in the KL editor ({@link EditorPatternRequirement}) — at least
-     * each refinement's minimum count of semantics matching its field constraints. The stated
-     * definition pattern demands more — its definition must contain a necessary or sufficient
-     * set, the same condition the classic concept window enforces before creating a concept
-     * ({@code ConceptViewModel}'s AXIOM validation) — so removing the definition's last set
-     * flips the requirement back to unmet.
+     * Whether a required pattern's requirement is met against its section's resolved reference
+     * component (see {@link PatternRequirementUtils#isPatternSatisfied}).
      */
     private boolean isRequiredPatternSatisfied(EditorPatternModel pattern) {
-        List<EntityFacade> semantics = getSemanticsOfPattern(pattern);
-        if (semantics.isEmpty()) {
-            return false;
-        }
-        if (pattern.getNid() == statedAxiomsPatternNid()
-                && semantics.stream().noneMatch(this::definesNecessaryOrSufficientSet)) {
-            return false;
-        }
-        return pattern.getRequirements().stream().allMatch(requirement -> isRequirementMet(semantics, requirement));
-    }
-
-    /**
-     * Whether at least the requirement's minimum count of the passed in semantics match its field
-     * constraints ({@link #matchesRequirement}).
-     */
-    private boolean isRequirementMet(List<EntityFacade> semantics, EditorPatternRequirement requirement) {
-        return semantics.stream().filter(semantic -> matchesRequirement(semantic, requirement)).count()
-                >= requirement.getMinCount();
-    }
-
-    /**
-     * Whether the semantic's latest version (uncommitted versions count, like the
-     * semantic-existence check) matches the requirement's field constraints.
-     */
-    private boolean matchesRequirement(EntityFacade semantic, EditorPatternRequirement requirement) {
-        Latest<SemanticEntityVersion> latestVersion = getViewProperties().calculator().latest(semantic.nid());
-        return latestVersion.isPresent() && requirement.matches(latestVersion.get().fieldValues());
-    }
-
-    /**
-     * Whether the given stated-axiom semantic's latest definition (uncommitted versions count,
-     * like the semantic-existence check) contains a necessary or sufficient set.
-     */
-    private boolean definesNecessaryOrSufficientSet(EntityFacade semantic) {
-        Latest<SemanticEntityVersion> latestVersion = getViewProperties().calculator().latest(semantic.nid());
-        if (latestVersion.isAbsent()) {
-            return false;
-        }
-        return latestVersion.get().fieldValues().get(0) instanceof DiTreeEntity definition
-                && (definition.containsVertexWithMeaning(TinkarTerm.NECESSARY_SET)
-                        || definition.containsVertexWithMeaning(TinkarTerm.SUFFICIENT_SET));
+        return PatternRequirementUtils.isPatternSatisfied(pattern, getSemanticsOfPattern(pattern),
+                getViewProperties().calculator(), statedAxiomsPatternNid());
     }
 
     /**
