@@ -229,7 +229,7 @@
                   </StackPane>
                </graphic>
             </ToggleButton>
-            <ToggleButton fx:id="settingsToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+            <ToggleButton fx:id="settingsToggleButton" mnemonicParsing="false" onAction="#openSettings" text="ToggleButton">
                <graphic>
                   <Region prefHeight="200.0" prefWidth="200.0">
                      <styleClass>

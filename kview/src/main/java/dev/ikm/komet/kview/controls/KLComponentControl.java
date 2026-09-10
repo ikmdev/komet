@@ -82,6 +82,34 @@ public class KLComponentControl extends Control {
 
     /***************************************************************************
      *                                                                         *
+     * Public API                                                              *
+     *                                                                         *
+     **************************************************************************/
+
+    /**
+     * Returns whether the EntityProxy means empty.
+     *
+     * @param entityProxy the EntityProxy
+     * @return true if the EntityProxy means empty.
+     */
+    public static boolean isEmpty(EntityProxy entityProxy) {
+        return entityProxy == null || entityProxy.nid() == BLANK_CONCEPT.nid();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected Skin<?> createDefaultSkin() {
+        return new KLComponentControlSkin(this);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getUserAgentStylesheet() {
+        return KLComponentControl.class.getResource("component-control.css").toExternalForm();
+    }
+
+    /***************************************************************************
+     *                                                                         *
      * Properties                                                              *
      *                                                                         *
      **************************************************************************/
@@ -247,32 +275,4 @@ public class KLComponentControl extends Control {
     public final void setOnDroppingMultipleConcepts(Consumer<List<List<UUID[]>>> consumer) { this.onDroppingMultipleConcepts.set(consumer); }
     public final Consumer<List<List<UUID[]>>> getOnDroppingMultipleConcepts() { return onDroppingMultipleConcepts.get(); }
     public final ObjectProperty<Consumer<List<List<UUID[]>>>> onDroppingMultipleConceptsProperty() { return onDroppingMultipleConcepts; }
-
-    /***************************************************************************
-     *                                                                         *
-     * Public API                                                              *
-     *                                                                         *
-     **************************************************************************/
-
-    /**
-     * Returns whether the EntityProxy means empty.
-     *
-     * @param entityProxy the EntityProxy
-     * @return true if the EntityProxy means empty.
-     */
-    public static boolean isEmpty(EntityProxy entityProxy) {
-        return entityProxy == null || entityProxy.nid() == BLANK_CONCEPT.nid();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected Skin<?> createDefaultSkin() {
-        return new KLComponentControlSkin(this);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getUserAgentStylesheet() {
-        return KLComponentControl.class.getResource("component-control.css").toExternalForm();
-    }
 }

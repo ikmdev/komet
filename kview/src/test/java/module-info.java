@@ -21,6 +21,7 @@ module dev.ikm.komet.kview.test {
     requires org.junit.jupiter;
     requires dev.ikm.komet.framework;
     requires dev.ikm.komet.kview;
+    requires dev.ikm.komet.preferences;
     requires dev.ikm.komet.layout;
     requires dev.ikm.tinkar.entity;
     requires org.eclipse.collections.api;
@@ -54,6 +55,9 @@ module dev.ikm.komet.kview.test {
 
     exports dev.ikm.komet.kview.mvvm.view.genpurpose.test;
     opens dev.ikm.komet.kview.mvvm.view.genpurpose.test;
+
+    exports dev.ikm.komet.kview.mvvm.view.settings.test;
+    opens dev.ikm.komet.kview.mvvm.view.settings.test;
 
     uses dev.ikm.tinkar.events.EvtBus;
 }

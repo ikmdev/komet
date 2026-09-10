@@ -129,6 +129,7 @@ import dev.ikm.komet.kview.mvvm.view.navigation.ConceptPatternNavController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
 import dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController;
 import dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController;
+import dev.ikm.komet.kview.mvvm.view.settings.SettingsDialog;
 import dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.framework.dnd.KometClipboard;
@@ -1281,6 +1282,16 @@ public class JournalController {
 
     public ToggleButton getSettingsToggleButton() {
         return settingsToggleButton;
+    }
+
+    /**
+     * Opens the app-wide Settings dialog from the sidebar gear. The gear is a toggle only for
+     * its sidebar styling; it is released once the dialog closes rather than staying selected.
+     */
+    @FXML
+    private void openSettings() {
+        SettingsDialog.show(settingsToggleButton.getScene().getWindow());
+        settingsToggleButton.setSelected(false);
     }
 
     public BorderPane getJournalRootPane() {

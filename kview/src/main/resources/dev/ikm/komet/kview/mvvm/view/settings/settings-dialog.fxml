@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="560.0" prefWidth="640.0" spacing="20.0" styleClass="settings-dialog" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.settings.SettingsDialogController">
+   <padding>
+      <Insets bottom="24.0" left="24.0" right="24.0" top="24.0" />
+   </padding>
+   <fx:define>
+      <ToggleGroup fx:id="navGroup" />
+      <ToggleGroup fx:id="textSizeGroup" />
+   </fx:define>
+   <Label styleClass="grey12-18pt-normal" text="Settings" />
+   <HBox spacing="24.0" VBox.vgrow="ALWAYS">
+      <VBox minWidth="160.0" prefWidth="160.0" spacing="2.0" styleClass="settings-nav">
+         <ToggleButton fx:id="appearanceNav" maxWidth="Infinity" mnemonicParsing="false" selected="true" styleClass="settings-nav-button" text="Appearance" toggleGroup="$navGroup" />
+         <ToggleButton fx:id="componentsNav" maxWidth="Infinity" mnemonicParsing="false" styleClass="settings-nav-button" text="Components" toggleGroup="$navGroup" />
+         <ToggleButton fx:id="languageNav" maxWidth="Infinity" mnemonicParsing="false" styleClass="settings-nav-button" text="Language" toggleGroup="$navGroup" />
+      </VBox>
+      <StackPane HBox.hgrow="ALWAYS">
+         <VBox fx:id="appearancePage" spacing="16.0">
+            <VBox spacing="4.0">
+               <Label styleClass="settings-heading" text="Text size" />
+               <Label styleClass="settings-description" text="Scales every piece of text in Komet. Headings, descriptions and labels keep their relative sizes." wrapText="true" />
+            </VBox>
+            <HBox styleClass="settings-pills">
+               <ToggleButton fx:id="smallPill" maxWidth="Infinity" mnemonicParsing="false" styleClass="left-pill" text="Small" toggleGroup="$textSizeGroup" HBox.hgrow="ALWAYS" />
+               <ToggleButton fx:id="defaultPill" maxWidth="Infinity" mnemonicParsing="false" styleClass="center-pill" text="Default" toggleGroup="$textSizeGroup" HBox.hgrow="ALWAYS" />
+               <ToggleButton fx:id="largePill" maxWidth="Infinity" mnemonicParsing="false" styleClass="center-pill" text="Large" toggleGroup="$textSizeGroup" HBox.hgrow="ALWAYS" />
+               <ToggleButton fx:id="extraLargePill" maxWidth="Infinity" mnemonicParsing="false" styleClass="right-pill" text="Extra large" toggleGroup="$textSizeGroup" HBox.hgrow="ALWAYS" />
+            </HBox>
+            <VBox spacing="10.0" styleClass="settings-preview" VBox.vgrow="ALWAYS">
+               <HBox alignment="CENTER_LEFT">
+                  <Label styleClass="settings-preview-caption" text="PREVIEW" />
+                  <Region HBox.hgrow="ALWAYS" />
+                  <Label fx:id="textSizePercent" styleClass="settings-preview-value" />
+               </HBox>
+               <VBox spacing="6.0">
+                  <Label fx:id="previewTitle" styleClass="settings-preview-title" text="Myocardial infarction (disorder)" />
+                  <Label fx:id="previewBody" styleClass="settings-preview-body" text="Preferred name  ·  Heart attack" />
+                  <Label fx:id="previewMeta" styleClass="settings-preview-meta" text="SNOMED CT module  ·  Active  ·  2024-05-01" />
+               </VBox>
+            </VBox>
+            <Label styleClass="settings-description" text="Applies to every Komet window and every database, for your account on this computer." wrapText="true" />
+         </VBox>
+         <VBox fx:id="componentsPage" managed="false" spacing="16.0" visible="false">
+            <VBox spacing="4.0">
+               <Label styleClass="settings-heading" text="Glyphs on components" />
+               <Label styleClass="settings-description" text="Choose which markers appear beside component names, wherever components are shown." wrapText="true" />
+            </VBox>
+            <VBox spacing="10.0">
+               <HBox spacing="10.0">
+                  <CheckBox fx:id="kindSigilCheck" mnemonicParsing="false">
+                     <HBox.margin>
+                        <Insets top="2.0" />
+                     </HBox.margin>
+                  </CheckBox>
+                  <VBox spacing="2.0" HBox.hgrow="ALWAYS">
+                     <HBox fx:id="kindSigilSamples" alignment="CENTER_LEFT" spacing="8.0">
+                        <Label styleClass="settings-option-title" text="Kind sigil" />
+                     </HBox>
+                     <Label styleClass="settings-description" text="Letter for descriptions, semantics and patterns; pentagon for stamps. Concepts carry none." wrapText="true" />
+                  </VBox>
+               </HBox>
+               <HBox spacing="10.0">
+                  <CheckBox fx:id="definitionStatusCheck" mnemonicParsing="false">
+                     <HBox.margin>
+                        <Insets top="2.0" />
+                     </HBox.margin>
+                  </CheckBox>
+                  <VBox spacing="2.0" HBox.hgrow="ALWAYS">
+                     <HBox fx:id="definitionStatusSamples" alignment="CENTER_LEFT" spacing="8.0">
+                        <Label styleClass="settings-option-title" text="Definition status" />
+                     </HBox>
+                     <Label styleClass="settings-description" text="Sufficiently defined, primitive, or a navigation root." wrapText="true" />
+                  </VBox>
+               </HBox>
+               <HBox fx:id="multipleParentsRow" spacing="10.0">
+                  <CheckBox fx:id="multipleParentsCheck" mnemonicParsing="false">
+                     <HBox.margin>
+                        <Insets top="2.0" />
+                     </HBox.margin>
+                  </CheckBox>
+                  <VBox spacing="2.0" HBox.hgrow="ALWAYS">
+                     <HBox fx:id="multipleParentsSamples" alignment="CENTER_LEFT" spacing="8.0">
+                        <Label styleClass="settings-option-title" text="Multiple parents" />
+                     </HBox>
+                     <Label styleClass="settings-description" text="Fork after the status when a concept has more than one parent." wrapText="true" />
+                  </VBox>
+               </HBox>
+            </VBox>
+            <VBox spacing="10.0" styleClass="settings-preview" VBox.vgrow="ALWAYS">
+               <Label styleClass="settings-preview-caption" text="PREVIEW" />
+               <VBox fx:id="glyphPreview" spacing="8.0" />
+            </VBox>
+         </VBox>
+         <VBox fx:id="languagePage" managed="false" spacing="16.0" visible="false">
+            <VBox spacing="4.0">
+               <Label styleClass="settings-heading" text="Display language" />
+               <Label styleClass="settings-description" text="The language of Komet's menus, dialogs and messages." wrapText="true" />
+            </VBox>
+            <ComboBox fx:id="displayLanguageCombo" prefHeight="32.0" prefWidth="280.0" styleClass="white-combo-grey-arrow" />
+            <HBox styleClass="settings-note">
+               <Label styleClass="settings-description" text="Komet is available in English for now. Other languages will appear in this list as translations are added. Changing the language takes effect after Komet restarts." wrapText="true" />
+            </HBox>
+            <Region VBox.vgrow="ALWAYS" />
+            <Label styleClass="settings-description" text="The language used for concept names and descriptions is a view setting and is chosen per window, not here." wrapText="true" />
+         </VBox>
+      </StackPane>
+   </HBox>
+   <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="button-bar">
+      <Hyperlink mnemonicParsing="false" onAction="#resetToDefault" styleClass="settings-reset" text="Reset to default" />
+      <Region HBox.hgrow="ALWAYS" />
+      <Button fx:id="cancelButton" cancelButton="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#cancel" prefHeight="26.0" text="CANCEL" />
+      <Button fx:id="okButton" defaultButton="true" minWidth="60.0" mnemonicParsing="false" onAction="#ok" prefHeight="26.0" styleClass="primary" text="OK" />
+   </HBox>
+</VBox>

@@ -7465,3 +7465,230 @@ Styling a context menu for kview ui/ux controls
     -fx-fit-width: 12px;
     -fx-fit-height: 12px;
 }
+
+/*******************************************************************************
+ *                                                                             *
+ * Settings Dialog                                                             *
+ *                                                                             *
+ ******************************************************************************/
+
+/* Settings dialog (File > Settings..., sidebar gear): app-wide user settings. */
+.settings-dialog {
+    -fx-background-color: -Grey-White;
+    -fx-font-family: "Noto Sans";
+}
+
+.settings-dialog .settings-nav {
+    -fx-border-color: transparent -Grey-3 transparent transparent;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 0 16 0 0;
+}
+
+.settings-dialog .settings-nav-button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 4;
+    -fx-alignment: center-left;
+    -fx-padding: 0 10 0 10;
+    -fx-pref-height: 32;
+    -fx-font-size: 14px;
+    -fx-text-fill: -Grey-9;
+}
+
+.settings-dialog .settings-nav-button:hover {
+    -fx-background-color: -Hover-light-blue;
+}
+
+.settings-dialog .settings-nav-button:selected {
+    -fx-background-color: -Secondary-01;
+    -fx-text-fill: -Secondary-07;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-weight: 600;
+}
+
+.settings-dialog .settings-heading {
+    -fx-font-size: 14px;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-weight: 600;
+    -fx-text-fill: -Grey-12;
+}
+
+.settings-dialog .settings-description {
+    -fx-font-size: 12px;
+    -fx-text-fill: -Grey-8;
+}
+
+.settings-dialog .settings-option-title {
+    -fx-font-size: 13px;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-weight: 600;
+    -fx-text-fill: -Grey-12;
+}
+
+.settings-dialog .settings-pills .toggle-button {
+    -fx-pref-height: 32;
+    -fx-font-size: 13px;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-weight: 600;
+}
+
+.settings-dialog .settings-pills .toggle-button:selected {
+    -fx-text-fill: -Secondary-05;
+}
+
+.settings-dialog .settings-preview {
+    -fx-background-color: -Grey-1;
+    -fx-background-radius: 4;
+    -fx-border-color: -Grey-4;
+    -fx-border-radius: 4;
+    -fx-padding: 12 16 16 16;
+}
+
+.settings-dialog .settings-preview-caption {
+    -fx-font-size: 11px;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-weight: 600;
+    -fx-text-fill: -Grey-7;
+}
+
+.settings-dialog .settings-preview-value {
+    -fx-font-size: 11px;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-weight: 600;
+    -fx-text-fill: -Grey-8;
+}
+
+.settings-dialog .settings-preview-title {
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-weight: 600;
+    -fx-text-fill: -Grey-12;
+}
+
+.settings-dialog .settings-preview-body {
+    -fx-text-fill: -Grey-11;
+}
+
+.settings-dialog .settings-preview-meta {
+    -fx-text-fill: -Grey-8;
+}
+
+.settings-dialog .settings-preview-row {
+    -fx-font-size: 13px;
+    -fx-text-fill: -Grey-12;
+}
+
+.settings-dialog .settings-note {
+    -fx-background-color: -Grey-1;
+    -fx-background-radius: 4;
+    -fx-border-color: -Grey-4;
+    -fx-border-radius: 4;
+    -fx-padding: 10 12 10 12;
+}
+
+.settings-dialog .settings-reset,
+.settings-dialog .settings-reset:visited {
+    -fx-font-size: 13px;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-weight: 600;
+    -fx-text-fill: -Secondary-05;
+    -fx-underline: false;
+    -fx-padding: 0;
+    -fx-border-color: transparent;
+}
+
+.settings-dialog .check-box > .box {
+    -fx-background-color: -Grey-White;
+    -fx-background-insets: 0;
+    -fx-background-radius: 3;
+    -fx-border-color: -Grey-6;
+    -fx-border-radius: 3;
+}
+
+.settings-dialog .check-box:selected > .box {
+    -fx-background-color: -Secondary-05;
+    -fx-border-color: -Secondary-05;
+}
+
+.settings-dialog .check-box:selected > .box > .mark {
+    -fx-background-color: -Grey-White;
+}
+
+/* Footer buttons: the same look and hover/armed feedback as the semantic edit bumpout
+   (.sub-container .button-bar). */
+.settings-dialog .button-bar .button {
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-border-color: -Secondary-04;
+    -fx-border-width: 1px;
+    -fx-background-color: -Grey-1;
+    -fx-text-fill: -Secondary-05;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-font-style: normal;
+    -fx-font-weight: 600;
+    -fx-padding: 4 14 4 14;
+}
+
+.settings-dialog .button-bar .button:hover {
+    -fx-background-color: -Secondary-01;
+}
+
+.settings-dialog .button-bar .button:armed {
+    -fx-background-color: -Secondary-02;
+    -fx-border-color: -Secondary-06;
+    -fx-scale-x: 0.99;
+    -fx-scale-y: 0.99;
+}
+
+.settings-dialog .button-bar .primary.button {
+    -fx-background-color: -Secondary-05;
+    -fx-border-color: -Secondary-05;
+    -fx-text-fill: -Grey-White;
+}
+
+.settings-dialog .button-bar .primary.button:hover {
+    -fx-background-color: derive(-Secondary-05, -10%);
+}
+
+.settings-dialog .button-bar .primary.button:armed {
+    -fx-background-color: derive(-Secondary-05, -20%);
+    -fx-border-color: transparent;
+}
+
+/* Display-language combo box popup: the light popup used by the general-purpose windows. */
+.settings-dialog .combo-box-popup > .list-view {
+    -fx-padding: 8px 0px;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-border-color: #ddd;
+    -fx-border-style: solid;
+    -fx-background-insets: 0;
+    -fx-background-radius: 4;
+    -fx-background-color: white;
+    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.2) , 12, 0.0 , 0 , 8 );
+}
+
+.settings-dialog .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell {
+    -fx-padding: 8 12;
+    -fx-background-insets: 0;
+    -fx-background-color: transparent;
+    -fx-text-fill: #111;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 13px;
+    -fx-font-style: normal;
+    -fx-font-weight: 400;
+}
+
+.settings-dialog .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell:filled:hover {
+    -fx-background: -fx-accent;
+    -fx-background-color: -Grey-2;
+}
+
+.settings-dialog .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell:filled:selected {
+    -fx-background-color: -Secondary-06;
+    -fx-text-fill: white;
+}
+
+.settings-dialog .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell:filled:selected:hover {
+    -fx-background-color: derive(-Secondary-06, 10%);
+}

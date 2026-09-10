@@ -126,6 +126,10 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view.changeset;
     exports dev.ikm.komet.kview.mvvm.view.changeset;
 
+    // App-wide Settings dialog
+    opens dev.ikm.komet.kview.mvvm.view.settings to javafx.fxml;
+    exports dev.ikm.komet.kview.mvvm.view.settings;
+
     // Git changeset exchange
     opens dev.ikm.komet.kview.mvvm.view.changeset.exchange;
     exports dev.ikm.komet.kview.mvvm.view.changeset.exchange;
