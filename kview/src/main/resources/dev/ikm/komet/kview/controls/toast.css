@@ -12,7 +12,7 @@
 
 .toast .message {
     -fx-text-fill: white;
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
 }
 
 .toast .icon {
@@ -74,7 +74,7 @@
 .toast .close {
     -fx-background-color: transparent;
     -fx-text-fill: white;
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-border-color: transparent;
 
     -fx-padding: 0;

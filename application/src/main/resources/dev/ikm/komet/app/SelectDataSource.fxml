@@ -24,10 +24,10 @@
     <bottom>
         <ToolBar nodeOrientation="RIGHT_TO_LEFT" prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
             <items>
-                <Button fx:id="okButton" defaultButton="true" mnemonicParsing="false" onAction="#okButtonPressed" prefHeight="26.0"
-                        prefWidth="62.0" text="OK"/>
+                <Button fx:id="okButton" defaultButton="true" mnemonicParsing="false" onAction="#okButtonPressed" minWidth="62.0"
+                        text="OK"/>
                 <Button fx:id="cancelButton" cancelButton="true" mnemonicParsing="false"
-                        prefHeight="26.0" prefWidth="62.0" text="Cancel"/>
+                        minWidth="62.0" text="Cancel"/>
             </items>
         </ToolBar>
     </bottom>

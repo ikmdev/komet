@@ -14,14 +14,14 @@
 
 .range-calendar > .date-box > .date-label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: 400;
     -fx-text-fill: white;
 }
 
 .range-calendar > .date-box > .date-label.range {
-    -fx-font-size: 11px;
+    -fx-font-size: 0.916667em; /* 11px */
 }
 
 /*
@@ -36,7 +36,7 @@
     -fx-pref-height: 32;
     -fx-padding: 4 4 4 8;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-fill: black;
@@ -44,7 +44,7 @@
 
 .range-calendar > .date-box > .date-field.range {
     -fx-pref-width: 84;
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-padding: 4 4 4 6;
 }
 
@@ -61,7 +61,7 @@
 */
 
 .range-calendar > .date-box > .date-combo-field {
-    -fx-font-size: 14;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-text-base-color: #2E3240;
     -fx-text-fill: #2E3240;
     -fx-pref-width: 269;
@@ -130,7 +130,7 @@
     -fx-background-color: #2E3240;
     -fx-background-insets: 0;
     -fx-pref-height: 28;
-    -fx-font-size: 13;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
     -fx-font-style: normal;
@@ -143,7 +143,7 @@
 }
 
 .range-calendar > .date-box > .date-combo-field .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell > .box > .label {
-    -fx-font-size: 13;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
     -fx-font-style: normal;
@@ -224,7 +224,7 @@
     -fx-padding: 1 2 1 1;
     -fx-effect: null;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-text-fill: #212430;
 }
 
@@ -323,7 +323,7 @@
     -fx-color: #212430;
     -fx-background-radius: 0;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1em; /* 14px: the popup is already 14px */
 }
 
 .range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid {
@@ -350,14 +350,14 @@
 }
 
 .range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-name-cell {
-    -fx-font-size: 14;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-text-fill: #111827;
 }
 
 .range-calendar > .calendar-box > .calendar-node.date-picker-popup > .calendar-grid > .day-cell {
     -fx-padding: 4 7 4 7;
     -fx-border-width: 0;
-    -fx-font-size: 14;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-background: transparent;
     -fx-background-color: transparent;
     -fx-border-color: null;

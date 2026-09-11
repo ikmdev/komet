@@ -24,7 +24,6 @@ public class StampViewControlSkin extends SkinBase<StampViewControl> {
         super(control);
 
         root = new VBox(2.0);
-        root.setPrefWidth(208);
         root.getStyleClass().add("stamp-container");
 
         root.setOnMousePressed(this::onMousePressedOnStamp);

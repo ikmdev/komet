@@ -67,7 +67,7 @@
 
 .dynamic-card-tab-text {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 11px;
+    -fx-font-size: 0.916667em; /* 11px */
     -fx-font-weight: bold;
     -fx-text-fill: white;
 }
@@ -173,7 +173,7 @@
 }
 
 .dynamic-component-card-title {
-    -fx-font-size: 16px;
+    -fx-font-size: 1.333333em; /* 16px */
     -fx-font-weight: bold;
     -fx-text-fill: #1f2a44;
 }
@@ -192,7 +192,7 @@
 
 .dynamic-component-card-id {
     -fx-text-fill: #6b7280;
-    -fx-font-size: 11px;
+    -fx-font-size: 0.916667em; /* 11px */
 }
 
 .dynamic-component-card-ids {
@@ -201,7 +201,7 @@
 
 .dynamic-component-card-ids .label {
     -fx-text-fill: #6b7280;
-    -fx-font-size: 11px;
+    -fx-font-size: 0.916667em; /* 11px */
 }
 
 /* Copy-to-clipboard control on each identifier row; revealed on hover (see copyableIdRow). */
@@ -231,7 +231,7 @@
 }
 
 .dynamic-component-card-stamp .label {
-    -fx-font-size: 11px;
+    -fx-font-size: 0.916667em; /* 11px */
     -fx-text-fill: #1f2a44;
 }
 

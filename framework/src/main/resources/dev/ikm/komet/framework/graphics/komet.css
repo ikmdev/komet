@@ -1,5 +1,10 @@
 /*
 modena.css is the default css.
+
+Text sizes are in em. 1em is the font size of the scene root: 12px at the Default text size
+(TextSize.DEFAULT_FONT_SIZE), which TextSizeStylesheet sets on every window so the Settings
+text size scales all text at once. A rule that wants 14px at Default says 1.166667em; a rule
+nested under another sized rule is relative to that one instead.
  */
 .root {
     -komet-blue-color: #406AD1;
@@ -347,7 +352,7 @@ modena.css is the default css.
     -fx-background-color: white;
     -fx-border-color: white;
     -fx-text-fill: -komet-blue-color;
-    -fx-font-size: 16;
+    -fx-font-size: 1.333333em; /* 16px */
 }
 
 .add-tab-menu .menu-item:focused .label {
@@ -535,7 +540,7 @@ modena.css is the default css.
 }
 
 .multi-parent-tree-cell {
-    -fx-font-size: 16;
+    -fx-font-size: 1.333333em; /* 16px */
     -fx-font-family: "OpenSans";
     /*-fx-font-family: "serif";*/
     /*-fx-font-family: "sans-serif";*/
@@ -947,7 +952,7 @@ modena.css is the default css.
 .concept-label {
     -fx-background-color: -komet-blue-color;
     -fx-text-fill: white;
-    -fx-font-size: 18;
+    -fx-font-size: 1.5em; /* 18px */
     -fx-font-weight: bold;
     -fx-border-color: -komet-blue-color;
     -fx-padding: 2;
@@ -989,7 +994,7 @@ modena.css is the default css.
 
 .concept-label-toolbar .menu-button .menu-item .label {
     -fx-text-fill: -komet-blue-color;
-    -fx-font-size: 15;
+    -fx-font-size: 1.25em; /* 15px */
 }
 
 .concept-label-toolbar .menu-button .menu-item:focused .glyph-icon {
@@ -1417,7 +1422,7 @@ modena.css is the default css.
    KonceptAppearanceMirrorTest fails the build on drift. */
 .koncept-status {
     -fx-font-family: "IKE Koncept Glyphs";
-    -fx-font-size: 10px;
+    -fx-font-size: 0.833333em; /* 10px */
 }
 
 .koncept-status.koncept-defined {
@@ -1439,7 +1444,7 @@ modena.css is the default css.
 /* Component-kind sigil (ike-issues#638): the leading D/S/P/? letter glyph. Its colour is the
    kind's own colour, applied inline from ComponentKind (data, for cross-medium parity), not here. */
 .koncept-sigil {
-    -fx-font-size: 10px;
+    -fx-font-size: 0.833333em; /* 10px */
     -fx-font-weight: bold;
 }
 
@@ -1460,13 +1465,13 @@ modena.css is the default css.
 
 .koncept-axiom-clause {
     -fx-text-fill: #5a6675;
-    -fx-font-size: 11px;
+    -fx-font-size: 0.916667em; /* 11px */
     -fx-padding: 2 0 2 4;
 }
 
 .koncept-axiom-op {
     -fx-text-fill: #8a97a4;
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
 }
 
 .koncept-axiom-header {
@@ -1475,7 +1480,7 @@ modena.css is the default css.
 
 .koncept-axiom-toggle {
     -fx-text-fill: #8a97a4;
-    -fx-font-size: 10px;
+    -fx-font-size: 0.833333em; /* 10px */
     -fx-padding: 0 4 0 2;
     -fx-cursor: hand;
 }
@@ -1488,7 +1493,7 @@ modena.css is the default css.
 
 .koncept-axiom-action-glyph {
     -fx-text-fill: #5a6675;
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-padding: 0 4 0 4;
 }
 
@@ -1502,12 +1507,12 @@ modena.css is the default css.
 
 .prop-sheet-property-name {
     -fx-text-fill: -komet-tab-background-color;
-    -fx-font-size: 12;
+    -fx-font-size: 1em; /* 12px */
 }
 
 .stamp-label {
     -fx-text-fill: -komet-tab-background-color;
-    -fx-font-size: 10;
+    -fx-font-size: 0.833333em; /* 10px */
 }
 
 .component-collapsible-panel:collapsed {

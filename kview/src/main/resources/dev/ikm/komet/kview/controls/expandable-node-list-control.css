@@ -6,7 +6,7 @@
 
 .expandable-node-list-control > .toggle-button {
     -fx-font-family: "Noto Sans Medium";
-    -fx-font-size: 10px;
+    -fx-font-size: 0.833333em; /* 10px */
     -fx-background-color: -Grey-2;
     -fx-text-fill: -Secondary-05;
     -fx-graphic-text-gap: 0;

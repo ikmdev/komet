@@ -85,7 +85,7 @@
 
     -fx-text-fill: -Secondary-05;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-weight: 600;
 
     -fx-padding: 0.25em 0.833333em 0.25em  0.833333em; /* 4 10 4 10         */
@@ -137,7 +137,7 @@
 
 .combo-box.combo-box-base {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
 
@@ -189,7 +189,7 @@
     -fx-pref-height: 32.0;
     -fx-padding: 4 10 4 10;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-fill: -Grey-10;
@@ -224,7 +224,7 @@
     -fx-background-color: -Grey-2;
     -fx-border-width: 1, .5, 1, .5;
 
-    -fx-font-size: 14 px;
+    -fx-font-size: 1.166667em; /* 14px */
 }
 
 /* focus purely on the arrow */

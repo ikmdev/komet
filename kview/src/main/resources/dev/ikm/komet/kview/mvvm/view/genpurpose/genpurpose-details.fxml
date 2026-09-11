@@ -104,11 +104,11 @@
                                 </GridPane>
                             </center>
                             <right>
-                                <StackPane prefWidth="210.0" BorderPane.alignment="CENTER">
+                                <StackPane BorderPane.alignment="CENTER">
                                     <BorderPane.margin>
                                         <Insets bottom="5" right="5" top="5"/>
                                     </BorderPane.margin>
-                                    <StampViewControl fx:id="stampViewControl" prefWidth="210.0"/>
+                                    <StampViewControl fx:id="stampViewControl" />
                                 </StackPane>
                             </right>
                         </BorderPane>

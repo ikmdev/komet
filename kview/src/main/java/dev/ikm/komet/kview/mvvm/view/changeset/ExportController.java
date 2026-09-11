@@ -449,7 +449,7 @@ public class ExportController {
                 Label label = new Label();
 
                 label.setText(collectedTags.get(z));
-                label.setStyle("-fx-font-size: 20px; -fx-background-color: rgba(225,232,241);");
+                label.setStyle("-fx-font-size: 1.666667em; -fx-background-color: rgba(225,232,241);");
 
                 label.setTextFill(Color.web("#555D73"));
                 tagPane.getChildren().add(label);
@@ -457,7 +457,7 @@ public class ExportController {
                 if (z == maxLabels) {
                     int labelAmount = collectedTags.size() - maxLabels;
                     Label label = new Label("+" + labelAmount + " more");
-                    label.setStyle("-fx-font-size: 20px; -fx-background-color: rgba(225,232,241);");
+                    label.setStyle("-fx-font-size: 1.666667em; -fx-background-color: rgba(225,232,241);");
                     label.setTextFill(Color.web("#555D73"));
                     tagPane.getChildren().add(label);
                 }

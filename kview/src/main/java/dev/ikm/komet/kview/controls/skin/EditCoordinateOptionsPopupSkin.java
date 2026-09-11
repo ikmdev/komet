@@ -164,7 +164,7 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
 
         Label authorValue = new Label();
         authorValue.getStyleClass().add("edit-coordinate-readonly-value");
-        authorValue.setStyle("-fx-text-fill: #E1E8F1; -fx-font-size: 14; -fx-padding: 6 0 6 2;");
+        authorValue.setStyle("-fx-text-fill: #E1E8F1; -fx-font-size: 1.166667em; -fx-padding: 6 0 6 2;");
         updateAuthorText(authorValue, editCoordinate.authorForChangesProperty().get());
         subscription = subscription.and(editCoordinate.authorForChangesProperty().subscribe((_, newAuthor) ->
                 updateAuthorText(authorValue, newAuthor)));

@@ -10,7 +10,7 @@
     -fx-pref-height: 32.0;
     -fx-padding: 4 10 4 10;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-fill: -Grey-10;
@@ -19,13 +19,13 @@
 
 .float-control > .text-field  > .right-button > .right-button-graphic,
 .float-control > .text-field:infinity  > .right-button > .right-button-graphic {
-    -fx-font-size: 13px; /* The right button graphic is in 'em' so depends on the font size that is set */
+    -fx-font-size: 0.65em; /* 13px, inside the 20px field: the graphic is sized in em */
 }
 
 /* Noto Sans has no infinity glyph (U+221E); Open Sans has it and blends in */
 .float-control > .text-field:infinity {
     -fx-font-family: "Open Sans SemiBold";
-    -fx-font-size: 20px;
+    -fx-font-size: 1.666667em; /* 20px */
 }
 
 .float-control > .text-field:focused {
@@ -39,7 +39,7 @@
 
 .float-control > .error-label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-text-fill: -Accent-color-red;
     -fx-text-alignment: center;
     -fx-wrap-text: true;
@@ -61,7 +61,7 @@
     -fx-padding: 4 10 4 10;
 
     -fx-font-family: "Noto Sans SemiBold";
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-text-fill: #44495E;
 }
 

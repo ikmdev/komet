@@ -24,18 +24,18 @@
 }
 
 .kl-concept-field .kl-concept-field-badge {
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
 }
 
 .kl-concept-field .kl-concept-field-search {
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
 }
 
 /* A small, low-key clear (X) — trailing, outside the badge, so a press on it is never a badge press. */
 .kl-concept-field .kl-concept-field-clear {
     -fx-background-color: transparent;
     -fx-text-fill: #999999;
-    -fx-font-size: 11px;
+    -fx-font-size: 0.916667em; /* 11px */
     -fx-padding: 1 4 1 4;
     -fx-cursor: hand;
 }
@@ -45,6 +45,6 @@
 }
 
 .kl-concept-field-results {
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 8, 0, 0, 2);
 }

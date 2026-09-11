@@ -26,6 +26,14 @@ public enum TextSize {
     LARGE("Large", 115),
     EXTRA_LARGE("Extra large", 130);
 
+    /**
+     * The root font size at {@link #DEFAULT}, in px: what {@code 1em} means in Komet's stylesheets
+     * (a rule wanting 14px says {@code 1.166667em}). It is JavaFX's own default font size on
+     * Windows and Linux, so a control no stylesheet sizes looks the same at Default as it did
+     * before text size could be chosen.
+     */
+    public static final double DEFAULT_FONT_SIZE = 12;
+
     private final String displayName;
     private final int percent;
 
@@ -47,5 +55,14 @@ public enum TextSize {
     /** The scale of this step relative to {@link #DEFAULT}, as a factor ({@code 1.0} for default). */
     public double scale() {
         return percent / 100.0;
+    }
+
+    /**
+     * The font size of a scene root at this step, in px. Komet's stylesheets give every text size
+     * in {@code em}, so this one number is what the step scales.
+     */
+    public double fontSize() {
+        // Scaled from the integer percent so the step lands on an exact value (13.8, not 13.79999…).
+        return DEFAULT_FONT_SIZE * percent / 100;
     }
 }

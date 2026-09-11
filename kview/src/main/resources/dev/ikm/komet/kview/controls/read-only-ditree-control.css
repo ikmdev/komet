@@ -26,7 +26,7 @@
 
 .read-only-ditree-control .main-container .prompt-text {
     -fx-font-family: "Noto Sans SemiBold";
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
 }
 
 .read-only-ditree-control .ditree-title-row {
@@ -57,7 +57,7 @@
 
 .read-only-ditree-control .ditree-readonly-label {
     -fx-font-family: "Noto Sans SemiBold";
-    -fx-font-size: 9px;
+    -fx-font-size: 0.75em; /* 9px */
     -fx-text-fill: #8a97a4;
 }
 
@@ -111,13 +111,13 @@
 
 .read-only-ditree-control .ditree-toggle {
     -fx-text-fill: #8a97a4;
-    -fx-font-size: 10px;
+    -fx-font-size: 0.833333em; /* 10px */
     -fx-cursor: hand;
 }
 
 .read-only-ditree-control .ditree-clause-label {
     -fx-font-family: "Noto Sans SemiBold";
-    -fx-font-size: 11px;
+    -fx-font-size: 0.916667em; /* 11px */
     -fx-text-fill: #5a6675;
 }
 
@@ -144,7 +144,7 @@
    the muted operator glyphs around them. */
 .read-only-ditree-control .ditree-literal {
     -fx-font-family: "Noto Sans Medium";
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-text-fill: #2E3240;
 }
 
@@ -158,7 +158,7 @@
 
 .read-only-ditree-control .ditree-op {
     -fx-text-fill: #8a97a4;
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
 }
 
 /* Every concept in the tree renders as a component chip: identicon + name in a white box with the
@@ -166,7 +166,7 @@
    it later without layout shift. */
 .read-only-ditree-control .component-item > .label {
     -fx-font-family: "Noto Sans Medium";
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-text-fill: #2E3240;
     -fx-graphic-text-gap: 7px;
     -fx-cursor: hand;
@@ -253,7 +253,7 @@
 /* The premise pill, in the read-only marker's voice. */
 .ditree-peek-popover .ditree-peek-kind {
     -fx-font-family: "Noto Sans SemiBold";
-    -fx-font-size: 9px;
+    -fx-font-size: 0.75em; /* 9px */
     -fx-text-fill: #8a97a4;
     -fx-padding: 0 6 0 6;
     -fx-background-color: white;

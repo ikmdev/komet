@@ -20,7 +20,7 @@
 
 .app-title {
     -fx-text-fill: white;
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-letter-spacing: 0.8px;
 }
 
@@ -46,7 +46,7 @@
 
 .top-toolbar .label {
     -fx-text-fill: white;
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-padding: 0 0 0 7px;
 }
 
@@ -86,7 +86,7 @@
 }
 
 .top-toolbar > .button {
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
 }
 
 /*******************************************************************************
@@ -114,7 +114,7 @@
     -fx-background-radius: 0;
 
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-text-fill: -Grey-3;
 
     -fx-border-width: 0;
@@ -179,7 +179,7 @@
 .pattern-browser .header .label {
     -fx-text-fill: white;
 
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
 }
 
 .pattern-browser .header .clear-button {
@@ -309,7 +309,7 @@
 
 .pattern-browser .list-view .list-cell > .main-container .title-label {
     -fx-text-fill: #111;
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
 }
 
 .pattern-browser .list-view .list-cell > .main-container .image-view {
@@ -319,7 +319,7 @@
 
 .pattern-browser .list-view .list-cell > .main-container .status-label {
     -fx-text-fill: #555;
-    -fx-font-size: 10px;
+    -fx-font-size: 0.833333em; /* 10px */
 }
 
 .pattern-browser .list-view .list-cell > .main-container .last-updated-container {
@@ -327,7 +327,7 @@
 }
 .pattern-browser .list-view .list-cell > .main-container .last-updated-container > .label {
     -fx-text-fill: #666666;
-    -fx-font-size: 10px;
+    -fx-font-size: 0.833333em; /* 10px */
 }
 
 /************** Controls ***************/
@@ -394,7 +394,7 @@
 }
 
 .right-properties-pane .title {
-    -fx-font-size: 18px;
+    -fx-font-size: 1.5em; /* 18px */
 
     /* Left padding matches the panes' content (group titles / field labels) so the pane title aligns with them. */
     -fx-padding: 0 0 10px 10;
@@ -483,7 +483,7 @@
 
 .right-properties-pane .window-properties .group-title {
     -fx-font-family: "Noto Sans Bold";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
 }
 
 /******************************************************************************
@@ -500,7 +500,7 @@
 
 .right-properties-pane .section-properties .section-name-container {
     -fx-spacing: 3px;
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
 }
 
 .right-properties-pane .section-properties GridPane {
@@ -519,7 +519,7 @@
 
 .right-properties-pane .section-properties .group-title {
     -fx-font-family: "Noto Sans Bold";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
 }
 
 /* Reference Component */
@@ -553,7 +553,7 @@
 
 .right-properties-pane .pattern-properties .pattern-name-container {
     -fx-spacing: 3px;
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
 }
 
 .right-properties-pane .pattern-properties .pattern-main-container .separator {
@@ -568,7 +568,7 @@
 
 .right-properties-pane .pattern-properties .group-title {
     -fx-font-family: "Noto Sans Bold";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
 }
 
 /* Field-constraint rule lists — the Required semantics (requirement refinements) nested under the
@@ -584,7 +584,7 @@
 }
 
 .right-properties-pane .pattern-properties .constraint-rules .rules-title {
-    -fx-font-size: 11px;
+    -fx-font-size: 0.916667em; /* 11px */
     -fx-text-fill: #888;
 }
 
@@ -606,7 +606,7 @@
 }
 
 .right-properties-pane .pattern-properties .constraint-rules .rule-summary {
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-text-fill: #333;
 }
 
@@ -651,7 +651,7 @@
 }
 
 .right-properties-pane .pattern-properties .constraint-rules .count-row .label {
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-text-fill: #555;
 }
 
@@ -667,7 +667,7 @@
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-border-width: 0;
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-alignment: center;
     -fx-padding: 1 2 1 2;
 }
@@ -698,7 +698,7 @@
 }
 
 .right-properties-pane .pattern-properties .constraint-rules .field-name {
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-text-fill: #555;
 }
 
@@ -707,7 +707,7 @@
    name on the left, its toggle on the right edge */
 .right-properties-pane .pattern-properties .editable-fields .fields-title {
     -fx-font-family: "Noto Sans Bold";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-text-fill: #333;
     -fx-padding: 0 0 2 0;
 }
@@ -717,7 +717,7 @@
 }
 
 .right-properties-pane .pattern-properties .constraint-rules .any-value {
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-text-fill: #999;
     -fx-background-color: #f6f6f6;
     -fx-background-radius: 4;
@@ -727,7 +727,7 @@
 }
 
 .right-properties-pane .pattern-properties .constraint-rules .add-rule {
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-underline: false;
     -fx-border-color: transparent;
     -fx-padding: 2 0 2 0;
@@ -735,14 +735,14 @@
 
 /* The "no rules yet" state, e.g. "All semantics are shown" in the Visible semantics area */
 .right-properties-pane .pattern-properties .constraint-rules .empty-state {
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-text-fill: #999;
 }
 
 /* KL component combo box inside a constraint rule (fields with a predefined set of concepts):
    same white box, thin border and 12px type as the component control below */
 .right-properties-pane .constraint-rules .component-combo-box-control > .main-container > .combo-box-base {
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-background-color: white;
     -fx-background-insets: 0;
     -fx-background-radius: 4;
@@ -771,7 +771,7 @@
 }
 
 .right-properties-pane .constraint-rules .component-combo-box-control > .main-container > .combo-box-base > .list-cell {
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-text-fill: #333;
     -fx-padding: 5 8 5 8;
 }
@@ -793,7 +793,7 @@
 }
 
 .right-properties-pane .constraint-rules .component-combo-box-control .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
 }
 
 /* Lighter KL component control inside a constraint rule: drop the gray slab around the
@@ -818,7 +818,7 @@
 }
 
 .right-properties-pane .constraint-rules .component-control > .concept-container > .concept-search-box > .search-field-container > .concept-text-field {
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-padding: 5 8 5 8;
 }
 
@@ -827,7 +827,7 @@
 }
 
 .right-properties-pane .constraint-rules .component-control > .concept-container > .concept-search-box > .search-field-container > .search-prompt {
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-text-fill: #999;
     -fx-padding: 0 0 0 8;
 }
@@ -846,7 +846,7 @@
 }
 
 .right-properties-pane .constraint-rules .component-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-description.label {
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
 }
 
 /* The discard button inherits this app's global .button chrome (border + gray fill) — flatten it
@@ -898,7 +898,7 @@
 
 .right-properties-pane .field-properties .group-title {
     -fx-font-family: "Noto Sans Bold";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
 }
 
 .right-properties-pane .field-properties .title-container {
@@ -907,5 +907,5 @@
 }
 
 .right-properties-pane .field-properties .title-container > .text-field {
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
 }

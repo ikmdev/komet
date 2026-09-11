@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
 
+    /** Row height until the stylesheet's {@code -fx-fixed-cell-size} has been applied. */
     private static final double SEARCH_RESULT_HEIGHT = 43; // 38 + 5
     private static final PseudoClass FILTER_SET = PseudoClass.getPseudoClass("filter-set");
     private static final PseudoClass FILTER_SHOWING = PseudoClass.getPseudoClass("filter-showing");
@@ -116,11 +117,12 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
         resultsPane.managedProperty().bind(resultsPane.visibleProperty());
         resultsPane.setVisible(false);
         resultsPane.setItems(control.resultsProperty());
-        control.resultsProperty().addListener((ListChangeListener<KLSearchControl.SearchResult>) _ -> {
-            int itemCount = Math.max(1, Math.min(resultsPane.getItems().size(), 4));
-            resultsPane.setPrefHeight(itemCount * SEARCH_RESULT_HEIGHT);
-        });
-        resultsPane.setPrefHeight(SEARCH_RESULT_HEIGHT);
+        control.resultsProperty().addListener((ListChangeListener<KLSearchControl.SearchResult>) _ -> sizeResultsPane());
+        // The row height and the gap above the rows are em values in the stylesheet, so they
+        // follow the text size; re-measure whenever a CSS pass changes either.
+        resultsPane.fixedCellSizeProperty().subscribe(this::sizeResultsPane);
+        resultsPane.paddingProperty().subscribe(this::sizeResultsPane);
+        sizeResultsPane();
 
         textField = new TextField();
         searchPane = new StackPane(new IconRegion("icon", "search"));
@@ -276,9 +278,20 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
     protected double computePrefHeight(double width, double topInset, double rightInset, double bottomInset, double leftInset) {
         double prefHeight = textField.prefHeight(width) + snappedTopInset() + snappedBottomInset();
         if (resultsPane.isVisible()) {
-            prefHeight += 12 + resultsPane.prefHeight(width);
+            prefHeight += resultsPane.prefHeight(width);
         }
         return prefHeight;
+    }
+
+    /**
+     * Up to four result rows, each at the stylesheet's fixed cell size, plus the list's own padding
+     * (its top padding is the gap between the field and the first row).
+     */
+    private void sizeResultsPane() {
+        int itemCount = Math.max(1, Math.min(resultsPane.getItems().size(), 4));
+        double rowHeight = resultsPane.getFixedCellSize() > 0 ? resultsPane.getFixedCellSize() : SEARCH_RESULT_HEIGHT;
+        resultsPane.setPrefHeight(itemCount * rowHeight
+                + resultsPane.snappedTopInset() + resultsPane.snappedBottomInset());
     }
 
     /** {@inheritDoc} **/
@@ -313,7 +326,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
 
         if (resultsPane.isVisible()) {
             double resultsHeight = snapSizeY(resultsPane.prefHeight(contentWidth));
-            resultsPane.resizeRelocate(x,y + textFieldHeight + 12, contentWidth, resultsHeight);
+            resultsPane.resizeRelocate(x, y + textFieldHeight, contentWidth, resultsHeight);
         }
     }
 

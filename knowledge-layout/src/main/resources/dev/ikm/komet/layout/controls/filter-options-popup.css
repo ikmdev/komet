@@ -25,7 +25,7 @@
     -fx-text-fill: #E1E8F1;
     -fx-font-family: "Noto Sans";
     -fx-font-weight: 500;
-    -fx-font-size: 13;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-alignment: center;
     -fx-pref-width: 176;
 }
@@ -114,14 +114,14 @@
 .filter-options-popup > .bottom-box > .pending-summary {
     -fx-text-fill: #8B96A6;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 11;
+    -fx-font-size: 0.916667em; /* 11px */
     -fx-padding: 0 0 2 4;
 }
 
 .filter-options-popup > .bottom-box > .button {
     -fx-font-family: "Noto Sans";
     -fx-font-weight: 700;
-    -fx-font-size: 12;
+    -fx-font-size: 1em; /* 12px */
     -fx-alignment: center;
     -fx-text-fill: #5896F6;
     -fx-background-color: #4A7AD2, #2E3240;
@@ -272,7 +272,7 @@
 .filter-options-popup > .scroll-pane .accordion > .titled-pane > .title > .text {
     -fx-fill: #5896F6;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-font-weight: 700;
 }
 
@@ -379,7 +379,7 @@
 
 .filter-options-popup > .scroll-pane .accordion > .filter-titled-pane.titled-pane > .title > .title-box > .title-hbox > .title-label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-font-style: normal;
     -fx-font-weight: 600;
     -fx-text-fill: #5896F6;
@@ -463,7 +463,7 @@
     -fx-padding: 2 12 2 12;
     -fx-pref-height: 20;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-fill: #4A7AD2;
@@ -572,7 +572,7 @@
     -fx-padding: 0 8 0 8;
     -fx-pref-height: 18;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-fill: #4A7AD2;
@@ -649,7 +649,7 @@
 }
 
 .filter-options-popup > .scroll-pane .accordion > .date-filter-titled-pane.filter-titled-pane.titled-pane .time-spinner {
-    -fx-font-size: 14;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-text-base-color: #2E3240;
     -fx-text-fill: #2E3240;
     -fx-pref-width: 279;
@@ -706,7 +706,7 @@
 }
 
 .filter-options-popup > .scroll-pane .accordion > .date-filter-titled-pane.filter-titled-pane.titled-pane > .title > .title-box > .date-combo-box {
-    -fx-font-size: 14;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-text-base-color: #2E3240;
     -fx-text-fill: #2E3240;
     -fx-pref-width: 279;
@@ -759,7 +759,7 @@
 .filter-options-popup > .scroll-pane .accordion > .date-filter-titled-pane.filter-titled-pane.titled-pane > .content > .content-box > .bottom-box > .button {
     -fx-font-family: "Noto Sans";
     -fx-font-weight: 600;
-    -fx-font-size: 12;
+    -fx-font-size: 1em; /* 12px */
     -fx-alignment: center;
     -fx-text-fill: #5896F6;
     -fx-background-color: #4A7AD2, #2E3240;
@@ -812,7 +812,7 @@
     -fx-background-color: #2E3240;
     -fx-background-insets: 0;
     -fx-pref-height: 28;
-    -fx-font-size: 13;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
     -fx-font-style: normal;
@@ -868,7 +868,7 @@
 
 .filter-options-popup > .scroll-pane .accordion > .lang-titled-pane.titled-pane > .title > .title-box > .title-label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-font-weight: 700;
     -fx-text-fill: #5896F6;
 }
@@ -953,7 +953,7 @@
 
 .filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .accordion > .lang-filter-titled-pane > .title > .title-box > .title-hbox > .title-label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: 600;
     -fx-text-fill: #4A7AD2;
@@ -1014,7 +1014,7 @@
 .filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .accordion > .lang-filter-titled-pane > .title > .title-box > .grid-option > .title-label {
     -fx-text-fill: #9CAABF;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 11px;
+    -fx-font-size: 0.916667em; /* 11px */
     -fx-font-style: normal;
     -fx-font-weight: 600;
     -fx-wrap-text: true;
@@ -1023,7 +1023,7 @@
 .filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .accordion > .lang-filter-titled-pane > .title > .title-box > .grid-option > .option-label {
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-font-style: normal;
     -fx-font-weight: 400;
     -fx-wrap-text: true;
@@ -1070,7 +1070,7 @@
 .filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .accordion > .lang-filter-titled-pane > .content > .content-box > .title-label {
     -fx-text-fill: #9CAABF;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-font-weight: 700;
     -fx-wrap-text: true;
 }
@@ -1081,7 +1081,7 @@
 }
 
 .filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .accordion > .lang-filter-titled-pane > .content > .content-box > .lang-combo-box {
-    -fx-font-size: 14;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-text-base-color: #2E3240;
     -fx-text-fill: #2E3240;
     -fx-pref-width: 296;
@@ -1141,7 +1141,7 @@
 }
 
 .filter-options-popup .lang-combo-box .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell > .box > .label {
-    -fx-font-size: 13;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
     -fx-font-style: normal;
@@ -1220,7 +1220,7 @@ ScrollPane > Accordion > TitledPane > Accordion > LangFilterTitledPane > Content
     -fx-padding: 0 8 0 8;
     -fx-pref-height: 18;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-fill: #4A7AD2;
@@ -1287,7 +1287,7 @@ ScrollPane > Accordion > TitledPane > Accordion > LangFilterTitledPane > Content
 
 .filter-options-popup > .scroll-pane .accordion > .titled-pane > .content > .accordion > .lang-filter-titled-pane > .content > .content-box > .sorted-toggle-box > .ordered-toggle-box > .order-label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-fill: #9CAABF;
@@ -1335,7 +1335,7 @@ ScrollPane > Accordion > TitledPane > Accordion > LangFilterTitledPane > Content
     -fx-padding: 0 8 0 8;
     -fx-pref-height: 18;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-fill: #4A7AD2;
@@ -1402,7 +1402,7 @@ ScrollPane > Accordion > TitledPane > Accordion > LangFilterTitledPane > Content
 
 .saved-filters-popup > .filter-title {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: 600;
     -fx-text-fill: #B3BDCD;
@@ -1455,7 +1455,7 @@ ScrollPane > Accordion > TitledPane > Accordion > LangFilterTitledPane > Content
     -fx-background: transparent;
     -fx-background-color: transparent;
     -fx-pref-height: 28;
-    -fx-font-size: 13;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
     -fx-font-style: normal;
@@ -1480,7 +1480,7 @@ ScrollPane > Accordion > TitledPane > Accordion > LangFilterTitledPane > Content
 }
 
 .saved-filters-popup > .saved-filters-list-view > .placeholder > .label {
-    -fx-font-size: 13;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
     -fx-font-style: normal;
@@ -1508,7 +1508,7 @@ ScrollPane > Accordion > TitledPane > Accordion > LangFilterTitledPane > Content
 .context-menu .menu-item:focused > .label,
 .context-menu .menu-item > .label {
     -fx-text-fill: white;
-    -fx-font-size: 13;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-font-weight: 400;
     -fx-font-family: "Noto Sans";
 }

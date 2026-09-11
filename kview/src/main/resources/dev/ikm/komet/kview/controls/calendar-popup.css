@@ -23,7 +23,7 @@
     -fx-padding: 1;
     -fx-effect: null;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-text-fill: -Grey-12;
 }
 
@@ -112,7 +112,7 @@
 
 .calendar-popup > .calendar-node.date-picker-popup > .month-year-pane > .spinner > .label.month-year-label {
     -fx-alignment: center;
-    -fx-font-size: 16;
+    -fx-font-size: 1.333333em; /* 16px */
     -fx-min-width: 140;
     -fx-pref-width: 140;
     -fx-max-width: 140;
@@ -137,14 +137,14 @@
 }
 
 .calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .day-name-cell {
-    -fx-font-size: 12;
+    -fx-font-size: 1em; /* 12px */
     -fx-text-fill: -Grey-10;
 }
 
 .calendar-popup > .calendar-node.date-picker-popup > .calendar-grid > .day-cell {
     -fx-padding: 4 7 4 7;
     -fx-border-width: 0;
-    -fx-font-size: 14;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-background: white;
     -fx-background-color: white;
     -fx-border-color: white;
@@ -236,7 +236,7 @@
 
 .calendar-popup > .calendar-time-box > .time-box > .label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 16;
+    -fx-font-size: 1.333333em; /* 16px */
     -fx-text-fill: black;
 }
 
@@ -250,7 +250,7 @@
     -fx-pref-width: 50;
     -fx-max-width: 50;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 18;
+    -fx-font-size: 1.5em; /* 18px */
     -fx-text-fill: black;
     -fx-pref-column-count: 2;
     -fx-highlight-fill: -Primary-04
@@ -258,7 +258,7 @@
 
 .calendar-popup > .calendar-time-box > .zone-label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 18;
+    -fx-font-size: 1.5em; /* 18px */
     -fx-text-fill: -Grey-8;
 }
 
@@ -275,7 +275,7 @@
     -fx-background-radius: 4;
     -fx-border-radius: 4;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-padding: 0;
@@ -299,7 +299,7 @@
     -fx-border-color: -Secondary-05;
     -fx-border-radius: 4;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-padding: 0;

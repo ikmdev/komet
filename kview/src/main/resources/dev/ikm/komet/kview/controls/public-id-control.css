@@ -18,7 +18,7 @@
        The value used must work on the Concept, Pattern, and Semantic windows. */
     /* -fx-pref-width: 195; */
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 10;
+    -fx-font-size: 0.833333em; /* 10px */
     -fx-text-fill: -Grey-10;
     -fx-font-weight: normal;
     -fx-text-alignment: left;

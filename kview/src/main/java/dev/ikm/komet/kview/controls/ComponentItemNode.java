@@ -55,7 +55,7 @@ public class ComponentItemNode extends Region {
 
     /**
      * Letter-sigil size as a fraction of the label font. Deliberately larger than the badge's
-     * 10px komet.css sigil: this node's glyphs read at the label's own size, not a chip's.
+     * chip-sized komet.css sigil: this node's glyphs read at the label's own size, not a chip's.
      */
     private static final double SIGIL_TO_NAME = 1.0;
 
@@ -174,8 +174,8 @@ public class ComponentItemNode extends Region {
         double sigilSize = textLabel.getFont().getSize() * SIGIL_TO_NAME;
         KonceptSigils.create(getKonceptKind(), iconImageView.getFitWidth() * PENTAGON_TO_ICON, sigilSize)
                 .ifPresent(sigil -> {
-                    // Inline, because komet.css's .koncept-sigil rule fixes 10px (the chip
-                    // size) wherever it reaches, and only an inline style outranks it.
+                    // Inline, because komet.css's .koncept-sigil rule fixes the chip size wherever it
+                    // reaches, and only an inline style outranks it.
                     sigil.setStyle("-fx-font-size: " + sigilSize + "px; -fx-font-weight: bold;");
                     sigilBox.getChildren().add(sigil);
                 });
@@ -199,7 +199,7 @@ public class ComponentItemNode extends Region {
             String glyphFamily = KonceptGlyphFonts.family();
             double statusSize = textLabel.getFont().getSize() * STATUS_TO_NAME;
             // Inline, for the same reason as the sigil: komet.css's .koncept-status rule
-            // fixes the chip's 10px wherever it reaches. The family rides along so the
+            // fixes the chip size wherever it reaches. The family rides along so the
             // cluster keeps the bundled glyph face (ike-issues#953). Never request bold here:
             // the face ships only a Regular weight, and asking for bold sends font resolution
             // outside the family — the OS fallback that draws the ⋎ fork upside-down.

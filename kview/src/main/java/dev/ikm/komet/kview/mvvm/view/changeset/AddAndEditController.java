@@ -121,7 +121,7 @@ public class AddAndEditController {
             if (tag.isTagSelected()) {
                 Label label = new Label(tag.getTagName());
 
-                label.setStyle("-fx-font-size: 14px; -fx-background-color: #E1E8F1;");
+                label.setStyle("-fx-font-size: 1.166667em; -fx-background-color: #E1E8F1;");
                 label.setTextFill(Color.rgb(85, 93, 115));
                 selectedTags.getChildren().add(label);
             }

@@ -24,12 +24,10 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Arc?>
 <?import javafx.scene.shape.Circle?>
-<?import javafx.scene.shape.Rectangle?>
-<?import javafx.scene.shape.SVGPath?>
 
 <BorderPane fx:id="landingPageBorderPane" minHeight="0.0" minWidth="0.0" prefHeight="682.0" prefWidth="1035.0" styleClass="landing-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController">
    <left>
-      <VBox fillWidth="false" maxWidth="201.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="400.0" prefWidth="144.0" BorderPane.alignment="CENTER">
+      <VBox nodeOrientation="LEFT_TO_RIGHT" prefHeight="400.0" BorderPane.alignment="CENTER">
          <children>
             <ToggleButton mnemonicParsing="false" onAction="#showHomeLandingPage" selected="true">
                <graphic>
@@ -49,11 +47,11 @@
                   <ToggleGroup fx:id="sidebarToggleGroup" />
                </toggleGroup>
             </ToggleButton>
-            <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#6e7989" height="1.0" stroke="#6e7989" strokeType="INSIDE" width="133.0">
+            <Region maxWidth="Infinity" styleClass="nav-separator">
                <VBox.margin>
-                  <Insets bottom="5.0" left="8.0" top="5.0" />
+                  <Insets bottom="5.0" left="8.0" right="8.0" top="5.0" />
                </VBox.margin>
-            </Rectangle>
+            </Region>
             <ToggleButton mnemonicParsing="false" onAction="#showKlEditorLandingPage" styleClass="multiline-nav-button" toggleGroup="$sidebarToggleGroup">
                <graphic>
                   <HBox styleClass="icon-container">
@@ -67,7 +65,7 @@
                                  </styleClass></Region>
                            </children>
                         </StackPane>
-                        <Label fx:id="knowledgeLayoutButtonLabel" minWidth="84.0" prefWidth="84.0" maxWidth="84.0" wrapText="true" />
+                        <Label fx:id="knowledgeLayoutButtonLabel" styleClass="multiline-nav-label" wrapText="true" />
                      </children>
                   </HBox>
                </graphic>
@@ -122,7 +120,7 @@
                   </HBox>
                </graphic>
             </ToggleButton>
-            <ToggleButton fx:id="settingsToggleButton" mnemonicParsing="false" toggleGroup="$sidebarToggleGroup">
+            <ToggleButton fx:id="settingsToggleButton" mnemonicParsing="false" onAction="#openSettings">
                <graphic>
                   <HBox styleClass="icon-container">
                      <StackPane styleClass="icon-image-container">

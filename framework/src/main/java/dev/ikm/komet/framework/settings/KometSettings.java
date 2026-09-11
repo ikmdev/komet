@@ -36,8 +36,8 @@ import java.util.prefs.BackingStoreException;
  * reverse-DNS convention already used by other per-user settings in the workspace.
  *
  * <p>Each setting is a JavaFX property so that windows can subscribe and react as they are wired
- * up. Nothing in the application observes these yet: the dialog edits and persists them, and the
- * behaviours (scaling text, hiding glyphs, switching language) are wired in separately.
+ * up. The text size takes effect through {@link TextSizeStylesheet}, installed once at start-up;
+ * the glyph and language settings are persisted by the dialog and wired in separately.
  */
 public final class KometSettings {
 

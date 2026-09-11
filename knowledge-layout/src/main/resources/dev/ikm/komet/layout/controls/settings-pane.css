@@ -24,19 +24,19 @@
 .settings-pane .settings-section-card .section-title {
     -fx-text-fill: #5896F6;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-weight: 600;
 }
 
 .settings-pane .settings-section-card .section-value {
     -fx-text-fill: #E1E8F1;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 13;
+    -fx-font-size: 1.083333em; /* 13px */
 }
 
 .settings-pane .settings-section-card .section-chevron {
     -fx-text-fill: #E1E8F1;
-    -fx-font-size: 14;
+    -fx-font-size: 1.166667em; /* 14px */
 }
 
 .settings-pane .drill-back-row {
@@ -47,14 +47,14 @@
 
 .settings-pane .drill-back-row .drill-back {
     -fx-text-fill: #E1E8F1;
-    -fx-font-size: 16;
+    -fx-font-size: 1.333333em; /* 16px */
 }
 
 .settings-pane .drill-back-row .drill-title {
     -fx-text-fill: #E1E8F1;
     -fx-font-family: "Noto Sans";
     -fx-font-weight: 500;
-    -fx-font-size: 13;
+    -fx-font-size: 1.083333em; /* 13px */
 }
 
 .settings-pane .settings-drill {

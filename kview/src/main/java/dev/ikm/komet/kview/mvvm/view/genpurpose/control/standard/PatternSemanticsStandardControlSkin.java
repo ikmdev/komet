@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard;
 
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -38,6 +39,10 @@ public class PatternSemanticsStandardControlSkin extends SkinBase<PatternSemanti
 
         scrollPane.setFitToWidth(true);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        // A ScrollPane's own minimum height (36px) is taller than a one-line semantic, and a child
+        // is never laid out below its minimum, so it would overflow the view. The view's minimum is
+        // computed below instead.
+        scrollPane.setMinHeight(0);
         scrollPane.getStyleClass().add("transparent-scroll");
         getChildren().add(scrollPane);
 
@@ -79,8 +84,26 @@ public class PatternSemanticsStandardControlSkin extends SkinBase<PatternSemanti
     @Override
     protected double computePrefHeight(double width, double topInset, double rightInset,
                                        double bottomInset, double leftInset) {
+        // Measured from the semantics rather than from the ScrollPane: a ScrollPane's preferred
+        // height is not its content's (it reports a fixed 36px for a one-line semantic), which
+        // left every pattern view carrying about 14px of blank space under its last semantic.
+        Insets scrollInsets = scrollPane.getInsets();
+        double contentWidth = width < 0 ? -1
+                : width - leftInset - rightInset - scrollInsets.getLeft() - scrollInsets.getRight();
+        return topInset + scrollInsets.getTop() + semanticsContainer.prefHeight(contentWidth)
+                + scrollInsets.getBottom() + bottomInset;
+    }
+
+    /**
+     * Small, so a section can shrink below its content and the semantics scroll instead, and never
+     * more than the content wants, so a short view is not padded up to a minimum.
+     */
+    @Override
+    protected double computeMinHeight(double width, double topInset, double rightInset,
+                                      double bottomInset, double leftInset) {
         double contentWidth = width < 0 ? -1 : width - leftInset - rightInset;
-        return topInset + scrollPane.prefHeight(contentWidth) + bottomInset;
+        double scrollPaneMin = topInset + scrollPane.minHeight(contentWidth) + bottomInset;
+        return Math.min(scrollPaneMin, computePrefHeight(width, topInset, rightInset, bottomInset, leftInset));
     }
 
     private void onPreviewingSemanticChanged(SemanticStandardControl semanticViewControl) {

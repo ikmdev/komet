@@ -28,7 +28,7 @@
 .concept-navigator-control.tree-view > .concept-header.label {
     -fx-font-family: "Noto Sans";
     -fx-font-weight: 500;
-    -fx-font-size: 14;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-text-fill: -Grey-11;
     -fx-padding: 0 0 4 0;
     -fx-alignment: center;
@@ -164,7 +164,7 @@
     -fx-max-height: 16;
     -fx-background-radius: 2;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 9;
+    -fx-font-size: 0.75em; /* 9px */
     -fx-text-fill: white;
     -fx-alignment: center;
 }
@@ -239,7 +239,7 @@
 .navigator-tree-cell.tree-cell > .concept-tile > .concept-label {
     -fx-font-family: "Noto Sans";
     -fx-font-weight: normal;
-    -fx-font-size: 13;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-text-fill: -Grey-11;
     -fx-background-color: transparent;
     -fx-border-color: transparent;
@@ -455,7 +455,7 @@
     -fx-min-height: 24;
     -fx-padding: 4 8 4 8;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 13;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-font-weight: 400;
     -fx-text-fill: white;
     -fx-wrap-text: true;
@@ -485,7 +485,7 @@
 
 .tooltip > .tooltip-box > .type-tooltip-label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 10;
+    -fx-font-size: 0.833333em; /* 10px */
     -fx-font-weight: 600;
     -fx-text-fill: white;
     -fx-alignment: center-left;
@@ -520,7 +520,7 @@
 .context-menu .menu-item > .label {
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14;
+    -fx-font-size: 1.166667em; /* 14px */
 }
 .context-menu .menu-item > .graphic-container > .icon {
     -fx-pref-width: 20;
@@ -646,7 +646,7 @@
 .lineage-box > .lineage-hbox > .lineage-label {
     -fx-font-family: "Noto Sans";
     -fx-font-weight: 500;
-    -fx-font-size: 12;
+    -fx-font-size: 1em; /* 12px */
     -fx-text-fill: -Grey-11;
     -fx-alignment: center-left;
 }

@@ -158,7 +158,7 @@
                                <ColumnConstraints hgrow="NEVER" maxWidth="5.0" minWidth="5.0" prefWidth="5.0" />
                                <ColumnConstraints halignment="LEFT" hgrow="NEVER" minWidth="56.0" />
                                <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" minWidth="100.0" />
-                               <ColumnConstraints halignment="LEFT" hgrow="NEVER" minWidth="208.0" prefWidth="208.0" />
+                               <ColumnConstraints halignment="LEFT" hgrow="NEVER" />
                                <ColumnConstraints hgrow="NEVER" maxWidth="5.0" minWidth="5.0" prefWidth="5.0" />
                            </columnConstraints>
                            <rowConstraints>
@@ -184,7 +184,7 @@
 
                            <!-- StackPane in its own column -->
                            <StackPane styleClass="stamp-container" GridPane.columnIndex="3" GridPane.rowIndex="1" GridPane.rowSpan="3">
-                               <StampViewControl fx:id="stampViewControl" prefWidth="208" />
+                               <StampViewControl fx:id="stampViewControl" />
                            </StackPane>
                        </GridPane>
 

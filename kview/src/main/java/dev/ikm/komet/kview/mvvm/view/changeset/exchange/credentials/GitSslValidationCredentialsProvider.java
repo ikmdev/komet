@@ -21,8 +21,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.jgit.errors.UnsupportedCredentialItem;
@@ -382,7 +380,7 @@ public class GitSslValidationCredentialsProvider extends CredentialsProvider {
      */
     private Label createRepositoryLabel(URIish uri) {
         final Label label = new Label("Repository: " + uri.toString());
-        label.setFont(Font.font("Noto Sans Bold", FontWeight.BOLD, 13));
+        label.setStyle("-fx-font-family: 'Noto Sans Bold'; -fx-font-weight: bold; -fx-font-size: 1.083333em;");
         return label;
     }
 
@@ -393,7 +391,7 @@ public class GitSslValidationCredentialsProvider extends CredentialsProvider {
      */
     private Label createMessageLabel() {
         final Label label = new Label("How would you like to proceed?");
-        label.setFont(Font.font("Noto Sans", FontWeight.NORMAL, 12));
+        label.setStyle("-fx-font-family: 'Noto Sans'; -fx-font-size: 1em;");
         return label;
     }
 
@@ -408,7 +406,7 @@ public class GitSslValidationCredentialsProvider extends CredentialsProvider {
                         • Trust Now: Accept certificate for this session only
                         • Trust for Repo: Accept certificate for this repository
                         • Cancel: Do not trust the certificate for this repository""");
-        explanationLabel.setFont(Font.font("Noto Sans", FontWeight.NORMAL, 12));
+        explanationLabel.setStyle("-fx-font-family: 'Noto Sans'; -fx-font-size: 1em;");
         return explanationLabel;
     }
 

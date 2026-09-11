@@ -565,7 +565,7 @@ public interface KlExpandable {
         if (stylesheet == null) {
             button.setText(fallbackGlyph);
             button.setStyle("-fx-background-radius: 4; -fx-background-color: rgba(0,0,0,0.55);"
-                    + " -fx-text-fill: white; -fx-font-size: 13; -fx-padding: 1 6 3 6; -fx-cursor: hand;");
+                    + " -fx-text-fill: white; -fx-font-size: 1.083333em; -fx-padding: 1 6 3 6; -fx-cursor: hand;");
             return button;
         }
         String url = stylesheet.toExternalForm();

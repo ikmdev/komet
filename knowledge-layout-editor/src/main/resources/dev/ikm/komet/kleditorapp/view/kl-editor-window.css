@@ -43,7 +43,7 @@
 
     -fx-padding: 4px 15px 4px 15px;
 
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
 }
 
 .window .window-header-container .content-container {
@@ -144,7 +144,7 @@
 
     -fx-padding: 4px 10px 4px 10px;
 
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
 }
 
 .window .section-view .titled-pane {
@@ -213,7 +213,7 @@
 .window .section-view .required-indicator {
     -fx-text-fill: #cc7d74;
     -fx-font-family: "Noto Sans Bold";
-    -fx-font-size: 18px;
+    -fx-font-size: 1.5em; /* 18px */
     -fx-padding: 4px 10px 0 0;
 }
 
@@ -362,7 +362,7 @@
 .window .section-view .pattern-table-view .pattern-table .column-header .label {
     -fx-text-fill: #2d2d2d;
     -fx-font-family: "Noto Sans Bold";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-alignment: center-left;
 
     -fx-padding: 3px 7px 3px 7px;
@@ -379,7 +379,7 @@
 .window .section-view .pattern-table-view .pattern-table .table-cell {
     -fx-font-family: "Noto Sans";
     -fx-font-weight: 500;
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-alignment: top-left;
 
     -fx-border-color: transparent #e9e9e9 transparent transparent;

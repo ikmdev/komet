@@ -8,7 +8,7 @@
     -fx-border-radius: 4;
 
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
 
     -fx-text-fill: #44495E;
     -fx-prompt-text-fill: #111;

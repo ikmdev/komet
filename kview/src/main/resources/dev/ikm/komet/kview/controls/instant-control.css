@@ -6,7 +6,7 @@
 
 .instant-control > .title-label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-text-fill: -Grey-11;
     -fx-font-weight: 500;
@@ -24,7 +24,7 @@
 
 .instant-control > .calendar-box > .calendar-label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-fill: -Grey-10;

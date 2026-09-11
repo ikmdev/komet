@@ -1,3 +1,10 @@
+/*
+ * Text sizes are in em. 1em is the font size of the scene root: 12px at the Default text size
+ * (TextSize.DEFAULT_FONT_SIZE), which TextSizeStylesheet sets on every window so the Settings
+ * text size scales all text at once. A rule that wants 14px at Default says 1.166667em; a rule
+ * nested under another sized rule is relative to that one instead.
+ */
+
 @font-face {
     font-family: 'Noto Sans';
     font-weight: normal;
@@ -143,7 +150,7 @@
 
 .stamp-form-container .form-title {
     -fx-font-family: "Noto Sans Medium";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-text-fill: #111;
 
     -fx-padding: 12px 0 0 0;
@@ -155,7 +162,7 @@
 
 .stamp-form-container .form-container .form-label {
     -fx-font-family: "Noto Sans Medium";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-text-fill: #111;
 }
 
@@ -186,14 +193,14 @@
 .concept-title {
     -fx-text-fill: -Grey-12;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 17px;
+    -fx-font-size: 1.416667em; /* 17px */
     -fx-alignment: top-left;
     -fx-max-height: infinity;
 }
 
 .concept-definition-title {
     -fx-font-family: "Noto Sans Bold";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-text-fill: -Grey-11;
     -fx-padding: 0;
 }
@@ -240,7 +247,7 @@
 
 .concept-window .main-center-container .concept-section > .titled-pane .title {
     -fx-font-family: "Noto Sans SemiBold";
-    -fx-font-size: 12;
+    -fx-font-size: 1em; /* 12px */
     -fx-background-radius: 0;
     -fx-background-insets: 0, 1 0 0 0;
     -fx-background-color: -Grey-10, -Grey-2;
@@ -366,7 +373,7 @@
 /* other names (aka description semantics) in the concept window */
 .descr-semantic {
     -fx-font-family: "Noto Sans Medium";
-    -fx-font-size: 11;
+    -fx-font-size: 0.916667em; /* 11px */
     -fx-text-fill: -Grey-8;
     -fx-fill: -Grey-8;
 }
@@ -386,7 +393,7 @@
 
 .descr-concept-name {
     -fx-font-family: "Noto Sans SemiBold";
-    -fx-font-size: 12;
+    -fx-font-size: 1em; /* 12px */
 }
 
 .descr-concept-icon {
@@ -512,7 +519,7 @@
     -fx-alignment: center;
     -fx-content-display: top;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 9px;
+    -fx-font-size: 0.75em; /* 9px */
     -fx-font-style: normal;
     -fx-text-fill: -Secondary-05;
     /*-fx-content-display: graphic-only;*/
@@ -709,7 +716,7 @@
     -icon-paint: -Grey-10;
     -default-height: -1;
     -default-width: -1;
-    -default-button-height: 56px;
+    -default-button-height: 4em; /* 56px: resolved on the 14px nav buttons it sizes, so it follows the text size */
     -default-button-width: -1;
 
     -fx-alignment: center-left;
@@ -737,7 +744,7 @@
     -fx-background-radius: 0px, 0px, 0px, 0px;
     -fx-padding: 4 19 4 12;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 400;
     -fx-text-fill: -Grey-3;
@@ -756,9 +763,9 @@
     -fx-content-display: left;
     -fx-graphic-text-gap: 8;
     -fx-min-width: -default-button-width;
-    width: 152;
+    width: 10.857143em; /* 152px, relative to the 14px button text so the bar widens with the text size */
     -fx-pref-width: width;
-    -fx-max-width: width;
+    -fx-max-width: Infinity; /* fills the bar when something else in it (the footer, a wrapped label) is wider */
 }
 
 /* A nav button whose label wraps to multiple lines (e.g. "Knowledge Layout Editor").
@@ -783,8 +790,23 @@
     -fx-pref-width: 26px;
 }
 
+/* The rule under Home: stretches across the bar (the bar's VBox fills width) inside the margins the FXML gives it. */
+.side-bar > .nav-separator {
+    -fx-background-color: -Grey-8;
+    -fx-min-height: 1;
+    -fx-pref-height: 1;
+    -fx-max-height: 1;
+}
+
 .side-bar .toggle-button .icon-container .label {
     -fx-text-fill: white;
+}
+/* The wrapping "Knowledge Layout Editor" label needs a definite width to wrap at (see
+   .multiline-nav-button); in em of its 14px text so it widens with the text size. */
+.side-bar .toggle-button .icon-container .multiline-nav-label {
+    -fx-min-width: 6em; /* 84px */
+    -fx-pref-width: 6em;
+    -fx-max-width: 6em;
 }
 
 .side-bar .toggle-button:selected .icon-container .label {
@@ -1322,12 +1344,16 @@ selected(active) - dark black
     -bar-color: -Natural-Grey-Main;
     -fx-background-color: -bar-color;
     -fx-padding: 0 5 0 5;
+    /* 40px at Default, in em so the bar grows with the text size (the classic windows above keep 40px). */
+    -fx-min-height: 3.333333em;
+    -fx-pref-height: 3.333333em;
+    -fx-max-height: 3.333333em;
 }
 
 .kl-window-control-toolbar .properties-toggle {
     -fx-fill: -Grey-White;
     -fx-font-family: "Open Sans SemiBold";
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
 }
 
 .kl-window-control-toolbar .window-header-control .leading-buttons-container {
@@ -1378,9 +1404,14 @@ selected(active) - dark black
     -fx-background-radius: 5;
     -fx-text-fill: -Grey-White;
     -fx-font-family: "Open Sans SemiBold";
-    -fx-font-size: 13px;
-    -fx-padding: 4 14 4 14;
+    -fx-font-size: 1.083333em; /* 13px */
+    -fx-padding: 0.307692em 1.076923em; /* 4 14 4 14, relative to the 13px text */
     -fx-content-display: text-only;
+    /* Height from the text and padding, not the 28px every header button gets by default, so the
+       button grows with its text. */
+    -fx-min-height: -1;
+    -fx-pref-height: -1;
+    -fx-max-height: -1;
     -fx-min-width: -1;
     -fx-pref-width: -1;
     -fx-max-width: -1;
@@ -2122,7 +2153,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-indent: 1em;
     /*-fx-background-color: #3E7DE833;*/
     -fx-font-family: "Open Sans";
-    /*-fx-font-size: 14;*/
+    /*-fx-font-size: 1.166667em;*/
     -fx-font-style:	normal;
     -fx-font-weight: normal;
 }
@@ -2206,7 +2237,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-text-alignment: left;
     -fx-text-fill: black;
     -fx-font-family: "Open Sans";
-    -fx-font-size: 12;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: normal;
 }
@@ -2236,7 +2267,7 @@ Timeline Year line segment (will overlay change circles)
 .lidr-tab-text {
     -fx-text-alignment: center;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 11px;
+    -fx-font-size: 0.916667em; /* 11px */
     -fx-font-style: normal;
     -fx-fill: -Grey-White;
     -fx-text-fill: -Grey-White;
@@ -2257,7 +2288,7 @@ Timeline Year line segment (will overlay change circles)
 }
 .titled-pane.lidr-result-titled-pane > .title > .text {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-fill: -Grey-White;
     -fx-text-fill: -Grey-White;
@@ -2274,7 +2305,7 @@ Timeline Year line segment (will overlay change circles)
 
 .result-field-label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-fill: -Grey-White;
     -fx-text-fill: -Grey-8;
@@ -2282,7 +2313,7 @@ Timeline Year line segment (will overlay change circles)
 }
 .result-field-value {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-fill: -Grey-Black;
     -fx-font-weight: 500;
@@ -2298,7 +2329,7 @@ Timeline Year line segment (will overlay change circles)
 .lidr-device-title-label {
     -fx-text-alignment: center;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-font-style: normal;
     -fx-text-fill: -Grey-12;
     -fx-font-weight: 500;
@@ -2306,7 +2337,7 @@ Timeline Year line segment (will overlay change circles)
 
 .lidr-device-label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-text-fill: -Grey-11;
     -fx-font-weight: 500;
@@ -2320,7 +2351,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-pref-height: 24.0;
     -fx-alignment: center;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-fill: -Grey-8;
@@ -2366,7 +2397,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-text-fill: -Grey-8;
     -fx-text-align: center;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-alignment: center;
@@ -2391,7 +2422,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-text-fill: -Grey-8;
     -fx-text-align: center;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-alignment: center;
@@ -2414,7 +2445,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Grey-1;
     -fx-text-fill: -Secondary-05;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-border-width: 1px;
     -fx-border-radius: 4 4 4 4;
@@ -2438,7 +2469,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Grey-2;
     -fx-text-fill: -Secondary-05;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 600;
     /* there is no letter-spacing in javafx... possibly work around this */
@@ -2451,7 +2482,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-text-fill: -Grey-2;
     -fx-background-color: -Secondary-05;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 600;
 }
@@ -2474,7 +2505,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-pref-width: 416px;
     -fx-text-fill: -Grey-8;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
 }
@@ -2491,7 +2522,7 @@ Timeline Year line segment (will overlay change circles)
 .lidr-combo-box .list-cell {
     -fx-text-fill: -Grey-8;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
 }
@@ -2507,7 +2538,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Secondary-05;
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 600;
 }
@@ -2520,7 +2551,7 @@ Timeline Year line segment (will overlay change circles)
 
 .lidr-results-type-label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
 }
@@ -2549,7 +2580,7 @@ Timeline Year line segment (will overlay change circles)
 .lidr-device-entry-label {
     -fx-text-fill: -Grey-11;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-pref-width: 400px;
@@ -2577,7 +2608,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-text-fill: -Grey-8;
     -fx-text-align: center;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-alignment: center;
@@ -2626,7 +2657,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-pref-height: 24.0;
     -fx-alignment: center;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-fill: -Grey-8;
@@ -2760,7 +2791,7 @@ Timeline Year line segment (will overlay change circles)
 
 .text-noto-sans-bold-grey-twelve {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: bold;
     -fx-text-fill: -Grey-12;
@@ -2769,21 +2800,21 @@ Timeline Year line segment (will overlay change circles)
 
 .text-noto-sans-twelve {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-text-fill: -Grey-12;
 }
 
 .text-noto-sans-twelve {
     -fx-font-family: "Noto Sans Semibold";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-fill: -Grey-10;
 }
 
 .text-noto-sans-normal-grey-eight {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 11px;
+    -fx-font-size: 0.916667em; /* 11px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-fill: -Grey-8;
@@ -2811,7 +2842,7 @@ Timeline Year line segment (will overlay change circles)
 .device-entry-label {
     -fx-text-fill: -Grey-11;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-pref-width: 400px;
@@ -2829,7 +2860,7 @@ Timeline Year line segment (will overlay change circles)
 .concept-entry-label {
     -fx-text-fill: -Grey-11;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-pref-width: 400px;
@@ -2886,7 +2917,7 @@ Timeline Year line segment (will overlay change circles)
 .grey9-14pt-normal {
     -fx-text-fill: -Grey-9;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: normal;
 }
@@ -2894,7 +2925,7 @@ Timeline Year line segment (will overlay change circles)
 .grey12-12pt-bold {
     -fx-text-fill: -Grey-12;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: bold;
 }
@@ -2903,7 +2934,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-fill: -Grey-8;
     -fx-text-fill: -Grey-8;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: bold;
 }
@@ -2911,7 +2942,7 @@ Timeline Year line segment (will overlay change circles)
 .grey12-18pt-normal {
     -fx-text-fill: -Grey-12;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 18px;
+    -fx-font-size: 1.5em; /* 18px */
     -fx-font-style: normal;
     -fx-font-weight: normal;
 }
@@ -2921,7 +2952,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-text-fill: #4B4B4B;
     -fx-background-color: #D2D2D2;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 10px;
+    -fx-font-size: 0.833333em; /* 10px */
     -fx-font-style: normal;
     -fx-font-weight: normal;
 }
@@ -2954,7 +2985,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Grey-1;
     -fx-border-color: -Secondary-05;
     -fx-text-fill: -Secondary-05;
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-weight: 600;
     -fx-font-family: "Noto Sans SemiBold";
     -fx-alignment: center;
@@ -2969,7 +3000,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-radius: 4;
 
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
 
@@ -3007,7 +3038,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-padding: 10 8;
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 400;
     -fx-background-insets: 0;
@@ -3085,7 +3116,7 @@ Timeline Year line segment (will overlay change circles)
 
     -fx-color: -Grey-8;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
 
     -fx-prompt-text-fill: #909090;
 }
@@ -3095,7 +3126,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-color: -Grey-8;
 
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
 }
@@ -3129,7 +3160,7 @@ Timeline Year line segment (will overlay change circles)
 
     -fx-color: -Grey-8;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
 }
 
 .blue-arrow-combo-box.combo-box-base > .arrow-button > .arrow {
@@ -3148,7 +3179,7 @@ Timeline Year line segment (will overlay change circles)
 .comment-placeholder-text {
     -fx-fill: -Grey-8;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
 }
@@ -3173,7 +3204,7 @@ Timeline Year line segment (will overlay change circles)
 .grey-blue-button {
     -fx-font-family: "Noto Sans SemiBold";
     -fx-font-weight: 600;
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-border-radius: 4;
     -fx-background-color: -Secondary-05;
     -fx-text-fill: -Grey-White;
@@ -3184,7 +3215,7 @@ Timeline Year line segment (will overlay change circles)
 .white-blue-button {
     -fx-font-family: "Noto Sans Bold";
     -fx-font-weight: 700;
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-border-radius: 4;
     -fx-border-color: -Secondary-05;
     -fx-background-color: -Grey-White;
@@ -3286,7 +3317,7 @@ Timeline Year line segment (will overlay change circles)
 
 .next-gen-search-main-container .descriptions-list-view .list-cell .cell-container .text-container {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
 
     -fx-padding: 1 0 0 6px;
 }
@@ -3332,7 +3363,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-pref-height: 24.0;
 
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
 
@@ -3354,7 +3385,7 @@ Timeline Year line segment (will overlay change circles)
 
 .search-sort-button {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: 700;
     -fx-border-radius: 2;
@@ -3400,7 +3431,7 @@ Timeline Year line segment (will overlay change circles)
 
 .search-entry-text {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
 
     -fx-line-height: 16px;
     -fx-letter-spacing: 0.2px;
@@ -3449,7 +3480,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-border-radius: 2px;
     -fx-fill: -Grey-11;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: 400;
     -fx-background-color: white;
@@ -3461,7 +3492,7 @@ Timeline Year line segment (will overlay change circles)
 .search-semantic-entry-text {
     -fx-fill: -Grey-11;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: 400;
 }
@@ -3518,7 +3549,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Medium-opaque-red;
 
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 10px;
+    -fx-font-size: 0.833333em; /* 10px */
     -fx-font-style: normal;
     -fx-font-weight: 700;
     -fx-text-fill: white;
@@ -3544,7 +3575,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Grey-11;
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 16px;
+    -fx-font-size: 1.333333em; /* 16px */
     -fx-font-style: normal;
     -fx-font-weight: 400;
 }
@@ -3553,7 +3584,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Grey-11;
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 16px;
+    -fx-font-size: 1em; /* 16px: the item is already 16px */
     -fx-font-style: normal;
     -fx-font-weight: 400;
 }
@@ -3562,7 +3593,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Grey-11;
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 16px;
+    -fx-font-size: 1em; /* 16px: the item is already 16px */
     -fx-font-style: normal;
     -fx-font-weight: 400;
 }
@@ -3572,7 +3603,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Grey-9;
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 16px;
+    -fx-font-size: 1em; /* 16px: the item is already 16px */
     -fx-font-style: normal;
     -fx-font-weight: 400;
 }
@@ -3581,7 +3612,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-background-color: -Grey-9;
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 16px;
+    -fx-font-size: 1.333333em; /* 16px */
     -fx-font-style: normal;
     -fx-font-weight: 400;
 }
@@ -3632,7 +3663,7 @@ Timeline Year line segment (will overlay change circles)
 /* The main title of the Pattern that shows in the top of the window */
 .pattern-main-title {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 18px;
+    -fx-font-size: 1.5em; /* 18px */
 
     -fx-padding: -1px 0 0 1px;
 }
@@ -3645,7 +3676,7 @@ Timeline Year line segment (will overlay change circles)
 .pattern-title {
     -fx-text-alignment: center;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-fill: -Grey-8;
 }
@@ -3708,7 +3739,7 @@ Timeline Year line segment (will overlay change circles)
 
 .pattern-instance-hbox {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
 
     -fx-background-color: white;
     -fx-background-radius: 3px;
@@ -3785,7 +3816,7 @@ Timeline Year line segment (will overlay change circles)
 .label.edit-concept-title {
     -fx-text-fill: -Grey-12;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
 }
@@ -3958,7 +3989,7 @@ Timeline Year line segment (will overlay change circles)
 .counter > .label {
     -fx-text-fill: -Grey-White;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 11px;
+    -fx-font-size: 0.916667em; /* 11px */
     -fx-font-style: normal;
     -fx-font-weight: 700;
 }
@@ -3991,7 +4022,7 @@ Timeline Year line segment (will overlay change circles)
 .welcome-container > .status-pane .status-label {
     -fx-font-family: "Noto Sans SemiBold";
     -fx-font-weight: 600;
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
 }
 
 .welcome-container > .status-pane .status-label.github {
@@ -4000,13 +4031,13 @@ Timeline Year line segment (will overlay change circles)
 
 .welcome-container > .status-pane .status-label.dataset {
     -fx-text-fill: -Secondary-06;
-    -fx-font-size: 18px;
+    -fx-font-size: 1.5em; /* 18px */
 }
 
 .welcome-container > .status-pane .github-status-link {
     -fx-font-family: "Noto Sans Medium";
     -fx-font-weight: 500;
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-text-fill: -Grey-Black;
 }
 
@@ -4017,7 +4048,7 @@ Timeline Year line segment (will overlay change circles)
 .welcome-container .selected-dataset-title-label {
     -fx-font-family: "Noto Sans SemiBold";
     -fx-font-weight: 700;
-    -fx-font-size: 18px;
+    -fx-font-size: 1.5em; /* 18px */
     -fx-text-fill: -Secondary-06;
 }
 
@@ -4026,7 +4057,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-text-fill: -Secondary-06;
     -fx-fill: -Secondary-06;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 28px;
+    -fx-font-size: 2.333333em; /* 28px */
     -fx-font-style: normal;
     -fx-font-weight: 600;
     -fx-max-width: 1728px;
@@ -4061,7 +4092,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-pref-height: 32px;
     -fx-max-height: 32px;
     -fx-font-family: Noto Sans;
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
 }
@@ -4101,7 +4132,7 @@ Timeline Year line segment (will overlay change circles)
     -fx-pref-height: 32px;
     -fx-max-height: 32px;
     -fx-font-family: Noto Sans;
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
 }
@@ -4322,7 +4353,7 @@ Styling a context menu for kview ui/ux controls
 
 .kview-context-menu .menu-item > .label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 400;
     -fx-text-fill: -Grey-White;
@@ -4339,7 +4370,7 @@ Styling a context menu for kview ui/ux controls
 .kview-context-menu .menu-item.menu-header > .label,
 .kview-context-menu .menu-item.menu-header-left-align > .label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: 600;
     -fx-text-fill: -Grey-6;
@@ -4400,7 +4431,7 @@ Styling a context menu for kview ui/ux controls
 .card-info-container .title {
     -fx-text-fill: -Grey-Black;
     -fx-font-family: Noto Sans;
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
 }
@@ -4410,7 +4441,7 @@ Styling a context menu for kview ui/ux controls
 
 .card-info-container .edit-time {
     -fx-font-family: Noto Sans;
-    -fx-font-size: 11px;
+    -fx-font-size: 0.916667em; /* 11px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-text-fill: -Grey-8;
@@ -4424,7 +4455,7 @@ Styling a context menu for kview ui/ux controls
 }
 .landing-container .titled-pane > .title > .text {
     -fx-font-family: Noto Sans;
-    -fx-font-size: 16px;
+    -fx-font-size: 1.333333em; /* 16px */
     -fx-font-style: normal;
     -fx-font-weight: 600;
     -fx-text-fill: -Grey-11;
@@ -4435,7 +4466,7 @@ Styling a context menu for kview ui/ux controls
     -fx-text-fill: -Secondary-05;
     -fx-text-alignment: center;
     -fx-font-family: Noto Sans;
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 600;
     -fx-pref-height: 32px;
@@ -4476,7 +4507,7 @@ Styling a context menu for kview ui/ux controls
     -fx-alignment: center;
     -fx-text-alignment: center;
     -fx-font-family: Noto Sans;
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
 
@@ -4505,7 +4536,7 @@ Styling a context menu for kview ui/ux controls
     -fx-text-fill: -Grey-White;
     -fx-text-alignment: center;
     -fx-font-family: Noto Sans;
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 600;
     -fx-pref-height: 32px;
@@ -4541,7 +4572,7 @@ Styling a context menu for kview ui/ux controls
 .landing-container .text-field {
     -fx-text-alignment: center;
     -fx-font-family: Noto Sans;
-    -fx-font-size: 16px;
+    -fx-font-size: 1.333333em; /* 16px */
     -fx-font-style: normal;
     -fx-font-weight: 400;
 }
@@ -4579,7 +4610,7 @@ Styling a context menu for kview ui/ux controls
 
 .kl-editor-landing-page > .header-container > .title-container > .title {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 28px;
+    -fx-font-size: 2.333333em; /* 28px */
 
     -fx-text-fill: #395c9a;
 }
@@ -4598,13 +4629,13 @@ Styling a context menu for kview ui/ux controls
 
 .kl-editor-landing-page > .header-container > .help-icon-container > .label {
     -fx-text-fill: white;
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
 
 }
 
 .kl-editor-landing-page > .sub-title {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 20px;
+    -fx-font-size: 1.666667em; /* 20px */
     -fx-padding: 0 0 10px 0;
 }
 
@@ -4756,12 +4787,12 @@ Styling a context menu for kview ui/ux controls
 
 .kl-editor-landing-page .card .bottom-container .label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
 }
 
 .kl-editor-landing-page .card .bottom-container .label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
 }
 
 .kl-editor-landing-page .saved-views-container .card .bottom-container .label {
@@ -4846,7 +4877,7 @@ Styling a context menu for kview ui/ux controls
     -fx-text-fill: white;
     -fx-text-alignment: center;
     -fx-font-family: Noto Sans;
-    -fx-font-size: 11px;
+    -fx-font-size: 0.916667em; /* 11px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
 
@@ -4977,7 +5008,7 @@ Styling a context menu for kview ui/ux controls
 .popup-container > .label.title {
     -fx-padding: 2 4 2 8;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: 600;
     -fx-text-fill: -Grey-6;
@@ -5013,7 +5044,7 @@ Styling a context menu for kview ui/ux controls
 
 .popup-container .titled-pane > .title > .text {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 400;
 }
@@ -5195,7 +5226,7 @@ Styling a context menu for kview ui/ux controls
 
 .kview-progress #titleText {
     -fx-font-family: "Noto Sans Medium";
-    -fx-font-size: 18px;
+    -fx-font-size: 1.5em; /* 18px */
     -fx-font-weight: 500;
     -fx-font-style: normal;
     -fx-fill: -Grey-White;
@@ -5203,14 +5234,14 @@ Styling a context menu for kview ui/ux controls
 
 .kview-progress #messageText {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-weight: 400;
     -fx-fill: -Grey-3;
 }
 
 .kview-progress #valueText {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 18px;
+    -fx-font-size: 1.5em; /* 18px */
     -fx-font-weight: 700;
     -fx-font-style: normal;
     -fx-fill: -Accent-color-green;
@@ -5218,7 +5249,7 @@ Styling a context menu for kview ui/ux controls
 
 .kview-progress #statusText {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: 400;
     -fx-fill: -Grey-3;
@@ -5230,7 +5261,7 @@ Styling a context menu for kview ui/ux controls
     -fx-border-color: -Secondary-05;
     -fx-border-radius: 4;
     -fx-font-family: "Noto Sans SemiBold";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 600;
     -fx-text-fill: -Secondary-04;
@@ -5263,7 +5294,7 @@ Styling a context menu for kview ui/ux controls
 }
 
 .login-page > .left-vbox > .label {
-    -fx-font-size: 22px;
+    -fx-font-size: 1.833333em; /* 22px */
     -fx-font-weight: 600;
     -fx-text-fill: -Grey-White;
 }
@@ -5280,27 +5311,27 @@ Styling a context menu for kview ui/ux controls
 }
 
 .login-page .center-vbox > .header-label {
-    -fx-font-size: 16px;
+    -fx-font-size: 1.333333em; /* 16px */
     -fx-font-weight: 500;
     -fx-text-fill: -Grey-Black;
     -fx-padding: 0 0 24 0;
 }
 
 .login-page .center-vbox > .text-field {
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-pref-height: 36px;
     -fx-font-weight: 500;
 }
 
 .login-page .center-pane .error-label {
-    -fx-font-size: 11px;
+    -fx-font-size: 0.916667em; /* 11px */
     -fx-font-weight: 500;
     -fx-text-fill: -Accent-color-red;
     -fx-padding: 0 0 8 0;
 }
 
 .login-page .center-vbox > .signin-button {
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-text-fill: -Grey-White;
     -fx-font-weight: 500;
     -fx-pref-height: 36px;
@@ -5331,7 +5362,7 @@ Styling a context menu for kview ui/ux controls
 .reasoner-result-header .label {
     -fx-text-fill: -Grey-1;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-background-color: -Grey-9;
 }
 
@@ -5383,14 +5414,14 @@ Styling a context menu for kview ui/ux controls
 
 .reasoner-entry {
     -fx-text-fill: -Grey-1;
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-font-weight: bold;
 }
 
 .reasoner-entry.titled-pane > .title {
     -fx-text-fill: -Grey-1;
     -fx-background-color: -Grey-8;
-    -fx-font-size: 13px;
+    -fx-font-size: 1em; /* 13px: the entry is already 13px */
     -fx-font-weight: bold;
 }
 
@@ -5434,7 +5465,7 @@ Styling a context menu for kview ui/ux controls
     -fx-max-width: -width;
     -fx-background-color: white;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 0.923077em; /* 12px, inside the 13px entry */
     -fx-font-style: normal;
 }
 
@@ -5447,6 +5478,7 @@ Styling a context menu for kview ui/ux controls
 }
 
 .nav-toggle.toggle-button {
+    -fx-pref-width: 8.583333em; /* 103px; in em so the pills widen with the text size */
     -fx-border-color: -Grey-7;
     -fx-background-color: -Grey-2;
     -fx-text-fill: -Secondary-05;
@@ -5454,7 +5486,7 @@ Styling a context menu for kview ui/ux controls
     -fx-font-family: "Noto Sans";
     -fx-letter-spacing: 0.2px;
     -fx-text-transform: uppercase;
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: bold;
 }
@@ -5479,7 +5511,10 @@ Styling a context menu for kview ui/ux controls
 
 .pattern-title-container {
     -fx-alignment: center_left;
-    -fx-padding: 0 10px 0 14px;
+    /* Sized from its content, in em, so a larger text size keeps the space around the title instead
+       of the title growing into it. Was a fixed 40px row with 8px padding in the FXML. */
+    -fx-padding: 0.666667em; /* 8px */
+    -fx-min-height: 3.333333em; /* 40px */
     -fx-spacing: 8px;
 }
 
@@ -5597,7 +5632,7 @@ Styling a context menu for kview ui/ux controls
 
 .pattern-field {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 13;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-text-fill: -Grey-10;
 
     -fx-padding: 0 0 3px -1px;
@@ -5889,26 +5924,26 @@ Styling a context menu for kview ui/ux controls
     -fx-font-family: "Noto Sans";
     -fx-text-fill: #212430;
     -fx-font-weight: 400;
-    -fx-font-size: 17px;
+    -fx-font-size: 1.416667em; /* 17px */
 }
 .semantic-banner-label {
     -fx-font-family: "Noto Sans";
     -fx-text-fill: #212430;
     -fx-font-weight: bolder;
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
 }
 .semantic-banner-value {
     -fx-font-family: "Noto Sans";
     -fx-text-fill: #212430;
     -fx-font-weight: 400;
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
 }
 
 /* Semantic Details section - VBox */
 
 .semantic-field {
     -fx-font-family: Noto Sans;
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-weight: bold;
     -fx-fill: -Grey-8;
 }
@@ -5932,7 +5967,7 @@ Styling a context menu for kview ui/ux controls
 .semantic-field-type-label {
     -fx-font-family: "Noto Sans";
     -fx-font-weight: 600;
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-text-fill: #5E5E5E;
 }
 
@@ -5941,7 +5976,7 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: transparent;
     -fx-font-family: "Noto Sans";
     -fx-font-weight: 600;
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-text-fill: #212430;
 }
 /* mouse hover */
@@ -5972,7 +6007,7 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: -Grey-2;
     -fx-text-fill: -Secondary-05;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 600;
 }
@@ -5994,7 +6029,7 @@ Styling a context menu for kview ui/ux controls
     -fx-border-radius: 4;
     -fx-background-color: -Secondary-05;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-weight: 600;
     -fx-font-style: normal;
     -fx-text-fill: -Grey-White;
@@ -6024,6 +6059,7 @@ Styling a context menu for kview ui/ux controls
 /******************* Tooltip for Semantic in Pattern Browser ******************/
 
 .semantic-tooltip {
+    -fx-font-size: 1em; /* modena shrinks tooltips to 0.85em; the content sizes are relative to the owner */
     -fx-padding: 10 0 0 0;
     -fx-border-color: #2E3240;
     -fx-border-radius: 2px;
@@ -6038,7 +6074,7 @@ Styling a context menu for kview ui/ux controls
 .semantic-tooltip .main-container > .title {
     -fx-font-family: "Noto Sans";
     -fx-text-fill: white;
-    -fx-font-size: 16px;
+    -fx-font-size: 1.333333em; /* 16px */
     -fx-max-height: 100px;
     -fx-padding: 15 15 10 15;
     -fx-text-alignment: left;
@@ -6057,7 +6093,7 @@ Styling a context menu for kview ui/ux controls
 .semantic-tooltip .values-container .grid .field-title.label {
     -fx-font-family: "Noto Sans";
     -fx-text-fill: white;
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-text-alignment: left;
     -fx-padding: 10px 0 13px 0;
 }
@@ -6067,7 +6103,7 @@ Styling a context menu for kview ui/ux controls
     -fx-font-family: "Noto Sans";
     -fx-text-fill: white;
     -fx-text-alignment: left;
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-padding: 10 0 25 0;
     -fx-alignment: center-left;
 }
@@ -6089,7 +6125,7 @@ Styling a context menu for kview ui/ux controls
     -fx-text-fill: white;
     -fx-alignment: center_left;
     -fx-text-alignment: center-left;
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-border-width: 1px;
     -fx-border-color: transparent;
     -fx-padding: 0 0 0 1px;
@@ -6148,7 +6184,7 @@ Styling a context menu for kview ui/ux controls
 
 .klcontext-menu .menu-item > .label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-text-fill: white;
     -fx-font-weight: 500;
 }
@@ -6202,7 +6238,7 @@ Styling a context menu for kview ui/ux controls
 .boolean-control .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
     -fx-font-family: "Noto Sans";
 
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-padding: 0.333333em 0.833333em 0.333333em 0.833333em;  /* 4 10 4 10 */
 
     -fx-background: transparent;
@@ -6367,7 +6403,7 @@ Styling a context menu for kview ui/ux controls
 
 .editable-title-label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-text-fill: -Grey-11;
     -fx-font-weight: 500;
@@ -6390,7 +6426,7 @@ Styling a context menu for kview ui/ux controls
 
 .dialog-pane .title-label {
     -fx-font-family: "Noto Sans Medium";
-    -fx-font-size: 18px;
+    -fx-font-size: 1.5em; /* 18px */
     -fx-font-weight: 500;
     -fx-text-fill: -Grey-12;
 }
@@ -6400,21 +6436,21 @@ Styling a context menu for kview ui/ux controls
 *****************************/
 .github-pane .title-label {
     -fx-font-family: "Noto Sans Medium";
-    -fx-font-size: 18px;
+    -fx-font-size: 1.5em; /* 18px */
     -fx-font-weight: 500;
     -fx-text-fill: -Grey-12;
 }
 
 .github-pane .title-description-label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-weight: 400;
     -fx-text-fill: -Grey-Black;
 }
 
 .github-pane .text-field {
     -fx-font-family: "Noto Sans Medium";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-weight: 500;
     -fx-text-fill: -Grey-Black;
     -fx-prompt-text-fill: -Grey-8;
@@ -6430,7 +6466,7 @@ Styling a context menu for kview ui/ux controls
 
 .github-pane .text-area {
     -fx-font-family: "Noto Sans Medium";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-weight: 500;
     -fx-text-fill: -Grey-Black;
     -fx-prompt-text-fill: -Grey-8;
@@ -6459,7 +6495,7 @@ Styling a context menu for kview ui/ux controls
 
 .github-pane .button {
     -fx-font-family: "Noto Sans SemiBold";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-weight: 600;
 }
 
@@ -6478,7 +6514,7 @@ Styling a context menu for kview ui/ux controls
 }
 
 .github-pane .error-text-flow .error-text {
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-weight: 500;
     -fx-fill: -Accent-color-red;
 }
@@ -6683,7 +6719,7 @@ Styling a context menu for kview ui/ux controls
 .gen-purpose-window .lidr-rounded-tab .draft-chip {
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans Bold";
-    -fx-font-size: 9px;
+    -fx-font-size: 0.75em; /* 9px */
     -fx-border-color: #FFFFFFBF;
     -fx-border-style: segments(3, 2);
     -fx-border-radius: 4;
@@ -6694,7 +6730,7 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: #F4F6FA;
     -fx-text-fill: #5D6B84;
     -fx-font-family: "Noto Sans Medium";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-padding: 6 14 6 14;
     -fx-graphic-text-gap: 8;
     /* solid hairline closing the strip below; the dashed frame is on .window-lower-frame */
@@ -6712,7 +6748,7 @@ Styling a context menu for kview ui/ux controls
    while the section's required pattern has no semantic yet, echoing the window's DRAFT chip
    language; flips to a solid green "✓ REQUIREMENT MET" once the requirement is satisfied. */
 .gen-purpose-window .section-titled-pane .required-chip {
-    -fx-font-size: 9px;
+    -fx-font-size: 0.75em; /* 9px */
     -fx-font-weight: bold;
     -fx-text-fill: #C05621;
     -fx-border-color: #C05621;
@@ -6771,7 +6807,7 @@ Styling a context menu for kview ui/ux controls
 
  .window-main-title .label {
      -fx-font-family: "Noto Sans";
-     -fx-font-size: 18px;
+     -fx-font-size: 1.5em; /* 18px */
 
      -fx-graphic-text-gap: 8px;
  }
@@ -6812,14 +6848,14 @@ Styling a context menu for kview ui/ux controls
 /* Sections */
 .gen-purpose-window .section-titled-pane .section-titled-pane-container {
     /* 12px sides = the shared content gutter (same inset as the banner title / Komet ID) */
-    -fx-padding: 8px 12px 8px 12px;
+    -fx-padding: 0.666667em 1em 0.666667em 1em; /* 8 12 8 12 */
 
     /* Gaps between patterns laid out in this Section's grid. Rows stack at content height
        (see PrefCappedRowsGridPane), so the vgap separates one pattern view from the next —
        kept small because fields bring their own breathing room (e.g. the read-only ditree's
        wash padding, read-only-ditree-control.css). */
-    -fx-hgap: 10px;
-    -fx-vgap: 10px;
+    -fx-hgap: 0.833333em; /* 10px */
+    -fx-vgap: 0.833333em; /* 10px; in em so the section gaps follow the text size */
 }
 
 /* Section header: a smaller, muted expand/collapse chevron, kept off the window edge,
@@ -6863,9 +6899,9 @@ Styling a context menu for kview ui/ux controls
    border and would otherwise start 1px to their left. */
 .gen-purpose-window .gen-purpose-pattern-title {
     -fx-font-family: "Noto Sans SemiBold";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-text-fill: -Grey-8;
-    -fx-padding: 0 0 5px 1px;
+    -fx-padding: 0 0 0.416667em 0.083333em; /* 0 0 5 1 */
 }
 
 /*******************************************************************************
@@ -6879,23 +6915,23 @@ Styling a context menu for kview ui/ux controls
    side insets and the semantics container pads the same amount back, so the fields keep their
    exact position while the viewport's clip boundary moves clear of the wash. */
 .gen-purpose-window .pattern-container {
-    -fx-padding: -8 -14 10px -14;
+    -fx-padding: -0.666667em -1.166667em 0.833333em -1.166667em; /* -8 -14 10 -14 */
 }
 
 /* Matched on the wrapping container, since that — not the pattern view itself — is now the
    section grid's child. */
 .gen-purpose-window .pattern-view-container:last-child > .pattern-container {
-    -fx-padding: -8 -14 5px -14;
+    -fx-padding: -0.666667em -1.166667em 0.416667em -1.166667em; /* -8 -14 5 -14 */
 }
 
 /* The negative top inset above tightens the gap to whatever precedes the pattern, but with a title
    shown the thing above is the title itself, which sets its own gap — so give the 8px back. */
 .gen-purpose-window .pattern-view-container:title-visible > .pattern-container {
-    -fx-padding: 0 -14 10px -14;
+    -fx-padding: 0 -1.166667em 0.833333em -1.166667em; /* 0 -14 10 -14 */
 }
 
 .gen-purpose-window .pattern-view-container:title-visible:last-child > .pattern-container {
-    -fx-padding: 0 -14 5px -14;
+    -fx-padding: 0 -1.166667em 0.416667em -1.166667em; /* 0 -14 5 -14 */
 }
 
 /* Those 13px below a shown title — its own 5px plus the 8px the semantics container adds — are
@@ -6906,16 +6942,16 @@ Styling a context menu for kview ui/ux controls
    the same 2px above them that a field label sets above its own value. Change the top inset below
    to widen or tighten that gap. */
 .gen-purpose-window .pattern-view-container:title-visible:field-titles-hidden > .gen-purpose-pattern-title {
-    -fx-padding: 0 0 0 1px;
+    -fx-padding: 0 0 0 0.083333em; /* 0 0 0 1 */
 }
 
 .gen-purpose-window .pattern-view-container:title-visible:field-titles-hidden .semantics-container {
-    -fx-padding: 2 14 0 14;
+    -fx-padding: 0.166667em 1.166667em 0 1.166667em; /* 2 14 0 14 */
 }
 
 .gen-purpose-window .pattern-container .semantics-container {
-    -fx-spacing: 10px;
-    -fx-padding: 8 14 0 14;
+    -fx-spacing: 0.833333em; /* 10px */
+    -fx-padding: 0.666667em 1.166667em 0 1.166667em; /* 8 14 0 14 */
 }
 
 /* Those 10px are half the gap a separator sits in — with the separators turned off in the KL Editor
@@ -6924,7 +6960,7 @@ Styling a context menu for kview ui/ux controls
    one block per Pattern while each still starts its own line. Change the spacing below to widen or
    tighten the compact list. */
 .gen-purpose-window .pattern-container:separator-hidden .semantics-container {
-    -fx-spacing: 4px;
+    -fx-spacing: 0.333333em; /* 4px */
 }
 
 /* Empty pattern placeholder: a pattern with no semantic shows one muted line where its
@@ -6932,7 +6968,7 @@ Styling a context menu for kview ui/ux controls
 .gen-purpose-window .pattern-container .semantics-container .no-semantic-label {
     -fx-text-fill: -Grey-7;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
 }
 
 /* Same muted line for a semantic the current view holds no version of: it has no field values to
@@ -6940,7 +6976,7 @@ Styling a context menu for kview ui/ux controls
 .gen-purpose-window .pattern-container .semantics-container .semantic-view .no-version-label {
     -fx-text-fill: -Grey-7;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
 }
 
 .gen-purpose-window .pattern-container .semantics-container > .separator  > .line {
@@ -6954,18 +6990,18 @@ Styling a context menu for kview ui/ux controls
    is much larger than the gap between a field's label and its value (main-container
    spacing), so each label/value pair reads as one unit. */
 .gen-purpose-window .pattern-container .fields-container {
-    -fx-vgap: 11px;
-    -fx-hgap: 12px;
+    -fx-vgap: 0.916667em; /* 11px; in em so field spacing follows the text size */
+    -fx-hgap: 1em; /* 12px */
 }
 
 .gen-purpose-window .pattern-container .fields-container .main-container {
-    -fx-spacing: 2px;
+    -fx-spacing: 0.166667em; /* 2px */
 }
 
 /* Field labels: smaller and more muted than their values, so the values carry the
    visual weight when scanning. */
 .gen-purpose-window .pattern-container .fields-container .main-container > .title {
-    -fx-font-size: 11px;
+    -fx-font-size: 0.916667em; /* 11px */
     -fx-text-fill: -Grey-8;
 }
 
@@ -6976,7 +7012,7 @@ Styling a context menu for kview ui/ux controls
 .gen-purpose-window .pattern-container .fields-container .main-container .text-container,
 .gen-purpose-window .pattern-container .fields-container .main-container .component-item > .label,
 .gen-purpose-window .pattern-container .fields-container .main-container .prompt-text {
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
 }
 
 /* Field value text: the darkest text in the section, so the data reads before its framing does. */
@@ -7039,7 +7075,7 @@ Styling a context menu for kview ui/ux controls
     -fx-border-radius: 4;
 
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
 
@@ -7107,7 +7143,7 @@ Styling a context menu for kview ui/ux controls
 /* Tabs: quiet icon-over-label toggles; the active tab is blue with a 2px underline. */
 .gen-purpose-window .properties-tab.toggle-button {
     -fx-background-color: transparent;
-    -fx-font-size: 10px;
+    -fx-font-size: 0.833333em; /* 10px */
     -fx-text-fill: -Grey-8;
     -fx-border-color: transparent;
     -fx-border-width: 0 0 2 0;
@@ -7155,7 +7191,7 @@ Styling a context menu for kview ui/ux controls
 /* Same voice as the section headers on the left ("Data Type Test"). */
 .gen-purpose-window .fields-title-bar .lidr-device-title-label {
     -fx-font-family: "Noto Sans Medium";
-    -fx-font-size: 16px;
+    -fx-font-size: 1.333333em; /* 16px */
     -fx-text-fill: -Grey-11;
 }
 
@@ -7173,7 +7209,7 @@ Styling a context menu for kview ui/ux controls
     -fx-border-radius: 6;
     -fx-border-color: -Grey-5;
     -fx-text-fill: -Grey-10;
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-weight: 500;
     -fx-padding: 7 14 7 14;
 }
@@ -7223,7 +7259,7 @@ Styling a context menu for kview ui/ux controls
 .gen-purpose-window .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell .komet-label > .label {
     -fx-text-fill: #111;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: 400;
 
@@ -7284,7 +7320,7 @@ Styling a context menu for kview ui/ux controls
 }
 
 .edit-semantic-popup .title-label {
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-weight: 500;
     -fx-padding: 0 0 0 6px;
 }
@@ -7491,7 +7527,7 @@ Styling a context menu for kview ui/ux controls
     -fx-alignment: center-left;
     -fx-padding: 0 10 0 10;
     -fx-pref-height: 32;
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-text-fill: -Grey-9;
 }
 
@@ -7507,19 +7543,19 @@ Styling a context menu for kview ui/ux controls
 }
 
 .settings-dialog .settings-heading {
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-family: "Noto Sans SemiBold";
     -fx-font-weight: 600;
     -fx-text-fill: -Grey-12;
 }
 
 .settings-dialog .settings-description {
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-text-fill: -Grey-8;
 }
 
 .settings-dialog .settings-option-title {
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-font-family: "Noto Sans SemiBold";
     -fx-font-weight: 600;
     -fx-text-fill: -Grey-12;
@@ -7527,7 +7563,7 @@ Styling a context menu for kview ui/ux controls
 
 .settings-dialog .settings-pills .toggle-button {
     -fx-pref-height: 32;
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-font-family: "Noto Sans SemiBold";
     -fx-font-weight: 600;
 }
@@ -7545,14 +7581,14 @@ Styling a context menu for kview ui/ux controls
 }
 
 .settings-dialog .settings-preview-caption {
-    -fx-font-size: 11px;
+    -fx-font-size: 0.916667em; /* 11px */
     -fx-font-family: "Noto Sans SemiBold";
     -fx-font-weight: 600;
     -fx-text-fill: -Grey-7;
 }
 
 .settings-dialog .settings-preview-value {
-    -fx-font-size: 11px;
+    -fx-font-size: 0.916667em; /* 11px */
     -fx-font-family: "Noto Sans SemiBold";
     -fx-font-weight: 600;
     -fx-text-fill: -Grey-8;
@@ -7573,7 +7609,7 @@ Styling a context menu for kview ui/ux controls
 }
 
 .settings-dialog .settings-preview-row {
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-text-fill: -Grey-12;
 }
 
@@ -7587,7 +7623,7 @@ Styling a context menu for kview ui/ux controls
 
 .settings-dialog .settings-reset,
 .settings-dialog .settings-reset:visited {
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-font-family: "Noto Sans SemiBold";
     -fx-font-weight: 600;
     -fx-text-fill: -Secondary-05;
@@ -7623,7 +7659,7 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: -Grey-1;
     -fx-text-fill: -Secondary-05;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-font-style: normal;
     -fx-font-weight: 600;
     -fx-padding: 4 14 4 14;
@@ -7674,7 +7710,7 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: transparent;
     -fx-text-fill: #111;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-font-style: normal;
     -fx-font-weight: 400;
 }

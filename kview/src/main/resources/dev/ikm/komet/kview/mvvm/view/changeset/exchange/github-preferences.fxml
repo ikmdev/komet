@@ -44,8 +44,8 @@
             <PasswordField fx:id="gitPasswordField" promptText="Input Git Password"/>
         </VBox>
         <HBox alignment="CENTER_LEFT">
-            <Label style="-fx-font-size: 14px;" text="Don't have a GitHub account?"/>
-            <Hyperlink fx:id="signUpHyperlink" style="-fx-font-size: 14px;" text="Sign up here"/>
+            <Label style="-fx-font-size: 1.166667em;" text="Don't have a GitHub account?"/>
+            <Hyperlink fx:id="signUpHyperlink" style="-fx-font-size: 1.166667em;" text="Sign up here"/>
         </HBox>
     </VBox>
     <HBox alignment="BOTTOM_RIGHT" spacing="12.0">

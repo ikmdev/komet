@@ -47,7 +47,7 @@
 .ditree-control .ditree-bound-field,
 .ditree-control .ditree-literal-field {
     -fx-font-family: "Noto Sans Medium";
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-text-fill: #2E3240;
 
     -fx-background-color: white;
@@ -94,7 +94,7 @@
    missing ≥ and ≤ (see .ditree-comparison). */
 .klcontext-menu .menu-item .ditree-op-symbol {
     -fx-font-family: "Open Sans";
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
     -fx-text-fill: white;
     -fx-min-width: 14px;
     -fx-alignment: center;
@@ -135,14 +135,14 @@
     -fx-font-family: "Noto Sans";
     -fx-font-weight: normal;
     -fx-font-style: normal;
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-padding: 0 0 2 3;
 }
 .ditree-control .ditree-slot > .concept-container > .concept-search-box > .search-field-container > .search-prompt {
     -fx-font-family: "Noto Sans";
     -fx-font-weight: normal;
     -fx-font-style: normal;
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
 }
 
 /* Editable chips reserve space for both hover affordances at the right edge: the drag grip and

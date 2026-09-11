@@ -23,8 +23,11 @@ import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import dev.ikm.komet.framework.controls.KonceptBadge;
+import dev.ikm.komet.framework.settings.KometSettings;
+import dev.ikm.komet.framework.settings.TextSize;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Subscription;
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 import org.slf4j.Logger;
@@ -56,12 +59,11 @@ public class PatternNavEntryController {
 
     @FXML
     private VBox mainVBox;
+    /** The badge's ambient font in a pattern row: 16px at the Default text size, scaling with it. */
+    private static final double PATTERN_ROW_FONT_EM = 16.0 / TextSize.DEFAULT_FONT_SIZE;
 
-    /**
-     * Ambient font size (px) the pattern row renders its koncept atom at — the row is a navigation
-     * list line, not body text, so it sizes well above the badge's inline default.
-     */
-    private static final double PATTERN_ROW_FONT_SIZE = 16;
+    /** Follows the text size while the row is on a scene; null while it is not. */
+    private Subscription textSizeSubscription;
 
     /** Slot for the koncept atom — see {@code pattern-nav-entry.fxml}. */
     @FXML
@@ -144,8 +146,22 @@ public class PatternNavEntryController {
         patternBadge.setConceptName(
                 ViewCalculatorUtils.retrieveDisplayName((PatternFacade) patternFacade, vProperties));
         // Sized to this row rather than the badge's inline default, which is scaled for sitting
-        // beside body text and renders far too small in a navigation list.
-        patternBadge.setAmbientFontSize(PATTERN_ROW_FONT_SIZE);
+        // beside body text and renders far too small in a navigation list. The badge sets its
+        // fonts in code, so the stylesheet's root size cannot reach it: the row follows the text
+        // size setting itself, for as long as it is on a scene.
+        KometSettings settings = KometSettings.get();
+        Runnable sizeToTextSize = () ->
+                patternBadge.setAmbientFontSize(PATTERN_ROW_FONT_EM * settings.getTextSize().fontSize());
+        sizeToTextSize.run();
+        patternBadge.sceneProperty().subscribe(scene -> {
+            if (textSizeSubscription != null) {
+                textSizeSubscription.unsubscribe();
+                textSizeSubscription = null;
+            }
+            if (scene != null) {
+                textSizeSubscription = settings.textSizeProperty().subscribe(sizeToTextSize);
+            }
+        });
         // The pill hugs its content — sigil, identicon, name — exactly like the inline chips,
         // instead of stretching to the row card (the badge's default max sizes are MAX_VALUE, and
         // an HBox fills its children's height). The white card supplies the margins above and

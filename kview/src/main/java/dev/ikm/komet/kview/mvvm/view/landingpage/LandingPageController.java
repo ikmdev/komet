@@ -70,6 +70,7 @@ import dev.ikm.komet.kview.mvvm.model.JournalCounter;
 import dev.ikm.komet.kview.mvvm.model.ViewCoordinateHelper;
 import dev.ikm.komet.kview.mvvm.view.BasicController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
+import dev.ikm.komet.kview.mvvm.view.settings.SettingsDialog;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -203,6 +204,17 @@ public class LandingPageController implements BasicController {
     private final VBox progressPopupPane = new VBox();
     private NotificationPopup progressNotificationPopup;
 
+
+    /**
+     * Opens the app-wide Settings dialog from the sidebar gear. The gear is a toggle only for its
+     * sidebar styling and sits outside the page toggle group, so the shown page stays selected; it
+     * is released once the dialog closes.
+     */
+    @FXML
+    private void openSettings() {
+        SettingsDialog.show(settingsToggleButton.getScene().getWindow());
+        settingsToggleButton.setSelected(false);
+    }
 
     @FXML
     public void openIkeNetwork() {

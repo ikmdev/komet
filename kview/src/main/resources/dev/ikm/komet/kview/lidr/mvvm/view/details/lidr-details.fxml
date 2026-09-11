@@ -155,7 +155,7 @@
                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                        </rowConstraints>
                                        <children>
-                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 600; -fx-fill: -Grey-12;" text="DEVICE:" wrappingWidth="52.474609375">
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 1em; -fx-font-weight: 600; -fx-fill: -Grey-12;" text="DEVICE:" wrappingWidth="52.474609375">
                                              <font>
                                                 <Font name="Noto Sans Batak Regular" size="12.0" />
                                              </font>
@@ -170,7 +170,7 @@
                                                 </Text>
                                              </children>
                                           </TextFlow>
-                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 12; -fx-font-weight: 500; -fx-fill: -Grey-12;" text="MANUFACTURER:" GridPane.columnIndex="1">
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-family: Noto Sans; -fx-font-size: 1em; -fx-font-weight: 500; -fx-fill: -Grey-12;" text="MANUFACTURER:" GridPane.columnIndex="1">
                                              <font>
                                                 <Font name="Open Sans Bold" size="14.0" />
                                              </font>

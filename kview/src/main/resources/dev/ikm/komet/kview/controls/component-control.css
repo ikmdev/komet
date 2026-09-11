@@ -23,7 +23,7 @@
     -fx-border-width: 0;
 
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-text-fill: #111;
 
     -fx-cursor: text;
@@ -35,7 +35,7 @@
 
 .component-control > .concept-container > .concept-search-box > .search-field-container > .search-prompt {
     -fx-text-fill: #6e7989;
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
 }
 
 .component-control > .concept-container > .concept-search-box > .concept-filter-button {
@@ -139,7 +139,7 @@
 .component-control > .selected-concept-container > .concept-selected-entity-box > .selected-concept-description.label {
     -fx-text-fill: -Grey-11;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
 }
@@ -181,7 +181,7 @@
 
 .component-popup.auto-complete-popup > .main-container > .header {
     -fx-font-family: "Noto Sans SemiBold";
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
 
     -fx-text-fill: #6e7989;
 
@@ -211,7 +211,7 @@
 
     -fx-font-family: "Noto Sans Semibold";
 
-    -fx-font-size: 13px;
+    -fx-font-size: 1.083333em; /* 13px */
 
 }
 

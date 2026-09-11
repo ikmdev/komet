@@ -34,7 +34,7 @@
 .bytearray-control > .file-container > .progress-label {
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
 }
@@ -50,7 +50,7 @@
 .bytearray-control > .file-container > .file-icon-group > .file-icon-label {
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 18;
+    -fx-font-size: 1.5em; /* 18px */
     -fx-font-weight: bold;
     -fx-translate-y: 45.5;
     -fx-pref-width: 60;
@@ -70,7 +70,7 @@
 
 .bytearray-control > .message-label {
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 12px;
+    -fx-font-size: 1em; /* 12px */
     -fx-text-fill: -Grey-11;
     -fx-wrap-text: true;
 }
@@ -84,7 +84,7 @@
     -fx-background-insets: 0;
     -fx-text-fill: white;
     -fx-font-family: "Noto Sans";
-    -fx-font-size: 14px;
+    -fx-font-size: 1.166667em; /* 14px */
     -fx-font-style: normal;
     -fx-font-weight: 500;
     -fx-background-radius: 4;
