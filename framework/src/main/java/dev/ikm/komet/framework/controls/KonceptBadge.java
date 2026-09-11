@@ -26,6 +26,7 @@ import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
 import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.framework.graphics.KonceptGlyphFonts;
 import dev.ikm.komet.framework.graphics.SmallCapsFonts;
+import dev.ikm.komet.framework.settings.KonceptGlyphSettings;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.common.id.IntIds;
@@ -39,6 +40,7 @@ import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
+import javafx.beans.value.ObservableValue;
 import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -258,6 +260,15 @@ public class KonceptBadge extends HBox {
     /** Pentagon edge (px), {@link #PENTAGON_TO_ICON} of the current identicon edge. */
     private double stampSigilSize = DEFAULT_ICON_SIZE * PENTAGON_TO_ICON;
     private boolean conceptExpected = false;
+    /** The status cluster's explanatory tooltip, installed once; only its text changes. */
+    private final Tooltip statusTooltip = new Tooltip();
+    /**
+     * The app-wide glyph settings (ikmdev/komet-desktop#153), followed while the badge is on a
+     * scene — gated so the settings hold no reference to a badge once its host discards it.
+     */
+    private final ObservableValue<Boolean> showKindSigil;
+    private final ObservableValue<Boolean> showDefinitionStatus;
+    private final ObservableValue<Boolean> showMultipleParents;
 
     /**
      * Creates a badge for the given component, resolving its name, identicon, inactive state and
@@ -372,6 +383,18 @@ public class KonceptBadge extends HBox {
         setConceptName(explicitName != null ? explicitName : resolveName(nid, viewProperties));
 
         getChildren().addAll(sigilBox, statusBox, identicon, nameNode);
+        Tooltip.install(statusBox, statusTooltip);
+
+        ObservableValue<Boolean> onScene = sceneProperty().isNotNull();
+
+        this.showKindSigil = KonceptGlyphSettings.showKindSigil().when(onScene);
+        this.showDefinitionStatus = KonceptGlyphSettings.showDefinitionStatus().when(onScene);
+        this.showMultipleParents = KonceptGlyphSettings.showMultipleParents().when(onScene);
+
+        // Value-seeded subscriptions: a gated observable only watches its source once it is read.
+        showKindSigil.subscribe(shown -> applySigilVisibility());
+        showDefinitionStatus.subscribe(shown -> setStatus(status));
+        showMultipleParents.subscribe(shown -> setStatus(status));
         setStatus(showStatus && viewProperties != null && nid != UNKNOWN_NID
                 ? computeStatus(nid, viewProperties, premiseType)
                 : KonceptStatus.NONE);
@@ -513,17 +536,20 @@ public class KonceptBadge extends HBox {
 
     /**
      * Sets the taxonomic status glyph shown ahead of the identicon, replacing any current glyph.
+     * The status is kept as resolved; what is drawn is what the glyph settings show of it
+     * (ikmdev/komet-desktop#153), re-drawn as those settings change.
      *
      * @param status the classification to display; {@code null} is treated as {@link KonceptStatus#NONE}
      */
     public final void setStatus(KonceptStatus status) {
         this.status = (status == null) ? KonceptStatus.NONE : status;
+        KonceptStatus shown = shownStatus();
         statusBox.getChildren().clear();
-        if (this.status.hasGlyph()) {
-            Text glyph = new Text(this.status.glyph());
-            glyph.getStyleClass().addAll(StyleClasses.KONCEPT_STATUS.toString(), this.status.styleClass().toString());
+        if (shown.hasGlyph()) {
+            Text glyph = new Text(shown.glyph());
+            glyph.getStyleClass().addAll(StyleClasses.KONCEPT_STATUS.toString(), shown.styleClass().toString());
             statusBox.getChildren().add(glyph);
-            if (this.status.isMultiParent()) {
+            if (shown.isMultiParent()) {
                 Text fork = new Text(KonceptStatus.MULTI_PARENT_GLYPH);
                 fork.getStyleClass().addAll(StyleClasses.KONCEPT_STATUS.toString(),
                         StyleClasses.KONCEPT_MULTIPARENT.toString());
@@ -531,7 +557,7 @@ public class KonceptBadge extends HBox {
             }
             // The non-colour, non-glyph accessibility channel (ike-issues#861): the cluster is
             // always visible; the tooltip only explains it — parity with the adoc renderer's title.
-            Tooltip.install(statusBox, new Tooltip(this.status.accessibleText()));
+            statusTooltip.setText(shown.accessibleText());
         }
         // Fonts, then the slot: managed/visible live with the slot mode (ike-issues#1049).
         applyStatusFont();
@@ -594,8 +620,10 @@ public class KonceptBadge extends HBox {
      * the row entirely (the pre-#1049 behavior).
      */
     private void applyStatusSlot() {
-        boolean hasGlyph = status.hasGlyph();
-        if (statusSlotReserved) {
+        boolean hasGlyph = shownStatus().hasGlyph();
+        // With the definition status hidden no row has a cluster, so the column the slot keeps
+        // open is aligned already; holding it would only indent every identicon by an empty slot.
+        if (statusSlotReserved && showDefinitionStatus.getValue()) {
             statusBox.setAlignment(Pos.CENTER_RIGHT);
             double width = widestStatusClusterWidth(statusFont());
             statusBox.setMinWidth(width);
@@ -636,12 +664,18 @@ public class KonceptBadge extends HBox {
     }
 
     /**
-     * The taxonomic status currently shown.
+     * The taxonomic status as resolved — what the badge draws with every glyph setting on. The
+     * drag glyph built from it applies the settings itself.
      *
      * @return the current {@link KonceptStatus} (never {@code null})
      */
     public KonceptStatus getStatus() {
         return status;
+    }
+
+    /** The status the glyph settings let this badge draw. */
+    private KonceptStatus shownStatus() {
+        return status.shown(showDefinitionStatus.getValue(), showMultipleParents.getValue());
     }
 
     /**
@@ -659,9 +693,7 @@ public class KonceptBadge extends HBox {
     public final void setKind(KonceptKind kind) {
         this.kind = (kind == null) ? KonceptKind.CONCEPT : kind;
         sigilBox.getChildren().clear();
-        boolean visible = this.kind.hasSigil();
-        sigilBox.setManaged(visible);
-        sigilBox.setVisible(visible);
+        applySigilVisibility();
         // The sigil node comes from the shared factory, so the badge and the drag glyph cannot
         // disagree about what a kind looks like (ikmdev/komet#883). Size 0: the stylesheet reaches
         // this control and sizes the letter.
@@ -674,6 +706,16 @@ public class KonceptBadge extends HBox {
         // A kind change can gain or lose the definition popout (only a concept has one).
         refreshPopout();
         applyCompanionSeating();
+    }
+
+    /**
+     * Shows the sigil slot when the kind has a sigil and the glyph settings show sigils
+     * (ikmdev/komet-desktop#153); an empty or hidden slot collapses so it opens no gap.
+     */
+    private void applySigilVisibility() {
+        boolean visible = kind.hasSigil() && showKindSigil.getValue();
+        sigilBox.setManaged(visible);
+        sigilBox.setVisible(visible);
     }
 
     /**

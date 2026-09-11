@@ -39,6 +39,7 @@ import dev.ikm.komet.framework.ScreenInfo;
 import dev.ikm.komet.framework.graphics.LoadFonts;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.settings.KometSettings;
+import dev.ikm.komet.framework.settings.KonceptGlyphSettings;
 import dev.ikm.komet.framework.settings.TextSizeStylesheet;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
 import dev.ikm.komet.kview.events.CreateKLEditorWindowEvent;
@@ -295,8 +296,9 @@ public class App extends Application  {
         appMenu = new AppMenu(this);
         appPages = new AppPages(this);
 
-        // Every window shown from here on carries the user's text size.
+        // Every window shown from here on carries the user's text size and glyph choices.
         TextSizeStylesheet.install(KometSettings.get());
+        KonceptGlyphSettings.install(KometSettings.get());
 
         try {
             App.primaryStage = stage;

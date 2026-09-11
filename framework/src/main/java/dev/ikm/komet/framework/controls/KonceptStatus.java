@@ -136,6 +136,37 @@ public enum KonceptStatus {
     }
 
     /**
+     * This status with the multiple-parents fork dropped: the single-parent status of the same
+     * classification, or this status itself when it carries no fork.
+     *
+     * @return the single-parent counterpart, never {@code null}
+     */
+    public KonceptStatus singleParent() {
+        return switch (this) {
+            case DEFINED_MULTIPARENT -> DEFINED;
+            case PRIMITIVE_MULTIPARENT -> PRIMITIVE;
+            default -> this;
+        };
+    }
+
+    /**
+     * This status as the glyph settings show it: {@link #NONE} while
+     * the definition status is hidden, the {@link #singleParent() single-parent} status while the
+     * fork is, and this status when both are shown. Renderers keep the resolved status and draw
+     * the shown one, so nothing needs re-resolving when a setting changes.
+     *
+     * @param definitionStatus whether the classification glyph is shown
+     * @param multipleParents  whether the multiple-parents fork is shown
+     * @return the status to draw, never {@code null}
+     */
+    public KonceptStatus shown(boolean definitionStatus, boolean multipleParents) {
+        if (!definitionStatus) {
+            return NONE;
+        }
+        return multipleParents ? this : singleParent();
+    }
+
+    /**
      * Whether this status renders a visible classification glyph.
      *
      * @return {@code true} for every status except {@link #NONE}

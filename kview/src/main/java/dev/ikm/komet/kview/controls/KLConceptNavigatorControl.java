@@ -321,6 +321,40 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     }
 
     /**
+     * <p>Boolean property that toggles the defined mark — the dot a sufficiently defined concept
+     * carries — on every concept tile (and its tooltip). On by default; the host follows the
+     * app-wide glyph settings (ikmdev/komet-desktop#153).
+     * @see ConceptNavigatorTreeItem#definedProperty()
+     */
+    private final BooleanProperty showDefinitionStatusProperty = new SimpleBooleanProperty(this, "showDefinitionStatus", true);
+    public final BooleanProperty showDefinitionStatusProperty() {
+       return showDefinitionStatusProperty;
+    }
+    public final boolean isShowDefinitionStatus() {
+       return showDefinitionStatusProperty.get();
+    }
+    public final void setShowDefinitionStatus(boolean value) {
+        showDefinitionStatusProperty.set(value);
+    }
+
+    /**
+     * <p>Boolean property that toggles the multiple-parents mark — the tree a concept with more
+     * than one parent carries, which opens its {@link LineageBox} — on every concept tile. On by
+     * default; the host follows the app-wide glyph settings (ikmdev/komet-desktop#153).
+     * @see ConceptNavigatorTreeItem#multiParentProperty()
+     */
+    private final BooleanProperty showMultipleParentsProperty = new SimpleBooleanProperty(this, "showMultipleParents", true);
+    public final BooleanProperty showMultipleParentsProperty() {
+       return showMultipleParentsProperty;
+    }
+    public final boolean isShowMultipleParents() {
+       return showMultipleParentsProperty.get();
+    }
+    public final void setShowMultipleParents(boolean value) {
+        showMultipleParentsProperty.set(value);
+    }
+
+    /**
      * <p>This enum defines the possible actions that can be executed from the
      * different context menus that are shown for this control.
      * @see #onActionProperty()

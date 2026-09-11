@@ -64,6 +64,20 @@ class KonceptStatusTest {
     }
 
     @Test
+    void shownFollowsTheGlyphSettings() {
+        // ikmdev/komet-desktop#153: renderers keep the resolved status and draw the shown one.
+        assertEquals(KonceptStatus.DEFINED_MULTIPARENT, KonceptStatus.DEFINED_MULTIPARENT.shown(true, true));
+        assertEquals(KonceptStatus.DEFINED, KonceptStatus.DEFINED_MULTIPARENT.shown(true, false),
+                "hiding multiple parents drops the fork, not the classification");
+        assertEquals(KonceptStatus.PRIMITIVE, KonceptStatus.PRIMITIVE_MULTIPARENT.shown(true, false));
+        assertEquals(KonceptStatus.ROOT, KonceptStatus.ROOT.shown(true, false), "no fork to drop");
+        for (KonceptStatus status : KonceptStatus.values()) {
+            assertEquals(KonceptStatus.NONE, status.shown(false, true),
+                    "hiding the definition status hides the whole cluster for " + status);
+        }
+    }
+
+    @Test
     void multiParentIsTheJavaFxSideProduct() {
         assertTrue(KonceptStatus.DEFINED_MULTIPARENT.isMultiParent());
         assertTrue(KonceptStatus.PRIMITIVE_MULTIPARENT.isMultiParent());

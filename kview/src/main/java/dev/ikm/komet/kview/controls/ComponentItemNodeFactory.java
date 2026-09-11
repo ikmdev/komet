@@ -3,11 +3,13 @@ package dev.ikm.komet.kview.controls;
 import dev.ikm.komet.framework.controls.KonceptBadge;
 import dev.ikm.komet.framework.controls.KonceptKindResolver;
 import dev.ikm.komet.framework.controls.KonceptStatus;
+import dev.ikm.komet.framework.settings.KonceptGlyphSettings;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import javafx.beans.value.ObservableValue;
 import network.ike.docs.konceptcore.KonceptKind;
 
 /**
@@ -63,6 +65,14 @@ public final class ComponentItemNodeFactory {
     public static void attachGlyphResolution(ComponentItemNode componentItemNode) {
         componentItemNode.componentItemProperty()
                 .subscribe(componentItem -> updateGlyphs(componentItemNode, componentItem));
+        // Which marks are drawn follows the app-wide glyph settings,
+        // gated on the node being on a scene so the settings hold no reference to a discarded node.
+        ObservableValue<Boolean> onScene = componentItemNode.sceneProperty().isNotNull();
+        componentItemNode.showKindSigilProperty().bind(KonceptGlyphSettings.showKindSigil().when(onScene));
+        componentItemNode.showDefinitionStatusProperty()
+                .bind(KonceptGlyphSettings.showDefinitionStatus().when(onScene));
+        componentItemNode.showMultipleParentsProperty()
+                .bind(KonceptGlyphSettings.showMultipleParents().when(onScene));
     }
 
     /**

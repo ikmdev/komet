@@ -55,6 +55,7 @@ import dev.ikm.komet.framework.controls.KonceptKindResolver;
 import dev.ikm.komet.framework.controls.KonceptSigils;
 import dev.ikm.komet.framework.controls.KonceptStatus;
 import dev.ikm.komet.framework.graphics.KonceptGlyphFonts;
+import dev.ikm.komet.framework.settings.KonceptGlyphSettings;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import network.ike.docs.konceptcore.KonceptKind;
 
@@ -242,7 +243,7 @@ public final class KonceptDragGlyph {
                 // Resolve the kind from the nid this installer already has, so a dragged pattern
                 // keeps its sigil. Without it the glyph was built from the PublicId alone and every
                 // drag came out bare, whatever the source rendered (ikmdev/komet#883).
-                Image image = render(glyph(kind(nid), publicId, name, inactive), cursorX, true);
+                Image image = dragImage(kind(nid), KonceptStatus.NONE, publicId, name, inactive, cursorX);
                 Dragboard dragboard = source.startDragAndDrop(TransferMode.COPY);
                 dragboard.setDragView(image, cursorX[0], image.getHeight());
                 dragboard.setContent(KometClipboard.forComponent(nid));
@@ -299,7 +300,7 @@ public final class KonceptDragGlyph {
     public static void setDragView(Dragboard dragboard, KonceptKind kind, KonceptStatus status,
                                    PublicId publicId, String name, boolean inactive) {
         double[] cursorX = new double[1];
-        Image image = render(glyph(kind, status, publicId, name, inactive), cursorX, true);
+        Image image = dragImage(kind, status, publicId, name, inactive, cursorX);
         dragboard.setDragView(image, cursorX[0], image.getHeight());
     }
 
@@ -317,9 +318,8 @@ public final class KonceptDragGlyph {
         // and a concept with its copula cluster (ike-issues#861); the PublicId overloads cannot
         // know either and stay bare, as before.
         double[] cursorX = new double[1];
-        Image image = render(glyph(kind(nid, viewCalc), status(nid, viewCalc),
-                PrimitiveData.publicId(nid), name(nid, viewCalc), isInactive(nid, viewCalc)),
-                cursorX, true);
+        Image image = dragImage(kind(nid, viewCalc), status(nid, viewCalc),
+                PrimitiveData.publicId(nid), name(nid, viewCalc), isInactive(nid, viewCalc), cursorX);
         dragboard.setDragView(image, cursorX[0], image.getHeight());
     }
 
@@ -402,7 +402,7 @@ public final class KonceptDragGlyph {
         // As the single-glyph nid overload: the lead component's kind and status are resolvable
         // here, so the lead pill carries its one leading mark (ikmdev/komet#883, ike-issues#861).
         double[] cursorX = new double[1];
-        HBox glyph = glyph(kind(leadNid, viewCalc), status(leadNid, viewCalc),
+        HBox glyph = shownGlyph(kind(leadNid, viewCalc), status(leadNid, viewCalc),
                 PrimitiveData.publicId(leadNid),
                 name(leadNid, viewCalc), isInactive(leadNid, viewCalc));
         if (count > 1) {
@@ -517,9 +517,28 @@ public final class KonceptDragGlyph {
         return glyph(KonceptKind.CONCEPT, KonceptStatus.NONE, publicId, name, inactive);
     }
 
-    /** Builds the pill with a kind sigil and no status — the pre-#861 shape, for bare callers. */
-    private static HBox glyph(KonceptKind kind, PublicId publicId, String name, boolean inactive) {
-        return glyph(kind, KonceptStatus.NONE, publicId, name, inactive);
+    /**
+     * The drag image as the glyph settings show it (ikmdev/komet-desktop#153): the settings are
+     * applied here, at gesture time, so every drag source — a badge, a chip, a navigator row —
+     * drags with the marks its on-screen rendering shows, and a hidden mark never reappears on
+     * the drag image. The {@code image} forms stay unfiltered: they render the component as it is.
+     */
+    private static Image dragImage(KonceptKind kind, KonceptStatus status, PublicId publicId,
+                                   String name, boolean inactive, double[] cursorX) {
+        return render(shownGlyph(kind, status, publicId, name, inactive), cursorX, true);
+    }
+
+    /** Builds the pill with the marks the glyph settings show; see {@link #dragImage}. */
+    private static HBox shownGlyph(KonceptKind kind, KonceptStatus status, PublicId publicId,
+                                   String name, boolean inactive) {
+        // A hidden sigil drags as a bare concept would — with no status cluster in its place,
+        // since only a concept has one (the one-mark rule, ike-issues#861).
+        KonceptKind shownKind = KonceptGlyphSettings.isShowKindSigil() ? kind : KonceptKind.CONCEPT;
+        KonceptStatus shownStatus = kind == KonceptKind.CONCEPT && status != null
+                ? status.shown(KonceptGlyphSettings.isShowDefinitionStatus(),
+                        KonceptGlyphSettings.isShowMultipleParents())
+                : KonceptStatus.NONE;
+        return glyph(shownKind, shownStatus, publicId, name, inactive);
     }
 
     /**

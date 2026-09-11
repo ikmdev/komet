@@ -171,7 +171,7 @@ class SettingsDialogUTestFX {
     @DisplayName("Cancel discards the working copy; OK writes it to the settings and closes")
     void okWritesCancelDiscards() throws Exception {
         robot.clickOn("#extraLargePill");
-        robot.clickOn("CANCEL");
+        robot.clickOn("Cancel");
         WaitForAsyncUtils.waitForFxEvents();
         assertFalse(stage.isShowing());
         assertEquals(TextSize.DEFAULT, settings.getTextSize());

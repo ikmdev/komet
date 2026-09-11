@@ -132,6 +132,10 @@ public class ConceptTile extends HBox {
         });
         treePane.managedProperty().bind(treePane.visibleProperty());
         treePane.getStyleClass().addAll("region", "tree");
+        // The marks follow the control's settings for as long as the tile lives — the cell's
+        // lifetime, which is the control's own (ikmdev/komet-desktop#153).
+        treeView.showDefinitionStatusProperty().subscribe(this::updateDefinedMark);
+        treeView.showMultipleParentsProperty().subscribe(this::updateMultiParentMark);
 
         Region ellipse = new Region();
         ellipse.getStyleClass().add("ellipse");
@@ -218,8 +222,9 @@ public class ConceptTile extends HBox {
             cell.setHighlighted(false);
             cell.viewLineageProperty().unbind();
             cell.setViewLineage(false);
-            treePane.setVisible(false);
             ConceptNavigatorTreeItem treeItem = get();
+            updateDefinedMark();
+            updateMultiParentMark();
             if (treeItem != null) {
                 disclosurePane.pseudoClassStateChanged(LEAF_PSEUDO_CLASS, treeItem.isLeaf());
                 disclosureIconRegion.getStyleClass().setAll("icon", treeItem.isLeaf() ? "leaf" : "disclosure");
@@ -239,15 +244,12 @@ public class ConceptTile extends HBox {
 
                 String description = treeItem.getValue() != null ? getDescription(treeItem.getValue().nid()) : "";
                 conceptLabel.setText(description);
-                pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, treeItem.isDefined());
                 cell.viewLineageProperty().bind(treeItem.viewLineageProperty());
                 cell.tagProperty().bind(treeItem.tagProperty());
                 cell.highlightedProperty().bind(treeItem.highlightedProperty());
-                treePane.setVisible(treeItem.isMultiParent());
             } else {
                 stopHoverTransition();
                 conceptLabel.setText(null);
-                pseudoClassStateChanged(DEFINED_PSEUDO_CLASS, false);
             }
         }
     };
@@ -261,11 +263,24 @@ public class ConceptTile extends HBox {
         conceptProperty.set(value);
     }
 
+    /** The defined dot: the item's definition status, as far as the control shows it. */
+    private void updateDefinedMark() {
+        ConceptNavigatorTreeItem treeItem = getConcept();
+        pseudoClassStateChanged(DEFINED_PSEUDO_CLASS,
+                treeItem != null && treeItem.isDefined() && treeView.isShowDefinitionStatus());
+    }
+
+    /** The alternate-parents tree: the item's multiple parents, as far as the control shows them. */
+    private void updateMultiParentMark() {
+        ConceptNavigatorTreeItem treeItem = getConcept();
+        treePane.setVisible(treeItem != null && treeItem.isMultiParent() && treeView.isShowMultipleParents());
+    }
+
     void updateTooltip() {
         conceptNavigatorTooltip.updateTooltip(
                 conceptLabel.lookup(".text") instanceof Text labelledText ? labelledText.getText() : null,
                 getConcept().getValue() != null ? getDescription(getConcept().getValue().nid()) : "",
-                getConcept().isDefined());
+                getConcept().isDefined() && treeView.isShowDefinitionStatus());
     }
 
     void stopHoverTransition() {

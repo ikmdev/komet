@@ -3,8 +3,8 @@ package dev.ikm.komet.kview.mvvm.view.navigation;
 
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
-import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.framework.controls.KonceptKindResolver;
+import dev.ikm.komet.framework.settings.KonceptGlyphSettings;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -31,6 +31,7 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
 import javafx.beans.property.Property;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -271,6 +272,13 @@ public class ConceptPatternNavController {
         conceptNavigatorControl.setNavigator(navigator);
         conceptNavigatorControl.setHeader("Concept Header");
         conceptNavigatorControl.setShowTags(false);
+        // The defined dot and the alternate-parents tree follow the app-wide glyph settings while
+        // the navigator is showing.
+        ObservableValue<Boolean> navigatorOnScene = conceptNavigatorControl.sceneProperty().isNotNull();
+        conceptNavigatorControl.showDefinitionStatusProperty()
+                .bind(KonceptGlyphSettings.showDefinitionStatus().when(navigatorOnScene));
+        conceptNavigatorControl.showMultipleParentsProperty()
+                .bind(KonceptGlyphSettings.showMultipleParents().when(navigatorOnScene));
         conceptNavigatorControl.setOnAction(action -> switch (action) {
             // single selection
             case OPEN_IN_WORKSPACE -> journalController::createConceptWindow;

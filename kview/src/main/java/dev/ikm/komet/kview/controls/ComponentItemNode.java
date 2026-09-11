@@ -171,8 +171,10 @@ public class ComponentItemNode extends Region {
     private void updateSigil() {
         sigilBox.getChildren().clear();
 
+        // A hidden sigil renders as a bare concept would.
+        KonceptKind kind = isShowKindSigil() ? getKonceptKind() : KonceptKind.CONCEPT;
         double sigilSize = textLabel.getFont().getSize() * SIGIL_TO_NAME;
-        KonceptSigils.create(getKonceptKind(), iconImageView.getFitWidth() * PENTAGON_TO_ICON, sigilSize)
+        KonceptSigils.create(kind, iconImageView.getFitWidth() * PENTAGON_TO_ICON, sigilSize)
                 .ifPresent(sigil -> {
                     // Inline, because komet.css's .koncept-sigil rule fixes the chip size wherever it
                     // reaches, and only an inline style outranks it.
@@ -194,7 +196,11 @@ public class ComponentItemNode extends Region {
     private void updateStatus() {
         statusBox.getChildren().clear();
 
+        // The resolved status is kept; what is drawn is what the glyph settings show of it.
         KonceptStatus status = getKonceptStatus();
+        if (status != null) {
+            status = status.shown(isShowDefinitionStatus(), isShowMultipleParents());
+        }
         if (status != null && status.hasGlyph()) {
             String glyphFamily = KonceptGlyphFonts.family();
             double statusSize = textLabel.getFont().getSize() * STATUS_TO_NAME;
@@ -428,6 +434,53 @@ public class ComponentItemNode extends Region {
     public KonceptStatus getKonceptStatus() { return konceptStatus.get(); }
     public ObjectProperty<KonceptStatus> konceptStatusProperty() { return konceptStatus; }
     public void setKonceptStatus(KonceptStatus status) { this.konceptStatus.set(status); }
+
+    // -- show kind sigil
+    /**
+     * Whether the kind sigil is drawn when the kind has one; off, the node renders as a bare
+     * concept would. Presentation-only, like {@link #konceptKindProperty()}: the host (normally
+     * the {@link ComponentItemNodeFactory} wiring) follows the app-wide glyph settings.
+     * On by default.
+     */
+    private final BooleanProperty showKindSigil = new SimpleBooleanProperty(this, "showKindSigil", true) {
+        @Override
+        protected void invalidated() {
+            updateSigil();
+        }
+    };
+    public boolean isShowKindSigil() { return showKindSigil.get(); }
+    public BooleanProperty showKindSigilProperty() { return showKindSigil; }
+    public void setShowKindSigil(boolean show) { this.showKindSigil.set(show); }
+
+    // -- show definition status
+    /**
+     * Whether the status cluster is drawn; off, neither the classification glyph nor the fork
+     * appears. Presentation-only, like {@link #showKindSigilProperty()}. On by default.
+     */
+    private final BooleanProperty showDefinitionStatus = new SimpleBooleanProperty(this, "showDefinitionStatus", true) {
+        @Override
+        protected void invalidated() {
+            updateStatus();
+        }
+    };
+    public boolean isShowDefinitionStatus() { return showDefinitionStatus.get(); }
+    public BooleanProperty showDefinitionStatusProperty() { return showDefinitionStatus; }
+    public void setShowDefinitionStatus(boolean show) { this.showDefinitionStatus.set(show); }
+
+    // -- show multiple parents
+    /**
+     * Whether the multiple-parents fork is appended to the status glyph. Presentation-only, like
+     * {@link #showKindSigilProperty()}. On by default.
+     */
+    private final BooleanProperty showMultipleParents = new SimpleBooleanProperty(this, "showMultipleParents", true) {
+        @Override
+        protected void invalidated() {
+            updateStatus();
+        }
+    };
+    public boolean isShowMultipleParents() { return showMultipleParents.get(); }
+    public BooleanProperty showMultipleParentsProperty() { return showMultipleParents; }
+    public void setShowMultipleParents(boolean show) { this.showMultipleParents.set(show); }
 
     // -- show drag handle on hover
     private static final double DRAG_HANDLE_WIDTH = 7;
