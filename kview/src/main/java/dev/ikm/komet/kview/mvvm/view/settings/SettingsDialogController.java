@@ -22,6 +22,7 @@ import dev.ikm.komet.framework.settings.DisplayLanguage;
 import dev.ikm.komet.framework.settings.KometSettings;
 import dev.ikm.komet.framework.settings.TextSize;
 import dev.ikm.tinkar.common.id.PublicIds;
+import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -54,8 +55,9 @@ import java.util.UUID;
 
 /**
  * Controller for {@code settings-dialog.fxml}. Edits a working copy of the {@link KometSettings}
- * it is constructed with; OK writes the copy back, Cancel discards it. The previews on each page
- * follow the working copy, so the user sees the effect of a choice before committing to it.
+ * it is constructed with; Apply writes the copy back and keeps the dialog open, OK writes it back
+ * and closes, Cancel discards whatever has not been applied. The previews on each page follow the
+ * working copy, so the user sees the effect of a choice before committing to it.
  */
 public class SettingsDialogController {
 
@@ -101,6 +103,7 @@ public class SettingsDialogController {
 
     @FXML private ComboBox<DisplayLanguage> displayLanguageCombo;
 
+    @FXML private Button applyButton;
     @FXML private Button okButton;
 
     private final ObjectProperty<TextSize> textSize = new SimpleObjectProperty<>(TextSize.DEFAULT);
@@ -125,6 +128,7 @@ public class SettingsDialogController {
         initAppearancePage();
         initComponentsPage();
         initLanguagePage();
+        initButtons();
     }
 
     private void loadWorkingCopy() {
@@ -284,6 +288,21 @@ public class SettingsDialogController {
         displayLanguageCombo.valueProperty().bindBidirectional(displayLanguage);
     }
 
+    /** Apply only has something to do while the working copy differs from the saved settings. */
+    private void initButtons() {
+        BooleanBinding unchanged = Bindings.createBooleanBinding(() ->
+                        textSize.get() == settings.getTextSize()
+                                && showKindSigil.get() == settings.isShowKindSigil()
+                                && showDefinitionStatus.get() == settings.isShowDefinitionStatus()
+                                && showMultipleParents.get() == settings.isShowMultipleParents()
+                                && displayLanguage.get() == settings.getDisplayLanguage(),
+                textSize, showKindSigil, showDefinitionStatus, showMultipleParents, displayLanguage,
+                settings.textSizeProperty(), settings.showKindSigilProperty(),
+                settings.showDefinitionStatusProperty(), settings.showMultipleParentsProperty(),
+                settings.displayLanguageProperty());
+        applyButton.disableProperty().bind(unchanged);
+    }
+
     /** Resets the settings on the visible page to their defaults; the other pages are left alone. */
     @FXML
     private void resetToDefault() {
@@ -298,13 +317,19 @@ public class SettingsDialogController {
         }
     }
 
+    /** Writes the working copy back to the settings; the dialog stays open. */
     @FXML
-    private void ok() {
+    private void apply() {
         settings.setTextSize(textSize.get());
         settings.setShowKindSigil(showKindSigil.get());
         settings.setShowDefinitionStatus(showDefinitionStatus.get());
         settings.setShowMultipleParents(showMultipleParents.get());
         settings.setDisplayLanguage(displayLanguage.get());
+    }
+
+    @FXML
+    private void ok() {
+        apply();
         close();
     }
 

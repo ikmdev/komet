@@ -119,10 +119,11 @@
          </VBox>
       </StackPane>
    </HBox>
-   <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="button-bar">
+   <HBox styleClass="button-bar">
       <Hyperlink mnemonicParsing="false" onAction="#resetToDefault" styleClass="settings-reset" text="Reset to default" />
       <Region HBox.hgrow="ALWAYS" />
-      <Button fx:id="cancelButton" cancelButton="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#cancel" prefHeight="26.0" text="CANCEL" />
-      <Button fx:id="okButton" defaultButton="true" minWidth="60.0" mnemonicParsing="false" onAction="#ok" prefHeight="26.0" styleClass="primary" text="OK" />
+      <Button fx:id="cancelButton" cancelButton="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#cancel" text="Cancel" />
+      <Button fx:id="applyButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#apply" text="Apply" />
+      <Button fx:id="okButton" defaultButton="true" minWidth="-Infinity" mnemonicParsing="false" onAction="#ok" styleClass="primary" text="OK" />
    </HBox>
 </VBox>
