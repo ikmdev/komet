@@ -56,7 +56,6 @@ import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.controls.SectionEditPopup;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
-import dev.ikm.komet.kview.controls.ComponentItemNodeFactory;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
@@ -106,7 +105,6 @@ import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
-import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -122,11 +120,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import org.carlfx.cognitive.loader.InjectViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -211,14 +207,11 @@ public class GenPurposeDetailsController {
 
     private PatternSemanticsPresenter previousPatternSemanticsInEditMode;
 
-    @FXML
-    StampViewControl stampViewControl;
-    @FXML
-    private ContentSizedSplitPane mainContent;
-    @FXML
-    private BorderPane detailsOuterBorderPane;
-    @FXML
-    private KlWindowControlToolbar windowControlToolbar;
+    // The parts of the window's view (see GenPurposeWindowView) this controller wires behavior onto.
+    private final StampViewControl stampViewControl;
+    private final ContentSizedSplitPane mainContent;
+    private final BorderPane detailsOuterBorderPane;
+    private final KlWindowControlToolbar windowControlToolbar;
     /**
      * popup for the filter coordinates menu, used with the toolbar's coordinates menu button.
      * An instance of FilterOptionsPopup.
@@ -227,28 +220,22 @@ public class GenPurposeDetailsController {
     /**
      * Used slide out the properties view
      */
-    @FXML
-    private VerticallyFilledPane propertiesSlideoutTrayPane;
-    @FXML
-    private ComponentItemNode windowConceptTitle;
-    @FXML
-    private Tooltip windowConceptTitleTooltip;
-    @FXML
-    private PublicIDListControl identifierControl;
-    @FXML
-    private Label createModeHintLabel;
+    private final VerticallyFilledPane propertiesSlideoutTrayPane;
+    private final ComponentItemNode windowConceptTitle;
+    private final Tooltip windowConceptTitleTooltip;
+    private final PublicIDListControl identifierControl;
+    private final Label createModeHintLabel;
     private BorderPane propertiesBorderPane;
     private GenPurposePropertiesController propertiesController;
-    private EditorWindowModel editorWindowModel;
+    /** The KL-editor window definition this window is built from; shared with the editor while both are open. */
+    private final EditorWindowModel editorWindowModel;
     /**
-     * The kind of component this window frames ("Concept", "Pattern" or "Semantic") — set in
-     * {@link #init} from the authored window type. Names the component in the create-mode hint
-     * and the publish toast.
+     * The kind of component this window frames ("Concept", "Pattern" or "Semantic") — from the
+     * authored window type. Names the component in the create-mode hint and the publish toast.
      */
-    private String componentKindString;
-    private ViewProperties viewProperties;
-    @InjectViewModel
-    private GenPurposeViewModel genPurposeViewModel;
+    private final String componentKindString;
+    private final ViewProperties viewProperties;
+    private final GenPurposeViewModel genPurposeViewModel;
     private Consumer<GenPurposeDetailsController> onCloseConceptWindow;
 
     private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
@@ -263,16 +250,53 @@ public class GenPurposeDetailsController {
 
     private ObservableComposer composer;
 
-    @FXML
-    private void initialize() {
+    /**
+     * Wires the window's behavior onto its view for the KL-editor window definition held at
+     * {@code editorWindowPreferences}: the definition is loaded, the chrome wired and the
+     * definition's sections built before this returns — nothing is left for a second phase.
+     *
+     * @param view                     the window's scene graph, already the window's root pane
+     * @param genPurposeViewModel      the window's view model, shared with the properties panel and its forms
+     * @param editorWindowPreferences  the {@code kl-editor-app/{user,standard}-windows/<title>} node of the definition
+     * @param viewProperties           the window's derived coordinate (see {@code AbstractEntityChapterKlWindow})
+     */
+    public GenPurposeDetailsController(GenPurposeWindowView view, GenPurposeViewModel genPurposeViewModel,
+                                       KometPreferences editorWindowPreferences, ViewProperties viewProperties) {
+        this.genPurposeViewModel = genPurposeViewModel;
+        this.viewProperties = viewProperties;
+        this.detailsOuterBorderPane = view;
+        this.windowControlToolbar = view.getWindowControlToolbar();
+        this.stampViewControl = view.getStampViewControl();
+        this.mainContent = view.getMainContent();
+        this.propertiesSlideoutTrayPane = view.getPropertiesSlideoutTrayPane();
+        this.windowConceptTitle = view.getWindowConceptTitle();
+        this.windowConceptTitleTooltip = view.getWindowConceptTitleTooltip();
+        this.identifierControl = view.getIdentifierControl();
+        this.createModeHintLabel = view.getCreateModeHintLabel();
 
-        // The FXML loader instantiates the title node, so the factory cannot; attach its
-        // glyph resolution here instead.
-        ComponentItemNodeFactory.attachGlyphResolution(windowConceptTitle);
+        // The definition comes first: the chrome wiring below already asks its window type
+        // (see usesPublishFlow).
+        String windowTitle = Paths.get(editorWindowPreferences.absolutePath()).getFileName().toString();
+        this.editorWindowModel = EditorWindowManager.loadWindowModel(editorWindowPreferences,
+                viewProperties.calculator(), windowTitle);
+        this.componentKindString = switch (editorWindowModel.getWindowType()) {
+            case STANDARD_CONCEPT -> "Concept";
+            case STANDARD_PATTERN -> "Pattern";
+            case STANDARD_SEMANTIC, SEMANTICS -> "Semantic";
+        };
 
+        wireChrome();
+        buildWindowFromDefinition(windowTitle);
+    }
+
+    /**
+     * Wires the window chrome: toolbar actions, the coordinates popup, create-mode and focus
+     * styling, the properties panel and its events, window dragging.
+     */
+    private void wireChrome() {
         // Drive the coordinates menu from the relocated FilterOptionsPopup (ike-issues#661); the popup
         // writes the window's nodeView override, which the window's KL context + areas resolve through.
-        filterOptionsPopup = setupViewCoordinateOptionsPopup(genPurposeViewModel.getViewProperties(),
+        filterOptionsPopup = setupViewCoordinateOptionsPopup(viewProperties,
                 FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW, detailsOuterBorderPane,
                 windowControlToolbar.getCoordinatesMenuButton(), this::updateView);
 
@@ -752,18 +776,15 @@ public class GenPurposeDetailsController {
         }
     }
 
-    public void init(KometPreferences editorWindowPreferences, ViewProperties viewProperties) {
-        this.viewProperties = viewProperties;
-
-        final ViewCalculator viewCalculator = viewProperties.calculator();
-
-        String absolutePath = editorWindowPreferences.absolutePath();
-        Path path = Paths.get(absolutePath);
-        String lastDirName = path.getFileName().toString();
-        String windowTitle = lastDirName;
-        windowControlToolbar.setTitle(lastDirName.substring(0, 1).toUpperCase() + lastDirName.substring(1));
-
-        editorWindowModel = EditorWindowManager.loadWindowModel(editorWindowPreferences, viewCalculator, windowTitle);
+    /**
+     * Builds the window from the loaded KL-editor window definition: the chrome and properties tabs its window
+     * type calls for, the create-mode hint, the authored window settings, and the sections with
+     * their patterns and supplemental areas.
+     *
+     * @param windowTitle the definition's title, as the toolbar's title tab shows it
+     */
+    private void buildWindowFromDefinition(String windowTitle) {
+        windowControlToolbar.setTitle(windowTitle.substring(0, 1).toUpperCase() + windowTitle.substring(1));
 
         // The standard Concept window gets the classic concept window's blue chrome (see
         // .concept-window-theme in kview.css) and its own set of properties tabs. User-created
@@ -787,11 +808,6 @@ public class GenPurposeDetailsController {
         }
 
         // The create-mode hint names the kind of component this window will create.
-        componentKindString = switch (editorWindowModel.getWindowType()) {
-            case STANDARD_CONCEPT -> "Concept";
-            case STANDARD_PATTERN -> "Pattern";
-            case STANDARD_SEMANTIC, SEMANTICS -> "Semantic";
-        };
         createModeHintLabel.setText("This " + componentKindString
                 + " doesn't exist yet - it's created when you fill out the required values and "
                 + (usesPublishFlow() ? "hit Publish." : "submit."));
@@ -847,7 +863,7 @@ public class GenPurposeDetailsController {
 
     /**
      * Applies the Window settings authored in the KL editor — the control-bar options (Coordinate and
-     * Timeline icons) and the Window's view size — to this realized Window. The editor and this Window
+     * Timeline icons) and the Window's view size — to this Window. The editor and this Window
      * share the same {@link EditorWindowModel} instance, so edits made while both are open take effect
      * live. An "Auto" size ({@link EditorWindowModel#AUTO_SIZE}) leaves the Window's own (workspace)
      * sizing in charge.
@@ -1583,9 +1599,6 @@ public class GenPurposeDetailsController {
      * Visits every section in this window (the main section and all additional sections).
      */
     private void forEachSectionInWindow(Consumer<EditorSectionModel> action) {
-        if (editorWindowModel == null) {
-            return;
-        }
         action.accept(editorWindowModel.getMainSection());
         editorWindowModel.getAdditionalSections().forEach(action);
     }
@@ -1620,8 +1633,7 @@ public class GenPurposeDetailsController {
      * Publish button) until they adopt the Publish UX too.
      */
     private boolean usesPublishFlow() {
-        return editorWindowModel != null
-                && editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN;
+        return editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN;
     }
 
     /**

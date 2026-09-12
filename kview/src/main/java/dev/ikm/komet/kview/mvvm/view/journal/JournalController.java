@@ -31,6 +31,7 @@ import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.creat
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createFromUuids;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createWindow;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.extractEntityFromDragInfo;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.getFactory;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.restoreWindow;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.ENTITY_NID_TYPE;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.GEN_EDITING;
@@ -122,6 +123,7 @@ import dev.ikm.komet.kview.klwindows.concept.ConceptKlWindow;
 import dev.ikm.komet.kview.klwindows.DynamicCardKlWindow;
 import dev.ikm.komet.layout_engine.host.DynamicComponentCard;
 import dev.ikm.komet.kview.klwindows.genpurpose.GenPurposeKLWindow;
+import dev.ikm.komet.kview.klwindows.genpurpose.GenPurposeKLWindowFactory;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.view.concept.ConceptNode;
@@ -1557,11 +1559,12 @@ public class JournalController {
 
         ViewProperties viewProperties = journalViewProperties;
 
-        GenPurposeKLWindow genPurposeKLWindow = (GenPurposeKLWindow) createWindow(EntityKlWindowTypes.GEN_PURPOSE_KL,
-                journalTopic, entityFacade, viewProperties, null);
-
-        // Init KL Editor Window preferences
-        genPurposeKLWindow.initKLWindowPreferences(klEditorWindowPreferences, viewProperties);
+        // The window is built from a KL-editor window definition, which the generic create has no slot
+        // for, so it goes through the gen-purpose factory's own create.
+        GenPurposeKLWindowFactory factory =
+                (GenPurposeKLWindowFactory) getFactory(EntityKlWindowTypes.GEN_PURPOSE_KL);
+        GenPurposeKLWindow genPurposeKLWindow = factory.create(journalTopic, entityFacade, viewProperties, null,
+                klEditorWindowPreferences);
 
         setupWorkspaceWindow(genPurposeKLWindow);
     }
@@ -2060,7 +2063,13 @@ public class JournalController {
                         // Pass the live journalViewProperties (like the card branch above) so a restored
                         // entity window derives its coordinate from the live journal, not a reconstruction
                         // from preferences — keeping the logged-in author (ike-issues#756).
-                        setupWorkspaceWindow(restoreWindow(windowSettings, windowPreferences, journalViewProperties));
+                        // A factory answers null for a window it skips (a general-purpose window whose
+                        // KL-editor definition is missing); the factory has already logged why.
+                        AbstractEntityChapterKlWindow restored =
+                                restoreWindow(windowSettings, windowPreferences, journalViewProperties);
+                        if (restored != null) {
+                            setupWorkspaceWindow(restored);
+                        }
                     }
                 } catch (Exception e) {
                     LOG.error("Error restoring window: {}", windowId, e);
