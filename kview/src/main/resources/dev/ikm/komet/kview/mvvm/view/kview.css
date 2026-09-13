@@ -6794,6 +6794,12 @@ Styling a context menu for kview ui/ux controls
     -fx-border-width: 0;
 }
 
+
+.gen-purpose-window .stamp-view-control {
+    -fx-pref-width: 18.5em;  /* 222px */
+    -fx-min-width: 18.5em;   /* 222px */
+}
+
 /* Header banner grid (identicon + title + Komet ID): left inset is the shared 12px content
    gutter that the section titles, field content and toolbar crosshair align to. */
 .gen-purpose-window .window-banner-grid {
@@ -6807,13 +6813,13 @@ Styling a context menu for kview ui/ux controls
 
  .window-main-title .label {
      -fx-font-family: "Noto Sans";
-     -fx-font-size: 1.5em; /* 18px */
+     -fx-font-size: 1.583333em; /* 19px */
 
      -fx-graphic-text-gap: 8px;
  }
 
- .window-main-title .label > .image-view {
-    size: 24;
+ .window-main-title .label .image-view {
+    size: 32;
     -fx-fit-width: size;
     -fx-fit-height: size;
  }

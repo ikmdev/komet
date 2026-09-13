@@ -16,7 +16,6 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
 import dev.ikm.komet.kview.controls.ComponentItemNode;
-import dev.ikm.komet.kview.controls.ComponentItemNodeFactory;
 import dev.ikm.komet.kview.controls.ContentSizedSplitPane;
 import dev.ikm.komet.kview.controls.KlWindowControlToolbar;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
@@ -66,7 +65,9 @@ public final class GenPurposeWindowView extends BorderPane {
     private final VerticallyFilledPane timelineSlideoutTrayPane = new VerticallyFilledPane();
     private final ContentSizedSplitPane mainContent = new ContentSizedSplitPane();
     private final PublicIDListControl identifierControl = new PublicIDListControl();
-    private final ComponentItemNode windowConceptTitle = ComponentItemNodeFactory.create();
+    // Built bare, off ComponentItemNodeFactory, so the title shows the identicon and name only: no
+    // kind sigil or taxonomic status cluster leading it.
+    private final ComponentItemNode windowConceptTitle = new ComponentItemNode();
     private final Tooltip windowConceptTitleTooltip = new Tooltip("Empty Tooltip");
     private final StampViewControl stampViewControl = new StampViewControl();
 
