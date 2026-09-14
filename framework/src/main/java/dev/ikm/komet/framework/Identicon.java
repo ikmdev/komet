@@ -41,6 +41,14 @@ import java.util.concurrent.Executors;
 
 public class Identicon {
 
+    /**
+     * The LifeHash variant every identicon is rendered with. {@code DETAILED} runs a 32×32 cell
+     * grid mirrored to a 64×64 image (vs. 32×32 for {@code VERSION2}), so the identicon keeps
+     * distinct detail when the cache upscales it to 128×128. It is about 7× costlier per image
+     * (≈25 ms vs ≈3.5 ms), paid on {@link #generationExecutor}, never on the FX thread.
+     */
+    private static final LifeHashVersion LIFE_HASH_VERSION = LifeHashVersion.DETAILED;
+
     // Limit concurrency to avoid CPU thrashing during rapid scrolling
     private static final ExecutorService generationExecutor = Executors.newFixedThreadPool(
             Math.max(2, Runtime.getRuntime().availableProcessors() - 1),
@@ -162,7 +170,7 @@ public class Identicon {
                 return cached;
             }
         }
-        Image image = generateIdenticonImageLifeHash(publicId, LifeHashVersion.VERSION2);
+        Image image = generateIdenticonImageLifeHash(publicId, LIFE_HASH_VERSION);
         IMAGE_CACHE.put(publicId, image);
         FILLED.add(publicId);
         return image;
@@ -209,7 +217,7 @@ public class Identicon {
         int size = 128;
         WritableImage progressiveImage = new WritableImage(size, size);
         CompletableFuture.runAsync(() -> {
-            Image result = generateIdenticonImageLifeHash(publicId, LifeHashVersion.VERSION2);
+            Image result = generateIdenticonImageLifeHash(publicId, LIFE_HASH_VERSION);
             int w = (int) result.getWidth();
             int h = (int) result.getHeight();
             int[] scaledPixels = new int[size * size];
