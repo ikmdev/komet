@@ -29,15 +29,14 @@ import javafx.scene.image.PixelReader;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Polygon;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
 
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Identicon {
 
@@ -49,16 +48,34 @@ public class Identicon {
      */
     private static final LifeHashVersion LIFE_HASH_VERSION = LifeHashVersion.DETAILED;
 
-    // Limit concurrency to avoid CPU thrashing during rapid scrolling
+    /**
+     * Generator pool: a few low-priority daemon threads, never most of the machine. A burst of cold
+     * misses (a pattern list showing, a fast scroll through unseen concepts) used to fan out over
+     * cores-minus-one normal-priority threads, which on a hyperthreaded box left the FX and render
+     * threads sharing physical cores with busy generators: a six-second identicon burst read as a
+     * stalled UI. Identicons are decoration, so the pool takes a quarter of the cores (2-4) and
+     * drains a burst more slowly while the UI stays responsive, and {@link Thread#MIN_PRIORITY}
+     * lets the FX thread win any core the two contend for.
+     */
+    private static final int GENERATOR_THREADS =
+            Math.clamp(Runtime.getRuntime().availableProcessors() / 4, 2, 4);
+
     private static final ExecutorService generationExecutor = Executors.newFixedThreadPool(
-            Math.max(2, Runtime.getRuntime().availableProcessors() - 1),
+            GENERATOR_THREADS,
             r -> {
                 Thread t = new Thread(r);
                 t.setDaemon(true);
+                t.setPriority(Thread.MIN_PRIORITY);
                 t.setName("Identicon-Generator");
                 return t;
             }
     );
+
+    /** Completed fills awaiting the FX thread, delivered a batch at a time by {@link #deliverOnFxThread}. */
+    private static final ConcurrentLinkedQueue<Runnable> PENDING_FILLS = new ConcurrentLinkedQueue<>();
+
+    /** Whether a drain of {@link #PENDING_FILLS} is already queued on the FX thread. */
+    private static final AtomicBoolean DRAIN_SCHEDULED = new AtomicBoolean();
 
     /**
      * Maximum number of cached identicons. Default 2,048 entries
@@ -204,7 +221,7 @@ public class Identicon {
      * Caffeine mapping function: build a transparent 128×128 placeholder, kick
      * off the async LifeHash generation that fills it later, and return the
      * placeholder. The cache stores the placeholder; once the async fill
-     * completes via {@link Platform#runLater}, the same instance is now the
+     * completes via {@link #deliverOnFxThread}, the same instance is now the
      * fully-rendered identicon and any {@link ImageView} bound to it repaints
      * automatically (JavaFX observes pixel-buffer changes on
      * {@link WritableImage}).
@@ -230,7 +247,7 @@ public class Identicon {
                     scaledPixels[y * size + x] = reader.getArgb(sourceX, sourceY);
                 }
             }
-            Platform.runLater(() -> {
+            deliverOnFxThread(() -> {
                 progressiveImage.getPixelWriter().setPixels(
                         0, 0, size, size,
                         PixelFormat.getIntArgbInstance(),
@@ -239,6 +256,30 @@ public class Identicon {
             });
         }, generationExecutor);
         return progressiveImage;
+    }
+
+    /**
+     * Hands a completed fill to the FX thread, coalesced with every other fill that completes before
+     * the FX thread gets to it. One {@code runLater} per image meant a burst of thousands of tiny
+     * tasks interleaved with layout and input, each a queue round trip and a repaint request; one
+     * drain per batch gives the FX thread long uninterrupted stretches and a single repaint pulse
+     * for the whole batch.
+     */
+    private static void deliverOnFxThread(Runnable fill) {
+        PENDING_FILLS.add(fill);
+        if (DRAIN_SCHEDULED.compareAndSet(false, true)) {
+            Platform.runLater(Identicon::drainFills);
+        }
+    }
+
+    private static void drainFills() {
+        // Clear the flag before draining, so a fill that lands mid-drain schedules the next one
+        // rather than waiting in the queue until some later fill happens to come along.
+        DRAIN_SCHEDULED.set(false);
+        Runnable fill;
+        while ((fill = PENDING_FILLS.poll()) != null) {
+            fill.run();
+        }
     }
 
     /**

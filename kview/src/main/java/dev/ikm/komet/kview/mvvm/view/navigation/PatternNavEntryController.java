@@ -65,6 +65,9 @@ public class PatternNavEntryController {
     /** Follows the text size while the row is on a scene; null while it is not. */
     private Subscription textSizeSubscription;
 
+    /** Hands the instances to the list on the first expansion; null once that has happened. */
+    private Subscription instancesOnFirstExpand;
+
     /** Slot for the koncept atom — see {@code pattern-nav-entry.fxml}. */
     @FXML
     private HBox patternBadgeBox;
@@ -224,15 +227,25 @@ public class PatternNavEntryController {
         // set the cell factory for each pattern's instance list
         patternInstancesListView.setCellFactory(_ -> new PatternSemanticListCell(fetchDescriptionFunction, viewProperties));
 
-        // display each row (ListCell) of this ListView
-        Platform.runLater(() ->{
-            // make items the same as the list by the caller.
+        // The instances reach the list only when its pane is first expanded. A collapsed TitledPane
+        // still builds its ListView's cells on first show, and every cell resolves a description on
+        // the FX thread and requests an identicon; across every pattern in the navigator that was
+        // thousands of rows nobody could see, and the Patterns pill stalled on exactly that. With no
+        // items, a collapsed list has no cells and costs nothing until someone opens it.
+        Platform.runLater(() -> {
             ObservableList<Object> items = instancesViewModel.getObservableList(INSTANCES);
-            patternInstancesListView.setItems(items);
             if (items.isEmpty()) {
                 instancesTitledPane.setVisible(false);
                 instancesTitledPane.setManaged(false);
+                return;
             }
+            instancesOnFirstExpand = instancesTitledPane.expandedProperty().subscribe(expanded -> {
+                if (expanded) {
+                    patternInstancesListView.setItems(items);
+                    instancesOnFirstExpand.unsubscribe();
+                    instancesOnFirstExpand = null;
+                }
+            });
         });
     }
 
