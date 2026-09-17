@@ -4,8 +4,11 @@ import dev.ikm.komet.kview.NodeUtils;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.controls.ComponentItemNodeFactory;
 import dev.ikm.komet.kview.controls.KLReadOnlyComponentControl;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 
 public class KLReadOnlyComponentControlSkin extends KLReadOnlyBaseControlSkin<KLReadOnlyComponentControl> {
 
@@ -32,14 +35,28 @@ public class KLReadOnlyComponentControlSkin extends KLReadOnlyBaseControlSkin<KL
 
         control.setContextMenu(null);
 
+        // The item takes the width its text wants and no more, so the unpublished dot below sits
+        // right after the name (as the dot does on the other read-only controls); a max width of
+        // MAX_VALUE still lets the row shrink it, so a long description wraps instead of overflowing.
         componentItemNode.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(componentItemNode, Priority.ALWAYS);
+        HBox.setHgrow(componentItemNode, Priority.NEVER);
 
         initTexts(control);
 
         // A component's description can be arbitrarily long (e.g. a LOINC test name), so it wraps
         // onto as many lines as it needs instead of running past the field's — and the card's — edge.
         componentItemNode.setWrapText(true);
+
+        // While the value comes from a version not published yet, an amber dot follows it (styled
+        // in read-only-component-control.css).
+        Region unpublishedDot = new Region();
+        unpublishedDot.getStyleClass().add("unpublished-dot");
+        unpublishedDot.visibleProperty().bind(control.unpublishedProperty());
+        unpublishedDot.managedProperty().bind(control.unpublishedProperty());
+        textContainer.getChildren().add(unpublishedDot);
+        // With the row's own 4px spacing this is the 6px gap the text controls leave before their dot.
+        HBox.setMargin(unpublishedDot, new Insets(0, 0, 0, 2));
+        textContainer.setAlignment(Pos.CENTER_LEFT);
 
         // CSS
         textContainer.getStyleClass().add("text-container");

@@ -19,8 +19,9 @@
     -fx-font-size: 1.083333em; /* 13px */
 }
 
-/* The component value is rendered by a ComponentItemNode (".component-item") whose inner label
-   carries the hover/edit highlight; the prompt text label shows when there is no value. */
+/* The component value is rendered by a ComponentItemNode (".component-item"); the prompt text
+   label shows when there is no value. The inner label keeps a transparent border so its text sits
+   where it did when the label itself carried the highlight. */
 .read-only-component-control .main-container .text-container .component-item > .label {
     -fx-text-fill: #111;
     -fx-font-size: 1em; /* 13px: the container is already 13px */
@@ -31,16 +32,31 @@
     -fx-padding: 0 0 0 1px;
 }
 
-.read-only-component-control .main-container .text-container:hover .component-item > .label,
-.read-only-component-control .main-container .text-container:hover .prompt-text,
-.read-only-component-control:preview-mode .main-container .text-container .component-item > .label,
-.read-only-component-control:preview-mode .main-container .text-container .prompt-text {
+/* The hover/preview/edit highlight is painted on the value row, not on the item's label: the item
+   is only as wide as its name (so the unpublished dot can follow it, see below), while the
+   highlight spans the whole row — as it does on the other read-only controls
+   (read-only-data-control.css). */
+.read-only-component-control .main-container .text-container:hover,
+.read-only-component-control:preview-mode .main-container .text-container {
     -fx-background-color: #f4f4f4;
     -fx-border-color: #dfdfdf;
 }
 
-.read-only-component-control:edit-mode .main-container .text-container .component-item > .label,
-.read-only-component-control:edit-mode .main-container .text-container > .prompt-text {
+.read-only-component-control:edit-mode .main-container .text-container {
     -fx-background-color: #f4fbf0;
     -fx-border-color: #66bb38;
+}
+
+/* Value from a version that is not published yet (the :unpublished pseudo-class mirrors
+   KLReadOnlyBaseControl.unpublishedProperty): the item's text keeps its color and a 6px amber dot
+   follows it in the value row (KLReadOnlyComponentControlSkin). */
+.read-only-component-control .text-container > .unpublished-dot {
+    -fx-min-width: 6;
+    -fx-pref-width: 6;
+    -fx-max-width: 6;
+    -fx-min-height: 6;
+    -fx-pref-height: 6;
+    -fx-max-height: 6;
+    -fx-background-color: #D9A93E;
+    -fx-background-radius: 3;
 }

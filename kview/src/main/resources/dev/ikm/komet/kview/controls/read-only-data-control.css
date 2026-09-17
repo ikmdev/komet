@@ -31,3 +31,21 @@
     -fx-background-color: #f4fbf0;
     -fx-border-color: #66bb38;
 }
+
+/* Value from a version that is not published yet (the :unpublished pseudo-class mirrors
+   KLReadOnlyBaseControl.unpublishedProperty): the text keeps its color and a 6px amber dot follows
+   it (the label's right-hand graphic, KLReadOnlyDataTypeControlSkin). */
+.read-only-data-control:unpublished .main-container .text-container > .text {
+    -fx-graphic-text-gap: 6;
+}
+
+.read-only-data-control .text-container > .text > .unpublished-dot {
+    -fx-min-width: 6;
+    -fx-pref-width: 6;
+    -fx-max-width: 6;
+    -fx-min-height: 6;
+    -fx-pref-height: 6;
+    -fx-max-height: 6;
+    -fx-background-color: #D9A93E;
+    -fx-background-radius: 3;
+}

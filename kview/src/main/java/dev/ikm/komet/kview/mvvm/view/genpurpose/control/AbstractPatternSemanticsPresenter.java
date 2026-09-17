@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.mvvm.view.genpurpose.control;
 
 import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
+import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -28,10 +29,23 @@ public class AbstractPatternSemanticsPresenter {
      */
     protected static Latest<ObservableSemanticVersion> latestVersionForView(
             SemanticEntity<SemanticEntityVersion> semanticEntity, ViewCalculator viewCalculator) {
+        return snapshotForView(semanticEntity, viewCalculator).getLatestVersion();
+    }
+
+    /**
+     * The semantic's snapshot for the given view: its latest version (see {@link #latestVersionForView})
+     * plus the versions before it and the ones not published yet.
+     *
+     * @param semanticEntity the semantic to resolve
+     * @param viewCalculator the view to resolve it against
+     * @return the snapshot
+     */
+    protected static ObservableSemanticSnapshot snapshotForView(
+            SemanticEntity<SemanticEntityVersion> semanticEntity, ViewCalculator viewCalculator) {
         ObservableSemantic observableSemantic = ObservableEntityHandle.get(semanticEntity.publicId())
                 .asSemantic().orElseThrow(() -> new IllegalArgumentException(
                         "Entity is not a semantic: " + semanticEntity.publicId()));
-        return observableSemantic.getSnapshot(viewCalculator).getLatestVersion();
+        return observableSemantic.getSnapshot(viewCalculator);
     }
 
 }

@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard;
 
 import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.framework.observable.ObservableField;
+import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
@@ -18,9 +19,11 @@ import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import javafx.scene.Node;
 import javafx.scene.layout.GridPane;
+import org.eclipse.collections.api.list.ImmutableList;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 public class PatternSemanticsStandardPresenter extends AbstractPatternSemanticsPresenter implements PatternSemanticsPresenter {
@@ -100,14 +103,25 @@ public class PatternSemanticsStandardPresenter extends AbstractPatternSemanticsP
         // Creating an editable version via composeSemantic()/getEditableVersion() would track this
         // semantic in the shared composer's transaction, causing a spurious new version to be
         // written for every displayed semantic when any single semantic is committed.
-        Latest<ObservableSemanticVersion> latestVersion =
-                latestVersionForView(semanticEntity, viewProperties.calculator());
+        ObservableSemanticSnapshot snapshot = snapshotForView(semanticEntity, viewProperties.calculator());
+        Latest<ObservableSemanticVersion> latestVersion = snapshot.getLatestVersion();
 
         latestVersion.ifPresentOrElse(version -> {
+            // The values a version not published yet changed from the last published version are
+            // washed amber (the section header's NOT PUBLISHED chip names the change itself). A
+            // semantic with no published version is new altogether, so every value washes.
+            boolean unpublished = version.uncommitted();
+            ImmutableList<Object> publishedValues = unpublished
+                    ? snapshot.getHistoricVersions().stream().findFirst()
+                            .map(ObservableSemanticVersion::fieldValues).orElse(null)
+                    : null;
             for (ObservableField<?> observableField : version.fields()) {
                 for (EditorFieldModel editorFieldModel : editorPatternModel.getVisibleFields()) {
                     if (observableField.indexInPattern() == editorFieldModel.getIndex()) {
-                        addFieldView(observableField, editorFieldModel, semanticViewControl);
+                        KLReadOnlyBaseControl fieldControl = addFieldView(observableField, editorFieldModel, semanticViewControl);
+                        boolean valueChanged = unpublished && (publishedValues == null
+                                || !Objects.equals(observableField.value(), publishedValues.get(observableField.indexInPattern())));
+                        fieldControl.setUnpublished(valueChanged);
                     }
                 }
             }
@@ -119,7 +133,12 @@ public class PatternSemanticsStandardPresenter extends AbstractPatternSemanticsP
         return semanticViewControl;
     }
 
-    private void addFieldView(ObservableField<?> observableField, EditorFieldModel fieldModel, SemanticStandardControl semanticViewControl) {
+    @Override
+    public void revealSemantic(SemanticEntity<SemanticEntityVersion> semanticEntity) {
+        patternSemanticsControl.revealSemantic(semanticEntityToSemanticView.get(semanticEntity));
+    }
+
+    private KLReadOnlyBaseControl addFieldView(ObservableField<?> observableField, EditorFieldModel fieldModel, SemanticStandardControl semanticViewControl) {
         Field<?> field = observableField.field();
 
         // Generate node using the underlying ObservableField (read-only view)
@@ -148,5 +167,6 @@ public class PatternSemanticsStandardPresenter extends AbstractPatternSemanticsP
         fieldControl.titleVisibleProperty().bind(fieldModel.titleVisibleProperty());
 
         semanticViewControl.getFields().add(fieldControl);
+        return fieldControl;
     }
 }

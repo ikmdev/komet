@@ -91,6 +91,7 @@ import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
+import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
@@ -116,6 +117,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import dev.ikm.komet.layout_engine.host.SupplementalAreaRenderer;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -125,6 +127,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -195,6 +198,14 @@ public class GenPurposeDetailsController {
     private final Map<SemanticEntity<SemanticEntityVersion>, PatternSemanticsPresenter> semanticEntityToPatternSemanticsPresenter = new HashMap<>();
 
     /**
+     * The semantics currently rendered in the window, by nid, in render order — each the entity
+     * object its view was built from, which is the key its presenter is filed under in
+     * {@link #semanticEntityToPatternSemanticsPresenter}. Kept in step by {@link #doAddSemanticViews}
+     * and {@link #clearSemanticViews}; read by {@link #unpublishedSemantics}.
+     */
+    private final Map<Integer, SemanticEntity<SemanticEntityVersion>> displayedSemantics = new LinkedHashMap<>();
+
+    /**
      * Given a SemanticEntity what's its associated Semantic Control.
      */
     private final Map<SemanticEntity<SemanticEntityVersion>, SemanticStandardControl> semanticEntityToSemanticView = new HashMap<>();
@@ -225,6 +236,9 @@ public class GenPurposeDetailsController {
     private final Tooltip windowConceptTitleTooltip;
     private final PublicIDListControl identifierControl;
     private final Label createModeHintLabel;
+    /** Strip naming the changes not published yet (see {@link #updatePublishState}). */
+    private final HBox unpublishedHint;
+    private final Label unpublishedHintLabel;
     private BorderPane propertiesBorderPane;
     private GenPurposePropertiesController propertiesController;
     /** The KL-editor window definition this window is built from; shared with the editor while both are open. */
@@ -273,6 +287,9 @@ public class GenPurposeDetailsController {
         this.windowConceptTitleTooltip = view.getWindowConceptTitleTooltip();
         this.identifierControl = view.getIdentifierControl();
         this.createModeHintLabel = view.getCreateModeHintLabel();
+        this.unpublishedHint = view.getUnpublishedHint();
+        this.unpublishedHintLabel = view.getUnpublishedHintLabel();
+        view.getUnpublishedShowLink().setOnAction(event -> revealFirstUnpublishedSemantic());
 
         // The definition comes first: the chrome wiring below already asks its window type
         // (see usesPublishFlow).
@@ -1382,7 +1399,7 @@ public class GenPurposeDetailsController {
         }
 
         titledPane.selectedReferenceComponentProperty().subscribe(() -> {
-            patternSemanticsPresenter.clearSemantics();
+            clearSemanticViews(patternSemanticsPresenter);
             doAddSemanticViews(editorPatternModel, patternSemanticsPresenter, titledPane.getSelectedReferenceComponent());
         });
 
@@ -1392,10 +1409,32 @@ public class GenPurposeDetailsController {
     private void reloadSemanticViews(SemanticEntity<SemanticEntityVersion> semantic) {
         editorPatternModelToPatternPresenter.forEach((patternModel, presenter) -> {
             if (patternModel.getNid() == semantic.patternNid()) {
-                presenter.clearSemantics();
+                clearSemanticViews(presenter);
                 doAddSemanticViews(patternModel, presenter, semantic.referencedComponent());
             }
         });
+    }
+
+    /**
+     * Re-renders every pattern's semantics from the store — after a publish, so the versions just
+     * published stop showing as not published.
+     */
+    private void reloadAllSemanticViews() {
+        editorPatternModelToPatternPresenter.forEach((patternModel, presenter) -> {
+            clearSemanticViews(presenter);
+            // Resolved the way the sections are built (see resolveSectionReferenceComponent): the
+            // main section anchors on the window's component, which its titled pane never selects.
+            doAddSemanticViews(patternModel, presenter,
+                    resolveSectionReferenceComponent(patternModel.getParentSection()));
+        });
+    }
+
+    /**
+     * Clears a presenter's semantic views, forgetting the semantics it displayed.
+     */
+    private void clearSemanticViews(PatternSemanticsPresenter presenter) {
+        presenter.clearSemantics();
+        displayedSemantics.values().removeIf(semantic -> semanticEntityToPatternSemanticsPresenter.get(semantic) == presenter);
     }
 
     private void doAddSemanticViews(EditorPatternModel editorPatternModel, PatternSemanticsPresenter patternSemanticsPresenter, EntityFacade referenceComponent) {
@@ -1430,7 +1469,11 @@ public class GenPurposeDetailsController {
                     }
                     patternSemanticsPresenter.addNewSemantic(semantic);
                     semanticEntityToPatternSemanticsPresenter.put(semantic, patternSemanticsPresenter);
+                    displayedSemantics.put(semantic.nid(), semantic);
                 });
+
+        // The semantics just rendered may carry versions not published yet (see unpublishedSemantics).
+        updatePublishState();
     }
 
     /**
@@ -1648,15 +1691,115 @@ public class GenPurposeDetailsController {
         boolean hasStagedChanges = composer != null && composer.hasUncommittedChanges();
         boolean disabled;
         String publishTooltip;
+        int unpublishedChanges = 0;
         if (genPurposeViewModel.getMode() == FormMode.CREATE) {
             disabled = !hasStagedChanges || !allRequiredPatternsSatisfied();
             publishTooltip = disabled ? "Complete the required semantics to publish" : "Publish";
         } else {
-            disabled = !hasStagedChanges;
-            publishTooltip = disabled ? "No changes to publish" : "Publish";
+            // Changes saved but not published count whether this window instance staged them or
+            // an earlier one did (the window was closed and reopened): they are read from the
+            // store, not from the composer.
+            unpublishedChanges = unpublishedChangeCount();
+            disabled = !hasStagedChanges && unpublishedChanges == 0;
+            publishTooltip = disabled ? "No changes to publish"
+                    : unpublishedChanges == 0 ? "Publish"
+                    : "Publish " + unpublishedChanges + (unpublishedChanges == 1 ? " change" : " changes");
         }
         windowControlToolbar.setPublishDisable(disabled);
         windowControlToolbar.setPublishTooltip(publishTooltip);
+
+        // The strip under the toolbar names the changes not published yet. Not in create mode,
+        // whose DRAFT chip and hint already say the whole component is unpublished.
+        boolean showHint = unpublishedChanges > 0;
+        unpublishedHint.setVisible(showHint);
+        unpublishedHint.setManaged(showHint);
+        if (showHint) {
+            unpublishedHintLabel.setText(unpublishedChanges == 1
+                    ? "1 change not published yet. Only you can see it until you publish."
+                    : unpublishedChanges + " changes not published yet. Only you can see them until you publish.");
+        }
+
+        updateUnpublishedChips();
+    }
+
+    /**
+     * The unpublished strip's "Show" action: brings the first semantic with an unpublished version
+     * into view, expanding the section holding it if it is collapsed.
+     */
+    private void revealFirstUnpublishedSemantic() {
+        List<SemanticEntity<SemanticEntityVersion>> unpublished = unpublishedSemantics();
+        if (unpublished.isEmpty()) {
+            return;
+        }
+        SemanticEntity<SemanticEntityVersion> semantic = unpublished.getFirst();
+        PatternSemanticsPresenter presenter = semanticEntityToPatternSemanticsPresenter.get(semantic);
+        editorPatternModelToPatternPresenter.forEach((patternModel, patternPresenter) -> {
+            if (patternPresenter == presenter) {
+                sectionModelToTitledPane.get(patternModel.getParentSection()).setExpanded(true);
+            }
+        });
+        presenter.revealSemantic(semantic);
+    }
+
+    /**
+     * Sets each section header's NOT PUBLISHED chip and note ("2 changes by you") from the
+     * section's semantics whose latest version is saved but not published yet; sections without
+     * any show no chip. Not in create mode, whose DRAFT chip and hint already say the whole
+     * component is unpublished.
+     */
+    private void updateUnpublishedChips() {
+        Map<EditorSectionModel, List<SemanticEntity<SemanticEntityVersion>>> unpublishedBySection = new HashMap<>();
+        if (genPurposeViewModel.getMode() != FormMode.CREATE) {
+            for (SemanticEntity<SemanticEntityVersion> semantic : unpublishedSemantics()) {
+                PatternSemanticsPresenter presenter = semanticEntityToPatternSemanticsPresenter.get(semantic);
+                editorPatternModelToPatternPresenter.forEach((patternModel, patternPresenter) -> {
+                    if (patternPresenter == presenter) {
+                        unpublishedBySection.computeIfAbsent(patternModel.getParentSection(), section -> new ArrayList<>())
+                                .add(semantic);
+                    }
+                });
+            }
+        }
+        int currentAuthorNid = getViewProperties().nodeView().editCoordinate().getAuthorNidForChanges();
+        sectionModelToTitledPane.forEach((section, titledPane) -> {
+            List<SemanticEntity<SemanticEntityVersion>> unpublished = unpublishedBySection.get(section);
+            if (unpublished == null) {
+                titledPane.setUnpublishedNote(null);
+                return;
+            }
+            boolean allByCurrentAuthor = unpublished.stream()
+                    .flatMap(semantic -> Entity.getFast(semantic.nid()).versions().stream())
+                    .filter(EntityVersion::uncommitted)
+                    .allMatch(version -> version.stamp().authorNid() == currentAuthorNid);
+            titledPane.setUnpublishedNote((unpublished.size() == 1 ? "1 change" : unpublished.size() + " changes")
+                    + (allByCurrentAuthor ? " by you" : ""));
+        });
+    }
+
+    /**
+     * The semantics shown in this window whose latest version is saved but not published yet, in
+     * render order — each as the entity object its view was built from (see {@link #displayedSemantics}).
+     * Whether a semantic is published is read from the store, since a version may have been
+     * submitted or published since its view was built.
+     */
+    private List<SemanticEntity<SemanticEntityVersion>> unpublishedSemantics() {
+        return displayedSemantics.values().stream()
+                .filter(semantic -> Entity.getFast(semantic.nid()).uncommitted())
+                .toList();
+    }
+
+    /**
+     * How many of the components this window shows carry a version not published yet: the
+     * unpublished semantics plus, when its own latest version is unpublished, the window's
+     * reference component.
+     */
+    private int unpublishedChangeCount() {
+        int count = unpublishedSemantics().size();
+        EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+        if (refComponent != null && Entity.getFast(refComponent.nid()).uncommitted()) {
+            count++;
+        }
+        return count;
     }
 
     /**
@@ -1664,6 +1807,10 @@ public class GenPurposeDetailsController {
      * Commits the composer's open transaction, finalizing everything staged since the last
      * publish: submitted semantic versions and, in create mode, the lazily created reference
      * component itself. A CREATE window becomes an EDIT window on its first publish.
+     * <p>
+     * Versions staged by an earlier instance of this window (closed before publishing) sit in
+     * that instance's still-open transactions; those are committed too, so a reopened window
+     * publishes everything it shows as not published.
      */
     private void publish() {
         boolean wasCreateMode = genPurposeViewModel.getMode() == FormMode.CREATE;
@@ -1672,16 +1819,56 @@ public class GenPurposeDetailsController {
         composer = null;
         initializeComposer();
 
+        int unpublishable = commitTransactionsOfUnpublishedVersions();
+
         if (wasCreateMode) {
             genPurposeViewModel.setMode(FormMode.EDIT);
         }
         // The commit finalized the staged entities (in create mode the window's reference
-        // component itself) — refresh the banner/identifier/STAMP from the committed state.
+        // component itself) — refresh the banner/identifier/STAMP from the committed state, and
+        // the semantics so the versions just published drop their "Not published" marks.
         updateView();
+        reloadAllSemanticViews();
         updatePublishState();
 
-        toast().show(Toast.Status.SUCCESS,
-                wasCreateMode ? componentKindString + " created" : "Changes published");
+        if (unpublishable > 0) {
+            toast().show(Toast.Status.FAILURE, unpublishable == 1
+                    ? "1 change could not be published: it was saved in an earlier session"
+                    : unpublishable + " changes could not be published: they were saved in an earlier session");
+        } else {
+            toast().show(Toast.Status.SUCCESS,
+                    wasCreateMode ? componentKindString + " created" : "Changes published");
+        }
+    }
+
+    /**
+     * Commits the open transactions holding the unpublished versions of the components this
+     * window shows — the ones staged by an earlier instance of the window. Transactions live in
+     * memory only, so a version saved in an earlier session has none to commit; those versions
+     * stay unpublished.
+     *
+     * @return how many components still carry an unpublished version afterwards
+     */
+    private int commitTransactionsOfUnpublishedVersions() {
+        List<Entity<?>> unpublished = new ArrayList<>(unpublishedSemantics());
+        EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+        if (refComponent != null) {
+            unpublished.add(Entity.getFast(refComponent.nid()));
+        }
+
+        Set<Transaction> transactions = new HashSet<>();
+        for (Entity<?> entity : unpublished) {
+            for (EntityVersion version : Entity.getFast(entity.nid()).versions()) {
+                if (version.uncommitted()) {
+                    Transaction.forStamp(version.stamp().publicId()).ifPresent(transactions::add);
+                }
+            }
+        }
+        transactions.forEach(Transaction::commit);
+
+        return (int) unpublished.stream()
+                .filter(entity -> Entity.getFast(entity.nid()).uncommitted())
+                .count();
     }
 
     /**

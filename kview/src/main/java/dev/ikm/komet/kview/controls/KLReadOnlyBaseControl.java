@@ -6,9 +6,32 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.css.PseudoClass;
 import javafx.scene.control.Control;
 
 public abstract class KLReadOnlyBaseControl extends Control {
+
+    /**
+     * Active while the value shown comes from a version that is not published yet: the skin follows
+     * the value with an amber dot (see the read-only-*.css files).
+     */
+    private static final PseudoClass UNPUBLISHED_PSEUDO_CLASS = PseudoClass.getPseudoClass("unpublished");
+
+    // -- unpublished
+    /**
+     * Whether the value shown comes from a version that is not published yet. Mirrored as the
+     * {@code :unpublished} pseudo-class for the stylesheets.
+     */
+    private final BooleanProperty unpublished = new SimpleBooleanProperty() {
+        @Override
+        protected void invalidated() {
+            pseudoClassStateChanged(UNPUBLISHED_PSEUDO_CLASS, get());
+        }
+    };
+    public boolean isUnpublished() { return unpublished.get(); }
+    public BooleanProperty unpublishedProperty() { return unpublished; }
+    public void setUnpublished(boolean unpublished) { this.unpublished.set(unpublished); }
+
     // -- title
     private StringProperty title = new SimpleStringProperty();
     public String getTitle() { return title.get(); }

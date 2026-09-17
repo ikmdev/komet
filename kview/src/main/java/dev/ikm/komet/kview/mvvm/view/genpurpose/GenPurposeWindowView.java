@@ -27,6 +27,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
@@ -61,6 +62,9 @@ public final class GenPurposeWindowView extends BorderPane {
 
     private final KlWindowControlToolbar windowControlToolbar = new KlWindowControlToolbar();
     private final Label createModeHintLabel = new Label();
+    private final HBox unpublishedHint = new HBox();
+    private final Label unpublishedHintLabel = new Label();
+    private final Hyperlink unpublishedShowLink = new Hyperlink("Show");
     private final VerticallyFilledPane propertiesSlideoutTrayPane = new VerticallyFilledPane();
     private final VerticallyFilledPane timelineSlideoutTrayPane = new VerticallyFilledPane();
     private final ContentSizedSplitPane mainContent = new ContentSizedSplitPane();
@@ -98,25 +102,53 @@ public final class GenPurposeWindowView extends BorderPane {
     private BorderPane bodyFrame() {
         BorderPane bodyFrame = new BorderPane();
         bodyFrame.getStyleClass().add("window-body-frame");
-        bodyFrame.setTop(createModeHint());
+        // The two hint strips stack under the toolbar; at most one shows at a time (create mode
+        // has nothing published to compare against).
+        bodyFrame.setTop(new VBox(createModeHint(), unpublishedHint()));
         bodyFrame.setRight(trays());
         bodyFrame.setCenter(mainCenter());
         return bodyFrame;
     }
 
-    private Label createModeHint() {
+    private SVGPath hintIcon() {
         SVGPath icon = new SVGPath();
         icon.getStyleClass().add("create-mode-hint-icon");
         icon.setFillRule(FillRule.EVEN_ODD);
         icon.setContent(HINT_ICON_PATH);
+        return icon;
+    }
 
+    private Label createModeHint() {
         createModeHintLabel.setId("createModeHintLabel");
         createModeHintLabel.getStyleClass().add("create-mode-hint");
         createModeHintLabel.setMaxWidth(Double.MAX_VALUE);
         createModeHintLabel.setVisible(false);
         createModeHintLabel.setManaged(false);
-        createModeHintLabel.setGraphic(icon);
+        createModeHintLabel.setGraphic(hintIcon());
         return createModeHintLabel;
+    }
+
+    /**
+     * Strip naming the changes that are saved but not published yet, with a link to the first of
+     * them — the create-mode strip's styling, on the same row layout (see .unpublished-hint in
+     * kview.css). Shown by the controller while the window has such changes.
+     */
+    private HBox unpublishedHint() {
+        unpublishedHintLabel.setId("unpublishedHintLabel");
+        unpublishedHintLabel.setGraphic(hintIcon());
+        unpublishedHintLabel.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(unpublishedHintLabel, Priority.ALWAYS);
+
+        unpublishedShowLink.setId("unpublishedShowLink");
+        unpublishedShowLink.getStyleClass().add("unpublished-show-link");
+
+        unpublishedHint.setId("unpublishedHint");
+        unpublishedHint.getStyleClass().addAll("create-mode-hint", "unpublished-hint");
+        unpublishedHint.setAlignment(Pos.CENTER_LEFT);
+        unpublishedHint.setVisible(false);
+        unpublishedHint.setManaged(false);
+        unpublishedHint.getChildren().addAll(unpublishedHintLabel, unpublishedShowLink);
+        return unpublishedHint;
     }
 
     private HBox trays() {
@@ -218,6 +250,21 @@ public final class GenPurposeWindowView extends BorderPane {
 
     public Label getCreateModeHintLabel() {
         return createModeHintLabel;
+    }
+
+    /** The strip naming the changes not published yet; hidden until the controller shows it. */
+    public HBox getUnpublishedHint() {
+        return unpublishedHint;
+    }
+
+    /** The unpublished strip's text. */
+    public Label getUnpublishedHintLabel() {
+        return unpublishedHintLabel;
+    }
+
+    /** The unpublished strip's "Show" link, taking the user to the first change. */
+    public Hyperlink getUnpublishedShowLink() {
+        return unpublishedShowLink;
     }
 
     public VerticallyFilledPane getPropertiesSlideoutTrayPane() {
