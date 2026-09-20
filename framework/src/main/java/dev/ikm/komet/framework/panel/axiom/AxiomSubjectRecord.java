@@ -24,11 +24,27 @@ import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.scene.Node;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
+/**
+ * @param updatedTreeHandler takes the updated definition an axiom action produces, in place of the
+ *                           action writing and committing it as a new semantic version itself —
+ *                           for a host that persists the definition its own way (e.g. staging
+ *                           it until its window publishes). Null for the action to persist it.
+ */
 public record AxiomSubjectRecord(int axiomIndex, DiTreeEntity axiomTree,
                                  ObservableSemanticVersion semanticContainingAxiom,
                                  PremiseType premiseType,
-                                 Node nodeForPopover) {
+                                 Node nodeForPopover,
+                                 Consumer<DiTreeEntity> updatedTreeHandler) {
+
+    /** A subject whose axiom actions persist the updated definition themselves. */
+    public AxiomSubjectRecord(int axiomIndex, DiTreeEntity axiomTree,
+                              ObservableSemanticVersion semanticContainingAxiom,
+                              PremiseType premiseType,
+                              Node nodeForPopover) {
+        this(axiomIndex, axiomTree, semanticContainingAxiom, premiseType, nodeForPopover, null);
+    }
 
     public int axiomMeaningNid() {
         return axiomTree.vertexMap().get(axiomIndex).getMeaningNid();

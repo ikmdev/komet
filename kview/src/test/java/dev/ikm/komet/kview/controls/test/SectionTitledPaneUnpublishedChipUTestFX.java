@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.controls.test;
 
+import dev.ikm.komet.kview.controls.KLDiTreeControl;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
 import javafx.css.PseudoClass;
@@ -124,5 +125,30 @@ class SectionTitledPaneUnpublishedChipUTestFX {
 
         FxToolkit.setupFixture(() -> field.setUnpublished(false));
         assertFalse(field.getPseudoClassStates().contains(UNPUBLISHED));
+    }
+
+    @Test
+    @DisplayName("An axiom tree marked unpublished shows the amber dot after its title")
+    void axiomTreeUnpublishedDot() throws Exception {
+        KLDiTreeControl axiomTree = new KLDiTreeControl();
+        FxToolkit.setupFixture(() -> {
+            axiomTree.setTitle("Stated definition");
+            root.getChildren().setAll(axiomTree);
+            root.applyCss();
+            root.layout();
+        });
+        Node dot = axiomTree.lookup(".ditree-title-row > .unpublished-dot");
+        assertFalse(dot.isVisible());
+
+        FxToolkit.setupFixture(() -> {
+            axiomTree.setUnpublished(true);
+            root.applyCss();
+            root.layout();
+        });
+        Node title = axiomTree.lookup(".ditree-title-row > .title");
+        assertTrue(dot.isVisible());
+        assertEquals(6, dot.getLayoutBounds().getWidth());
+        assertTrue(title.localToScene(title.getLayoutBounds()).getMaxX()
+                < dot.localToScene(dot.getLayoutBounds()).getMinX(), "dot follows the title");
     }
 }

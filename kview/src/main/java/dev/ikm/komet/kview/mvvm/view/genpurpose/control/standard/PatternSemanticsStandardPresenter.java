@@ -8,6 +8,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.AbstractPatternSemanticsPresenter;
+import dev.ikm.komet.layout.InlineEditStager;
 import dev.ikm.komet.layout.PatternSemanticsPresenter;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
@@ -52,6 +53,9 @@ public class PatternSemanticsStandardPresenter extends AbstractPatternSemanticsP
      * presenter it is always the Standard factory's set.
      */
     private final StandardPatternProperties factoryProperties;
+
+    /** Stages inline edits until the window publishes; null to commit them as applied (see {@link #setInlineEditStager}). */
+    private InlineEditStager inlineEditStager;
 
     public PatternSemanticsStandardPresenter(EditorPatternModel editorPatternModel, ViewProperties viewProperties, ObservableComposer composer, UUID journalTopic) {
         this.composer = composer;
@@ -138,6 +142,11 @@ public class PatternSemanticsStandardPresenter extends AbstractPatternSemanticsP
         patternSemanticsControl.revealSemantic(semanticEntityToSemanticView.get(semanticEntity));
     }
 
+    @Override
+    public void setInlineEditStager(InlineEditStager inlineEditStager) {
+        this.inlineEditStager = inlineEditStager;
+    }
+
     private KLReadOnlyBaseControl addFieldView(ObservableField<?> observableField, EditorFieldModel fieldModel, SemanticStandardControl semanticViewControl) {
         Field<?> field = observableField.field();
 
@@ -148,7 +157,8 @@ public class PatternSemanticsStandardPresenter extends AbstractPatternSemanticsP
                 observableField, // Use underlying ObservableField for display
                 viewProperties,
                 null,
-                journalTopic
+                journalTopic,
+                inlineEditStager
         );
 
         fieldModel.rowIndexProperty().subscribe(newRowIndex -> {

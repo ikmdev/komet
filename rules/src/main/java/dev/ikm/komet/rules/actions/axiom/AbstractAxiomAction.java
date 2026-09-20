@@ -67,6 +67,12 @@ public abstract class AbstractAxiomAction extends AbstractActionSuggested {
         }
     }
     protected void putUpdatedDiTree(AxiomSubjectRecord axiomSubjectRecord, EditCoordinateRecord editCoordinate, DiTreeEntity newTree) {
+        if (axiomSubjectRecord.updatedTreeHandler() != null) {
+            // The host persists the definition its own way (e.g. staging it until its window
+            // publishes) — hand the updated definition over instead of writing and committing it.
+            axiomSubjectRecord.updatedTreeHandler().accept(newTree);
+            return;
+        }
         SemanticRecord semanticContainingAxiom = Entity.getFast(axiomSubjectRecord.semanticContainingAxiom().nid());
         Optional<Transaction> optionalTransaction = Transaction.forVersion(axiomSubjectRecord.semanticContainingAxiom().version());
         Transaction transaction;

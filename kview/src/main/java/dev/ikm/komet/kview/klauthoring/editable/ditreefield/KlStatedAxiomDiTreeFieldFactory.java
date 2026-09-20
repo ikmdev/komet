@@ -5,6 +5,7 @@ import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klauthoring.readonly.ditreefield.KlReadOnlyDiTreeField;
+import dev.ikm.komet.layout.InlineEditStager;
 import dev.ikm.komet.layout.version.field.KlDirectedTreeField;
 import dev.ikm.komet.layout.version.field.KlField;
 import dev.ikm.komet.layout.version.field.KlFieldFactory;
@@ -36,10 +37,12 @@ public class KlStatedAxiomDiTreeFieldFactory implements KlFieldFactory<DiTreeEnt
      * @param observableField The observable field containing the stated DiTreeEntity logical definition
      * @param viewProperties The view the rules engine runs against
      * @param stamp4field The observable stamp providing versioning information
+     * @param inlineEditStager What applied edits stage through, for the host window's Publish action
+     *                         to commit; null to commit each applied edit right away
      * @return An instance of KlField&lt;DiTreeEntity&gt; rendering an inline-editing axiom tree
      */
-    public KlField<DiTreeEntity> create(ObservableField<DiTreeEntity> observableField, ViewProperties viewProperties, ObservableStamp stamp4field) {
-        return new KlStatedAxiomDiTreeField(observableField, viewProperties, stamp4field);
+    public KlField<DiTreeEntity> create(ObservableField<DiTreeEntity> observableField, ViewProperties viewProperties, ObservableStamp stamp4field, InlineEditStager inlineEditStager) {
+        return new KlStatedAxiomDiTreeField(observableField, viewProperties, stamp4field, inlineEditStager);
     }
 
     /**
@@ -72,6 +75,6 @@ public class KlStatedAxiomDiTreeFieldFactory implements KlFieldFactory<DiTreeEnt
 
     @Override
     public String getDescription() {
-        return "An inline-editing DiTree field factory for stated logical definitions, committing each applied edit.";
+        return "An inline-editing DiTree field factory for stated logical definitions, committing (or, in a window that publishes, staging) each applied edit.";
     }
 }

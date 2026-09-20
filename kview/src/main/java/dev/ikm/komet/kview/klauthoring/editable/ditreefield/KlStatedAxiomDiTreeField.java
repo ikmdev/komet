@@ -18,6 +18,7 @@ import dev.ikm.komet.kview.controls.AxiomRuleAction;
 import dev.ikm.komet.kview.controls.KLDiTreeControl;
 import dev.ikm.komet.kview.controls.KLDiTreeControlFactory;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
+import dev.ikm.komet.layout.InlineEditStager;
 import dev.ikm.komet.layout.version.field.KlDirectedTreeField;
 import dev.ikm.tinkar.common.util.broadcast.Subscriber;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
@@ -52,18 +53,29 @@ import java.util.List;
  * <p>The structure menus are sourced from the axiom rules engine — the same Evrete rules
  * ({@code AxiomFocusedRules}) that drive the classic axiom control's context menu — through the
  * control's rule actions provider. The skin substitutes its inline treatments for the actions it
- * recognizes; unrecognized actions run the engine-generated action itself, and the control's value
- * is refreshed from the store afterwards (also whenever any other writer updates the semantic).</p>
+ * recognizes; unrecognized actions run the engine-generated action itself, which hands the updated
+ * definition back as the control's value ({@code AxiomSubjectRecord.updatedTreeHandler}) instead of
+ * writing it — so every edit, however it was made, is persisted by this field alone. The value is
+ * also refreshed from the store whenever another writer updates the semantic.</p>
  *
  * <p>Each applied edit — a picked concept, an added or removed axiom, a changed set type — is
  * persisted immediately as a new committed semantic version, following the classic axiom editor
  * precedent ({@code AbstractAxiomAction}), where every rule action writes and commits its own
  * transaction. Templates for new content live only in the control until their concepts are
  * picked, so incomplete edits never touch the store.</p>
+ *
+ * <p>In a window with a Publish action of its own the field stages instead: handed an
+ * {@link InlineEditStager}, it passes each applied edit to the stager — the window saves it as a
+ * version not published yet, alongside its other staged changes — rather than committing it.</p>
  */
 public class KlStatedAxiomDiTreeField extends BaseDefaultKlField<DiTreeEntity> implements KlDirectedTreeField<DiTreeEntity> {
 
     private final int semanticNid;
+
+    private final int fieldIndex;
+
+    /** What applied edits stage through until the host window publishes; null to commit them right away. */
+    private InlineEditStager inlineEditStager;
 
     /** Strong reference — the entity provider holds its subscribers weakly. */
     private Subscriber<Integer> entityChangeSubscriber;
@@ -73,6 +85,7 @@ public class KlStatedAxiomDiTreeField extends BaseDefaultKlField<DiTreeEntity> i
         super(observableDiTreeField, observableView, stamp4field, control);
 
         this.semanticNid = observableDiTreeField.field().nid();
+        this.fieldIndex = observableDiTreeField.indexInPattern();
         control.setTitle(getTitle());
         control.setRootConceptNid(EntityHandle.getSemanticOrThrow(semanticNid).referencedComponentNid());
         control.setValue(observableDiTreeField.editableValueProperty().get());
@@ -89,13 +102,17 @@ public class KlStatedAxiomDiTreeField extends BaseDefaultKlField<DiTreeEntity> i
      * Creates the field with its structure menus sourced from the axiom rules engine, which needs
      * the full {@link ViewProperties} that the {@code KlFieldFactory} contract does not carry —
      * the same extra-parameter precedent as {@code KlReadOnlyComponentSetFieldFactory}.
+     *
+     * @param inlineEditStager what applied edits stage through until the host window publishes
+     *                         them (see {@code persist}); null to commit them right away
      */
-    public KlStatedAxiomDiTreeField(ObservableField<DiTreeEntity> observableDiTreeField, ViewProperties viewProperties, ObservableStamp stamp4field) {
+    public KlStatedAxiomDiTreeField(ObservableField<DiTreeEntity> observableDiTreeField, ViewProperties viewProperties, ObservableStamp stamp4field, InlineEditStager inlineEditStager) {
         this(observableDiTreeField, viewProperties.nodeView(), stamp4field);
+        this.inlineEditStager = inlineEditStager;
         KLDiTreeControl control = (KLDiTreeControl) fxObject();
         control.setRuleActionsProvider(vertex -> ruleActions(vertex, viewProperties, control));
-        // Engine-run actions (and any other writer, e.g. the classic axiom control in another
-        // window) persist straight to the store; mirror those writes back into the control.
+        // Other writers (e.g. the classic axiom control in another window) persist straight to
+        // the store; mirror those writes back into the control.
         entityChangeSubscriber = changedNid -> {
             if (changedNid == semanticNid) {
                 Platform.runLater(() -> refreshFromStore(control));
@@ -117,8 +134,10 @@ public class KlStatedAxiomDiTreeField extends BaseDefaultKlField<DiTreeEntity> i
                 .asSemantic().orElseThrow()
                 .getSnapshot(viewProperties.calculator())
                 .getLatestVersion().get();
+        // The engine's actions hand their updated definition to the control instead of writing and
+        // committing it themselves: it then persists like any edit applied in the tree (see persist).
         AxiomSubjectRecord axiomSubject = new AxiomSubjectRecord(vertexIndex, tree, semanticVersion,
-                PremiseType.STATED, control);
+                PremiseType.STATED, control, control::setValue);
         ObservationRecord observation = new ObservationRecord(Topic.AXIOM_FOCUSED, axiomSubject, Measures.present());
         ImmutableList<Consequence<?>> consequences = RuleService.get().execute("Axiom tree structure menu",
                 Lists.immutable.of(observation), viewProperties, viewProperties.nodeView().editCoordinate());
@@ -129,10 +148,7 @@ public class KlStatedAxiomDiTreeField extends BaseDefaultKlField<DiTreeEntity> i
                 case ConsequenceAction consequenceAction -> {
                     if (consequenceAction.generatedAction() instanceof Action action) {
                         actions.add(new AxiomRuleAction.Command(action.getClass().getSimpleName(), action.getText(),
-                                () -> {
-                                    action.handle(new ActionEvent());
-                                    refreshFromStore(control);
-                                }));
+                                () -> action.handle(new ActionEvent())));
                     }
                 }
                 case ConsequenceMenu consequenceMenu -> actions.add(new AxiomRuleAction.Submenu(
@@ -157,18 +173,23 @@ public class KlStatedAxiomDiTreeField extends BaseDefaultKlField<DiTreeEntity> i
     }
 
     /**
-     * Not the only writer of this semantic: unmapped engine actions persist through
-     * {@code AbstractAxiomAction.putUpdatedDiTree}, which stamps from the edit coordinate (this
-     * method stamps from the view coordinate — same values while no override diverges them). A
-     * change to stamping or commit policy here must be mirrored there, or both funneled through
-     * one shared helper.
+     * Persists an edit applied in the tree — by the skin's inline treatments or by an engine-run
+     * action, which hands its updated definition over as the control's value rather than writing
+     * it through {@code AbstractAxiomAction.putUpdatedDiTree} (see {@link #ruleActions}).
      */
     private void persist(DiTreeEntity newTree) {
         ViewCalculator viewCalculator = observableView.calculator();
         Latest<SemanticEntityVersion> latestVersion = viewCalculator.latest(semanticNid);
         if (latestVersion.isPresent() && newTree.equals(latestVersion.get().fieldValues().get(0))) {
-            // The store already holds this definition — the value was refreshed after an
-            // engine-run action or another writer persisted it.
+            // The store already holds this definition — the value was refreshed after another
+            // writer persisted it.
+            return;
+        }
+        if (inlineEditStager != null) {
+            // The host window publishes: the edit stages with the window's other changes, and the
+            // value now comes from a version not published yet.
+            inlineEditStager.stageFieldValue(semanticNid, fieldIndex, newTree);
+            ((KLDiTreeControl) fxObject()).setUnpublished(true);
             return;
         }
         Transaction transaction = Transaction.make();

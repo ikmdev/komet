@@ -701,7 +701,7 @@ public class GenPurposeFieldsController {
                 }
 
                 // Whether this window stages changes until the toolbar's Publish button commits
-                // them (currently the standard Pattern window only).
+                // them (currently the standard Pattern and Concept windows).
                 boolean publishFlow = Boolean.TRUE.equals(
                         genPurposeViewModel.getPropertyValue(PUBLISH_FLOW));
 

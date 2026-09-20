@@ -66,6 +66,7 @@ import dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard.SemanticStandar
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.FormMode;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
+import dev.ikm.komet.layout.InlineEditStager;
 import dev.ikm.komet.layout.KlPatternSemanticsFactory;
 import dev.ikm.komet.layout.PatternSemanticsPresenter;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
@@ -728,6 +729,33 @@ public class GenPurposeDetailsController {
         }
     }
 
+    /**
+     * Stages an edit made inline in the details area — the stated definition's axiom tree (see
+     * {@link InlineEditStager}) — the way a properties-panel submit stages: the field's new value
+     * is saved as a version not published yet in the composer's open transaction, until the
+     * toolbar's Publish button commits it ({@link #publish}). Going through the composer matters
+     * for a definition the composer itself staged (seeded, not published yet): the composer
+     * commits its own working copy of such a version, so the edit has to land in that copy.
+     * <p>
+     * The axiom tree already shows the edit, so nothing re-renders here; the required chips and
+     * the Publish button follow through the stated-definition change subscriber.
+     */
+    private void stageInlineEdit(int semanticNid, int fieldIndex, Object newValue) {
+        initializeComposer();
+
+        ObservableSemantic observableSemantic = ObservableEntityHandle.get(semanticNid).expectSemantic();
+        ObservableEntity observableReferenceComponent = ObservableEntityHandle.get(observableSemantic.referencedComponentNid()).expectEntity();
+        ObservablePattern observablePattern = ObservableEntityHandle.get(observableSemantic.patternNid()).expectPattern();
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor =
+                composer.composeSemantic(observableSemantic.publicId(), observableReferenceComponent, observablePattern);
+
+        @SuppressWarnings("unchecked")
+        ObservableField.Editable<Object> editableField = (ObservableField.Editable<Object>)
+                semanticEditor.getEditableVersion().getEditableFields().get(fieldIndex);
+        editableField.setValue(newValue);
+        semanticEditor.save(); // Save as an uncommitted version holding the edit
+    }
+
     private void setupProperties() {
         this.propertiesController = new GenPurposePropertiesController(genPurposeViewModel);
         this.propertiesBorderPane = this.propertiesController.getNode();
@@ -830,9 +858,9 @@ public class GenPurposeDetailsController {
                 + (usesPublishFlow() ? "hit Publish." : "submit."));
 
         // The Publish UX — the toolbar Publish button and staged-until-published changes — is
-        // scoped to the standard Pattern window for now; the other window types keep committing
-        // on each properties-panel submit (see the PUBLISH event handler and the fields
-        // controller's submit toast, both of which branch on this).
+        // scoped to the standard Pattern and Concept windows for now; the other window types keep
+        // committing on each properties-panel submit (see the PUBLISH event handler and the
+        // fields controller's submit toast, both of which branch on this).
         windowControlToolbar.setPublishVisible(usesPublishFlow());
         genPurposeViewModel.setPropertyValue(ViewModelKey.PUBLISH_FLOW, usesPublishFlow());
 
@@ -1392,6 +1420,12 @@ public class GenPurposeDetailsController {
 
         PatternSemanticsPresenter patternSemanticsPresenter = klPatternSemanticsFactory.createJournalControl(editorPatternModel,
                 viewProperties, composer, genPurposeViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC));
+        // In the Publish-flow window edits made inline in the details area (the stated
+        // definition's axiom tree) stage like the properties panel's submits do, until the
+        // toolbar's Publish button commits them (see publish).
+        if (usesPublishFlow()) {
+            patternSemanticsPresenter.setInlineEditStager(this::stageInlineEdit);
+        }
 
         if (!refComponents.isEmpty()) {
             doAddSemanticViews(editorPatternModel, patternSemanticsPresenter, refComponents.getFirst());
@@ -1671,12 +1705,13 @@ public class GenPurposeDetailsController {
 
     /**
      * Whether this window uses the toolbar Publish flow: changes stage in the composer's open
-     * transaction until the Publish button commits them. Scoped to the standard Pattern window
-     * for now — the other window types keep the classic commit-on-submit flow (and hide the
-     * Publish button) until they adopt the Publish UX too.
+     * transaction until the Publish button commits them. Scoped to the standard Pattern and
+     * Concept windows for now — the other window types keep the classic commit-on-submit flow
+     * (and hide the Publish button) until they adopt the Publish UX too.
      */
     private boolean usesPublishFlow() {
-        return editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN;
+        return editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN
+                || editorWindowModel.getWindowType() == EditorWindowType.STANDARD_CONCEPT;
     }
 
     /**

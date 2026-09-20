@@ -65,6 +65,7 @@ import dev.ikm.komet.kview.klfields.imagefield.KlImageFieldFactory;
 import dev.ikm.komet.kview.klfields.integerfield.KlIntegerFieldFactory;
 import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
 import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
+import dev.ikm.komet.layout.InlineEditStager;
 import dev.ikm.komet.layout.version.field.KlField;
 import dev.ikm.komet.layout.version.field.KlFieldFactory;
 import dev.ikm.tinkar.common.id.IntIds;
@@ -197,6 +198,22 @@ public class KlFieldHelper {
                                     ViewProperties viewProperties,
                                     ObservableStamp stamp4field,
                                     UUID journalTopic) {
+        return createReadOnlyKlField(fieldRecord, observableField, viewProperties, stamp4field, journalTopic, null);
+    }
+
+    /**
+     * As {@link #createReadOnlyKlField(FieldRecord, ObservableField, ViewProperties, ObservableStamp, UUID)},
+     * for hosts with a Publish action of their own.
+     * @param inlineEditStager what fields that edit inline in the window body (the stated
+     *                         definition's axiom tree) stage their edits through, for the host to
+     *                         publish; null to commit each applied edit.
+     */
+    public static Region createReadOnlyKlField(final FieldRecord fieldRecord,
+                                    ObservableField observableField,
+                                    ViewProperties viewProperties,
+                                    ObservableStamp stamp4field,
+                                    UUID journalTopic,
+                                    InlineEditStager inlineEditStager) {
 
         final FeatureDefinition featureDef = fieldRecord.fieldDefinition(viewProperties.calculator());
         final int dataTypeNid = featureDef.dataTypeNid();
@@ -241,7 +258,8 @@ public class KlFieldHelper {
             // Logical definitions render as an axiom tree of component chips. The stated
             // definition (per the view's logic coordinate) edits inline in the window body —
             // each applied edit commits a new semantic version, the classic axiom editor
-            // precedent — while the inferred definition (and any other DiTree) stays read-only.
+            // precedent, or stages one when the host publishes (inlineEditStager) — while the
+            // inferred definition (and any other DiTree) stays read-only.
             int statedAxiomsPatternNid = viewProperties.calculator().viewCoordinateRecord()
                     .logicCoordinate().statedAxiomsPatternNid();
             if (fieldRecord.patternNid() == statedAxiomsPatternNid) {
@@ -249,7 +267,7 @@ public class KlFieldHelper {
                 // which needs the full ViewProperties — hence the dedicated overload, following
                 // the component set/list factories' extra-parameter precedent.
                 KlStatedAxiomDiTreeFieldFactory statedFactory = new KlStatedAxiomDiTreeFieldFactory();
-                return statedFactory.create(observableField, viewProperties, stamp4field).fxObject();
+                return statedFactory.create(observableField, viewProperties, stamp4field, inlineEditStager).fxObject();
             }
             factory = new KlReadOnlyDiTreeFieldFactory();
         } else {
