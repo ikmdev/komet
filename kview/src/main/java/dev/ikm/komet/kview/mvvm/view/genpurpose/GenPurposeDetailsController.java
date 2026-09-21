@@ -242,6 +242,8 @@ public class GenPurposeDetailsController {
     private final Label unpublishedHintLabel;
     private BorderPane propertiesBorderPane;
     private GenPurposePropertiesController propertiesController;
+    /** Grows the window to fit the open properties panel, and gives the height back as it closes. */
+    private WindowHeightFitter windowHeightFitter;
     /** The KL-editor window definition this window is built from; shared with the editor while both are open. */
     private final EditorWindowModel editorWindowModel;
     /**
@@ -454,6 +456,21 @@ public class GenPurposeDetailsController {
         }
 
         updateDraggableNodesForPropertiesPanel(true);
+
+        // The panel's content may have been swapped in this same pulse, ahead of the layout pass
+        // that measures it — measure it now, so the window grows for what is about to show.
+        propertiesController.refreshRequiredHeight();
+        growWindowToFitProperties();
+    }
+
+    /**
+     * Grows the window to fit its properties panel while the panel is open (see
+     * {@link WindowHeightFitter}); closing the panel gives the height back.
+     */
+    private void growWindowToFitProperties() {
+        if (windowControlToolbar.isPropertiesSelected()) {
+            windowHeightFitter.growToFitProperties();
+        }
     }
 
     /**
@@ -761,6 +778,11 @@ public class GenPurposeDetailsController {
         this.propertiesBorderPane = this.propertiesController.getNode();
         attachPropertiesViewSlideoutTray(this.propertiesBorderPane);
 
+        // Follow the open panel's content: a form loaded, or swapped for a taller one, grows the window.
+        windowHeightFitter = new WindowHeightFitter(detailsOuterBorderPane, propertiesSlideoutTrayPane,
+                propertiesController.requiredHeightProperty());
+        propertiesController.requiredHeightProperty().subscribe(_ -> growWindowToFitProperties());
+
         // open the panel, allow the state machine to determine which panel to show
         // listen for open and close events
         Subscriber<KLPropertyPanelEvent> propertiesEventSubscriber = (evt) -> {
@@ -770,6 +792,7 @@ public class GenPurposeDetailsController {
                 if (isOpen(propertiesSlideoutTrayPane)) {
                     slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
                 }
+                windowHeightFitter.restorePreviousHeight();
 
                 updateDraggableNodesForPropertiesPanel(false);
 
@@ -1014,6 +1037,7 @@ public class GenPurposeDetailsController {
      * collapse on its own and is left alone.
      */
     private void resizeWindowWithSection(SectionTitledPane<EntityFacade> section, boolean expanded) {
+        windowHeightFitter.finishAnimationNow();
         final double windowHeight = detailsOuterBorderPane.getPrefHeight();
         if (windowHeight <= 0 || !(section.getContent() instanceof Region content)) {
             return;
@@ -1032,7 +1056,9 @@ public class GenPurposeDetailsController {
             section.getProperties().put(COLLAPSED_CONTENT_HEIGHT_KEY, content.getHeight());
         }
 
-        detailsOuterBorderPane.setPrefHeight(Math.min(KLWorkspace.MAX_WINDOW_HEIGHT, windowHeight + delta));
+        // Through the fitter, so a window grown to fit its properties panel takes the section's
+        // height out of (or into) the height closing the panel restores as well.
+        windowHeightFitter.changeHeightBy(delta);
     }
 
     private SectionSemanticsComboBoxCell createSectionSemanticsComboBoxCell(ViewProperties viewProperties) {

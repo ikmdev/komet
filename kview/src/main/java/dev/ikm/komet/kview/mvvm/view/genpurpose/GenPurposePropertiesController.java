@@ -19,7 +19,6 @@ import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.fxutils.CssHelper;
 import dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController;
-import dev.ikm.komet.kview.mvvm.view.genediting.ReferenceComponentController;
 import dev.ikm.komet.kview.mvvm.view.genediting.SemanticFieldsController;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl.Tab;
@@ -28,6 +27,8 @@ import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.geometry.Pos;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
@@ -57,6 +58,12 @@ public class GenPurposePropertiesController {
     private final PropertiesTabsControl propertiesTabs = new PropertiesTabsControl();
 
     private final BorderPane contentBorderPane = new BorderPane();
+
+    /**
+     * The height the panel needs to show its current content in full, without its form having to
+     * scroll. See {@link #requiredHeightProperty()}.
+     */
+    private final ReadOnlyDoubleWrapper requiredHeight = new ReadOnlyDoubleWrapper();
 
     /**
      * Show the current edit window.
@@ -105,6 +112,27 @@ public class GenPurposePropertiesController {
         propertiesPane.setTop(propertiesTabs);
         BorderPane.setAlignment(propertiesTabs, Pos.CENTER);
         propertiesPane.setCenter(contentBorderPane);
+
+        // What the content needs changes with the panel shown and, for a form, with its fields.
+        // Both end in a layout pass of the content, so measure as that pass reaches it — the
+        // pulse's CSS pass has styled the new nodes by then, so their preferred heights are reliable.
+        contentBorderPane.needsLayoutProperty().subscribe(needsLayout -> {
+            if (!needsLayout) {
+                requiredHeight.set(computeRequiredHeight());
+            }
+        });
+    }
+
+    /**
+     * The panel's own preferred height is bound to the tray's height (the panel fills whatever
+     * height the window gives it), so what its content asks for is added up here instead.
+     */
+    private double computeRequiredHeight() {
+        final double contentWidth = contentBorderPane.getWidth() > 0 ? contentBorderPane.getWidth() : -1;
+        return propertiesPane.snappedTopInset()
+                + propertiesTabs.prefHeight(-1)
+                + contentBorderPane.prefHeight(contentWidth)
+                + propertiesPane.snappedBottomInset();
     }
 
     private void setupShowingPanelHandlers() {
@@ -190,6 +218,23 @@ public class GenPurposePropertiesController {
      */
     public BorderPane getNode() {
         return propertiesPane;
+    }
+
+    /**
+     * The height the panel needs to show its current content in full, without its form having to
+     * scroll. Updated as the panel shown changes and as a form's fields are loaded.
+     */
+    public ReadOnlyDoubleProperty requiredHeightProperty() {
+        return requiredHeight.getReadOnlyProperty();
+    }
+
+    /**
+     * Measures {@link #requiredHeightProperty()} right away, for content set in the current pulse
+     * that the next layout pass hasn't measured yet.
+     */
+    public void refreshRequiredHeight() {
+        propertiesPane.applyCss();
+        requiredHeight.set(computeRequiredHeight());
     }
 
     /**
