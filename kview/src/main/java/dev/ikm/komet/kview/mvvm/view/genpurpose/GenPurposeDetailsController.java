@@ -20,13 +20,7 @@ import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.NO_SELE
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.SHOW_PATTERN_FIELD_DEFAULTS;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
-import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.layout_engine.window.DraggableSupport.addDraggableNodes;
-import static dev.ikm.komet.layout_engine.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
 import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
@@ -94,7 +88,6 @@ import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -119,7 +112,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import dev.ikm.komet.layout_engine.host.SupplementalAreaRenderer;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -240,7 +232,7 @@ public class GenPurposeDetailsController {
     /** Strip naming the changes not published yet (see {@link #updatePublishState}). */
     private final HBox unpublishedHint;
     private final Label unpublishedHintLabel;
-    private BorderPane propertiesBorderPane;
+    private PropertiesTray propertiesTray;
     private GenPurposePropertiesController propertiesController;
     /** Grows the window to fit the open properties panel, and gives the height back as it closes. */
     private WindowHeightFitter windowHeightFitter;
@@ -326,8 +318,10 @@ public class GenPurposeDetailsController {
         windowControlToolbar.setOnCloseAction(this::closeConceptWindow);
         windowControlToolbar.setOnPublishAction(this::publish);
         windowControlToolbar.setOnFieldDefaultsAction(this::openPatternFieldDefaults);
+        // Invalidation-based, so it reacts to changes only: the tray it drives is created after
+        // the chrome (see setupProperties), and the panel starts out closed like the toggle.
         windowControlToolbar.propertiesSelectedProperty()
-                .subscribe((w) -> onPropertiesToggleChanged(windowControlToolbar.isPropertiesSelected()));
+                .subscribe(() -> onPropertiesToggleChanged(windowControlToolbar.isPropertiesSelected()));
 
         // The header STAMP is view-only in this window — clicking it must not select it or open
         // the STAMP form.
@@ -447,20 +441,32 @@ public class GenPurposeDetailsController {
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
     }
 
+    /**
+     * Opens the properties panel: the toolbar's Properties toggle follows, the tray slides out and
+     * the window grows to fit what the panel shows.
+     */
     private void openPropertiesPanel() {
         LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + windowControlToolbar.isPropertiesSelected());
 
         windowControlToolbar.setPropertiesSelected(true);
-        if (isClosed(propertiesSlideoutTrayPane)) {
-            slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
-        }
-
-        updateDraggableNodesForPropertiesPanel(true);
+        propertiesTray.open();
 
         // The panel's content may have been swapped in this same pulse, ahead of the layout pass
         // that measures it — measure it now, so the window grows for what is about to show.
         propertiesController.refreshRequiredHeight();
         growWindowToFitProperties();
+    }
+
+    /**
+     * Closes the properties panel: the toolbar's Properties toggle follows, the tray slides back
+     * in and the window gets back the height it had before the panel grew it.
+     */
+    private void closePropertiesPanel() {
+        LOG.info("propBumpOutListener - Close Properties bumpout toggle = " + windowControlToolbar.isPropertiesSelected());
+
+        windowControlToolbar.setPropertiesSelected(false);
+        propertiesTray.close();
+        windowHeightFitter.restorePreviousHeight();
     }
 
     /**
@@ -474,45 +480,17 @@ public class GenPurposeDetailsController {
     }
 
     /**
-     * Runs when the user toggles the Properties switch. Publishes the matching open/close event, which the
-     * {@code KLPropertyPanelEvent} subscriber turns into the actual slide-out / slide-in (including updating
-     * the draggable nodes), so this method does not perform the slide itself.
+     * Runs when the toolbar's Properties toggle changes, by a user click or by
+     * {@code setPropertiesSelected}: the panel follows the toggle.
      *
      * @param selected the new selected state of the properties toggle
      */
     private void onPropertiesToggleChanged(boolean selected) {
-        EvtType<KLPropertyPanelEvent> eventEvtType = selected ? KLPropertyPanelEvent.OPEN_PANEL : KLPropertyPanelEvent.CLOSE_PANEL;
-
-        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), new KLPropertyPanelEvent(windowControlToolbar, eventEvtType));
-    }
-
-    public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane) {
-        addPaneToTray(propertiesViewBorderPane, propertiesSlideoutTrayPane);
-    }
-
-    private void addPaneToTray(Pane contentViewPane, Pane slideoutTrayPane) {
-        double width = contentViewPane.getWidth();
-        contentViewPane.setLayoutX(width);
-        contentViewPane.getStyleClass().add("slideout-tray-pane");
-
-        slideoutTrayPane.getChildren().add(contentViewPane);
-        clipChildren(slideoutTrayPane, 0);
-        contentViewPane.setLayoutX(-width);
-        slideoutTrayPane.setMaxWidth(0);
-
-        // The tray takes the height the window gives it and must not ask for a height of its own.
-        // Left to report one, it ratchets the window: the tray is a Pane, so its preferred height is
-        // its content's, and the content's preferred height is bound to the tray's height just below
-        // — the tray would go on asking for whatever height it already had, and the window could
-        // never shrink back once its sections did (komet-desktop#159).
-        slideoutTrayPane.setMinHeight(0);
-        slideoutTrayPane.setPrefHeight(0);
-
-        Region contentRegion = contentViewPane;
-        // binding the child's height to the preferred height of hte parent
-        // so that when we resize the window the content in the slide out pane
-        // aligns with the details view
-        contentRegion.prefHeightProperty().bind(slideoutTrayPane.heightProperty());
+        if (selected) {
+            openPropertiesPanel();
+        } else {
+            closePropertiesPanel();
+        }
     }
 
     /// Show the public ID
@@ -775,37 +753,24 @@ public class GenPurposeDetailsController {
 
     private void setupProperties() {
         this.propertiesController = new GenPurposePropertiesController(genPurposeViewModel);
-        this.propertiesBorderPane = this.propertiesController.getNode();
-        attachPropertiesViewSlideoutTray(this.propertiesBorderPane);
+        // The panel's tabs are its drag handle: while the tray is open they drag the window too.
+        this.propertiesTray = new PropertiesTray(detailsOuterBorderPane, propertiesSlideoutTrayPane,
+                propertiesController.getNode(), propertiesController.getPropertiesTabs());
 
         // Follow the open panel's content: a form loaded, or swapped for a taller one, grows the window.
         windowHeightFitter = new WindowHeightFitter(detailsOuterBorderPane, propertiesSlideoutTrayPane,
                 propertiesController.requiredHeightProperty());
         propertiesController.requiredHeightProperty().subscribe(_ -> growWindowToFitProperties());
 
-        // open the panel, allow the state machine to determine which panel to show
-        // listen for open and close events
+        // The panel's forms and the section edit actions still ask for the panel to open or close
+        // through these events.
         Subscriber<KLPropertyPanelEvent> propertiesEventSubscriber = (evt) -> {
             if (evt.getEventType() == CLOSE_PANEL) {
-                LOG.info("propBumpOutListener - Close Properties bumpout toggle = " + windowControlToolbar.isPropertiesSelected());
-                windowControlToolbar.setPropertiesSelected(false);
-                if (isOpen(propertiesSlideoutTrayPane)) {
-                    slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
-                }
-                windowHeightFitter.restorePreviousHeight();
-
-                updateDraggableNodesForPropertiesPanel(false);
-
-                // Turn off edit mode for all read only controls
-//                for (Node node : nodes) {
-//                    KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) node;
-//                    klReadOnlyBaseControl.setEditMode(false);
-//                }
+                closePropertiesPanel();
             } else if (evt.getEventType() == OPEN_PANEL || evt.getEventType() == NO_SELECTION_MADE_PANEL) {
                 openPropertiesPanel();
             }
         };
-//        subscriberList.add(propertiesEventSubscriber);
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), KLPropertyPanelEvent.class, propertiesEventSubscriber);
     }
 
@@ -822,25 +787,6 @@ public class GenPurposeDetailsController {
 
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
-        }
-    }
-
-    /**
-     * Updates draggable behavior for the properties panel based on its open/closed state.
-     * <p>     * When opened, adds the properties tabs pane as a draggable node. When closed,
-     * safely removes the draggable behavior to prevent memory leaks.
-     *
-     * @param isOpen {@code true} to add draggable nodes, {@code false} to remove them
-     */
-    private void updateDraggableNodesForPropertiesPanel(boolean isOpen) {
-        if (propertiesController != null && propertiesController.getPropertiesTabs() != null) {
-            if (isOpen) {
-                addDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabs());
-                LOG.debug("Added properties nodes as draggable");
-            } else {
-                removeDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabs());
-                LOG.debug("Removed properties nodes from draggable");
-            }
         }
     }
 
