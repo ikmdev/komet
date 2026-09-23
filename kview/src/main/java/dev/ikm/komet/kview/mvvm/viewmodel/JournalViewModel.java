@@ -23,7 +23,6 @@ import dev.ikm.komet.framework.window.WindowSettings;
 public class JournalViewModel extends FormViewModel {
 
     public static final String WINDOW_SETTINGS = "windowSettings";
-    public static final String JOURNAL_NAME = "journalName";
     public static final String PARENT_VIEW_COORDINATES = "parentViewCoordinates";
     /**
      * Initializes a new JournalViewModel with default form configuration.
@@ -32,7 +31,6 @@ public class JournalViewModel extends FormViewModel {
         super();
         addProperty(PARENT_VIEW_COORDINATES, (Object) null);
         addProperty(WINDOW_SETTINGS, (WindowSettings) null);
-        addProperty(JOURNAL_NAME, "");
     }
 
     // Add journal-specific properties and commands as needed

@@ -20,27 +20,33 @@ import static dev.ikm.komet.kview.events.CreateJournalEvent.CREATE_JOURNAL;
 import static dev.ikm.komet.kview.events.DeleteJournalEvent.DELETE_JOURNAL;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.preferences.JournalWindowSettings.WINDOW_COUNT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
 
 import dev.ikm.komet.kview.mvvm.view.BasicController;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
 import dev.ikm.komet.kview.events.DeleteJournalEvent;
 import dev.ikm.komet.kview.events.JournalTileEvent;
+import dev.ikm.komet.kview.mvvm.model.JournalNames;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.framework.preferences.PrefX;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import static dev.ikm.komet.preferences.JournalWindowSettings.*;
@@ -65,6 +71,8 @@ public class JournalCardController implements BasicController {
     Button menuOptionButton;
 
     private UUID journalTopic;
+    /** The in-place name editor while a rename is in progress; {@code null} otherwise. */
+    private TextField nameEditor;
     private EvtBus journalEventBus;
     private Subscriber<JournalTileEvent> updateCard;
     private final ContextMenu contextMenu = buildMenuOptionContextMenu();
@@ -81,10 +89,11 @@ public class JournalCardController implements BasicController {
         updateCard = evt -> {
             final PrefX journalWindowSettingsMap = evt.getJournalWindowSettingsMap();
 
-            // grab the name of the journal
-            final String journalName = journalWindowSettingsMap.getValue(JOURNAL_TITLE);
+            // Match on the journal's topic, its identity — never on its name, which is display text
+            // and need not be unique (ike-issues#1127).
+            final UUID eventJournalTopic = journalWindowSettingsMap.getValue(JOURNAL_TOPIC);
             // Process UPDATE_JOURNAL_TILE event type only.
-            if (evt.getEventType() != UPDATE_JOURNAL_TILE || !journalCardName.getText().equals(journalName)) return;
+            if (evt.getEventType() != UPDATE_JOURNAL_TILE || !Objects.equals(journalTopic, eventJournalTopic)) return;
 
             // Update the card's info
             if (journalWindowSettingsMap.getValue(WINDOW_COUNT) != null) {
@@ -117,6 +126,63 @@ public class JournalCardController implements BasicController {
     @Override
     public void cleanup() {
         journalEventBus.unsubscribe(JOURNAL_TOPIC, JournalTileEvent.class, updateCard);
+        journalCardName.textProperty().unbind();
+    }
+
+    /**
+     * Starts renaming the journal in place: the card's name is swapped for a text field holding it.
+     * Enter or moving focus away commits; Escape cancels. A blank name is rejected and the journal
+     * keeps its previous name (ike-issues#1128).
+     */
+    private void beginRename() {
+        if (nameEditor != null || journalTopic == null
+                || !(journalCardName.getParent() instanceof Pane parent)) {
+            return;
+        }
+        TextField editor = new TextField(journalCardName.getText());
+        editor.getStyleClass().add("journal-card-name-editor");
+        editor.setFont(journalCardName.getFont());
+        // The card opens its journal when clicked; clicks while editing the name must not reach it.
+        editor.addEventHandler(MouseEvent.MOUSE_CLICKED, Event::consume);
+        editor.setOnAction(actionEvent -> endRename(true));
+        editor.addEventFilter(KeyEvent.KEY_PRESSED, keyEvent -> {
+            if (keyEvent.getCode() == KeyCode.ESCAPE) {
+                keyEvent.consume();
+                endRename(false);
+            }
+        });
+        editor.focusedProperty().addListener((observable, wasFocused, isFocused) -> {
+            if (!isFocused) {
+                endRename(true);
+            }
+        });
+        nameEditor = editor;
+        parent.getChildren().set(parent.getChildren().indexOf(journalCardName), editor);
+        // After the card's menu has closed, so the menu does not take the focus back.
+        Platform.runLater(() -> {
+            editor.requestFocus();
+            editor.selectAll();
+        });
+    }
+
+    /**
+     * Ends an in-place rename, storing the edited name when committing, and puts the card's name back.
+     *
+     * @param commit {@code true} to rename the journal to the edited text, {@code false} to cancel
+     */
+    private void endRename(boolean commit) {
+        TextField editor = nameEditor;
+        if (editor == null) {
+            return;
+        }
+        // Cleared first: removing the focused editor below moves focus, which re-enters here.
+        nameEditor = null;
+        if (commit) {
+            JournalNames.get().rename(journalTopic, editor.getText());
+        }
+        if (editor.getParent() instanceof Pane parent) {
+            parent.getChildren().set(parent.getChildren().indexOf(editor), journalCardName);
+        }
     }
 
     private void setupContextMenuOptions(Button menuOptionButton) {
@@ -187,7 +253,7 @@ public class JournalCardController implements BasicController {
                 { "Share", false, null},
                 { "Duplicate", false, null},
                 { MenuHelper.SEPARATOR },
-                { "Rename", false, null},
+                { "Rename", true, (EventHandler<ActionEvent>) actionEvent -> beginRename() },
                 { "Move file...", false, null},
                 { MenuHelper.SEPARATOR },
                 { "Delete", true,  (EventHandler<ActionEvent>) actionEvent ->
@@ -223,12 +289,15 @@ public class JournalCardController implements BasicController {
         return contextMenu;
     }
 
+    /**
+     * Sets the journal this card stands for, and shows that journal's live name, so a rename made
+     * from the card or from the journal's own header appears here at once (ike-issues#1128).
+     *
+     * @param journalTopic the journal's topic, its identity
+     */
     public void setJournalTopic(UUID journalTopic) {
         this.journalTopic = journalTopic;
-    }
-
-    public void setJournalCardName(String journalCardName) {
-        this.journalCardName.setText(journalCardName);
+        journalCardName.textProperty().bind(JournalNames.get().nameProperty(journalTopic));
     }
 
     public void setJournalTimestampValue(String journalTimestampValue) {

@@ -24,7 +24,6 @@ import static dev.ikm.komet.kview.events.JournalTileEvent.CREATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalDirName;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
-import static dev.ikm.komet.kview.mvvm.model.Constants.JOURNAL_NAME_PREFIX;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchLeafDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SET;
@@ -41,7 +40,6 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_AUTHOR;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_LAST_EDIT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
@@ -66,7 +64,8 @@ import dev.ikm.komet.kview.controls.NotificationPopup;
 import dev.ikm.komet.kview.events.CreateJournalEvent;
 import dev.ikm.komet.kview.events.DeleteJournalEvent;
 import dev.ikm.komet.kview.events.JournalTileEvent;
-import dev.ikm.komet.kview.mvvm.model.JournalCounter;
+import dev.ikm.komet.kview.mvvm.model.JournalDefaultNames;
+import dev.ikm.komet.kview.mvvm.model.JournalNames;
 import dev.ikm.komet.kview.mvvm.model.ViewCoordinateHelper;
 import dev.ikm.komet.kview.mvvm.view.BasicController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
@@ -118,7 +117,6 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.function.*;
 import java.util.prefs.*;
-import java.util.regex.*;
 
 /**
  * Controller for the application's landing page that manages journal cards and their interactions.
@@ -243,7 +241,6 @@ public class LandingPageController implements BasicController {
             if (evt.getEventType() != CREATE_JOURNAL_TILE) return;
 
             final UUID journalTopic;
-            final String journalName;
 
             //Creating a new journal card
             FXMLLoader journalCardLoader = new FXMLLoader(LandingPageController.class.getResource("journal-card.fxml"));
@@ -260,7 +257,6 @@ public class LandingPageController implements BasicController {
             PrefX journalWindowSettingsObjectMap = evt.getJournalWindowSettingsMap();
             if (null != journalWindowSettingsObjectMap) {
                 journalTopic = journalWindowSettingsObjectMap.getValue(JOURNAL_TOPIC);
-                journalName = journalWindowSettingsObjectMap.getValue(JOURNAL_TITLE);
                 LocalDateTime nowDateTime = LocalDateTime.now();
                 ZoneId nowZoneId = ZoneId.systemDefault();
                 String calculatedTimeAgo = calculateTimeAgoWithPeriodAndDuration(nowDateTime, nowZoneId);
@@ -270,17 +266,14 @@ public class LandingPageController implements BasicController {
                         "Windows: " + journalWindowNames.size() : "Windows: 0");
             } else {
                 journalTopic = UUID.randomUUID();
-                journalName = "Journal " + JournalCounter.getInstance().get();
+                JournalNames.get().rename(journalTopic, JournalDefaultNames.next(existingJournalNames()));
                 journalWindowSettingsObjectMap = PrefX.create();
                 journalWindowSettingsObjectMap.setValue(JOURNAL_TOPIC, journalTopic);
-                journalWindowSettingsObjectMap.setValue(JOURNAL_TITLE, journalName);
                 journalCardController.setJournalTimestampValue("Edited Now");
             }
+            // The card shows the journal's live name (ike-issues#1128), so a rename made anywhere reaches it.
             journalCardController.setJournalTopic(journalTopic);
-            journalCardController.setJournalCardName(journalName);
             final PrefX journalSettingsFinal = journalWindowSettingsObjectMap;
-            // get the correct Journal X name where X is a counting number 1...n
-            // decide if the name comes from the event or not
             journalCard.setOnMouseClicked(event -> {
                 PrefX prefX;
                 // if card already exists then load from disk.
@@ -334,20 +327,11 @@ public class LandingPageController implements BasicController {
                         throw new RuntimeException(e);
                     } finally {
                         journalCardControllerMap.remove((UUID) prefX.getValue(JOURNAL_TOPIC)).cleanup();
+                        JournalNames.get().forget(journalTopic);
                     }
                 }
                 return true;
             });
-
-            // reset Journal counter (The add journal card is in the flow pane)
-            int maxJournalNumber = gridViewFlowPane.getChildren()
-                    .stream()
-                    .filter(node -> node.getUserData() instanceof PrefX)
-                    .map(node -> (PrefX) node.getUserData())
-                    .map(prefX -> parseJournalNumber(prefX.getValue(JOURNAL_TITLE).toString()))
-                    .max(Comparator.naturalOrder())
-                    .orElse(0);
-            JournalCounter.getInstance().set(maxJournalNumber);
         };
         landingPageEventBus.subscribe(JOURNAL_TOPIC, DeleteJournalEvent.class, deleteJournalSubscriber);
 
@@ -564,8 +548,6 @@ public class LandingPageController implements BasicController {
      */
     private PrefX loadJournalWindowPreference(UUID journalTopic, String journalDirName) {
         final KometPreferences journalWindowPreferences = getJournalPreferences(journalTopic);
-        final String journalTitle = journalWindowPreferences.get(JOURNAL_TITLE)
-                .orElse("Journal %s".formatted(JournalCounter.getInstance().get()));
 
         Double xpos = journalWindowPreferences.getDouble(JOURNAL_XPOS, DEFAULT_JOURNAL_XPOS);
         Double ypos = journalWindowPreferences.getDouble(JOURNAL_YPOS, DEFAULT_JOURNAL_YPOS);
@@ -579,7 +561,6 @@ public class LandingPageController implements BasicController {
         return PrefX.create()
                 .setValue(JOURNAL_DIR_NAME, journalDirName)
                 .setValue(JOURNAL_TOPIC, journalTopic)
-                .setValue(JOURNAL_TITLE, journalTitle)
                 .setValue(JOURNAL_HEIGHT, height)
                 .setValue(JOURNAL_WIDTH, width)
                 .setValue(JOURNAL_XPOS, xpos)
@@ -596,7 +577,7 @@ public class LandingPageController implements BasicController {
      * <ul>
      *     <li>Retrieves all saved journals from preferences</li>
      *     <li>Creates journal tiles for each valid journal entry</li>
-     *     <li>Updates the journal counter based on existing journals</li>
+     *     <li>Names any journal stored without a name</li>
      *     <li>Handles cleanup of invalid journal entries</li>
      *     <li>Publishes events to create journal tiles in the UI</li>
      * </ul>
@@ -614,7 +595,12 @@ public class LandingPageController implements BasicController {
                 continue;
             }
 
-            Optional<String> journalTitleOptional = journalSubWindowPreferences.get(JOURNAL_TITLE);
+            // A journal stored without a name (none is expected) gets the next default name rather
+            // than failing the whole landing page.
+            if (JournalNames.get().name(journalTopicOptional.get()).isEmpty()) {
+                JournalNames.get().rename(journalTopicOptional.get(),
+                        JournalDefaultNames.next(existingJournalNames()));
+            }
 
             Double xpos = journalSubWindowPreferences.getDouble(JOURNAL_XPOS, DEFAULT_JOURNAL_XPOS);
             Double ypos = journalSubWindowPreferences.getDouble(JOURNAL_YPOS, DEFAULT_JOURNAL_YPOS);
@@ -628,7 +614,6 @@ public class LandingPageController implements BasicController {
             PrefX prefX = PrefX.create()
                     .setValue(JOURNAL_DIR_NAME, journalDirName)
                     .setValue(JOURNAL_TOPIC, journalTopicOptional.get())
-                    .setValue(JOURNAL_TITLE, journalTitleOptional.get())
                     .setValue(JOURNAL_HEIGHT, height)
                     .setValue(JOURNAL_WIDTH, width)
                     .setValue(JOURNAL_XPOS, xpos)
@@ -637,9 +622,6 @@ public class LandingPageController implements BasicController {
                     .setValue(JOURNAL_AUTHOR, journalAuthor)
                     .setValue(JOURNAL_LAST_EDIT, journalLastEditOpt.isPresent() ?
                             journalLastEditOpt.getAsLong() : null);
-
-            // keep track of latest journal number when reloading from preferences
-            JournalCounter.getInstance().set(parseJournalNumber(journalTitleOptional.get()));
             landingPageEventBus.publish(JOURNAL_TOPIC,
                     new JournalTileEvent(newProjectJournalButton,
                             CREATE_JOURNAL_TILE, prefX));
@@ -653,13 +635,22 @@ public class LandingPageController implements BasicController {
         }
     }
 
-    private static int parseJournalNumber(String journalName) {
-        Pattern pattern = Pattern.compile("\\d+$");
-        Matcher matcher = pattern.matcher(journalName);
-        if (matcher.find()) {
-            return Integer.parseInt(matcher.group());
-        }
-        return -1; // invalid
+    /**
+     * Returns the current names of the journals shown on the landing page — every journal that
+     * exists, since each has a tile. Default names for new journals are derived from these, never
+     * from a running counter (ike-issues#1127); they are read live, so a renamed journal no longer
+     * counts as "Journal N" (ike-issues#1128).
+     *
+     * @return the current journal names, in tile order
+     */
+    private List<String> existingJournalNames() {
+        return gridViewFlowPane.getChildren()
+                .stream()
+                .filter(node -> node.getUserData() instanceof PrefX)
+                .map(node -> ((PrefX) node.getUserData()).<UUID>getValue(JOURNAL_TOPIC))
+                .filter(Objects::nonNull)
+                .map(JournalNames.get()::name)
+                .toList();
     }
 
     @Override
@@ -684,7 +675,7 @@ public class LandingPageController implements BasicController {
      * It:
      * <ul>
      *     <li>Creates a new UUID for the journal</li>
-     *     <li>Generates a new journal name with an incremented counter</li>
+     *     <li>Names it with the next default journal name</li>
      *     <li>Creates a preferences map for the new journal</li>
      *     <li>Publishes events to create a journal tile and a journal view</li>
      * </ul>
@@ -696,10 +687,9 @@ public class LandingPageController implements BasicController {
         // publish the event that the new journal button was pressed
         final PrefX journalWindowSettingsObjectMap = PrefX.create();
         final UUID journalTopic = UUID.randomUUID();
-        final String journalName = JOURNAL_NAME_PREFIX + JournalCounter.getInstance().incrementAndGet();
+        JournalNames.get().rename(journalTopic, JournalDefaultNames.next(existingJournalNames()));
         final String journalDirName = getJournalDirName(journalTopic);
         journalWindowSettingsObjectMap.setValue(JOURNAL_TOPIC, journalTopic);
-        journalWindowSettingsObjectMap.setValue(JOURNAL_TITLE, journalName);
         journalWindowSettingsObjectMap.setValue(JOURNAL_DIR_NAME, journalDirName);
         journalWindowSettingsObjectMap.setValue(PARENT_VIEW_COORDINATES, LandingPageController.this.journalParentCoordinates);
         // publish an event to create the tile on the landing page

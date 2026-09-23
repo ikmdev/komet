@@ -16,7 +16,6 @@ import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfC
 import static dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorViewModel.LoginProperties.SELECTED_AUTHOR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.JOURNAL_NAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_SETTINGS;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.AUTHOR_LOGIN_WINDOW;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.DEFAULT_JOURNAL_HEIGHT;
@@ -25,7 +24,6 @@ import static dev.ikm.komet.preferences.JournalWindowPreferences.MAIN_KOMET_WIND
 import static dev.ikm.komet.preferences.JournalWindowSettings.CAN_DELETE;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_XPOS;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_YPOS;
@@ -42,6 +40,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kleditorapp.view.KLEditorMainScreenController;
 import dev.ikm.komet.kview.events.JournalTileEvent;
+import dev.ikm.komet.kview.mvvm.model.JournalNames;
 import dev.ikm.komet.kview.mvvm.model.ViewCoordinateHelper;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
 import dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageViewFactory;
@@ -285,7 +284,6 @@ public class AppPages {
                     journalViewModel.setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic);
                     journalViewModel.setPropertyValue(WINDOW_SETTINGS, windowSettings);
                     journalViewModel.setPropertyValue(JournalViewModel.PARENT_VIEW_COORDINATES, parentViewCoordinates);
-                    journalViewModel.setPropertyValue(JOURNAL_NAME, journalWindowSettings.getValue(JOURNAL_TITLE));
                 });
         JFXNode<BorderPane, JournalController> journalJFXNode = FXMLMvvmLoader.make(journalConfig);
         BorderPane journalBorderPane = journalJFXNode.node();
@@ -305,8 +303,8 @@ public class AppPages {
         }
 
         // load journal specific window settings
-        final String journalName = journalWindowSettings.getValue(JOURNAL_TITLE);
-        journalStage.setTitle(journalName);
+        // The window title follows the journal's live name, so a rename shows at once (ike-issues#1128).
+        journalStage.titleProperty().bind(JournalNames.get().nameProperty(journalTopic));
 
         // Get the UUID-based directory name from preferences
         String journalDirName = journalWindowSettings.getValue(JOURNAL_DIR_NAME);
@@ -343,7 +341,6 @@ public class AppPages {
             KometNodeFactory searchNodeFactory = new SearchNodeFactory();
 
             journalController.launchKometFactoryNodes(
-                    journalWindowSettings.getValue(JOURNAL_TITLE),
                     navigatorNodeFactory,
                     searchNodeFactory);
             // load additional panels
@@ -356,7 +353,7 @@ public class AppPages {
         app.journalControllersList.add(journalController);
 
         if (IS_BROWSER) {
-            app.webAPI.openStageAsTab(journalStage, journalName.replace(" ", "_"));
+            app.webAPI.openStageAsTab(journalStage, journalDirName);
         } else {
             journalStage.show();
         }
