@@ -15,18 +15,11 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
+import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.NO_SELECTION_MADE_PANEL;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.OPEN_PANEL;
-import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
-import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.SHOW_PATTERN_FIELD_DEFAULTS;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideIn;
-import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
-import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.layout_engine.window.DraggableSupport.addDraggableNodes;
-import static dev.ikm.komet.layout_engine.window.DraggableSupport.removeDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
 import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
@@ -59,6 +52,7 @@ import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
+import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl.Tab;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SectionSemanticsComboBoxCell;
@@ -66,6 +60,7 @@ import dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard.SemanticStandar
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.FormMode;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
+import dev.ikm.komet.layout.InlineEditStager;
 import dev.ikm.komet.layout.KlPatternSemanticsFactory;
 import dev.ikm.komet.layout.PatternSemanticsPresenter;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
@@ -91,8 +86,8 @@ import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
+import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -104,7 +99,6 @@ import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -116,7 +110,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import dev.ikm.komet.layout_engine.host.SupplementalAreaRenderer;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -125,6 +119,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -195,6 +190,14 @@ public class GenPurposeDetailsController {
     private final Map<SemanticEntity<SemanticEntityVersion>, PatternSemanticsPresenter> semanticEntityToPatternSemanticsPresenter = new HashMap<>();
 
     /**
+     * The semantics currently rendered in the window, by nid, in render order — each the entity
+     * object its view was built from, which is the key its presenter is filed under in
+     * {@link #semanticEntityToPatternSemanticsPresenter}. Kept in step by {@link #doAddSemanticViews}
+     * and {@link #clearSemanticViews}; read by {@link #unpublishedSemantics}.
+     */
+    private final Map<Integer, SemanticEntity<SemanticEntityVersion>> displayedSemantics = new LinkedHashMap<>();
+
+    /**
      * Given a SemanticEntity what's its associated Semantic Control.
      */
     private final Map<SemanticEntity<SemanticEntityVersion>, SemanticStandardControl> semanticEntityToSemanticView = new HashMap<>();
@@ -225,8 +228,13 @@ public class GenPurposeDetailsController {
     private final Tooltip windowConceptTitleTooltip;
     private final PublicIDListControl identifierControl;
     private final Label createModeHintLabel;
-    private BorderPane propertiesBorderPane;
+    /** Strip naming the changes not published yet (see {@link #updatePublishState}). */
+    private final HBox unpublishedHint;
+    private final Label unpublishedHintLabel;
+    private PropertiesTray propertiesTray;
     private GenPurposePropertiesController propertiesController;
+    /** Grows the window to fit the open properties panel, and gives the height back as it closes. */
+    private WindowHeightFitter windowHeightFitter;
     /** The KL-editor window definition this window is built from; shared with the editor while both are open. */
     private final EditorWindowModel editorWindowModel;
     /**
@@ -273,6 +281,9 @@ public class GenPurposeDetailsController {
         this.windowConceptTitleTooltip = view.getWindowConceptTitleTooltip();
         this.identifierControl = view.getIdentifierControl();
         this.createModeHintLabel = view.getCreateModeHintLabel();
+        this.unpublishedHint = view.getUnpublishedHint();
+        this.unpublishedHintLabel = view.getUnpublishedHintLabel();
+        view.getUnpublishedShowLink().setOnAction(event -> revealFirstUnpublishedSemantic());
 
         // The definition comes first: the chrome wiring below already asks its window type
         // (see usesPublishFlow).
@@ -306,8 +317,10 @@ public class GenPurposeDetailsController {
         windowControlToolbar.setOnCloseAction(this::closeConceptWindow);
         windowControlToolbar.setOnPublishAction(this::publish);
         windowControlToolbar.setOnFieldDefaultsAction(this::openPatternFieldDefaults);
+        // Invalidation-based, so it reacts to changes only: the tray it drives is created after
+        // the chrome (see setupProperties), and the panel starts out closed like the toggle.
         windowControlToolbar.propertiesSelectedProperty()
-                .subscribe((w) -> onPropertiesToggleChanged(windowControlToolbar.isPropertiesSelected()));
+                .subscribe(() -> onPropertiesToggleChanged(windowControlToolbar.isPropertiesSelected()));
 
         // The header STAMP is view-only in this window — clicking it must not select it or open
         // the STAMP form.
@@ -427,57 +440,56 @@ public class GenPurposeDetailsController {
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
     }
 
+    /**
+     * Opens the properties panel: the toolbar's Properties toggle follows, the tray slides out and
+     * the window grows to fit what the panel shows.
+     */
     private void openPropertiesPanel() {
         LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + windowControlToolbar.isPropertiesSelected());
 
         windowControlToolbar.setPropertiesSelected(true);
-        if (isClosed(propertiesSlideoutTrayPane)) {
-            slideOut(propertiesSlideoutTrayPane, detailsOuterBorderPane);
-        }
+        propertiesTray.open();
 
-        updateDraggableNodesForPropertiesPanel(true);
+        // The panel's content may have been swapped in this same pulse, ahead of the layout pass
+        // that measures it — measure it now, so the window grows for what is about to show.
+        propertiesController.refreshRequiredHeight();
+        growWindowToFitProperties();
     }
 
     /**
-     * Runs when the user toggles the Properties switch. Publishes the matching open/close event, which the
-     * {@code KLPropertyPanelEvent} subscriber turns into the actual slide-out / slide-in (including updating
-     * the draggable nodes), so this method does not perform the slide itself.
+     * Closes the properties panel: the toolbar's Properties toggle follows, the tray slides back
+     * in and the window gets back the height it had before the panel grew it.
+     */
+    private void closePropertiesPanel() {
+        LOG.info("propBumpOutListener - Close Properties bumpout toggle = " + windowControlToolbar.isPropertiesSelected());
+
+        windowControlToolbar.setPropertiesSelected(false);
+        propertiesTray.close();
+        windowHeightFitter.restorePreviousHeight();
+    }
+
+    /**
+     * Grows the window to fit its properties panel while the panel is open (see
+     * {@link WindowHeightFitter}); closing the panel gives the height back.
+     */
+    private void growWindowToFitProperties() {
+        if (windowControlToolbar.isPropertiesSelected()) {
+            windowHeightFitter.growToFitProperties();
+        }
+    }
+
+    /**
+     * Runs when the toolbar's Properties toggle changes, by a user click or by
+     * {@code setPropertiesSelected}: the panel follows the toggle.
      *
      * @param selected the new selected state of the properties toggle
      */
     private void onPropertiesToggleChanged(boolean selected) {
-        EvtType<KLPropertyPanelEvent> eventEvtType = selected ? KLPropertyPanelEvent.OPEN_PANEL : KLPropertyPanelEvent.CLOSE_PANEL;
-
-        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), new KLPropertyPanelEvent(windowControlToolbar, eventEvtType));
-    }
-
-    public void attachPropertiesViewSlideoutTray(Pane propertiesViewBorderPane) {
-        addPaneToTray(propertiesViewBorderPane, propertiesSlideoutTrayPane);
-    }
-
-    private void addPaneToTray(Pane contentViewPane, Pane slideoutTrayPane) {
-        double width = contentViewPane.getWidth();
-        contentViewPane.setLayoutX(width);
-        contentViewPane.getStyleClass().add("slideout-tray-pane");
-
-        slideoutTrayPane.getChildren().add(contentViewPane);
-        clipChildren(slideoutTrayPane, 0);
-        contentViewPane.setLayoutX(-width);
-        slideoutTrayPane.setMaxWidth(0);
-
-        // The tray takes the height the window gives it and must not ask for a height of its own.
-        // Left to report one, it ratchets the window: the tray is a Pane, so its preferred height is
-        // its content's, and the content's preferred height is bound to the tray's height just below
-        // — the tray would go on asking for whatever height it already had, and the window could
-        // never shrink back once its sections did (komet-desktop#159).
-        slideoutTrayPane.setMinHeight(0);
-        slideoutTrayPane.setPrefHeight(0);
-
-        Region contentRegion = contentViewPane;
-        // binding the child's height to the preferred height of hte parent
-        // so that when we resize the window the content in the slide out pane
-        // aligns with the details view
-        contentRegion.prefHeightProperty().bind(slideoutTrayPane.heightProperty());
+        if (selected) {
+            openPropertiesPanel();
+        } else {
+            closePropertiesPanel();
+        }
     }
 
     /// Show the public ID
@@ -711,33 +723,53 @@ public class GenPurposeDetailsController {
         }
     }
 
+    /**
+     * Stages an edit made inline in the details area — the stated definition's axiom tree (see
+     * {@link InlineEditStager}) — the way a properties-panel submit stages: the field's new value
+     * is saved as a version not published yet in the composer's open transaction, until the
+     * toolbar's Publish button commits it ({@link #publish}). Going through the composer matters
+     * for a definition the composer itself staged (seeded, not published yet): the composer
+     * commits its own working copy of such a version, so the edit has to land in that copy.
+     * <p>
+     * The axiom tree already shows the edit, so nothing re-renders here; the required chips and
+     * the Publish button follow through the stated-definition change subscriber.
+     */
+    private void stageInlineEdit(int semanticNid, int fieldIndex, Object newValue) {
+        initializeComposer();
+
+        ObservableSemantic observableSemantic = ObservableEntityHandle.get(semanticNid).expectSemantic();
+        ObservableEntity observableReferenceComponent = ObservableEntityHandle.get(observableSemantic.referencedComponentNid()).expectEntity();
+        ObservablePattern observablePattern = ObservableEntityHandle.get(observableSemantic.patternNid()).expectPattern();
+        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor =
+                composer.composeSemantic(observableSemantic.publicId(), observableReferenceComponent, observablePattern);
+
+        @SuppressWarnings("unchecked")
+        ObservableField.Editable<Object> editableField = (ObservableField.Editable<Object>)
+                semanticEditor.getEditableVersion().getEditableFields().get(fieldIndex);
+        editableField.setValue(newValue);
+        semanticEditor.save(); // Save as an uncommitted version holding the edit
+    }
+
     private void setupProperties() {
         this.propertiesController = new GenPurposePropertiesController(genPurposeViewModel);
-        this.propertiesBorderPane = this.propertiesController.getNode();
-        attachPropertiesViewSlideoutTray(this.propertiesBorderPane);
+        // The panel's tabs are its drag handle: while the tray is open they drag the window too.
+        this.propertiesTray = new PropertiesTray(detailsOuterBorderPane, propertiesSlideoutTrayPane,
+                propertiesController.getNode(), propertiesController.getPropertiesTabs());
 
-        // open the panel, allow the state machine to determine which panel to show
-        // listen for open and close events
+        // Follow the open panel's content: a form loaded, or swapped for a taller one, grows the window.
+        windowHeightFitter = new WindowHeightFitter(detailsOuterBorderPane, propertiesSlideoutTrayPane,
+                propertiesController.requiredHeightProperty());
+        propertiesController.requiredHeightProperty().subscribe(_ -> growWindowToFitProperties());
+
+        // The panel's forms and the section edit actions still ask for the panel to open or close
+        // through these events.
         Subscriber<KLPropertyPanelEvent> propertiesEventSubscriber = (evt) -> {
             if (evt.getEventType() == CLOSE_PANEL) {
-                LOG.info("propBumpOutListener - Close Properties bumpout toggle = " + windowControlToolbar.isPropertiesSelected());
-                windowControlToolbar.setPropertiesSelected(false);
-                if (isOpen(propertiesSlideoutTrayPane)) {
-                    slideIn(propertiesSlideoutTrayPane, detailsOuterBorderPane);
-                }
-
-                updateDraggableNodesForPropertiesPanel(false);
-
-                // Turn off edit mode for all read only controls
-//                for (Node node : nodes) {
-//                    KLReadOnlyBaseControl klReadOnlyBaseControl = (KLReadOnlyBaseControl) node;
-//                    klReadOnlyBaseControl.setEditMode(false);
-//                }
+                closePropertiesPanel();
             } else if (evt.getEventType() == OPEN_PANEL || evt.getEventType() == NO_SELECTION_MADE_PANEL) {
                 openPropertiesPanel();
             }
         };
-//        subscriberList.add(propertiesEventSubscriber);
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), KLPropertyPanelEvent.class, propertiesEventSubscriber);
     }
 
@@ -754,25 +786,6 @@ public class GenPurposeDetailsController {
 
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
-        }
-    }
-
-    /**
-     * Updates draggable behavior for the properties panel based on its open/closed state.
-     * <p>     * When opened, adds the properties tabs pane as a draggable node. When closed,
-     * safely removes the draggable behavior to prevent memory leaks.
-     *
-     * @param isOpen {@code true} to add draggable nodes, {@code false} to remove them
-     */
-    private void updateDraggableNodesForPropertiesPanel(boolean isOpen) {
-        if (propertiesController != null && propertiesController.getPropertiesTabs() != null) {
-            if (isOpen) {
-                addDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabs());
-                LOG.debug("Added properties nodes as draggable");
-            } else {
-                removeDraggableNodes(detailsOuterBorderPane, propertiesController.getPropertiesTabs());
-                LOG.debug("Removed properties nodes from draggable");
-            }
         }
     }
 
@@ -813,9 +826,9 @@ public class GenPurposeDetailsController {
                 + (usesPublishFlow() ? "hit Publish." : "submit."));
 
         // The Publish UX — the toolbar Publish button and staged-until-published changes — is
-        // scoped to the standard Pattern window for now; the other window types keep committing
-        // on each properties-panel submit (see the PUBLISH event handler and the fields
-        // controller's submit toast, both of which branch on this).
+        // scoped to the standard Pattern and Concept windows for now; the other window types keep
+        // committing on each properties-panel submit (see the PUBLISH event handler and the
+        // fields controller's submit toast, both of which branch on this).
         windowControlToolbar.setPublishVisible(usesPublishFlow());
         genPurposeViewModel.setPropertyValue(ViewModelKey.PUBLISH_FLOW, usesPublishFlow());
 
@@ -969,6 +982,7 @@ public class GenPurposeDetailsController {
      * collapse on its own and is left alone.
      */
     private void resizeWindowWithSection(SectionTitledPane<EntityFacade> section, boolean expanded) {
+        windowHeightFitter.finishAnimationNow();
         final double windowHeight = detailsOuterBorderPane.getPrefHeight();
         if (windowHeight <= 0 || !(section.getContent() instanceof Region content)) {
             return;
@@ -987,7 +1001,9 @@ public class GenPurposeDetailsController {
             section.getProperties().put(COLLAPSED_CONTENT_HEIGHT_KEY, content.getHeight());
         }
 
-        detailsOuterBorderPane.setPrefHeight(Math.min(KLWorkspace.MAX_WINDOW_HEIGHT, windowHeight + delta));
+        // Through the fitter, so a window grown to fit its properties panel takes the section's
+        // height out of (or into) the height closing the panel restores as well.
+        windowHeightFitter.changeHeightBy(delta);
     }
 
     private SectionSemanticsComboBoxCell createSectionSemanticsComboBoxCell(ViewProperties viewProperties) {
@@ -1074,7 +1090,7 @@ public class GenPurposeDetailsController {
 
                         semanticLabel.setOnMouseClicked(_ -> {
                             initializeComposer();
-                            showEditSemanticFieldsPanel(actionEvent, semantic, editPattern);
+                            showEditSemanticFieldsPanel(semantic, editPattern);
                             popup.hide();
                         });
 
@@ -1241,7 +1257,7 @@ public class GenPurposeDetailsController {
         }
 
         // Show Edit Panel to the right
-        showEditSemanticFieldsPanel(actionEvent, uncommitedSemantic, editorPatternModel);
+        showEditSemanticFieldsPanel(uncommitedSemantic, editorPatternModel);
     }
 
     /**
@@ -1249,15 +1265,10 @@ public class GenPurposeDetailsController {
      * placement of the semantic's pattern, whose fields say how the form's fields behave (e.g.
      * whether they can still be edited in edit mode).
      */
-    private void showEditSemanticFieldsPanel(Event event, SemanticEntity<SemanticEntityVersion> semanticEntity,
+    private void showEditSemanticFieldsPanel(SemanticEntity<SemanticEntityVersion> semanticEntity,
                                              EditorPatternModel editorPatternModel) {
-        // Notify bump out (right side) to display edit fields in Semantic Editing mode
-        EvtBusFactory.getDefaultEvtBus()
-                .publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
-                        new KLPropertyPanelEvent(event.getSource(),
-                                SHOW_EDIT_SEMANTIC_FIELDS, semanticEntity, editorPatternModel));
-        // Notify to open properties bump out.
-        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), new KLPropertyPanelEvent(event.getSource(), OPEN_PANEL));
+        propertiesController.showEditForm(semanticEntity, editorPatternModel);
+        openPropertiesPanel();
 
         // Turn on Edit mode on the left side for the Semantic being edited
         if (previousPatternSemanticsInEditMode != null) {
@@ -1375,6 +1386,12 @@ public class GenPurposeDetailsController {
 
         PatternSemanticsPresenter patternSemanticsPresenter = klPatternSemanticsFactory.createJournalControl(editorPatternModel,
                 viewProperties, composer, genPurposeViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC));
+        // In the Publish-flow window edits made inline in the details area (the stated
+        // definition's axiom tree) stage like the properties panel's submits do, until the
+        // toolbar's Publish button commits them (see publish).
+        if (usesPublishFlow()) {
+            patternSemanticsPresenter.setInlineEditStager(this::stageInlineEdit);
+        }
 
         if (!refComponents.isEmpty()) {
             doAddSemanticViews(editorPatternModel, patternSemanticsPresenter, refComponents.getFirst());
@@ -1382,7 +1399,7 @@ public class GenPurposeDetailsController {
         }
 
         titledPane.selectedReferenceComponentProperty().subscribe(() -> {
-            patternSemanticsPresenter.clearSemantics();
+            clearSemanticViews(patternSemanticsPresenter);
             doAddSemanticViews(editorPatternModel, patternSemanticsPresenter, titledPane.getSelectedReferenceComponent());
         });
 
@@ -1392,10 +1409,32 @@ public class GenPurposeDetailsController {
     private void reloadSemanticViews(SemanticEntity<SemanticEntityVersion> semantic) {
         editorPatternModelToPatternPresenter.forEach((patternModel, presenter) -> {
             if (patternModel.getNid() == semantic.patternNid()) {
-                presenter.clearSemantics();
+                clearSemanticViews(presenter);
                 doAddSemanticViews(patternModel, presenter, semantic.referencedComponent());
             }
         });
+    }
+
+    /**
+     * Re-renders every pattern's semantics from the store — after a publish, so the versions just
+     * published stop showing as not published.
+     */
+    private void reloadAllSemanticViews() {
+        editorPatternModelToPatternPresenter.forEach((patternModel, presenter) -> {
+            clearSemanticViews(presenter);
+            // Resolved the way the sections are built (see resolveSectionReferenceComponent): the
+            // main section anchors on the window's component, which its titled pane never selects.
+            doAddSemanticViews(patternModel, presenter,
+                    resolveSectionReferenceComponent(patternModel.getParentSection()));
+        });
+    }
+
+    /**
+     * Clears a presenter's semantic views, forgetting the semantics it displayed.
+     */
+    private void clearSemanticViews(PatternSemanticsPresenter presenter) {
+        presenter.clearSemantics();
+        displayedSemantics.values().removeIf(semantic -> semanticEntityToPatternSemanticsPresenter.get(semantic) == presenter);
     }
 
     private void doAddSemanticViews(EditorPatternModel editorPatternModel, PatternSemanticsPresenter patternSemanticsPresenter, EntityFacade referenceComponent) {
@@ -1430,7 +1469,11 @@ public class GenPurposeDetailsController {
                     }
                     patternSemanticsPresenter.addNewSemantic(semantic);
                     semanticEntityToPatternSemanticsPresenter.put(semantic, patternSemanticsPresenter);
+                    displayedSemantics.put(semantic.nid(), semantic);
                 });
+
+        // The semantics just rendered may carry versions not published yet (see unpublishedSemantics).
+        updatePublishState();
     }
 
     /**
@@ -1504,11 +1547,8 @@ public class GenPurposeDetailsController {
         SemanticEntity<SemanticEntityVersion> defaultsSemantic = EntityHandle.get(defaultsSemanticComposer.getEntity().nid()).asSemantic()
                 .orElseThrow(() -> new IllegalStateException("The defaults semantic is not a semantic"));
 
-        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
-                new KLPropertyPanelEvent(this, SHOW_PATTERN_FIELD_DEFAULTS, defaultsSemantic,
-                        defaultsComposer, "Field Default Values"));
-        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
-                new KLPropertyPanelEvent(this, OPEN_PANEL));
+        propertiesController.showDefaultsForm(defaultsSemantic, defaultsComposer, "Field Default Values");
+        openPropertiesPanel();
     }
 
     private void initializeComposer() {
@@ -1628,12 +1668,13 @@ public class GenPurposeDetailsController {
 
     /**
      * Whether this window uses the toolbar Publish flow: changes stage in the composer's open
-     * transaction until the Publish button commits them. Scoped to the standard Pattern window
-     * for now — the other window types keep the classic commit-on-submit flow (and hide the
-     * Publish button) until they adopt the Publish UX too.
+     * transaction until the Publish button commits them. Scoped to the standard Pattern and
+     * Concept windows for now — the other window types keep the classic commit-on-submit flow
+     * (and hide the Publish button) until they adopt the Publish UX too.
      */
     private boolean usesPublishFlow() {
-        return editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN;
+        return editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN
+                || editorWindowModel.getWindowType() == EditorWindowType.STANDARD_CONCEPT;
     }
 
     /**
@@ -1648,15 +1689,115 @@ public class GenPurposeDetailsController {
         boolean hasStagedChanges = composer != null && composer.hasUncommittedChanges();
         boolean disabled;
         String publishTooltip;
+        int unpublishedChanges = 0;
         if (genPurposeViewModel.getMode() == FormMode.CREATE) {
             disabled = !hasStagedChanges || !allRequiredPatternsSatisfied();
             publishTooltip = disabled ? "Complete the required semantics to publish" : "Publish";
         } else {
-            disabled = !hasStagedChanges;
-            publishTooltip = disabled ? "No changes to publish" : "Publish";
+            // Changes saved but not published count whether this window instance staged them or
+            // an earlier one did (the window was closed and reopened): they are read from the
+            // store, not from the composer.
+            unpublishedChanges = unpublishedChangeCount();
+            disabled = !hasStagedChanges && unpublishedChanges == 0;
+            publishTooltip = disabled ? "No changes to publish"
+                    : unpublishedChanges == 0 ? "Publish"
+                    : "Publish " + unpublishedChanges + (unpublishedChanges == 1 ? " change" : " changes");
         }
         windowControlToolbar.setPublishDisable(disabled);
         windowControlToolbar.setPublishTooltip(publishTooltip);
+
+        // The strip under the toolbar names the changes not published yet. Not in create mode,
+        // whose DRAFT chip and hint already say the whole component is unpublished.
+        boolean showHint = unpublishedChanges > 0;
+        unpublishedHint.setVisible(showHint);
+        unpublishedHint.setManaged(showHint);
+        if (showHint) {
+            unpublishedHintLabel.setText(unpublishedChanges == 1
+                    ? "1 change not published yet. Only you can see it until you publish."
+                    : unpublishedChanges + " changes not published yet. Only you can see them until you publish.");
+        }
+
+        updateUnpublishedChips();
+    }
+
+    /**
+     * The unpublished strip's "Show" action: brings the first semantic with an unpublished version
+     * into view, expanding the section holding it if it is collapsed.
+     */
+    private void revealFirstUnpublishedSemantic() {
+        List<SemanticEntity<SemanticEntityVersion>> unpublished = unpublishedSemantics();
+        if (unpublished.isEmpty()) {
+            return;
+        }
+        SemanticEntity<SemanticEntityVersion> semantic = unpublished.getFirst();
+        PatternSemanticsPresenter presenter = semanticEntityToPatternSemanticsPresenter.get(semantic);
+        editorPatternModelToPatternPresenter.forEach((patternModel, patternPresenter) -> {
+            if (patternPresenter == presenter) {
+                sectionModelToTitledPane.get(patternModel.getParentSection()).setExpanded(true);
+            }
+        });
+        presenter.revealSemantic(semantic);
+    }
+
+    /**
+     * Sets each section header's NOT PUBLISHED chip and note ("2 changes by you") from the
+     * section's semantics whose latest version is saved but not published yet; sections without
+     * any show no chip. Not in create mode, whose DRAFT chip and hint already say the whole
+     * component is unpublished.
+     */
+    private void updateUnpublishedChips() {
+        Map<EditorSectionModel, List<SemanticEntity<SemanticEntityVersion>>> unpublishedBySection = new HashMap<>();
+        if (genPurposeViewModel.getMode() != FormMode.CREATE) {
+            for (SemanticEntity<SemanticEntityVersion> semantic : unpublishedSemantics()) {
+                PatternSemanticsPresenter presenter = semanticEntityToPatternSemanticsPresenter.get(semantic);
+                editorPatternModelToPatternPresenter.forEach((patternModel, patternPresenter) -> {
+                    if (patternPresenter == presenter) {
+                        unpublishedBySection.computeIfAbsent(patternModel.getParentSection(), section -> new ArrayList<>())
+                                .add(semantic);
+                    }
+                });
+            }
+        }
+        int currentAuthorNid = getViewProperties().nodeView().editCoordinate().getAuthorNidForChanges();
+        sectionModelToTitledPane.forEach((section, titledPane) -> {
+            List<SemanticEntity<SemanticEntityVersion>> unpublished = unpublishedBySection.get(section);
+            if (unpublished == null) {
+                titledPane.setUnpublishedNote(null);
+                return;
+            }
+            boolean allByCurrentAuthor = unpublished.stream()
+                    .flatMap(semantic -> Entity.getFast(semantic.nid()).versions().stream())
+                    .filter(EntityVersion::uncommitted)
+                    .allMatch(version -> version.stamp().authorNid() == currentAuthorNid);
+            titledPane.setUnpublishedNote((unpublished.size() == 1 ? "1 change" : unpublished.size() + " changes")
+                    + (allByCurrentAuthor ? " by you" : ""));
+        });
+    }
+
+    /**
+     * The semantics shown in this window whose latest version is saved but not published yet, in
+     * render order — each as the entity object its view was built from (see {@link #displayedSemantics}).
+     * Whether a semantic is published is read from the store, since a version may have been
+     * submitted or published since its view was built.
+     */
+    private List<SemanticEntity<SemanticEntityVersion>> unpublishedSemantics() {
+        return displayedSemantics.values().stream()
+                .filter(semantic -> Entity.getFast(semantic.nid()).uncommitted())
+                .toList();
+    }
+
+    /**
+     * How many of the components this window shows carry a version not published yet: the
+     * unpublished semantics plus, when its own latest version is unpublished, the window's
+     * reference component.
+     */
+    private int unpublishedChangeCount() {
+        int count = unpublishedSemantics().size();
+        EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+        if (refComponent != null && Entity.getFast(refComponent.nid()).uncommitted()) {
+            count++;
+        }
+        return count;
     }
 
     /**
@@ -1664,6 +1805,10 @@ public class GenPurposeDetailsController {
      * Commits the composer's open transaction, finalizing everything staged since the last
      * publish: submitted semantic versions and, in create mode, the lazily created reference
      * component itself. A CREATE window becomes an EDIT window on its first publish.
+     * <p>
+     * Versions staged by an earlier instance of this window (closed before publishing) sit in
+     * that instance's still-open transactions; those are committed too, so a reopened window
+     * publishes everything it shows as not published.
      */
     private void publish() {
         boolean wasCreateMode = genPurposeViewModel.getMode() == FormMode.CREATE;
@@ -1672,16 +1817,65 @@ public class GenPurposeDetailsController {
         composer = null;
         initializeComposer();
 
+        int unpublishable = commitTransactionsOfUnpublishedVersions();
+
         if (wasCreateMode) {
             genPurposeViewModel.setMode(FormMode.EDIT);
         }
         // The commit finalized the staged entities (in create mode the window's reference
-        // component itself) — refresh the banner/identifier/STAMP from the committed state.
+        // component itself) — refresh the banner/identifier/STAMP from the committed state, and
+        // the semantics so the versions just published drop their "Not published" marks.
         updateView();
+        reloadAllSemanticViews();
         updatePublishState();
 
-        toast().show(Toast.Status.SUCCESS,
-                wasCreateMode ? componentKindString + " created" : "Changes published");
+        // The pattern navigator lists patterns from the committed store, so a pattern created
+        // or changed here shows up there only once told the commit happened. Announce it the
+        // way the classic pattern window does; the navigator reloads on this topic
+        // (ikmdev/komet-desktop#191).
+        if (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN) {
+            EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC, new PatternSavedEvent(this,
+                    wasCreateMode ? PatternSavedEvent.PATTERN_CREATION_EVENT : PatternSavedEvent.PATTERN_UPDATE_EVENT));
+        }
+
+        if (unpublishable > 0) {
+            toast().show(Toast.Status.FAILURE, unpublishable == 1
+                    ? "1 change could not be published: it was saved in an earlier session"
+                    : unpublishable + " changes could not be published: they were saved in an earlier session");
+        } else {
+            toast().show(Toast.Status.SUCCESS,
+                    wasCreateMode ? componentKindString + " created" : "Changes published");
+        }
+    }
+
+    /**
+     * Commits the open transactions holding the unpublished versions of the components this
+     * window shows — the ones staged by an earlier instance of the window. Transactions live in
+     * memory only, so a version saved in an earlier session has none to commit; those versions
+     * stay unpublished.
+     *
+     * @return how many components still carry an unpublished version afterwards
+     */
+    private int commitTransactionsOfUnpublishedVersions() {
+        List<Entity<?>> unpublished = new ArrayList<>(unpublishedSemantics());
+        EntityFacade refComponent = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+        if (refComponent != null) {
+            unpublished.add(Entity.getFast(refComponent.nid()));
+        }
+
+        Set<Transaction> transactions = new HashSet<>();
+        for (Entity<?> entity : unpublished) {
+            for (EntityVersion version : Entity.getFast(entity.nid()).versions()) {
+                if (version.uncommitted()) {
+                    Transaction.forStamp(version.stamp().publicId()).ifPresent(transactions::add);
+                }
+            }
+        }
+        transactions.forEach(Transaction::commit);
+
+        return (int) unpublished.stream()
+                .filter(entity -> Entity.getFast(entity.nid()).uncommitted())
+                .count();
     }
 
     /**

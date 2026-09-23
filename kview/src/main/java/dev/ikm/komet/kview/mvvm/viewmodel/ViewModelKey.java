@@ -88,7 +88,7 @@ public enum ViewModelKey {
     COMPOSER,
 
     /** Whether the window uses the toolbar Publish flow — changes stage in the composer's
-     *  transaction until the Publish button commits them (currently the standard Pattern
-     *  window only). Boolean. */
+     *  transaction until the Publish button commits them (currently the standard Pattern and
+     *  Concept windows). Boolean. */
     PUBLISH_FLOW
 }

@@ -15,19 +15,23 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
+import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.fxutils.CssHelper;
 import dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController;
-import dev.ikm.komet.kview.mvvm.view.genediting.ReferenceComponentController;
-import dev.ikm.komet.kview.mvvm.view.genediting.SemanticFieldsController;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl.Tab;
 import dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
+import dev.ikm.komet.layout.editor.model.EditorPatternModel;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.geometry.Pos;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
@@ -59,6 +63,12 @@ public class GenPurposePropertiesController {
     private final BorderPane contentBorderPane = new BorderPane();
 
     /**
+     * The height the panel needs to show its current content in full, without its form having to
+     * scroll. See {@link #requiredHeightProperty()}.
+     */
+    private final ReadOnlyDoubleWrapper requiredHeight = new ReadOnlyDoubleWrapper();
+
+    /**
      * Show the current edit window.
      */
     public enum PaneProperties {
@@ -69,11 +79,10 @@ public class GenPurposePropertiesController {
 
     private final GenPurposeViewModel genPurposeViewModel;
 
-    private Subscriber<KLPropertyPanelEvent> showPanelSubscriber;
-
     private Subscriber<GenEditingEvent> genEditingEventSubscriber;
 
-    private JFXNode<Pane, SemanticFieldsController> editFieldsJfxNode;
+    /** The ADD/EDIT tab's form, editing the section patterns' semantics. */
+    private JFXNode<Pane, GenPurposeFieldsController> editFieldsJfxNode;
 
     /**
      * The DEFAULTS tab's form — a second instance of the edit-fields form, editing the pattern's
@@ -105,6 +114,27 @@ public class GenPurposePropertiesController {
         propertiesPane.setTop(propertiesTabs);
         BorderPane.setAlignment(propertiesTabs, Pos.CENTER);
         propertiesPane.setCenter(contentBorderPane);
+
+        // What the content needs changes with the panel shown and, for a form, with its fields.
+        // Both end in a layout pass of the content, so measure as that pass reaches it — the
+        // pulse's CSS pass has styled the new nodes by then, so their preferred heights are reliable.
+        contentBorderPane.needsLayoutProperty().subscribe(needsLayout -> {
+            if (!needsLayout) {
+                requiredHeight.set(computeRequiredHeight());
+            }
+        });
+    }
+
+    /**
+     * The panel's own preferred height is bound to the tray's height (the panel fills whatever
+     * height the window gives it), so what its content asks for is added up here instead.
+     */
+    private double computeRequiredHeight() {
+        final double contentWidth = contentBorderPane.getWidth() > 0 ? contentBorderPane.getWidth() : -1;
+        return propertiesPane.snappedTopInset()
+                + propertiesTabs.prefHeight(-1)
+                + contentBorderPane.prefHeight(contentWidth)
+                + propertiesPane.snappedBottomInset();
     }
 
     private void setupShowingPanelHandlers() {
@@ -149,40 +179,33 @@ public class GenPurposePropertiesController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, genEditingEventSubscriber);
+    }
 
-        showPanelSubscriber = evt -> {
-            LOG.info("Show Panel by event type: " + evt.getEventType());
+    /**
+     * Shows the semantic's edit form under the ADD/EDIT tab. The pattern model is the KL Editor's
+     * placement of the semantic's pattern, whose fields say how the form's fields behave (e.g.
+     * whether they can still be edited in edit mode).
+     */
+    public void showEditForm(SemanticEntity<SemanticEntityVersion> semantic, EditorPatternModel editorPatternModel) {
+        editFieldsJfxNode.controller().showSemantic(semantic, editorPatternModel, null, null);
+        propertiesTabs.setSelectedTab(Tab.ADD_EDIT);
+        genPurposeViewModel.setPropertyValue(FIELD_INDEX, -1);
+        contentBorderPane.setCenter(editFieldsJfxNode.node());
+    }
 
-            if (evt.getEventType() == KLPropertyPanelEvent.SHOW_PATTERN_FIELD_DEFAULTS) {
-                // The window loaded the defaults form through this event (the DEFAULTS tab was
-                // selected, or the toolbar's field-defaults button pressed): show it under its tab.
-                propertiesTabs.setSelectedTab(Tab.DEFAULTS);
-                contentBorderPane.setCenter(defaultsFieldsJfxNode.node());
-                return;
-            }
-
-            // Every other panel event belongs to the ADD/EDIT tab. (OPEN_PANEL and CLOSE_PANEL
-            // reach here too; they must not move the selection away from the DEFAULTS tab.)
-            if (evt.getEventType() != KLPropertyPanelEvent.OPEN_PANEL
-                    && evt.getEventType() != KLPropertyPanelEvent.CLOSE_PANEL) {
-                propertiesTabs.setSelectedTab(Tab.ADD_EDIT);
-            }
-
-            if (evt.getEventType() == KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS) {
-                genPurposeViewModel.setPropertyValue(FIELD_INDEX, -1);
-                contentBorderPane.setCenter(editFieldsJfxNode.node());
-            } else if (evt.getEventType() == KLPropertyPanelEvent.NO_SELECTION_MADE_PANEL) {
-                // change the heading on the top of the panel
-                genPurposeViewModel.setPropertyValue(FIELD_INDEX, -1);
-
-                confirmationPaneViewModel.setPropertyValue(CONFIRMATION_TITLE, "No Selection Made");
-                confirmationPaneViewModel.setPropertyValue(CONFIRMATION_MESSAGE, "Make a selection in the view to edit the Semantic.");
-
-                contentBorderPane.setCenter(closePropsPane);
-            }
-        };
-        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
-                KLPropertyPanelEvent.class, showPanelSubscriber);
+    /**
+     * Shows the edit form for a semantic composed outside the window's own composer — a pattern's
+     * defaults semantic, which commits in its own module — under the DEFAULTS tab, with its own
+     * title in place of "Pattern Fields".
+     *
+     * @param composer  the composer the form edits the semantic through
+     * @param formTitle the form's title
+     */
+    public void showDefaultsForm(SemanticEntity<SemanticEntityVersion> semantic, ObservableComposer composer,
+                                 String formTitle) {
+        defaultsFieldsJfxNode.controller().showSemantic(semantic, null, composer, formTitle);
+        propertiesTabs.setSelectedTab(Tab.DEFAULTS);
+        contentBorderPane.setCenter(defaultsFieldsJfxNode.node());
     }
 
     /**
@@ -190,6 +213,23 @@ public class GenPurposePropertiesController {
      */
     public BorderPane getNode() {
         return propertiesPane;
+    }
+
+    /**
+     * The height the panel needs to show its current content in full, without its form having to
+     * scroll. Updated as the panel shown changes and as a form's fields are loaded.
+     */
+    public ReadOnlyDoubleProperty requiredHeightProperty() {
+        return requiredHeight.getReadOnlyProperty();
+    }
+
+    /**
+     * Measures {@link #requiredHeightProperty()} right away, for content set in the current pulse
+     * that the next layout pass hasn't measured yet.
+     */
+    public void refreshRequiredHeight() {
+        propertiesPane.applyCss();
+        requiredHeight.set(computeRequiredHeight());
     }
 
     /**

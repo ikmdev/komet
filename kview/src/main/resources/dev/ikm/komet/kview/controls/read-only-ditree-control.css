@@ -33,6 +33,20 @@
     -fx-spacing: 7px;
 }
 
+/* Definition from a version that is not published yet (KLReadOnlyBaseControl.unpublishedProperty):
+   a 6px amber dot follows the title (KLReadOnlyDiTreeControlSkin) — the same marker the other
+   read-only controls put after their value. */
+.read-only-ditree-control .ditree-title-row > .unpublished-dot {
+    -fx-min-width: 6;
+    -fx-pref-width: 6;
+    -fx-max-width: 6;
+    -fx-min-height: 6;
+    -fx-pref-height: 6;
+    -fx-max-height: 6;
+    -fx-background-color: #D9A93E;
+    -fx-background-radius: 3;
+}
+
 /* The read-only marker at the right edge of the title row: a small lock + "read-only" pill, in
    a muted gray so it reads quieter than the title itself. The white fill keeps it legible on
    the wash. */

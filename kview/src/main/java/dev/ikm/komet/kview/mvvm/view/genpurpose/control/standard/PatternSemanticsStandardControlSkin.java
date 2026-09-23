@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard;
 
+import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
@@ -68,10 +69,30 @@ public class PatternSemanticsStandardControlSkin extends SkinBase<PatternSemanti
 
         control.editingSemanticProperty().subscribe(semanticInEditMode -> onEditingSemanticChanged(semanticInEditMode));
         control.previewingSemanticProperty().subscribe(semanticInPreviewMode -> onPreviewingSemanticChanged(semanticInPreviewMode));
+        control.revealedSemanticProperty().subscribe(this::onRevealedSemanticChanged);
 
         // CSS
         semanticsContainer.getStyleClass().add("semantics-container");
         control.getStyleClass().add("pattern-container");
+    }
+
+    /**
+     * Scrolls the semantics list so the revealed semantic is in view, then clears the request so the
+     * next reveal of the same semantic fires again. The semantic's position is only known once laid
+     * out, so the scroll waits for the next pulse.
+     */
+    private void onRevealedSemanticChanged(SemanticStandardControl semantic) {
+        if (semantic == null) {
+            return;
+        }
+        Platform.runLater(() -> {
+            double contentHeight = semanticsContainer.getBoundsInLocal().getHeight();
+            double viewportHeight = scrollPane.getViewportBounds().getHeight();
+            double semanticTop = semantic.getBoundsInParent().getMinY();
+            double scrollableHeight = contentHeight - viewportHeight;
+            scrollPane.setVvalue(scrollableHeight <= 0 ? 0 : Math.min(1, semanticTop / scrollableHeight));
+            getSkinnable().revealSemantic(null);
+        });
     }
 
     /**

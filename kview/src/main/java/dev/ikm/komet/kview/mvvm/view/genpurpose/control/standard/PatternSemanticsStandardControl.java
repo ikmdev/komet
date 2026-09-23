@@ -61,4 +61,14 @@ public class PatternSemanticsStandardControl extends Control {
     public SemanticStandardControl getPreviewingSemantic() { return previewingSemantic.get(); }
     public ObjectProperty<SemanticStandardControl> previewingSemanticProperty() { return previewingSemantic; }
     public void setPreviewingSemantic(SemanticStandardControl semanticEntity) { previewingSemantic.set(semanticEntity); }
+
+    // -- revealed semantic
+    /**
+     * The semantic to scroll into view. Set by {@link #revealSemantic}; the skin scrolls its
+     * semantics list to it and clears it again, so revealing the same semantic twice works.
+     */
+    private final ObjectProperty<SemanticStandardControl> revealedSemantic = new SimpleObjectProperty<>();
+    public SemanticStandardControl getRevealedSemantic() { return revealedSemantic.get(); }
+    public ObjectProperty<SemanticStandardControl> revealedSemanticProperty() { return revealedSemantic; }
+    public void revealSemantic(SemanticStandardControl semantic) { revealedSemantic.set(semantic); }
 }

@@ -87,9 +87,17 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
     public KLReadOnlyDiTreeControlSkin(KLReadOnlyDiTreeControl control) {
         super(control);
 
+        // While the definition comes from a version not published yet, an amber dot follows the
+        // title — the marker the other read-only controls put after their value (see
+        // read-only-ditree-control.css).
+        Region unpublishedDot = new Region();
+        unpublishedDot.getStyleClass().add("unpublished-dot");
+        unpublishedDot.visibleProperty().bind(control.unpublishedProperty());
+        unpublishedDot.managedProperty().bind(control.unpublishedProperty());
+
         Region titleSpacer = new Region();
         HBox.setHgrow(titleSpacer, Priority.ALWAYS);
-        HBox titleRow = new HBox(titleLabel, titleSpacer, readOnlyIndicator);
+        HBox titleRow = new HBox(titleLabel, unpublishedDot, titleSpacer, readOnlyIndicator);
         titleRow.getStyleClass().add("ditree-title-row");
         titleRow.setAlignment(Pos.CENTER_LEFT);
         mainContainer.getChildren().setAll(titleRow, promptTextLabel, treeContainer);

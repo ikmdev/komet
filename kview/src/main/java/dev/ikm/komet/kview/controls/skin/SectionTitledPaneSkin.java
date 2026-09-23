@@ -3,6 +3,7 @@ package dev.ikm.komet.kview.controls.skin;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
 import dev.ikm.komet.kview.fxutils.FXUtils;
 import javafx.beans.binding.Bindings;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.geometry.Orientation;
@@ -30,6 +31,7 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
     private static final int SPACE_BETWEEN_SEMANTIC_CB_AND_EDIT_BUTTON = 4;
     private static final int SPACE_BETWEEN_TITLE_AND_SEMANTIC_CB = 4;
     private static final int SPACE_BETWEEN_TITLE_AND_REQUIRED_CHIP = 8;
+    private static final int SPACE_BETWEEN_CHIP_AND_NOTE = 6;
 
     /** Active on the required chip once the section's required pattern(s) have a semantic. */
     private static final PseudoClass SATISFIED = PseudoClass.getPseudoClass("satisfied");
@@ -43,6 +45,9 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
     private ComboBox<T> referenceComponentSemanticsCB;
 
     private Label requiredChip;
+
+    private Label unpublishedChip;
+    private Label unpublishedNote;
 
     /**
      * Creates a new TitledPaneSkin instance, installing the necessary child
@@ -61,6 +66,7 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
 
         createReferenceComponentCB(control);
         createRequiredChip(control);
+        createUnpublishedChip(control);
 
         titleRegion = (StackPane) control.lookup(".title");
         titleRegionText = (Text) titleRegion.lookup(".text");
@@ -68,8 +74,31 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
         getChildren().addAll(
                 editButton,
                 referenceComponentSemanticsCB,
-                requiredChip
+                requiredChip,
+                unpublishedChip,
+                unpublishedNote
         );
+    }
+
+    /**
+     * Creates the unpublished-changes chip and its note, shown after the section title (and after
+     * the required chip when both show) while the control carries an unpublished note (see
+     * {@link SectionTitledPane#unpublishedNoteProperty()}): a dashed NOT PUBLISHED chip in the
+     * required chip's language, then the note itself (styled by .unpublished-chip and
+     * .unpublished-note in kview.css).
+     */
+    private void createUnpublishedChip(SectionTitledPane<T> control) {
+        unpublishedChip = new Label("NOT PUBLISHED");
+        unpublishedChip.getStyleClass().add("unpublished-chip");
+        unpublishedNote = new Label();
+        unpublishedNote.getStyleClass().add("unpublished-note");
+        unpublishedNote.textProperty().bind(control.unpublishedNoteProperty());
+
+        ObservableValue<Boolean> shown = control.unpublishedNoteProperty().map(note -> !note.isEmpty()).orElse(false);
+        unpublishedChip.visibleProperty().bind(shown);
+        unpublishedChip.managedProperty().bind(shown);
+        unpublishedNote.visibleProperty().bind(shown);
+        unpublishedNote.managedProperty().bind(shown);
     }
 
     /**
@@ -163,6 +192,24 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
             requiredChip.setLayoutX(chipX);
             requiredChip.setLayoutY(titleRegion.getLayoutY() + (titleRegionHeight - chipHeight) / 2d);
             titleRightEdge = chipX + chipWidth;
+        }
+
+        // Unpublished chip and its note, after whatever precedes them on the title line
+        if (unpublishedChip.isVisible()) {
+            final double chipWidth = unpublishedChip.prefWidth(-1);
+            final double chipHeight = unpublishedChip.prefHeight(chipWidth);
+            final double chipX = titleRightEdge + SPACE_BETWEEN_TITLE_AND_REQUIRED_CHIP;
+            unpublishedChip.resize(chipWidth, chipHeight);
+            unpublishedChip.setLayoutX(chipX);
+            unpublishedChip.setLayoutY(titleRegion.getLayoutY() + (titleRegionHeight - chipHeight) / 2d);
+
+            final double noteWidth = unpublishedNote.prefWidth(-1);
+            final double noteHeight = unpublishedNote.prefHeight(noteWidth);
+            final double noteX = chipX + chipWidth + SPACE_BETWEEN_CHIP_AND_NOTE;
+            unpublishedNote.resize(noteWidth, noteHeight);
+            unpublishedNote.setLayoutX(noteX);
+            unpublishedNote.setLayoutY(titleRegion.getLayoutY() + (titleRegionHeight - noteHeight) / 2d);
+            titleRightEdge = noteX + noteWidth;
         }
 
         // Reference Component Semantics Combobox

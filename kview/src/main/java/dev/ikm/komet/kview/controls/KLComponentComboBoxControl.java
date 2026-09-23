@@ -20,7 +20,7 @@ import java.util.function.Function;
  * <p>KLComponentComboBoxControl is an editable control for a component field whose value is
  * constrained to a predefined set of concepts: instead of the free-form search and drag-and-drop
  * of {@link KLComponentControl}, the user picks one of the {@link #getItems() items} from a
- * combo box.
+ * {@link FilterComboBox}, which they can also type in to search the items.
  *
  * <p>It has a title and a combo box to edit the {@link #valueProperty() value} property. Like
  * its {@link KLComponentControl} counterpart it holds no knowledge of the data store — the

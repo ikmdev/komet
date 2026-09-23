@@ -6,6 +6,7 @@ import dev.ikm.komet.kview.controls.KometIcon.IconValue;
 import javafx.beans.binding.ObjectBinding;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.layout.Region;
@@ -59,6 +60,15 @@ public class KLReadOnlyDataTypeControlSkin<T> extends KLReadOnlyBaseControlSkin<
         // A value can be arbitrarily long (e.g. a definition or a device description), so it wraps
         // onto as many lines as it needs instead of being truncated to the width of the field.
         textLabel.setWrapText(true);
+
+        // While the value comes from a version not published yet, an amber dot follows it (shown
+        // through the :unpublished pseudo-class, see read-only-data-control.css).
+        Region unpublishedDot = new Region();
+        unpublishedDot.getStyleClass().add("unpublished-dot");
+        unpublishedDot.visibleProperty().bind(control.unpublishedProperty());
+        unpublishedDot.managedProperty().bind(control.unpublishedProperty());
+        textLabel.setGraphic(unpublishedDot);
+        textLabel.setContentDisplay(ContentDisplay.RIGHT);
 
         // CSS
         textContainer.getStyleClass().add("text-container");

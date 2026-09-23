@@ -7,6 +7,8 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -65,6 +67,18 @@ public class SectionTitledPane<T> extends TitledPane {
     public boolean isRequiredSatisfied() { return requiredSatisfied.get(); }
     public BooleanProperty requiredSatisfiedProperty() { return requiredSatisfied; }
     public void setRequiredSatisfied(boolean satisfied) { requiredSatisfied.set(satisfied); }
+
+    // -- unpublished note
+    /**
+     * Set while the section holds semantics whose latest version is saved but not published yet:
+     * the title bar then shows a NOT PUBLISHED chip after the title, followed by this note (how
+     * many changes, and by whom, e.g. "2 changes by you"). Null (the default) shows neither.
+     * The window controller keeps it in step with the store.
+     */
+    private final StringProperty unpublishedNote = new SimpleStringProperty();
+    public String getUnpublishedNote() { return unpublishedNote.get(); }
+    public StringProperty unpublishedNoteProperty() { return unpublishedNote; }
+    public void setUnpublishedNote(String note) { unpublishedNote.set(note); }
 
     // -- number columns
     private final IntegerProperty numberColumns = new SimpleIntegerProperty();

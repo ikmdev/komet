@@ -165,7 +165,8 @@ public class GenPurposeFieldsController {
     /**
      * The composer the semantic being edited is composed through when it is not the window's own —
      * a pattern's defaults semantic commits in its own module (see
-     * {@link KLPropertyPanelEvent#getComposer()}); null while editing through the window's composer.
+     * {@link GenPurposePropertiesController#showDefaultsForm}); null while editing through the
+     * window's composer.
      */
     private ObservableComposer formComposer;
 
@@ -174,9 +175,8 @@ public class GenPurposeFieldsController {
 
     /**
      * Whether this form instance is the properties panel's DEFAULTS tab, editing the pattern's
-     * defaults semantic (see {@link KLPropertyPanelEvent#SHOW_PATTERN_FIELD_DEFAULTS}), rather
-     * than its ADD/EDIT tab editing the section patterns' semantics. Each instance answers only
-     * its own show event.
+     * defaults semantic (see {@link GenPurposePropertiesController#showDefaultsForm}), rather
+     * than its ADD/EDIT tab editing the section patterns' semantics.
      */
     private boolean defaultsForm;
 
@@ -277,21 +277,8 @@ public class GenPurposeFieldsController {
 //        if (semantic != null && genPurposeViewModel.getPropertyValue(MODE) == EDIT) {
 //            //Change the button name to RESET FORM in EDIT MODE
 //            clearOrResetFormButton.setText("RESET FORM");
-//            setupEditSemanticDetails();
+//            showSemantic(...);
 //        }
-
-        Subscriber<KLPropertyPanelEvent> propertyEventSubscriber = evt -> {
-            boolean ownEvent = defaultsForm
-                    ? evt.getEventType() == KLPropertyPanelEvent.SHOW_PATTERN_FIELD_DEFAULTS
-                    : evt.getEventType() == KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
-            if (ownEvent) {
-                setupEditSemanticDetails(evt.getSemantic(), evt.getEditorPatternModel(),
-                        evt.getComposer(), evt.getFormTitle());
-            }
-        };
-        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
-                KLPropertyPanelEvent.class, propertyEventSubscriber);
-
 
         genPurposeViewModel.modeProperty().subscribe((mode) -> {
             if (mode == FormMode.EDIT) {
@@ -312,15 +299,19 @@ public class GenPurposeFieldsController {
 
 
     /**
+     * Loads the semantic into the form: one editor per field, replacing whatever semantic the form
+     * was editing before.
+     *
+     * @param semanticEntity     the semantic to edit
      * @param editorPatternModel the KL Editor model of the pattern the semantic is edited as; null
      *                           for a semantic with no placement in the layout (a pattern's
      *                           defaults semantic), whose fields are all editable
      * @param composer           the composer to edit the semantic through; null for the window's own
      * @param formTitle          the form's title; null for the default "Pattern Fields"
      */
-    private void setupEditSemanticDetails(SemanticEntity<SemanticEntityVersion> semanticEntity,
-                                          EditorPatternModel editorPatternModel,
-                                          ObservableComposer composer, String formTitle) {
+    public void showSemantic(SemanticEntity<SemanticEntityVersion> semanticEntity,
+                             EditorPatternModel editorPatternModel,
+                             ObservableComposer composer, String formTitle) {
         // Clear previous controls that might be there from previously editing another Semantic
         nodes.clear();
         klFields.clear();
@@ -701,7 +692,7 @@ public class GenPurposeFieldsController {
                 }
 
                 // Whether this window stages changes until the toolbar's Publish button commits
-                // them (currently the standard Pattern window only).
+                // them (currently the standard Pattern and Concept windows).
                 boolean publishFlow = Boolean.TRUE.equals(
                         genPurposeViewModel.getPropertyValue(PUBLISH_FLOW));
 

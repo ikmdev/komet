@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import dev.ikm.komet.kview.controls.FilterComboBox;
 import dev.ikm.komet.kview.controls.KLComponentComboBoxControl;
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -7,16 +8,15 @@ import javafx.beans.binding.Bindings;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.SkinBase;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 
 /**
- * Default skin implementation for the {@link KLComponentComboBoxControl} control
+ * Default skin implementation for the {@link KLComponentComboBoxControl} control. The options are
+ * picked in a {@link FilterComboBox}, so the user can type to search them.
  *
  * @see KLComponentComboBoxControl
  */
@@ -25,7 +25,7 @@ public class KLComponentComboBoxControlSkin extends SkinBase<KLComponentComboBox
     private final VBox mainContainer = new VBox();
 
     private final Label titleLabel = new Label();
-    private final ComboBox<EntityProxy> comboBox = new ComboBox<>();
+    private final FilterComboBox<EntityProxy> comboBox = new FilterComboBox<>();
     private final Button clearButton = new Button();
 
     /**
@@ -63,10 +63,9 @@ public class KLComponentComboBoxControlSkin extends SkinBase<KLComponentComboBox
         // would make an HBox host treat the control as oversized and shrink it to its minimum.
         comboBox.setMaxWidth(Double.MAX_VALUE);
 
-        // Renders the popup list cells, and — when the value is not in the items list (e.g. the
-        // blank concept a new semantic's fields are seeded with) — the button area too, since the
-        // ComboBox skin then bypasses the button cell (RT-21336): without this converter the raw
-        // EntityProxy toString would show.
+        // Renders the options, and is what the text typed to search them is matched against. The blank
+        // concept a new semantic's fields are seeded with renders as the prompt text.
+        comboBox.promptTextProperty().bind(control.promptTextProperty());
         comboBox.setConverter(new StringConverter<>() {
             @Override
             public String toString(EntityProxy entityProxy) {
@@ -79,18 +78,6 @@ public class KLComponentComboBoxControlSkin extends SkinBase<KLComponentComboBox
             @Override
             public EntityProxy fromString(String string) {
                 return null;
-            }
-        });
-
-        comboBox.setButtonCell(new ListCell<>() {
-            @Override
-            protected void updateItem(EntityProxy item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || KLComponentControl.isEmpty(item)) {
-                    setText(control.getPromptText());
-                } else {
-                    setText(control.getComponentNameRenderer().apply(item));
-                }
             }
         });
 
