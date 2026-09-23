@@ -1,0 +1,25 @@
+/* FilterComboBox defaults. A user agent stylesheet: any scene or parent stylesheet overrides it. */
+
+/* --- The search text, shown over the button cell while it narrows the options --- */
+.filter-combo-box > .search-text > .search-icon {
+    -fx-scale-shape: true;
+    -fx-background-color: #545D72;
+    -fx-min-width: 11;
+    -fx-max-width: 11;
+    -fx-min-height: 11;
+    -fx-max-height: 11;
+    /* as search-control.css */
+    -fx-shape: "M10.3 9.05833L15.075 13.8333L13.8333 15.075L9.05833 10.3C8.16667 10.9417 7.09167 11.3333 5.91667 11.3333C2.925 11.3333 0.5 8.90833 0.5 5.91667C0.5 2.925 2.925 0.5 5.91667 0.5C8.90833 0.5 11.3333 2.925 11.3333 5.91667C11.3333 7.09167 10.9417 8.16667 10.3 9.05833ZM5.91667 2.16667C3.84167 2.16667 2.16667 3.84167 2.16667 5.91667C2.16667 7.99167 3.84167 9.66667 5.91667 9.66667C7.99167 9.66667 9.66667 7.99167 9.66667 5.91667C9.66667 3.84167 7.99167 2.16667 5.91667 2.16667Z";
+}
+
+/* --- The option Enter picks while searching. The popup window never has the focus, so the
+   focused cell gets no focus ring of its own --- */
+.filter-combo-box > .combo-box-base > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:focused {
+    -fx-background: -fx-selection-bar-non-focused;
+    -fx-background-color: -fx-background;
+}
+
+.filter-combo-box > .combo-box-base > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:focused:selected {
+    -fx-background: -fx-selection-bar;
+    -fx-background-color: -fx-background;
+}

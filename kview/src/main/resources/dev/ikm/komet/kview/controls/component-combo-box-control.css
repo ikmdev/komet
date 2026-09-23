@@ -14,8 +14,11 @@
     -fx-font-size: 1.166667em; /* 14 */
 }
 
-.component-combo-box-control > .main-container > .combo-box-base {
+.component-combo-box-control > .main-container > .component-combo-box {
     -fx-font-size: 1.166667em; /* 14 */
+}
+
+.component-combo-box-control > .main-container > .component-combo-box > .combo-box-base {
     -fx-background-color: -Grey-5, white;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 4px, 4px;
@@ -29,17 +32,17 @@
 
 /* Hover: darker border and arrow, hinting the box opens on click (distinct from the clear
    button's own hover pill) */
-.component-combo-box-control > .main-container > .combo-box-base:hover {
+.component-combo-box-control > .main-container > .component-combo-box > .combo-box-base:hover {
     -fx-background-color: -Grey-7, white;
     -fx-background-insets: 0, 1;
     -fx-cursor: hand;
 }
 
-.component-combo-box-control > .main-container > .combo-box-base:hover > .arrow-button > .arrow {
+.component-combo-box-control > .main-container > .component-combo-box > .combo-box-base:hover > .arrow-button > .arrow {
     -fx-background-color: #1035AC;
 }
 
-.component-combo-box-control > .main-container > .combo-box-base:focused   {
+.component-combo-box-control > .main-container > .component-combo-box > .combo-box-base:focused   {
     -fx-background-color: #8ab4f8, white;
     -fx-background-insets: 0, 2;
 }
@@ -49,7 +52,7 @@
 }
 
 /* --- Clear button (clearable controls): sits inside the combo box, before the arrow button --- */
-.component-combo-box-control:clearable > .main-container > .combo-box-base > .list-cell {
+.component-combo-box-control:clearable > .main-container > .component-combo-box > .combo-box-base > .list-cell {
     -fx-padding: 4 34 4 8; /* keep the text clear of the overlaid clear button (its width + gap) */
 }
 
@@ -75,25 +78,36 @@
     -fx-shape: "M15.8337 5.34199L14.6587 4.16699L10.0003 8.82533L5.34199 4.16699L4.16699 5.34199L8.82533 10.0003L4.16699 14.6587L5.34199 15.8337L10.0003 11.1753L14.6587 15.8337L15.8337 14.6587L11.1753 10.0003L15.8337 5.34199Z";
 }
 
+/* --- Type to search (FilterComboBox) --- */
+.component-combo-box-control .component-combo-box > .search-text {
+    -fx-text-fill: -Grey-8;
+}
+
 /* --- Popup options --- */
-.component-combo-box-control .component-combo-box > .combo-box-popup > .list-view {
+.component-combo-box-control .component-combo-box > .combo-box-base > .combo-box-popup > .list-view {
     -fx-background-color: -Grey-5, white;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 4px;
 }
 
-.component-combo-box-control .component-combo-box > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+.component-combo-box-control .component-combo-box > .combo-box-base > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
     -fx-background-color: white;
     -fx-padding: 4 8 4 8;
 }
 
-.component-combo-box-control .component-combo-box > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover {
+.component-combo-box-control .component-combo-box > .combo-box-base > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover {
     -fx-background-color: -Grey-4;
     -fx-text-fill: #111;
 }
 
-.component-combo-box-control .component-combo-box > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected,
-.component-combo-box-control .component-combo-box > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected:hover {
+/* The option Enter picks while searching */
+.component-combo-box-control .component-combo-box > .combo-box-base > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:focused {
+    -fx-background-color: -Grey-4;
+    -fx-text-fill: #111;
+}
+
+.component-combo-box-control .component-combo-box > .combo-box-base > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected,
+.component-combo-box-control .component-combo-box > .combo-box-base > .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected:hover {
     -fx-background-color: -Secondary-05;
     -fx-text-fill: white;
 }
