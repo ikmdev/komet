@@ -16,9 +16,6 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
-import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.NO_SELECTION_MADE_PANEL;
-import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.OPEN_PANEL;
 import static dev.ikm.komet.layout_engine.window.DraggableSupport.addDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
@@ -49,8 +46,6 @@ import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.controls.SectionEditPopup;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
-import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
-import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl.Tab;
@@ -87,7 +82,6 @@ import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -245,8 +239,6 @@ public class GenPurposeDetailsController {
     private final GenPurposeViewModel genPurposeViewModel;
     private Consumer<GenPurposeDetailsController> onCloseConceptWindow;
 
-    private Subscriber<ClosePropertiesPanelEvent> closePropertiesPanelEventSubscriber;
-
     /**
      * Re-evaluates the required chips when a stated definition changes: inline axiom edits
      * persist straight to the store without a PUBLISH event, yet they can satisfy — or, by
@@ -381,12 +373,6 @@ public class GenPurposeDetailsController {
                 detailsOuterBorderPane.requestFocus();
             }
         });
-
-        // if the user clicks the Close Properties Button from the Edit Descriptions panel
-        // in that state, the properties bump out will be slid out, therefore toggling will perform a slide in
-        closePropertiesPanelEventSubscriber = evt ->
-                windowControlToolbar.setPropertiesSelected(!windowControlToolbar.isPropertiesSelected());
-        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
     }
 
     /**
@@ -760,16 +746,6 @@ public class GenPurposeDetailsController {
         windowHeightFitter = new WindowHeightFitter(detailsOuterBorderPane, propertiesSlideoutTrayPane,
                 propertiesController.requiredHeightProperty());
         propertiesController.requiredHeightProperty().subscribe(_ -> growWindowToFitProperties());
-
-        // Nothing publishes these anymore; the subscription goes with the event class.
-        Subscriber<KLPropertyPanelEvent> propertiesEventSubscriber = (evt) -> {
-            if (evt.getEventType() == CLOSE_PANEL) {
-                closePropertiesPanel();
-            } else if (evt.getEventType() == OPEN_PANEL || evt.getEventType() == NO_SELECTION_MADE_PANEL) {
-                openPropertiesPanel();
-            }
-        };
-        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), KLPropertyPanelEvent.class, propertiesEventSubscriber);
     }
 
     public ViewProperties getViewProperties() {
