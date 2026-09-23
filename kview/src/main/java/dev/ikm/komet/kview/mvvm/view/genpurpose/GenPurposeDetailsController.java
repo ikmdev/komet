@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
+import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.NO_SELECTION_MADE_PANEL;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.OPEN_PANEL;
@@ -51,6 +52,7 @@ import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
+import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl.Tab;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SectionSemanticsComboBoxCell;
@@ -1826,6 +1828,15 @@ public class GenPurposeDetailsController {
         updateView();
         reloadAllSemanticViews();
         updatePublishState();
+
+        // The pattern navigator lists patterns from the committed store, so a pattern created
+        // or changed here shows up there only once told the commit happened. Announce it the
+        // way the classic pattern window does; the navigator reloads on this topic
+        // (ikmdev/komet-desktop#191).
+        if (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN) {
+            EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC, new PatternSavedEvent(this,
+                    wasCreateMode ? PatternSavedEvent.PATTERN_CREATION_EVENT : PatternSavedEvent.PATTERN_UPDATE_EVENT));
+        }
 
         if (unpublishable > 0) {
             toast().show(Toast.Status.FAILURE, unpublishable == 1
