@@ -17,7 +17,6 @@ package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
 import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
-import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.fxutils.CssHelper;
 import dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl;
@@ -43,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.CONFIRMATION_PANE_FXML_URL;
 import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.CONFIRMATION_VIEW_MODEL;
@@ -80,6 +80,9 @@ public class GenPurposePropertiesController {
     private final GenPurposeViewModel genPurposeViewModel;
 
     private Subscriber<GenEditingEvent> genEditingEventSubscriber;
+
+    /** Closes the panel; set by the window (see {@link #setOnCloseRequested}). */
+    private Runnable onCloseRequested = () -> { };
 
     /** The ADD/EDIT tab's form, editing the section patterns' semantics. */
     private JFXNode<Pane, GenPurposeFieldsController> editFieldsJfxNode;
@@ -159,9 +162,7 @@ public class GenPurposePropertiesController {
         BooleanProperty closeConfPanelProp = confirmationPaneViewModel.getBooleanProperty(CLOSE_CONFIRMATION_PANEL);
         closeConfPanelProp.subscribe(closeIt -> {
             if (closeIt) {
-                EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
-                        new KLPropertyPanelEvent(closePropsPane, KLPropertyPanelEvent.CLOSE_PANEL));
-
+                onCloseRequested.run();
                 confirmationPaneViewModel.reset();
             }
         });
@@ -179,6 +180,24 @@ public class GenPurposePropertiesController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, genEditingEventSubscriber);
+    }
+
+    /**
+     * Sets what happens to a semantic the ADD/EDIT form submits, once its edited values are
+     * saved: the window decides whether it commits now, and answers what became of it.
+     */
+    public void setOnSemanticSubmitted(Function<SemanticEntity<SemanticEntityVersion>, SubmitOutcome> onSemanticSubmitted) {
+        editFieldsJfxNode.controller().setOnSubmitted(onSemanticSubmitted);
+    }
+
+    /**
+     * Sets what closes the panel when its content is done with: a form submitted or cancelled,
+     * the confirmation pane dismissed.
+     */
+    public void setOnCloseRequested(Runnable onCloseRequested) {
+        this.onCloseRequested = onCloseRequested;
+        editFieldsJfxNode.controller().setOnCloseRequested(onCloseRequested);
+        defaultsFieldsJfxNode.controller().setOnCloseRequested(onCloseRequested);
     }
 
     /**

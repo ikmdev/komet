@@ -50,7 +50,6 @@ import dev.ikm.komet.kview.controls.SectionEditPopup;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
-import dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl;
@@ -360,56 +359,6 @@ public class GenPurposeDetailsController {
             }
         });
 
-        Subscriber<GenPurposeEvent> refreshSubscriber = evt -> {
-            SemanticEntity<SemanticEntityVersion> semantic = evt.getSemantic();
-
-            if (evt.getEventType() == GenPurposeEvent.PUBLISH) {
-                if (usesPublishFlow()) {
-                    // Publish-flow window: a submit only stages the change — the saved (still
-                    // uncommitted) version stays in the composer's open transaction, alongside,
-                    // in create mode, the lazily created reference component, until the toolbar's
-                    // Publish button commits everything together (see publish). The details area
-                    // refreshes so the submitted field values show, the required chips re-evaluate
-                    // and the Publish button follows the staged changes.
-                    reloadSemanticViews(semantic);
-                    updateRequiredChips();
-                    return;
-                }
-
-                // Without the Publish flow, the submit itself commits. In create mode the
-                // component only truly gets created once every required pattern has at least one
-                // semantic. Until then, skip the commit — the submitted semantic stays uncommitted
-                // in the composer's open transaction (alongside the lazily created reference
-                // concept) and commits together with it later. The details area still refreshes
-                // so the submitted (still uncommitted) field values show.
-                if (genPurposeViewModel.getMode() == FormMode.CREATE && !allRequiredPatternsSatisfied()) {
-                    reloadSemanticViews(semantic);
-                    // The submitted semantic now shows in the details area — flip its section's
-                    // chip to MET.
-                    updateRequiredChips();
-                    return;
-                }
-
-                // Commit transaction, finalizing all impending changes
-                composer.commit();
-
-                composer = null;
-                initializeComposer();
-
-                // In create mode that commit also finalized the window's lazily created reference
-                // component (see createUncommitedReferenceComponent) — the window is now editing a
-                // real component, so refresh the banner/identifier/STAMP from the committed entity.
-                if (genPurposeViewModel.getMode() == FormMode.CREATE) {
-                    genPurposeViewModel.setMode(FormMode.EDIT);
-                    updateView();
-                }
-
-                reloadSemanticViews(semantic);
-            }
-        };
-        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
-                GenPurposeEvent.class, refreshSubscriber);
-
         // This window opts out of WindowSupport's hover/resize outline: the edge resize cursors
         // are the resize affordance. Must be set before addDraggableNodes below creates the
         // window support.
@@ -710,17 +659,64 @@ public class GenPurposeDetailsController {
         SemanticEntity<SemanticEntityVersion> semantic = EntityHandle.get(semanticEditor.getEntity().nid())
                 .asSemantic().orElseThrow();
 
-        // Outside the Publish flow the PUBLISH handler runs synchronously and flips a CREATE
-        // window to EDIT when the seeded set was the last unmet requirement and the concept
-        // actually got committed — announce that like the properties panel's submit does. (In
-        // the Publish-flow window the mode only flips on the toolbar's Publish button, so the
-        // condition below stays false and this stays quiet.)
-        boolean wasCreateMode = genPurposeViewModel.getMode() == FormMode.CREATE;
-        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
-                new GenPurposeEvent(this, GenPurposeEvent.PUBLISH, List.of(seededDefinition), semantic));
-        if (wasCreateMode && genPurposeViewModel.getMode() == FormMode.EDIT) {
+        // Submitted like a properties-panel submit. Outside the Publish flow that commits when the
+        // seeded set was the last unmet requirement, creating the concept — announce it like the
+        // panel's submit does. (In the Publish-flow window the concept is only created by the
+        // toolbar's Publish button, so this stays quiet.)
+        if (onSemanticSubmitted(semantic) == SubmitOutcome.COMPONENT_CREATED) {
             toast().show(Toast.Status.SUCCESS, "Concept created");
         }
+    }
+
+    /**
+     * Runs when a semantic is submitted from the properties panel's edit form (or seeded by
+     * {@link #createSeededStatedDefinition}), its edited values already saved as an uncommitted
+     * version. Decides whether that version commits now and refreshes the details area either way.
+     *
+     * <p>In the Publish-flow window a submit only stages the change: the saved version stays in
+     * the composer's open transaction, alongside, in create mode, the lazily created reference
+     * component, until the toolbar's Publish button commits everything together ({@link #publish}).
+     * The details area refreshes so the submitted field values show, the required chips
+     * re-evaluate and the Publish button follows the staged changes.
+     *
+     * <p>Without the Publish flow, the submit itself commits. In create mode the component only
+     * truly gets created once every required pattern has at least one semantic. Until then the
+     * commit is deferred: the submitted semantic stays uncommitted in the composer's open
+     * transaction (alongside the lazily created reference concept) and commits together with it
+     * later. The details area still refreshes so the submitted (still uncommitted) values show.
+     *
+     * @return what became of the submitted semantic, for the form's toast
+     */
+    SubmitOutcome onSemanticSubmitted(SemanticEntity<SemanticEntityVersion> semantic) {
+        if (usesPublishFlow()) {
+            reloadSemanticViews(semantic);
+            updateRequiredChips();
+            return SubmitOutcome.UNCOMMITTED_UNTIL_PUBLISHED;
+        }
+
+        if (genPurposeViewModel.getMode() == FormMode.CREATE && !allRequiredPatternsSatisfied()) {
+            reloadSemanticViews(semantic);
+            // The submitted semantic now shows in the details area — flip its section's chip to MET.
+            updateRequiredChips();
+            return SubmitOutcome.UNCOMMITTED_UNTIL_REQUIREMENTS_MET;
+        }
+
+        // Commit transaction, finalizing all impending changes
+        composer.commit();
+        composer = null;
+        initializeComposer();
+
+        // In create mode that commit also finalized the window's lazily created reference
+        // component (see createUncommitedReferenceComponent) — the window is now editing a
+        // real component, so refresh the banner/identifier/STAMP from the committed entity.
+        boolean componentCreated = genPurposeViewModel.getMode() == FormMode.CREATE;
+        if (componentCreated) {
+            genPurposeViewModel.setMode(FormMode.EDIT);
+            updateView();
+        }
+
+        reloadSemanticViews(semantic);
+        return componentCreated ? SubmitOutcome.COMPONENT_CREATED : SubmitOutcome.COMMITTED;
     }
 
     /**
@@ -752,6 +748,10 @@ public class GenPurposeDetailsController {
 
     private void setupProperties() {
         this.propertiesController = new GenPurposePropertiesController(genPurposeViewModel);
+        // The panel's edit form hands its submitted semantic here, and its forms close the panel
+        // once they are done (submit, cancel).
+        propertiesController.setOnSemanticSubmitted(this::onSemanticSubmitted);
+        propertiesController.setOnCloseRequested(this::closePropertiesPanel);
         // The panel's tabs are its drag handle: while the tray is open they drag the window too.
         this.propertiesTray = new PropertiesTray(detailsOuterBorderPane, propertiesSlideoutTrayPane,
                 propertiesController.getNode(), propertiesController.getPropertiesTabs());
@@ -761,8 +761,7 @@ public class GenPurposeDetailsController {
                 propertiesController.requiredHeightProperty());
         propertiesController.requiredHeightProperty().subscribe(_ -> growWindowToFitProperties());
 
-        // The panel's forms and the section edit actions still ask for the panel to open or close
-        // through these events.
+        // Nothing publishes these anymore; the subscription goes with the event class.
         Subscriber<KLPropertyPanelEvent> propertiesEventSubscriber = (evt) -> {
             if (evt.getEventType() == CLOSE_PANEL) {
                 closePropertiesPanel();

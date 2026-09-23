@@ -29,8 +29,6 @@ import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ObservableViewWithOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.Toast;
-import dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent;
-import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
 import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.FormMode;
@@ -81,10 +79,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
-import static dev.ikm.komet.kview.events.genpurpose.GenPurposeEvent.PUBLISH;
-import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValues;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.createEditableKlField;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
@@ -92,8 +89,6 @@ import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.COMPOSER;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.REF_COMPONENT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.PUBLISH_FLOW;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.WINDOW_TOPIC;
 import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
 import static dev.ikm.tinkar.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.FIELD_INDEX;
@@ -179,6 +174,24 @@ public class GenPurposeFieldsController {
      * than its ADD/EDIT tab editing the section patterns' semantics.
      */
     private boolean defaultsForm;
+
+    /**
+     * Where a submitted semantic goes once its edited values are saved: the window, which
+     * refreshes the details area, decides whether it commits now and answers what became of it.
+     * Not used by the defaults form, which commits through its own composer.
+     */
+    private Function<SemanticEntity<SemanticEntityVersion>, SubmitOutcome> onSubmitted;
+
+    /** Closes the properties panel once the form is done with (submit, cancel). */
+    private Runnable onCloseRequested = () -> { };
+
+    public void setOnSubmitted(Function<SemanticEntity<SemanticEntityVersion>, SubmitOutcome> onSubmitted) {
+        this.onSubmitted = onSubmitted;
+    }
+
+    public void setOnCloseRequested(Runnable onCloseRequested) {
+        this.onCloseRequested = onCloseRequested;
+    }
 
     public void setDefaultsForm(boolean defaultsForm) {
         this.defaultsForm = defaultsForm;
@@ -547,9 +560,7 @@ public class GenPurposeFieldsController {
     @FXML
     private void cancel(ActionEvent actionEvent) {
         doTheClearOrResetForm();
-        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC), new KLPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
-        // if previous state was closed cancel will close properties bump out.
-        // else show
+        onCloseRequested.run();
     }
 
     @FXML
@@ -650,13 +661,6 @@ public class GenPurposeFieldsController {
         cancelButton.requestFocus();
 
         try {
-            // Create list of current values for event publishing
-            List<Object> fieldValues = getKlFields()
-                    .stream()
-                    .map(KlField::fieldEditable)
-                    .map(ObservableField.Editable::getValue)
-                    .toList();
-
             try {
                 LOG.info("Committed semantic changes successfully ");
                 // Refresh observable handles and snapshots
@@ -671,11 +675,11 @@ public class GenPurposeFieldsController {
 //                processCommittedValues();
 //                enableDisableButtons();
 
-                // Persist the edited field values as an uncommitted version. The PUBLISH handler
-                // may not commit right away — in the Publish-flow window it stages until the
-                // toolbar's Publish button, and otherwise create mode defers until every required
-                // pattern is satisfied — and the details area re-renders from the stored version,
-                // so the values must be saved, not left pending in the editable overlay.
+                // Persist the edited field values as an uncommitted version. The window may not
+                // commit right away — in the Publish-flow window it stages until the toolbar's
+                // Publish button, and otherwise create mode defers until every required pattern
+                // is satisfied — and the details area re-renders from the stored version, so the
+                // values must be saved, not left pending in the editable overlay.
                 semanticEditor.save();
 
                 if (defaultsForm) {
@@ -684,49 +688,32 @@ public class GenPurposeFieldsController {
                     // PatternFieldDefaults.defaultsSemanticVersion), so there is nothing to gain
                     // from staging them until the toolbar's Publish button.
                     getComposer().commit();
-                    EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
-                            new KLPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+                    onCloseRequested.run();
                     toast().show(Toast.Status.SUCCESS, "Field defaults published");
                     readyToEditVersion.set(false);
                     return;
                 }
 
-                // Whether this window stages changes until the toolbar's Publish button commits
-                // them (currently the standard Pattern and Concept windows).
-                boolean publishFlow = Boolean.TRUE.equals(
-                        genPurposeViewModel.getPropertyValue(PUBLISH_FLOW));
-
-                // Outside the Publish flow this submit may be the one that brings the window's
-                // reference concept into existence (it commits together with the semantic). The
-                // PUBLISH event below is handled synchronously and flips a CREATE window to EDIT
-                // only when it actually commits.
-                boolean wasCreateMode = genPurposeViewModel.getMode() == FormMode.CREATE;
-
-                // Publish event to refresh details area
-                EvtBusFactory.getDefaultEvtBus().publish(
-                        genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
-                        new GenPurposeEvent(actionEvent.getSource(), PUBLISH, fieldValues, currentEditingSemantic)
-                );
+                // Hand the saved semantic to the window, which refreshes the details area and
+                // decides whether it commits now.
+                SubmitOutcome outcome = onSubmitted.apply(currentEditingSemantic);
 
                 // Submitting finishes the edit form, so close the properties bumpout.
-                EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
-                        new KLPropertyPanelEvent(actionEvent.getSource(), CLOSE_PANEL));
+                onCloseRequested.run();
 
-                if (publishFlow) {
-                    // Point at the Publish button as the remaining step (in create mode the
-                    // window's create-mode hint already says so).
-                    if (!wasCreateMode) {
-                        toast().show(Toast.Status.SUCCESS, "Changes saved - hit Publish to apply them");
+                switch (outcome) {
+                    case UNCOMMITTED_UNTIL_PUBLISHED -> {
+                        // Point at the Publish button as the remaining step (in create mode the
+                        // window's create-mode hint already says so).
+                        if (genPurposeViewModel.getMode() != FormMode.CREATE) {
+                            toast().show(Toast.Status.SUCCESS, "Changes saved - hit Publish to apply them");
+                        }
                     }
-                } else {
-                    // Show success message (unless creation was deferred because required patterns
-                    // are still missing a semantic — the window's create-mode hint covers that).
-                    boolean createdConcept = wasCreateMode && genPurposeViewModel.getMode() == FormMode.EDIT;
-                    if (!wasCreateMode || createdConcept) {
-                        toast().show(Toast.Status.SUCCESS, createdConcept
-                                ? "Concept created"
-                                : "Semantic Details Edited Successfully");
-                    }
+                    // Creation is deferred while required patterns still miss a semantic — the
+                    // window's create-mode hint covers that.
+                    case UNCOMMITTED_UNTIL_REQUIREMENTS_MET -> { }
+                    case COMMITTED -> toast().show(Toast.Status.SUCCESS, "Semantic Details Edited Successfully");
+                    case COMPONENT_CREATED -> toast().show(Toast.Status.SUCCESS, "Concept created");
                 }
 
                 // Cleanup and reset
