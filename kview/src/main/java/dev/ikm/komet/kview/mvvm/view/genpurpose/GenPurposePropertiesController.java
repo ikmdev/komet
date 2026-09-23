@@ -15,15 +15,18 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
+import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.fxutils.CssHelper;
 import dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController;
-import dev.ikm.komet.kview.mvvm.view.genediting.SemanticFieldsController;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl.Tab;
 import dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
+import dev.ikm.komet.layout.editor.model.EditorPatternModel;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import javafx.beans.property.BooleanProperty;
@@ -76,11 +79,10 @@ public class GenPurposePropertiesController {
 
     private final GenPurposeViewModel genPurposeViewModel;
 
-    private Subscriber<KLPropertyPanelEvent> showPanelSubscriber;
-
     private Subscriber<GenEditingEvent> genEditingEventSubscriber;
 
-    private JFXNode<Pane, SemanticFieldsController> editFieldsJfxNode;
+    /** The ADD/EDIT tab's form, editing the section patterns' semantics. */
+    private JFXNode<Pane, GenPurposeFieldsController> editFieldsJfxNode;
 
     /**
      * The DEFAULTS tab's form — a second instance of the edit-fields form, editing the pattern's
@@ -177,40 +179,33 @@ public class GenPurposePropertiesController {
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                 GenEditingEvent.class, genEditingEventSubscriber);
+    }
 
-        showPanelSubscriber = evt -> {
-            LOG.info("Show Panel by event type: " + evt.getEventType());
+    /**
+     * Shows the semantic's edit form under the ADD/EDIT tab. The pattern model is the KL Editor's
+     * placement of the semantic's pattern, whose fields say how the form's fields behave (e.g.
+     * whether they can still be edited in edit mode).
+     */
+    public void showEditForm(SemanticEntity<SemanticEntityVersion> semantic, EditorPatternModel editorPatternModel) {
+        editFieldsJfxNode.controller().showSemantic(semantic, editorPatternModel, null, null);
+        propertiesTabs.setSelectedTab(Tab.ADD_EDIT);
+        genPurposeViewModel.setPropertyValue(FIELD_INDEX, -1);
+        contentBorderPane.setCenter(editFieldsJfxNode.node());
+    }
 
-            if (evt.getEventType() == KLPropertyPanelEvent.SHOW_PATTERN_FIELD_DEFAULTS) {
-                // The window loaded the defaults form through this event (the DEFAULTS tab was
-                // selected, or the toolbar's field-defaults button pressed): show it under its tab.
-                propertiesTabs.setSelectedTab(Tab.DEFAULTS);
-                contentBorderPane.setCenter(defaultsFieldsJfxNode.node());
-                return;
-            }
-
-            // Every other panel event belongs to the ADD/EDIT tab. (OPEN_PANEL and CLOSE_PANEL
-            // reach here too; they must not move the selection away from the DEFAULTS tab.)
-            if (evt.getEventType() != KLPropertyPanelEvent.OPEN_PANEL
-                    && evt.getEventType() != KLPropertyPanelEvent.CLOSE_PANEL) {
-                propertiesTabs.setSelectedTab(Tab.ADD_EDIT);
-            }
-
-            if (evt.getEventType() == KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS) {
-                genPurposeViewModel.setPropertyValue(FIELD_INDEX, -1);
-                contentBorderPane.setCenter(editFieldsJfxNode.node());
-            } else if (evt.getEventType() == KLPropertyPanelEvent.NO_SELECTION_MADE_PANEL) {
-                // change the heading on the top of the panel
-                genPurposeViewModel.setPropertyValue(FIELD_INDEX, -1);
-
-                confirmationPaneViewModel.setPropertyValue(CONFIRMATION_TITLE, "No Selection Made");
-                confirmationPaneViewModel.setPropertyValue(CONFIRMATION_MESSAGE, "Make a selection in the view to edit the Semantic.");
-
-                contentBorderPane.setCenter(closePropsPane);
-            }
-        };
-        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
-                KLPropertyPanelEvent.class, showPanelSubscriber);
+    /**
+     * Shows the edit form for a semantic composed outside the window's own composer — a pattern's
+     * defaults semantic, which commits in its own module — under the DEFAULTS tab, with its own
+     * title in place of "Pattern Fields".
+     *
+     * @param composer  the composer the form edits the semantic through
+     * @param formTitle the form's title
+     */
+    public void showDefaultsForm(SemanticEntity<SemanticEntityVersion> semantic, ObservableComposer composer,
+                                 String formTitle) {
+        defaultsFieldsJfxNode.controller().showSemantic(semantic, null, composer, formTitle);
+        propertiesTabs.setSelectedTab(Tab.DEFAULTS);
+        contentBorderPane.setCenter(defaultsFieldsJfxNode.node());
     }
 
     /**

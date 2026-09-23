@@ -18,8 +18,6 @@ package dev.ikm.komet.kview.mvvm.view.genpurpose;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.NO_SELECTION_MADE_PANEL;
 import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.OPEN_PANEL;
-import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.SHOW_EDIT_SEMANTIC_FIELDS;
-import static dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent.SHOW_PATTERN_FIELD_DEFAULTS;
 import static dev.ikm.komet.layout_engine.window.DraggableSupport.addDraggableNodes;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
@@ -99,7 +97,6 @@ import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -1091,7 +1088,7 @@ public class GenPurposeDetailsController {
 
                         semanticLabel.setOnMouseClicked(_ -> {
                             initializeComposer();
-                            showEditSemanticFieldsPanel(actionEvent, semantic, editPattern);
+                            showEditSemanticFieldsPanel(semantic, editPattern);
                             popup.hide();
                         });
 
@@ -1258,7 +1255,7 @@ public class GenPurposeDetailsController {
         }
 
         // Show Edit Panel to the right
-        showEditSemanticFieldsPanel(actionEvent, uncommitedSemantic, editorPatternModel);
+        showEditSemanticFieldsPanel(uncommitedSemantic, editorPatternModel);
     }
 
     /**
@@ -1266,15 +1263,10 @@ public class GenPurposeDetailsController {
      * placement of the semantic's pattern, whose fields say how the form's fields behave (e.g.
      * whether they can still be edited in edit mode).
      */
-    private void showEditSemanticFieldsPanel(Event event, SemanticEntity<SemanticEntityVersion> semanticEntity,
+    private void showEditSemanticFieldsPanel(SemanticEntity<SemanticEntityVersion> semanticEntity,
                                              EditorPatternModel editorPatternModel) {
-        // Notify bump out (right side) to display edit fields in Semantic Editing mode
-        EvtBusFactory.getDefaultEvtBus()
-                .publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
-                        new KLPropertyPanelEvent(event.getSource(),
-                                SHOW_EDIT_SEMANTIC_FIELDS, semanticEntity, editorPatternModel));
-        // Notify to open properties bump out.
-        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC), new KLPropertyPanelEvent(event.getSource(), OPEN_PANEL));
+        propertiesController.showEditForm(semanticEntity, editorPatternModel);
+        openPropertiesPanel();
 
         // Turn on Edit mode on the left side for the Semantic being edited
         if (previousPatternSemanticsInEditMode != null) {
@@ -1553,11 +1545,8 @@ public class GenPurposeDetailsController {
         SemanticEntity<SemanticEntityVersion> defaultsSemantic = EntityHandle.get(defaultsSemanticComposer.getEntity().nid()).asSemantic()
                 .orElseThrow(() -> new IllegalStateException("The defaults semantic is not a semantic"));
 
-        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
-                new KLPropertyPanelEvent(this, SHOW_PATTERN_FIELD_DEFAULTS, defaultsSemantic,
-                        defaultsComposer, "Field Default Values"));
-        EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(ViewModelKey.WINDOW_TOPIC),
-                new KLPropertyPanelEvent(this, OPEN_PANEL));
+        propertiesController.showDefaultsForm(defaultsSemantic, defaultsComposer, "Field Default Values");
+        openPropertiesPanel();
     }
 
     private void initializeComposer() {
