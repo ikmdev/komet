@@ -30,6 +30,7 @@ import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservablePattern;
+import dev.ikm.komet.framework.observable.ObservablePatternVersion;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -72,6 +73,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.komet.layout.KlTerms;
+import dev.ikm.komet.layout.PatternDefinitionSeeder;
 import dev.ikm.komet.layout.PatternFieldDefaults;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
@@ -589,16 +591,45 @@ public class GenPurposeDetailsController {
     private EntityFacade createUncommitedReferenceComponent() {
         initializeComposer();
 
-        ObservableComposer.EntityComposer<?, ?> entityComposer =
-                editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN
-                        ? composer.composePattern(PublicIds.newRandom())
-                        : composer.composeConcept(PublicIds.newRandom());
+        ObservableComposer.EntityComposer<?, ?> entityComposer;
+        if (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN) {
+            newPatternComposer = composer.composePattern(PublicIds.newRandom());
+            entityComposer = newPatternComposer;
+        } else {
+            entityComposer = composer.composeConcept(PublicIds.newRandom());
+        }
 
         entityComposer.save(); // Save to create an uncommitted version
 
         EntityFacade newComponent = entityComposer.getEntity();
         genPurposeViewModel.setPropertyValue(ViewModelKey.REF_COMPONENT, newComponent);
         return newComponent;
+    }
+
+    /**
+     * The composer of the pattern a create-mode standard Pattern window brought into existence
+     * ({@link #createUncommitedReferenceComponent}), kept until the publish that commits it so the
+     * pattern's inline definition is written through the same composer — a second composer of
+     * the same uncommitted version would commit its own copy too. Null in edit mode, and again
+     * once published.
+     */
+    private ObservableComposer.EntityComposer<ObservablePatternVersion.Editable, ObservablePattern> newPatternComposer;
+
+    /**
+     * Writes the window pattern's inline definition from the pattern-definition semantics this
+     * window stores the definition as (see {@link PatternDefinitionSeeder#writeInlineDefinition}),
+     * staged in the composer's open transaction so it publishes with them. The inline definition is what a new
+     * semantic of the pattern takes its fields from — without it a pattern created here showed
+     * no fields when a semantic of it was added in a KL window (ikmdev/komet-desktop#192).
+     */
+    private void writeInlinePatternDefinition() {
+        EntityFacade pattern = genPurposeViewModel.getPropertyValue(ViewModelKey.REF_COMPONENT);
+        if (pattern == null) {
+            return;
+        }
+        ObservableComposer.EntityComposer<ObservablePatternVersion.Editable, ObservablePattern> patternComposer =
+                newPatternComposer != null ? newPatternComposer : composer.composePattern(pattern.publicId());
+        PatternDefinitionSeeder.writeInlineDefinition(patternComposer, getViewProperties().calculator());
     }
 
     /**
@@ -1788,8 +1819,15 @@ public class GenPurposeDetailsController {
     private void publish() {
         boolean wasCreateMode = genPurposeViewModel.getMode() == FormMode.CREATE;
 
+        // The standard Pattern window authors its pattern's definition as semantics; the pattern's
+        // own version record has to say the same before it commits (see writeInlinePatternDefinition).
+        if (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN) {
+            writeInlinePatternDefinition();
+        }
+
         composer.commit();
         composer = null;
+        newPatternComposer = null;
         initializeComposer();
 
         int unpublishable = commitTransactionsOfUnpublishedVersions();
