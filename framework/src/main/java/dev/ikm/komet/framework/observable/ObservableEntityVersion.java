@@ -362,8 +362,8 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
                 int analogueNid = analogue.nid();
                 LOG.info("save(): entity nid={} -> patternSeq={}, elementSeq={} (entityClass={})",
                         analogueNid,
-                        dev.ikm.tinkar.common.id.impl.NidCodec6.decodePatternSequence(analogueNid),
-                        dev.ikm.tinkar.common.id.impl.NidCodec6.decodeElementSequence(analogueNid),
+                        dev.ikm.tinkar.common.id.impl.NidCodec8.decodePatternSequence(analogueNid),
+                        dev.ikm.tinkar.common.id.impl.NidCodec8.decodeElementSequence(analogueNid),
                         analogue.getClass().getSimpleName());
                 LOG.info("save(): Saving uncommitted version to database: entity: \n{}" +
                         "\n\n new version: {}, \n\n old version: {}", analogue, newVersion, oldVersion);
