@@ -165,11 +165,6 @@ public class GenPurposeDetailsController {
     private static final String COLLAPSED_CONTENT_HEIGHT_KEY = "gen-purpose-collapsed-content-height";
 
     /**
-     * Given a Pattern what is the Section that has it as its Reference Component.
-     */
-    private final Map<EditorPatternModel, SectionTitledPane<EntityFacade>> patternReferenceComponentToSectionTitledPane = new HashMap<>();
-
-    /**
      * Given a SectionModel what's its associated SectionTitledPane.
      */
     private final Map<EditorSectionModel, SectionTitledPane<EntityFacade>> sectionModelToTitledPane = new HashMap<>();
@@ -951,8 +946,6 @@ public class GenPurposeDetailsController {
             EditorPatternModel patternReferenceComponent = sectionModel.getReferenceComponent();
             semanticsOfPattern = getSemanticsOfPattern(patternReferenceComponent);
             titledPane.getReferenceComponents().addAll(semanticsOfPattern);
-
-            patternReferenceComponentToSectionTitledPane.put(patternReferenceComponent, titledPane);
         }
         titledPane.setReferenceComponentCellFactory(_ -> createSectionSemanticsComboBoxCell(viewProperties));
         titledPane.setReferenceComponentButtonCellFactory(new SectionSemanticsComboBoxCell(viewProperties));
@@ -1252,15 +1245,16 @@ public class GenPurposeDetailsController {
             patternSemanticsPresenter.addNewSemantic(uncommitedSemantic);
         }
 
-        // If there are Section TitledPanes that have this Pattern as a Reference Component update them
-        SectionTitledPane<EntityFacade> sectionTitledPane = patternReferenceComponentToSectionTitledPane.get(editorPatternModel);
-        if (sectionTitledPane != null) {
-            sectionTitledPane.getReferenceComponents().add(uncommitedSemantic);
-            // If this is going to be the first Semantic, have it selected
-            if (sectionTitledPane.getReferenceComponents().size() == 1) {
-                sectionTitledPane.setSelectedReferenceComponent(uncommitedSemantic);
+        // Every section anchored on this pattern gets the new semantic as a reference-component
+        // option — several sections may reference the same pattern (komet-desktop#193). The refresh
+        // re-reads the options from the store (the semantic is saved, uncommitted, above), keeps a
+        // surviving selection and otherwise selects the first option, so a section whose only
+        // option this is selects it and enables its edit button.
+        forEachSectionInWindow(section -> {
+            if (section.getReferenceComponent() == editorPatternModel) {
+                refreshSectionReferenceComponents(section);
             }
-        }
+        });
 
         // Show Edit Panel to the right
         showEditSemanticFieldsPanel(uncommitedSemantic, editorPatternModel);
