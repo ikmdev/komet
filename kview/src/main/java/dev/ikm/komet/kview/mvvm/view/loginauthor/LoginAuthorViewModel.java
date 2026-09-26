@@ -60,8 +60,23 @@ public class LoginAuthorViewModel extends FormViewModel {
     public boolean authenticateUser() {
         ViewProperties viewProperties = getPropertyValue(ViewModelKey.VIEW_PROPERTIES);
         ConceptEntity user = getPropertyValue(SELECTED_AUTHOR);
-        String username = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(user.nid());
         String password = getPropertyValue(PASSWORD);
+        return passwordMatches(viewProperties, user, password);
+    }
+
+    /**
+     * Checks a password for an author the way the author screen does, so a command-line login
+     * (IKE-Network/ike-issues#1139) accepts exactly what the screen accepts. Today that is the
+     * placeholder check that the password equals the author's preferred name; real
+     * authentication is IKE-Network/ike-issues#1150.
+     *
+     * @param viewProperties the view whose calculator names the author
+     * @param author         the author logging in
+     * @param password       the password given
+     * @return true if the author screen would accept the password
+     */
+    public static boolean passwordMatches(ViewProperties viewProperties, ConceptEntity author, String password) {
+        String username = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(author.nid());
         return password.equals(username);
     }
 }
