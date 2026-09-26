@@ -1,5 +1,6 @@
 package dev.ikm.komet.framework.observable;
 
+import dev.ikm.tinkar.common.util.SetOnce;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import dev.ikm.tinkar.entity.*;
@@ -60,7 +61,7 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
     private final ReadOnlyObjectWrapper<ConceptFacade> pathProperty = new ReadOnlyObjectWrapper<>();
 
     private final Supplier<ReadOnlyProperty<Feature<ObservableVersion>>> featurePropertySupplier =
-            StableValue.supplier(() -> new ReadOnlyObjectWrapper<>(this.getObservableEntity(),
+            SetOnce.supplier(() -> new ReadOnlyObjectWrapper<>(this.getObservableEntity(),
                     this.getClass().getSimpleName(),
                     (Feature<ObservableVersion>) this).getReadOnlyProperty());
 

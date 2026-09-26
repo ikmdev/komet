@@ -1,5 +1,7 @@
 package dev.ikm.komet.layout_engine.component.menu;
 
+import dev.ikm.tinkar.common.util.thread.StructuredScopes;
+import dev.ikm.tinkar.common.util.thread.SubtaskFailedException;
 import dev.ikm.komet.framework.view.ObservableCoordinate;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.PropertyWithOverride;
@@ -37,7 +39,7 @@ public class ViewMenuFactory {
      */
     public static Menu create(ObservableView observableView, ViewCalculator viewCalculator) {
 
-        try (StructuredTaskScope<Object, Void> scope = StructuredTaskScope.open()) {
+        try (StructuredTaskScope<Object, Void, SubtaskFailedException> scope = StructuredScopes.open()) {
             ScopedValue.Carrier svc = ScopedValue.where(OBSERVABLE_VIEW, observableView).where(VIEW_CALCULATOR, viewCalculator);
 
             StructuredTaskScope.Subtask<List<MenuItem>> overrideMenuItemsSubtask = scope.fork(() -> svc.call(new OverrideMenuItems()));

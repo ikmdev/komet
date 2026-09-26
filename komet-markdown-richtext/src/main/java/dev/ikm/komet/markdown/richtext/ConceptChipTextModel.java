@@ -452,7 +452,7 @@ public final class ConceptChipTextModel extends StyledTextModel {
     }
 
     @Override
-    public StyleAttributeMap getStyleAttributeMap(StyleResolver resolver, TextPos pos) {
+    public StyleAttributeMap getStyleAttributeMap(StyleResolver resolver, TextPos pos, boolean forInsert) {
         return StyleAttributeMap.EMPTY;
     }
 
@@ -639,7 +639,7 @@ public final class ConceptChipTextModel extends StyledTextModel {
         }
 
         @Override
-        public StyledInput createStyledInput(String text, StyleAttributeMap attr) {
+        public StyledInput createStyledInput(Object input, StyleAttributeMap attr) {
             throw new UnsupportedOperationException("export-only handler; paste uses the plain handler");
         }
     }

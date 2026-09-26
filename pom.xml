@@ -5,7 +5,7 @@
  <parent>
         <groupId>network.ike.platform</groupId>
         <artifactId>ike-parent</artifactId>
-        <version>182</version>
+        <version>184</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
@@ -92,6 +92,7 @@
             --add-opens=javafx.graphics/javafx.scene=org.controlsfx.controls
             --add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
         </commonTestFXArgs>
+        <java.version>27</java.version>
     </properties>
 
     <dependencyManagement>

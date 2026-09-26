@@ -96,7 +96,7 @@ public final class MarkdownStyledModel extends StyledTextModelViewOnlyBase {
     }
 
     @Override
-    public StyleAttributeMap getStyleAttributeMap(StyleResolver resolver, TextPos pos) {
+    public StyleAttributeMap getStyleAttributeMap(StyleResolver resolver, TextPos pos, boolean forInsert) {
         return StyleAttributeMap.EMPTY;
     }
 
@@ -163,7 +163,7 @@ public final class MarkdownStyledModel extends StyledTextModelViewOnlyBase {
         }
 
         @Override
-        public StyledInput createStyledInput(String text, StyleAttributeMap attr) {
+        public StyledInput createStyledInput(Object input, StyleAttributeMap attr) {
             throw new UnsupportedOperationException("view-only model: import not supported");
         }
     }
