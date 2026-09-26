@@ -16,20 +16,13 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
 import dev.ikm.komet.framework.observable.ObservableComposer;
-import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
-import dev.ikm.komet.kview.events.genpurpose.KLPropertyPanelEvent;
 import dev.ikm.komet.kview.fxutils.CssHelper;
-import dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl.Tab;
-import dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.events.Subscriber;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.geometry.Pos;
@@ -39,22 +32,12 @@ import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
 import org.carlfx.cognitive.loader.JFXNode;
 import org.carlfx.cognitive.loader.NamedVm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
+import java.util.function.Function;
 
-import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.CONFIRMATION_PANE_FXML_URL;
-import static dev.ikm.komet.kview.mvvm.view.confirmation.ConfirmationPaneController.CONFIRMATION_VIEW_MODEL;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.CLOSE_CONFIRMATION_PANEL;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_MESSAGE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ConfirmationPaneViewModel.ConfirmationPropertyName.CONFIRMATION_TITLE;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.FIELD_INDEX;
 
 public class GenPurposePropertiesController {
-    private static final Logger LOG = LoggerFactory.getLogger(GenPurposePropertiesController.class);
 
     private final BorderPane propertiesPane = new BorderPane();
 
@@ -68,18 +51,7 @@ public class GenPurposePropertiesController {
      */
     private final ReadOnlyDoubleWrapper requiredHeight = new ReadOnlyDoubleWrapper();
 
-    /**
-     * Show the current edit window.
-     */
-    public enum PaneProperties {
-        PROPERTY_PANE_OPEN,
-    }
-
-    private Pane closePropsPane;
-
     private final GenPurposeViewModel genPurposeViewModel;
-
-    private Subscriber<GenEditingEvent> genEditingEventSubscriber;
 
     /** The ADD/EDIT tab's form, editing the section patterns' semantics. */
     private JFXNode<Pane, GenPurposeFieldsController> editFieldsJfxNode;
@@ -94,8 +66,7 @@ public class GenPurposePropertiesController {
         this.genPurposeViewModel = genPurposeViewModel;
 
         buildView();
-
-        setupShowingPanelHandlers();
+        createForms();
     }
 
     private void buildView() {
@@ -137,7 +108,7 @@ public class GenPurposePropertiesController {
                 + propertiesPane.snappedBottomInset();
     }
 
-    private void setupShowingPanelHandlers() {
+    private void createForms() {
         Config config = new Config(this.getClass().getResource("genpurpose-edit-fields.fxml"))
             .addNamedViewModel(new NamedVm("genPurposeViewModel", genPurposeViewModel));
 
@@ -149,36 +120,22 @@ public class GenPurposePropertiesController {
             .addNamedViewModel(new NamedVm("genPurposeViewModel", genPurposeViewModel));
         defaultsFieldsJfxNode = FXMLMvvmLoader.make(defaultsConfig);
         defaultsFieldsJfxNode.controller().setDefaultsForm(true);
+    }
 
-        JFXNode<Pane, ConfirmationPaneController> closePropsJfxNode = FXMLMvvmLoader.make(CONFIRMATION_PANE_FXML_URL);
-        closePropsPane = closePropsJfxNode.node();
+    /**
+     * Sets what happens to a semantic the ADD/EDIT form submits, once its edited values are
+     * saved: the window decides whether it commits now, and answers what became of it.
+     */
+    public void setOnSemanticSubmitted(Function<SemanticEntity<SemanticEntityVersion>, SubmitOutcome> onSemanticSubmitted) {
+        editFieldsJfxNode.controller().setOnSubmitted(onSemanticSubmitted);
+    }
 
-        Optional<ConfirmationPaneViewModel> confirmationPaneViewModelOpt = closePropsJfxNode.getViewModel(CONFIRMATION_VIEW_MODEL);
-        ConfirmationPaneViewModel confirmationPaneViewModel = confirmationPaneViewModelOpt.get();
-
-        BooleanProperty closeConfPanelProp = confirmationPaneViewModel.getBooleanProperty(CLOSE_CONFIRMATION_PANEL);
-        closeConfPanelProp.subscribe(closeIt -> {
-            if (closeIt) {
-                EvtBusFactory.getDefaultEvtBus().publish(genPurposeViewModel.getPropertyValue(WINDOW_TOPIC),
-                        new KLPropertyPanelEvent(closePropsPane, KLPropertyPanelEvent.CLOSE_PANEL));
-
-                confirmationPaneViewModel.reset();
-            }
-        });
-
-        genEditingEventSubscriber = evt -> {
-            LOG.info("Publish event type: " + evt.getEventType());
-
-            // "Semantic Details Added" is displayed when form values are Submitted when in CREATE mode
-            // "Semantic Details Changed" is displayed when form values are Submitted when in EDIT mode
-
-            confirmationPaneViewModel.setPropertyValue(CONFIRMATION_TITLE, "Semantic Details Added");
-            confirmationPaneViewModel.setPropertyValue(CONFIRMATION_MESSAGE, "Make a selection in the view to edit the Semantic.");
-
-            contentBorderPane.setCenter(closePropsPane);
-        };
-        EvtBusFactory.getDefaultEvtBus().subscribe(genPurposeViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
-                GenEditingEvent.class, genEditingEventSubscriber);
+    /**
+     * Sets what closes the panel when a form is done with: submitted or cancelled.
+     */
+    public void setOnCloseRequested(Runnable onCloseRequested) {
+        editFieldsJfxNode.controller().setOnCloseRequested(onCloseRequested);
+        defaultsFieldsJfxNode.controller().setOnCloseRequested(onCloseRequested);
     }
 
     /**
