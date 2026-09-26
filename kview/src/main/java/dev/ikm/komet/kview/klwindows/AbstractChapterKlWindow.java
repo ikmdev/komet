@@ -251,7 +251,13 @@ public abstract class AbstractChapterKlWindow<T extends Pane> implements Chapter
                 .property(SELECTED_PROPERTY_PANEL, (String) selectedPropertyPanel());
 
         final T fxObject = (T) fxObject();
-        if (fxObject != null) {
+        if (fxObject != null && fxObject.getScene() == null && windowState != null) {
+            // Not placed or laid out yet (a save from the constructor, before the window joins the
+            // workspace): its position and size read as zero, which would overwrite the saved geometry
+            // the window is about to be restored to. Keep the last known geometry (ike-issues#1148).
+            builder.position(windowState.getXPos(), windowState.getYPos());
+            builder.size(windowState.getWidth(), windowState.getHeight());
+        } else if (fxObject != null) {
             builder.position(fxObject.getLayoutX(), fxObject.getLayoutY());
 
             // Save size if applicable
@@ -291,10 +297,13 @@ public abstract class AbstractChapterKlWindow<T extends Pane> implements Chapter
             fxObject.setLayoutX(state.getXPos());
             fxObject.setLayoutY(state.getYPos());
 
-            // Apply size if applicable
+            // Apply size if applicable. A size of zero or less was never measured (saved before the
+            // window was laid out), so the window sizes to its content instead: a zero pref height
+            // squeezes its sections, which may shrink to nothing, out of sight (ike-issues#1148).
             if (fxObject instanceof Pane pane) {
-                pane.setPrefWidth(state.getWidth());
-                pane.setPrefHeight(state.getHeight());
+                boolean measured = state.getWidth() > 0 && state.getHeight() > 0;
+                pane.setPrefWidth(measured ? state.getWidth() : Region.USE_COMPUTED_SIZE);
+                pane.setPrefHeight(measured ? state.getHeight() : Region.USE_COMPUTED_SIZE);
             }
         }
 
