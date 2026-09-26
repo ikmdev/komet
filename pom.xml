@@ -71,7 +71,6 @@
         <subproject>kview</subproject>
         <subproject>sync</subproject>
         <subproject>knowledge-layout-editor</subproject>
-        <subproject>application</subproject>
     </subprojects>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
