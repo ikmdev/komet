@@ -286,10 +286,7 @@ public class LandingPageController implements BasicController {
                     // newly added card to landing page.
                     prefX = journalSettingsFinal;
                 }
-                prefX.setValue(PARENT_VIEW_COORDINATES, LandingPageController.this.journalParentCoordinates);
-
-                // fire create journal event... AND this should be the ONLY place it comes from besides the menu
-                landingPageEventBus.publish(JOURNAL_TOPIC, new CreateJournalEvent(this, CREATE_JOURNAL, prefX));
+                publishOpenJournal(prefX);
             });
             journalCardControllerMap.put(journalTopic, journalCardController);
             journalCard.setUserData(journalSettingsFinal);
@@ -535,6 +532,37 @@ public class LandingPageController implements BasicController {
                 + progressToggleButton.getWidth() + progressListVBoxPadding;
         final double popupAnchorY = landingPageScreenBounds.getMaxY() - 2 * progressListVBoxPadding;
         return new Point2D(popupAnchorX, popupAnchorY);
+    }
+
+    /**
+     * Opens a journal that has a tile on the landing page, exactly as clicking its tile does: from
+     * its saved preferences, so it reopens where it was. Used to reopen the journals that were
+     * open at the last quit (IKE-Network/ike-issues#1151).
+     *
+     * @param journalTopic the journal's topic
+     * @return true if the journal has a tile and was opened; false if it no longer exists
+     */
+    public boolean openJournal(UUID journalTopic) {
+        Optional<PrefX> tileSettings = gridViewFlowPane.getChildren().stream()
+                .map(Node::getUserData)
+                .filter(PrefX.class::isInstance)
+                .map(PrefX.class::cast)
+                .filter(settings -> journalTopic.equals(settings.getValue(JOURNAL_TOPIC)))
+                .findFirst();
+        if (tileSettings.isEmpty()) {
+            return false;
+        }
+        publishOpenJournal(loadJournalWindowPreference(journalTopic, tileSettings.get().getValue(JOURNAL_DIR_NAME)));
+        return true;
+    }
+
+    /**
+     * Asks the app to open the journal described by {@code journalSettings}, under the landing
+     * page's coordinates. This, and the menu, are the only places a journal is opened from.
+     */
+    private void publishOpenJournal(PrefX journalSettings) {
+        journalSettings.setValue(PARENT_VIEW_COORDINATES, journalParentCoordinates);
+        landingPageEventBus.publish(JOURNAL_TOPIC, new CreateJournalEvent(this, CREATE_JOURNAL, journalSettings));
     }
 
     /**

@@ -78,9 +78,11 @@ public class SettingsDialogController {
     @FXML private ToggleButton appearanceNav;
     @FXML private ToggleButton componentsNav;
     @FXML private ToggleButton languageNav;
+    @FXML private ToggleButton startupNav;
     @FXML private VBox appearancePage;
     @FXML private VBox componentsPage;
     @FXML private VBox languagePage;
+    @FXML private VBox startupPage;
 
     @FXML private ToggleGroup textSizeGroup;
     @FXML private ToggleButton smallPill;
@@ -103,6 +105,8 @@ public class SettingsDialogController {
 
     @FXML private ComboBox<DisplayLanguage> displayLanguageCombo;
 
+    @FXML private CheckBox reopenWindowsCheck;
+
     @FXML private Button applyButton;
     @FXML private Button okButton;
 
@@ -111,6 +115,7 @@ public class SettingsDialogController {
     private final BooleanProperty showDefinitionStatus = new SimpleBooleanProperty(true);
     private final BooleanProperty showMultipleParents = new SimpleBooleanProperty(true);
     private final ObjectProperty<DisplayLanguage> displayLanguage = new SimpleObjectProperty<>(DisplayLanguage.SYSTEM_DEFAULT);
+    private final BooleanProperty reopenWindowsAtLaunch = new SimpleBooleanProperty(true);
 
     private final KometSettings settings;
 
@@ -128,6 +133,7 @@ public class SettingsDialogController {
         initAppearancePage();
         initComponentsPage();
         initLanguagePage();
+        initStartupPage();
         initButtons();
     }
 
@@ -137,19 +143,21 @@ public class SettingsDialogController {
         showDefinitionStatus.set(settings.isShowDefinitionStatus());
         showMultipleParents.set(settings.isShowMultipleParents());
         displayLanguage.set(settings.getDisplayLanguage());
+        reopenWindowsAtLaunch.set(settings.isReopenWindowsAtLaunch());
     }
 
     private void initNavigation() {
         appearanceNav.setUserData(appearancePage);
         componentsNav.setUserData(componentsPage);
         languageNav.setUserData(languagePage);
+        startupNav.setUserData(startupPage);
         navGroup.selectedToggleProperty().subscribe((previous, selected) -> {
             if (selected == null) {
                 // Clicking the selected page again must not leave the dialog with no page.
                 previous.setSelected(true);
                 return;
             }
-            for (VBox page : List.of(appearancePage, componentsPage, languagePage)) {
+            for (VBox page : List.of(appearancePage, componentsPage, languagePage, startupPage)) {
                 boolean show = page == selected.getUserData();
                 page.setVisible(show);
                 page.setManaged(show);
@@ -288,6 +296,10 @@ public class SettingsDialogController {
         displayLanguageCombo.valueProperty().bindBidirectional(displayLanguage);
     }
 
+    private void initStartupPage() {
+        reopenWindowsCheck.selectedProperty().bindBidirectional(reopenWindowsAtLaunch);
+    }
+
     /** Apply only has something to do while the working copy differs from the saved settings. */
     private void initButtons() {
         BooleanBinding unchanged = Bindings.createBooleanBinding(() ->
@@ -295,11 +307,13 @@ public class SettingsDialogController {
                                 && showKindSigil.get() == settings.isShowKindSigil()
                                 && showDefinitionStatus.get() == settings.isShowDefinitionStatus()
                                 && showMultipleParents.get() == settings.isShowMultipleParents()
-                                && displayLanguage.get() == settings.getDisplayLanguage(),
+                                && displayLanguage.get() == settings.getDisplayLanguage()
+                                && reopenWindowsAtLaunch.get() == settings.isReopenWindowsAtLaunch(),
                 textSize, showKindSigil, showDefinitionStatus, showMultipleParents, displayLanguage,
+                reopenWindowsAtLaunch,
                 settings.textSizeProperty(), settings.showKindSigilProperty(),
                 settings.showDefinitionStatusProperty(), settings.showMultipleParentsProperty(),
-                settings.displayLanguageProperty());
+                settings.displayLanguageProperty(), settings.reopenWindowsAtLaunchProperty());
         applyButton.disableProperty().bind(unchanged);
     }
 
@@ -312,8 +326,10 @@ public class SettingsDialogController {
             showKindSigil.set(true);
             showDefinitionStatus.set(true);
             showMultipleParents.set(true);
-        } else {
+        } else if (languagePage.isVisible()) {
             displayLanguage.set(DisplayLanguage.SYSTEM_DEFAULT);
+        } else {
+            reopenWindowsAtLaunch.set(true);
         }
     }
 
@@ -325,6 +341,7 @@ public class SettingsDialogController {
         settings.setShowDefinitionStatus(showDefinitionStatus.get());
         settings.setShowMultipleParents(showMultipleParents.get());
         settings.setDisplayLanguage(displayLanguage.get());
+        settings.setReopenWindowsAtLaunch(reopenWindowsAtLaunch.get());
     }
 
     @FXML
