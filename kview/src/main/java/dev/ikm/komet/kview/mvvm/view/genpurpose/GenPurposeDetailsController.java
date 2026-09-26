@@ -802,11 +802,14 @@ public class GenPurposeDetailsController {
 
         // The standard Concept window gets the classic concept window's blue chrome (see
         // .concept-window-theme in kview.css) and its own set of properties tabs. User-created
-        // Semantics Windows and the other standard windows keep the default grey chrome and tabs.
+        // Semantics Windows get the light chrome (.custom-window-theme) that sets them apart from
+        // the standard windows; the other standard windows keep the default grey chrome and tabs.
         if (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_CONCEPT) {
             detailsOuterBorderPane.getStyleClass().add("concept-window-theme");
             propertiesController.getPropertiesTabs().getTabs().setAll(
                     Tab.ADD_EDIT, Tab.HIERARCHY, Tab.HISTORY, Tab.COMMENTS);
+        } else if (editorWindowModel.getWindowType() == EditorWindowType.SEMANTICS) {
+            detailsOuterBorderPane.getStyleClass().add("custom-window-theme");
         } else if (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN) {
             // The standard Pattern window also edits its pattern's field defaults — the values
             // new semantics of the pattern start with in every KL window (see PatternFieldDefaults)
