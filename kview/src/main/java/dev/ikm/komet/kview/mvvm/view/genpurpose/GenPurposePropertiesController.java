@@ -19,23 +19,20 @@ import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.kview.fxutils.CssHelper;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl.Tab;
-import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
-import org.carlfx.cognitive.loader.Config;
-import org.carlfx.cognitive.loader.FXMLMvvmLoader;
-import org.carlfx.cognitive.loader.JFXNode;
-import org.carlfx.cognitive.loader.NamedVm;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.function.Function;
-
-import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.FIELD_INDEX;
+import java.util.function.Supplier;
 
 public class GenPurposePropertiesController {
 
@@ -51,22 +48,43 @@ public class GenPurposePropertiesController {
      */
     private final ReadOnlyDoubleWrapper requiredHeight = new ReadOnlyDoubleWrapper();
 
-    private final GenPurposeViewModel genPurposeViewModel;
+    /** A loaded edit-fields form: its root node and the controller behind it. */
+    private record Form(Pane node, GenPurposeFieldsController controller) {
+    }
 
     /** The ADD/EDIT tab's form, editing the section patterns' semantics. */
-    private JFXNode<Pane, GenPurposeFieldsController> editFieldsJfxNode;
+    private final Form editForm;
 
     /**
      * The DEFAULTS tab's form — a second instance of the edit-fields form, editing the pattern's
      * defaults semantic (standard Pattern window only).
      */
-    private JFXNode<Pane, GenPurposeFieldsController> defaultsFieldsJfxNode;
+    private final Form defaultsForm;
 
-    public GenPurposePropertiesController(GenPurposeViewModel genPurposeViewModel) {
-        this.genPurposeViewModel = genPurposeViewModel;
-
+    /**
+     * @param session what the window is editing; the forms read the window's mode and coordinate from it
+     */
+    public GenPurposePropertiesController(WindowEditSession session) {
         buildView();
-        createForms();
+
+        editForm = loadForm(session);
+        // The DEFAULTS tab gets its own form instance, so editing the pattern's field defaults
+        // never disturbs a semantic edit in progress on the ADD/EDIT tab.
+        defaultsForm = loadForm(session);
+        defaultsForm.controller().setDefaultsForm(true);
+    }
+
+    private static Form loadForm(WindowEditSession session) {
+        FXMLLoader loader = new FXMLLoader(GenPurposePropertiesController.class.getResource("genpurpose-edit-fields.fxml"));
+        Pane node;
+        try {
+            node = loader.load();
+        } catch (IOException e) {
+            throw new UncheckedIOException("The edit-fields form's FXML failed to load", e);
+        }
+        GenPurposeFieldsController controller = loader.getController();
+        controller.setSession(session);
+        return new Form(node, controller);
     }
 
     private void buildView() {
@@ -108,18 +126,12 @@ public class GenPurposePropertiesController {
                 + propertiesPane.snappedBottomInset();
     }
 
-    private void createForms() {
-        Config config = new Config(this.getClass().getResource("genpurpose-edit-fields.fxml"))
-            .addNamedViewModel(new NamedVm("genPurposeViewModel", genPurposeViewModel));
-
-        editFieldsJfxNode = FXMLMvvmLoader.make(config);
-
-        // The DEFAULTS tab gets its own form instance, so editing the pattern's field defaults
-        // never disturbs a semantic edit in progress on the ADD/EDIT tab.
-        Config defaultsConfig = new Config(this.getClass().getResource("genpurpose-edit-fields.fxml"))
-            .addNamedViewModel(new NamedVm("genPurposeViewModel", genPurposeViewModel));
-        defaultsFieldsJfxNode = FXMLMvvmLoader.make(defaultsConfig);
-        defaultsFieldsJfxNode.controller().setDefaultsForm(true);
+    /**
+     * Sets where the ADD/EDIT form gets the composer it edits the section patterns' semantics
+     * through: the window's current one, asked for on each edit since a commit replaces it.
+     */
+    public void setWindowComposer(Supplier<ObservableComposer> windowComposer) {
+        editForm.controller().setWindowComposer(windowComposer);
     }
 
     /**
@@ -127,15 +139,15 @@ public class GenPurposePropertiesController {
      * saved: the window decides whether it commits now, and answers what became of it.
      */
     public void setOnSemanticSubmitted(Function<SemanticEntity<SemanticEntityVersion>, SubmitOutcome> onSemanticSubmitted) {
-        editFieldsJfxNode.controller().setOnSubmitted(onSemanticSubmitted);
+        editForm.controller().setOnSubmitted(onSemanticSubmitted);
     }
 
     /**
      * Sets what closes the panel when a form is done with: submitted or cancelled.
      */
     public void setOnCloseRequested(Runnable onCloseRequested) {
-        editFieldsJfxNode.controller().setOnCloseRequested(onCloseRequested);
-        defaultsFieldsJfxNode.controller().setOnCloseRequested(onCloseRequested);
+        editForm.controller().setOnCloseRequested(onCloseRequested);
+        defaultsForm.controller().setOnCloseRequested(onCloseRequested);
     }
 
     /**
@@ -144,10 +156,9 @@ public class GenPurposePropertiesController {
      * whether they can still be edited in edit mode).
      */
     public void showEditForm(SemanticEntity<SemanticEntityVersion> semantic, EditorPatternModel editorPatternModel) {
-        editFieldsJfxNode.controller().showSemantic(semantic, editorPatternModel, null, null);
+        editForm.controller().showSemantic(semantic, editorPatternModel, null, null);
         propertiesTabs.setSelectedTab(Tab.ADD_EDIT);
-        genPurposeViewModel.setPropertyValue(FIELD_INDEX, -1);
-        contentBorderPane.setCenter(editFieldsJfxNode.node());
+        contentBorderPane.setCenter(editForm.node());
     }
 
     /**
@@ -160,9 +171,9 @@ public class GenPurposePropertiesController {
      */
     public void showDefaultsForm(SemanticEntity<SemanticEntityVersion> semantic, ObservableComposer composer,
                                  String formTitle) {
-        defaultsFieldsJfxNode.controller().showSemantic(semantic, null, composer, formTitle);
+        defaultsForm.controller().showSemantic(semantic, null, composer, formTitle);
         propertiesTabs.setSelectedTab(Tab.DEFAULTS);
-        contentBorderPane.setCenter(defaultsFieldsJfxNode.node());
+        contentBorderPane.setCenter(defaultsForm.node());
     }
 
     /**
