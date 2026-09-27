@@ -32,7 +32,6 @@ import javafx.scene.layout.Pane;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class GenPurposePropertiesController {
 
@@ -124,14 +123,6 @@ public class GenPurposePropertiesController {
                 + propertiesTabs.prefHeight(-1)
                 + contentBorderPane.prefHeight(contentWidth)
                 + propertiesPane.snappedBottomInset();
-    }
-
-    /**
-     * Sets where the ADD/EDIT form gets the composer it edits the section patterns' semantics
-     * through: the window's current one, asked for on each edit since a commit replaces it.
-     */
-    public void setWindowComposer(Supplier<ObservableComposer> windowComposer) {
-        editForm.controller().setWindowComposer(windowComposer);
     }
 
     /**

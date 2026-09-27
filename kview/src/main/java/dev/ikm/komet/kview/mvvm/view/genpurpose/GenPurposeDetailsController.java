@@ -23,15 +23,9 @@ import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.TimeUtils;
-import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.framework.observable.ObservableEntity;
-import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
 import dev.ikm.komet.framework.observable.ObservableField;
-import dev.ikm.komet.framework.observable.ObservablePattern;
-import dev.ikm.komet.framework.observable.ObservablePatternVersion;
-import dev.ikm.komet.framework.observable.ObservableSemantic;
-import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.ContentSizedSplitPane;
@@ -53,7 +47,7 @@ import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SectionSemanticsComboBox
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard.SemanticStandardControl;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.FormMode;
-import dev.ikm.komet.layout.InlineEditStager;
+import dev.ikm.komet.layout.InlineEditSaver;
 import dev.ikm.komet.layout.KlPatternSemanticsFactory;
 import dev.ikm.komet.layout.PatternSemanticsPresenter;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
@@ -65,13 +59,10 @@ import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowType;
 import dev.ikm.komet.layout_engine.window.WindowSupport;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
-import dev.ikm.komet.layout.KlTerms;
-import dev.ikm.komet.layout.PatternDefinitionSeeder;
 import dev.ikm.komet.layout.PatternFieldDefaults;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
@@ -80,7 +71,6 @@ import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
-import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -121,7 +111,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -245,8 +234,6 @@ public class GenPurposeDetailsController {
      */
     private dev.ikm.tinkar.common.util.broadcast.Subscriber<Integer> statedDefinitionChangeSubscriber;
 
-    private ObservableComposer composer;
-
     /**
      * Wires the window's behavior onto its view for the KL-editor window definition held at
      * {@code editorWindowPreferences}: the definition is loaded, the chrome wired and the
@@ -308,6 +295,8 @@ public class GenPurposeDetailsController {
         windowControlToolbar.setOnCloseAction(this::closeConceptWindow);
         windowControlToolbar.setOnPublishAction(this::publish);
         windowControlToolbar.setOnFieldDefaultsAction(this::openPatternFieldDefaults);
+        // The Publish button follows the session's uncommitted changes (see updatePublishState).
+        session.hasUncommittedChangesProperty().subscribe(this::updatePublishState);
         // Invalidation-based, so it reacts to changes only: the tray it drives is created after
         // the chrome (see setupProperties), and the panel starts out closed like the toggle.
         windowControlToolbar.propertiesSelectedProperty()
@@ -542,92 +531,33 @@ public class GenPurposeDetailsController {
      */
     private SemanticEntity<SemanticEntityVersion> createUncommitedSemantic(EntityFacade referenceComponent, PatternFacade pattern,
             Map<Integer, EntityProxy> fieldSeeds) {
-        ObservableEntity observableReferenceComponent = ObservableEntityHandle.get(referenceComponent.nid()).expectEntity();
-        ObservablePattern observablePattern = ObservableEntityHandle.get(pattern.nid()).expectPattern();
+        return session.createUncommittedSemantic(referenceComponent, pattern.nid(), editableFields -> {
+            // Start from the pattern's field defaults — the values a new semantic of this pattern
+            // begins with in every window (see PatternFieldDefaults) — before the create entry's
+            // filter seeds below, which take precedence over them.
+            PatternFieldDefaults.applyDefaults(editableFields,
+                    PatternFieldDefaults.defaultValues(pattern.nid(), getViewProperties().calculator()).castToList());
 
-        initializeComposer();
-
-        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor = composer.composeSemantic(PublicIds.newRandom(), observableReferenceComponent, observablePattern);
-
-        // Start from the pattern's field defaults — the values a new semantic of this pattern
-        // begins with in every window (see PatternFieldDefaults) — before the create entry's
-        // filter seeds below, which take precedence over them.
-        PatternFieldDefaults.applyDefaults(semanticEditor.getEditableVersion().getEditableFields(),
-                PatternFieldDefaults.defaultValues(pattern.nid(), getViewProperties().calculator()).castToList());
-
-        // Seed the fields the create entry's display filter constrains, so the new semantic passes
-        // that filter and shows up in the filtered view it was created from.
-        fieldSeeds.forEach((fieldIndex, filterConcept) -> {
-            @SuppressWarnings("unchecked")
-            ObservableField.Editable<EntityProxy> editableField = (ObservableField.Editable<EntityProxy>)
-                    semanticEditor.getEditableVersion().getEditableFields().get(fieldIndex);
-            editableField.setValue(filterConcept);
+            // Seed the fields the create entry's display filter constrains, so the new semantic passes
+            // that filter and shows up in the filtered view it was created from.
+            fieldSeeds.forEach((fieldIndex, filterConcept) -> {
+                @SuppressWarnings("unchecked")
+                ObservableField.Editable<EntityProxy> editableField = (ObservableField.Editable<EntityProxy>)
+                        editableFields.get(fieldIndex);
+                editableField.setValue(filterConcept);
+            });
         });
-
-        semanticEditor.save(); // Save to create an uncommitted version
-
-        AtomicReference<SemanticEntity<SemanticEntityVersion>> newSemantic = new AtomicReference<>();
-        EntityHandle.get(semanticEditor.getEntity().nid()).asSemantic().ifPresentOrElse(semanticEntity -> {
-                    newSemantic.set(semanticEntity);
-                },
-                () -> {
-                    throw new RuntimeException("Error creating new uncommited Semantic");
-                });
-
-        return newSemantic.get();
     }
 
     /**
      * Creates the window's reference component as a new, uncommitted entity — used in create mode,
      * where the window was opened without one. The component kind follows the authored window type:
-     * the standard Pattern window creates a Pattern, all others create a Concept. The new component
-     * joins the composer's current transaction, so it gets committed together with the semantic
-     * whose creation triggered it.
+     * the standard Pattern window creates a Pattern, all others create a Concept.
      *
      * @return the new uncommitted component, already set as the window's reference component
      */
     private EntityFacade createUncommitedReferenceComponent() {
-        initializeComposer();
-
-        ObservableComposer.EntityComposer<?, ?> entityComposer;
-        if (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN) {
-            newPatternComposer = composer.composePattern(PublicIds.newRandom());
-            entityComposer = newPatternComposer;
-        } else {
-            entityComposer = composer.composeConcept(PublicIds.newRandom());
-        }
-
-        entityComposer.save(); // Save to create an uncommitted version
-
-        EntityFacade newComponent = entityComposer.getEntity();
-        session.setComponent(newComponent);
-        return newComponent;
-    }
-
-    /**
-     * The composer of the pattern a create-mode standard Pattern window brought into existence
-     * ({@link #createUncommitedReferenceComponent}), kept until the publish that commits it so the
-     * pattern's inline definition is written through the same composer — a second composer of
-     * the same uncommitted version would commit its own copy too. Null in edit mode, and again
-     * once published.
-     */
-    private ObservableComposer.EntityComposer<ObservablePatternVersion.Editable, ObservablePattern> newPatternComposer;
-
-    /**
-     * Writes the window pattern's inline definition from the pattern-definition semantics this
-     * window stores the definition as (see {@link PatternDefinitionSeeder#writeInlineDefinition}),
-     * staged in the composer's open transaction so it publishes with them. The inline definition is what a new
-     * semantic of the pattern takes its fields from — without it a pattern created here showed
-     * no fields when a semantic of it was added in a KL window (ikmdev/komet-desktop#192).
-     */
-    private void writeInlinePatternDefinition() {
-        EntityFacade pattern = session.getComponent();
-        if (pattern == null) {
-            return;
-        }
-        ObservableComposer.EntityComposer<ObservablePatternVersion.Editable, ObservablePattern> patternComposer =
-                newPatternComposer != null ? newPatternComposer : composer.composePattern(pattern.publicId());
-        PatternDefinitionSeeder.writeInlineDefinition(patternComposer, getViewProperties().calculator());
+        return session.createUncommittedComponent(editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN);
     }
 
     /**
@@ -643,7 +573,7 @@ public class GenPurposeDetailsController {
      * classic concept window's "Add Necessary Set" / "Add Sufficient Set" actions: the set holds
      * an is-a to "Anonymous concept", the placeholder chip the user then replaces in the inline
      * axiom tree. The new semantic is submitted through the window's PUBLISH flow — the same
-     * path a properties-panel submit takes: it stages in the composer's open transaction until
+     * path a properties-panel submit takes: it stays uncommitted in the composer's open transaction until
      * the toolbar's Publish button commits it ({@link #publish}), and the details area re-renders
      * bound to the new semantic. In create mode the window may not have a reference component
      * yet — the seeded definition brings it into existence, exactly like authoring the first
@@ -658,21 +588,14 @@ public class GenPurposeDetailsController {
 
         DiTreeEntity seededDefinition = StatedDefinitionSeeds.seedDefinition(necessary);
 
-        initializeComposer();
-        ObservableEntity observableReferenceComponent = ObservableEntityHandle.get(refComponent.nid()).expectEntity();
-        ObservablePattern observablePattern = ObservableEntityHandle.get(patternModel.getNid()).expectPattern();
-        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor =
-                composer.composeSemantic(PublicIds.newRandom(), observableReferenceComponent, observablePattern);
-
-        // The stated axiom pattern's single field holds the definition.
-        @SuppressWarnings("unchecked")
-        ObservableField.Editable<DiTreeEntity> definitionField = (ObservableField.Editable<DiTreeEntity>)
-                semanticEditor.getEditableVersion().getEditableFields().getFirst();
-        definitionField.setValue(seededDefinition);
-        semanticEditor.save(); // Save to create an uncommitted version holding the definition
-
-        SemanticEntity<SemanticEntityVersion> semantic = EntityHandle.get(semanticEditor.getEntity().nid())
-                .asSemantic().orElseThrow();
+        SemanticEntity<SemanticEntityVersion> semantic = session.createUncommittedSemantic(refComponent,
+                patternModel.getNid(), editableFields -> {
+                    // The stated axiom pattern's single field holds the definition.
+                    @SuppressWarnings("unchecked")
+                    ObservableField.Editable<DiTreeEntity> definitionField =
+                            (ObservableField.Editable<DiTreeEntity>) editableFields.getFirst();
+                    definitionField.setValue(seededDefinition);
+                });
 
         // Submitted like a properties-panel submit. Outside the Publish flow that commits when the
         // seeded set was the last unmet requirement, creating the concept — announce it like the
@@ -688,11 +611,11 @@ public class GenPurposeDetailsController {
      * {@link #createSeededStatedDefinition}), its edited values already saved as an uncommitted
      * version. Decides whether that version commits now and refreshes the details area either way.
      *
-     * <p>In the Publish-flow window a submit only stages the change: the saved version stays in
+     * <p>In the Publish-flow window a submit only saves the change uncommitted: the saved version stays in
      * the composer's open transaction, alongside, in create mode, the lazily created reference
      * component, until the toolbar's Publish button commits everything together ({@link #publish}).
      * The details area refreshes so the submitted field values show, the required chips
-     * re-evaluate and the Publish button follows the staged changes.
+     * re-evaluate and the Publish button follows the uncommitted changes.
      *
      * <p>Without the Publish flow, the submit itself commits. In create mode the component only
      * truly gets created once every required pattern has at least one semantic. Until then the
@@ -717,9 +640,7 @@ public class GenPurposeDetailsController {
         }
 
         // Commit transaction, finalizing all impending changes
-        composer.commit();
-        composer = null;
-        initializeComposer();
+        session.commit();
 
         // In create mode that commit also finalized the window's lazily created reference
         // component (see createUncommitedReferenceComponent) — the window is now editing a
@@ -735,41 +656,22 @@ public class GenPurposeDetailsController {
     }
 
     /**
-     * Stages an edit made inline in the details area — the stated definition's axiom tree (see
-     * {@link InlineEditStager}) — the way a properties-panel submit stages: the field's new value
-     * is saved as a version not published yet in the composer's open transaction, until the
-     * toolbar's Publish button commits it ({@link #publish}). Going through the composer matters
-     * for a definition the composer itself staged (seeded, not published yet): the composer
-     * commits its own working copy of such a version, so the edit has to land in that copy.
+     * Saves, uncommitted, an edit made inline in the details area — the stated definition's axiom tree (see
+     * {@link InlineEditSaver}) — the way a properties-panel submit does: the field's new value
+     * is saved as a version not published yet in the session's open transaction, until the
+     * toolbar's Publish button commits it ({@link #publish}).
      * <p>
      * The axiom tree already shows the edit, so nothing re-renders here; the required chips and
      * the Publish button follow through the stated-definition change subscriber.
      */
-    private void stageInlineEdit(int semanticNid, int fieldIndex, Object newValue) {
-        initializeComposer();
-
-        ObservableSemantic observableSemantic = ObservableEntityHandle.get(semanticNid).expectSemantic();
-        ObservableEntity observableReferenceComponent = ObservableEntityHandle.get(observableSemantic.referencedComponentNid()).expectEntity();
-        ObservablePattern observablePattern = ObservableEntityHandle.get(observableSemantic.patternNid()).expectPattern();
-        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor =
-                composer.composeSemantic(observableSemantic.publicId(), observableReferenceComponent, observablePattern);
-
-        @SuppressWarnings("unchecked")
-        ObservableField.Editable<Object> editableField = (ObservableField.Editable<Object>)
-                semanticEditor.getEditableVersion().getEditableFields().get(fieldIndex);
-        editableField.setValue(newValue);
-        semanticEditor.save(); // Save as an uncommitted version holding the edit
+    private void saveUncommittedInlineEdit(int semanticNid, int fieldIndex, Object newValue) {
+        session.saveUncommittedFieldEdit(semanticNid, fieldIndex, newValue);
     }
 
     private void setupProperties() {
         this.propertiesController = new GenPurposePropertiesController(session);
-        // The panel's edit form edits through the window's composer (the current one: a commit
-        // replaces it), hands its submitted semantic here, and its forms close the panel once
-        // they are done (submit, cancel).
-        propertiesController.setWindowComposer(() -> {
-            initializeComposer();
-            return composer;
-        });
+        // The panel's edit form hands its submitted semantic here, and its forms close the panel
+        // once they are done (submit, cancel).
         propertiesController.setOnSemanticSubmitted(this::onSemanticSubmitted);
         propertiesController.setOnCloseRequested(this::closePropertiesPanel);
         // The panel's tabs are its drag handle: while the tray is open they drag the window too.
@@ -837,7 +739,7 @@ public class GenPurposeDetailsController {
                 + " doesn't exist yet - it's created when you fill out the required values and "
                 + (usesPublishFlow() ? "hit Publish." : "submit."));
 
-        // The Publish UX — the toolbar Publish button and staged-until-published changes — is
+        // The Publish UX — the toolbar Publish button and uncommitted-until-published changes — is
         // scoped to the standard Pattern and Concept windows for now; the other window types keep
         // committing on each properties-panel submit (see the PUBLISH event handler and the
         // fields controller's submit toast, both of which branch on this).
@@ -1097,7 +999,6 @@ public class GenPurposeDetailsController {
                         semanticLabel.setShowTooltip(true);
 
                         semanticLabel.setOnMouseClicked(_ -> {
-                            initializeComposer();
                             showEditSemanticFieldsPanel(semantic, editPattern);
                             popup.hide();
                         });
@@ -1190,7 +1091,6 @@ public class GenPurposeDetailsController {
         if (patternModel.getSemanticFilters().isEmpty()) {
             createEntries.add(new CreateEntry(patternModel, Map.of(), new SectionEditPopup.CreateAction(
                     "Add " + PatternUIUtils.stripPatternSuffix(patternModel.getTitle()), () -> {
-                        initializeComposer();
                         onCreateSemantic(actionEvent, sectionModel, patternModel, refComponent, Map.of());
                     })));
             return;
@@ -1212,7 +1112,6 @@ public class GenPurposeDetailsController {
             Map<Integer, EntityProxy> fieldSeeds = Map.copyOf(filter.getFieldConstraints());
             createEntries.add(new CreateEntry(patternModel, fieldSeeds, new SectionEditPopup.CreateAction(
                     "Add " + PatternUIUtils.stripPatternSuffix(entryName), () -> {
-                        initializeComposer();
                         onCreateSemantic(actionEvent, sectionModel, patternModel, refComponent, fieldSeeds);
                     })));
         }
@@ -1388,18 +1287,16 @@ public class GenPurposeDetailsController {
 
         SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(parentSection);
 
-        initializeComposer();
-
         // The model always supplies a factory (it defaults to the Standard factory), so no fallback is needed here.
         KlPatternSemanticsFactory klPatternSemanticsFactory = editorPatternModel.getFactory();
 
         PatternSemanticsPresenter patternSemanticsPresenter = klPatternSemanticsFactory.createJournalControl(editorPatternModel,
-                viewProperties, composer, journalTopic);
+                viewProperties, session.createOrGetComposer(), journalTopic);
         // In the Publish-flow window edits made inline in the details area (the stated
-        // definition's axiom tree) stage like the properties panel's submits do, until the
+        // definition's axiom tree) stay uncommitted like the properties panel's submits do, until the
         // toolbar's Publish button commits them (see publish).
         if (usesPublishFlow()) {
-            patternSemanticsPresenter.setInlineEditStager(this::stageInlineEdit);
+            patternSemanticsPresenter.setInlineEditSaver(this::saveUncommittedInlineEdit);
         }
 
         if (!refComponents.isEmpty()) {
@@ -1462,7 +1359,6 @@ public class GenPurposeDetailsController {
         patternEntity = handle.asPattern().get();
 
         // Composer
-        initializeComposer();
 
         // Start adding Semantics — skipping the ones the pattern's display filters hide (see
         // EditorPatternSemanticFilter), e.g. a Description pattern showing only fully qualified names.
@@ -1483,31 +1379,6 @@ public class GenPurposeDetailsController {
 
         // The semantics just rendered may carry versions not published yet (see unpublishedSemantics).
         updatePublishState();
-    }
-
-    /**
-     * Composer for the window pattern's defaults semantic (see {@link PatternFieldDefaults}).
-     * The defaults semantic commits in the defaults module rather than the edit coordinate's
-     * default module, so it gets a transaction of its own. It is created on first use and handed
-     * to the DEFAULTS form, whose Publish button commits it — the defaults are not part of the
-     * window's own staged changes. The instance is kept for the window's lifetime: a committed
-     * composer opens a fresh transaction on its next compose.
-     */
-    private ObservableComposer defaultsComposer;
-
-    private void initializeDefaultsComposer() {
-        if (defaultsComposer != null) {
-            return;
-        }
-        var editCoordinate = getViewProperties().nodeView().editCoordinate();
-        defaultsComposer = ObservableComposer.create(
-                getViewProperties().calculator(),
-                State.ACTIVE,
-                editCoordinate.getAuthorForChanges(),
-                KlTerms.FIELD_DEFAULTS_MODULE,
-                editCoordinate.getDefaultPath(),
-                "Edit pattern field defaults"
-        );
     }
 
     /**
@@ -1534,52 +1405,14 @@ public class GenPurposeDetailsController {
      * through the defaults composer.
      */
     private void showPatternFieldDefaults() {
-        EntityFacade pattern = session.getComponent();
-        if (pattern == null) {
+        if (session.getComponent() == null) {
             // Create mode: the pattern doesn't exist yet, so neither can its defaults (the tab and
             // button only show once it does — this is the tab remembered across a panel reopen).
             return;
         }
-        initializeDefaultsComposer();
-
-        // Before composing: composing mints the defaults semantic's nid, after which the store knows the
-        // identity whether or not a semantic has been written under it.
-        boolean defaultsSemanticExists = PatternFieldDefaults.defaultsSemantic(pattern.nid()).isPresent();
-
-        ObservablePattern observablePattern = ObservableEntityHandle.get(pattern.nid()).expectPattern();
-        ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> defaultsSemanticComposer =
-                defaultsComposer.composeSemantic(PatternFieldDefaults.defaultsSemanticId(pattern.publicId()),
-                        observablePattern, observablePattern);
-        if (!defaultsSemanticExists) {
-            defaultsSemanticComposer.save(); // Save to create an uncommitted version
-        }
-        SemanticEntity<SemanticEntityVersion> defaultsSemantic = EntityHandle.get(defaultsSemanticComposer.getEntity().nid()).asSemantic()
-                .orElseThrow(() -> new IllegalStateException("The defaults semantic is not a semantic"));
-
-        propertiesController.showDefaultsForm(defaultsSemantic, defaultsComposer, "Field Default Values");
+        propertiesController.showDefaultsForm(session.getOrCreateDefaultsSemantic(), session.getDefaultsComposer(),
+                "Field Default Values");
         openPropertiesPanel();
-    }
-
-    private void initializeComposer() {
-        if (composer != null) {
-            return;
-        }
-
-        ConceptFacade author = getViewProperties().nodeView().editCoordinate().getAuthorForChanges();
-        ConceptFacade module = getViewProperties().nodeView().editCoordinate().getDefaultModule();
-        ConceptFacade path = getViewProperties().nodeView().editCoordinate().getDefaultPath();
-
-        composer = ObservableComposer.create(
-                getViewProperties().calculator(),
-                State.ACTIVE,
-                author,
-                module,
-                path,
-                "Edit Semantic Details"
-        );
-
-        // The Publish button follows the transaction's staged changes (see updatePublishState).
-        composer.hasUncommittedChangesProperty().subscribe(this::updatePublishState);
     }
 
     /**
@@ -1674,7 +1507,7 @@ public class GenPurposeDetailsController {
     }
 
     /**
-     * Whether this window uses the toolbar Publish flow: changes stage in the composer's open
+     * Whether this window uses the toolbar Publish flow: changes stay uncommitted in the composer's open
      * transaction until the Publish button commits them. Scoped to the standard Pattern and
      * Concept windows for now — the other window types keep the classic commit-on-submit flow
      * (and hide the Publish button) until they adopt the Publish UX too.
@@ -1685,27 +1518,27 @@ public class GenPurposeDetailsController {
     }
 
     /**
-     * Recomputes the toolbar Publish button's enablement and tooltip. Publishing needs staged
+     * Recomputes the toolbar Publish button's enablement and tooltip. Publishing needs uncommitted
      * changes in the composer's open transaction, and in create mode additionally every required
      * pattern satisfied ({@link #allRequiredPatternsSatisfied}) — the component only comes into
      * existence complete. Runs whenever those inputs may have moved: with the required chips
      * (mode changes, PUBLISH submits, inline stated-definition edits) and on the composer's
-     * change tracking (see {@link #initializeComposer}).
+     * change tracking (see {@link WindowEditSession#hasUncommittedChangesProperty}).
      */
     private void updatePublishState() {
-        boolean hasStagedChanges = composer != null && composer.hasUncommittedChanges();
+        boolean hasUncommittedChanges = session.hasUncommittedChanges();
         boolean disabled;
         String publishTooltip;
         int unpublishedChanges = 0;
         if (session.isCreateMode()) {
-            disabled = !hasStagedChanges || !allRequiredPatternsSatisfied();
+            disabled = !hasUncommittedChanges || !allRequiredPatternsSatisfied();
             publishTooltip = disabled ? "Complete the required semantics to publish" : "Publish";
         } else {
-            // Changes saved but not published count whether this window instance staged them or
+            // Changes saved but not published count whether this window instance saved them or
             // an earlier one did (the window was closed and reopened): they are read from the
             // store, not from the composer.
             unpublishedChanges = unpublishedChangeCount();
-            disabled = !hasStagedChanges && unpublishedChanges == 0;
+            disabled = !hasUncommittedChanges && unpublishedChanges == 0;
             publishTooltip = disabled ? "No changes to publish"
                     : unpublishedChanges == 0 ? "Publish"
                     : "Publish " + unpublishedChanges + (unpublishedChanges == 1 ? " change" : " changes");
@@ -1809,11 +1642,11 @@ public class GenPurposeDetailsController {
 
     /**
      * Runs when the toolbar's Publish button is pressed — the window's single commit point.
-     * Commits the composer's open transaction, finalizing everything staged since the last
+     * Commits the composer's open transaction, finalizing everything uncommitted since the last
      * publish: submitted semantic versions and, in create mode, the lazily created reference
      * component itself. A CREATE window becomes an EDIT window on its first publish.
      * <p>
-     * Versions staged by an earlier instance of this window (closed before publishing) sit in
+     * Versions saved uncommitted by an earlier instance of this window (closed before publishing) sit in
      * that instance's still-open transactions; those are committed too, so a reopened window
      * publishes everything it shows as not published.
      */
@@ -1823,20 +1656,17 @@ public class GenPurposeDetailsController {
         // The standard Pattern window authors its pattern's definition as semantics; the pattern's
         // own version record has to say the same before it commits (see writeInlinePatternDefinition).
         if (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN) {
-            writeInlinePatternDefinition();
+            session.writeInlinePatternDefinition();
         }
 
-        composer.commit();
-        composer = null;
-        newPatternComposer = null;
-        initializeComposer();
+        session.commit();
 
-        int unpublishable = commitTransactionsOfUnpublishedVersions();
+        int unpublishable = session.commitUnpublishedTransactions(unpublishedSemantics());
 
         if (wasCreateMode) {
             session.enterEditMode();
         }
-        // The commit finalized the staged entities (in create mode the window's reference
+        // The commit finalized the uncommitted entities (in create mode the window's reference
         // component itself) — refresh the banner/identifier/STAMP from the committed state, and
         // the semantics so the versions just published drop their "Not published" marks.
         updateView();
@@ -1860,36 +1690,6 @@ public class GenPurposeDetailsController {
             toast().show(Toast.Status.SUCCESS,
                     wasCreateMode ? componentKindString + " created" : "Changes published");
         }
-    }
-
-    /**
-     * Commits the open transactions holding the unpublished versions of the components this
-     * window shows — the ones staged by an earlier instance of the window. Transactions live in
-     * memory only, so a version saved in an earlier session has none to commit; those versions
-     * stay unpublished.
-     *
-     * @return how many components still carry an unpublished version afterwards
-     */
-    private int commitTransactionsOfUnpublishedVersions() {
-        List<Entity<?>> unpublished = new ArrayList<>(unpublishedSemantics());
-        EntityFacade refComponent = session.getComponent();
-        if (refComponent != null) {
-            unpublished.add(Entity.getFast(refComponent.nid()));
-        }
-
-        Set<Transaction> transactions = new HashSet<>();
-        for (Entity<?> entity : unpublished) {
-            for (EntityVersion version : Entity.getFast(entity.nid()).versions()) {
-                if (version.uncommitted()) {
-                    Transaction.forStamp(version.stamp().publicId()).ifPresent(transactions::add);
-                }
-            }
-        }
-        transactions.forEach(Transaction::commit);
-
-        return (int) unpublished.stream()
-                .filter(entity -> Entity.getFast(entity.nid()).uncommitted())
-                .count();
     }
 
     /**

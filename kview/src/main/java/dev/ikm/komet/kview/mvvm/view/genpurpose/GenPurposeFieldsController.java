@@ -72,7 +72,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValues;
@@ -111,15 +110,11 @@ public class GenPurposeFieldsController {
     @FXML
     private Button submitButton;
 
-    /** What the window is editing: the form follows its mode and edits on its coordinate. */
-    private WindowEditSession session;
-
     /**
-     * The window's composer, which the section patterns' semantics are edited through — asked for
-     * on each edit, since a commit replaces it. Not used by the defaults form, which edits through
-     * {@link #formComposer}.
+     * What the window is editing: the form follows its mode, edits on its coordinate and, unless
+     * editing through {@link #formComposer}, in its composer.
      */
-    private Supplier<ObservableComposer> windowComposer;
+    private WindowEditSession session;
 
     // ObservableComposer integration for proper transaction management
     private ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor;
@@ -191,7 +186,7 @@ public class GenPurposeFieldsController {
 
     public void setDefaultsForm(boolean defaultsForm) {
         this.defaultsForm = defaultsForm;
-        // The defaults form publishes on its own button (see submit) rather than staging for the
+        // The defaults form publishes on its own button (see submit) rather than leaving them uncommitted for the
         // toolbar's Publish, so its button says what it does.
         submitButton.setText(defaultsForm ? "Publish" : "Submit");
     }
@@ -212,7 +207,7 @@ public class GenPurposeFieldsController {
     }
 
     private ObservableComposer getComposer() {
-        return formComposer != null ? formComposer : windowComposer.get();
+        return formComposer != null ? formComposer : session.createOrGetComposer();
     }
 
     /** Sets what the window is editing. The form's Clear/Reset button follows the window's mode. */
@@ -225,10 +220,6 @@ public class GenPurposeFieldsController {
                 clearOrResetFormButton.setText("Clear form");
             }
         });
-    }
-
-    public void setWindowComposer(Supplier<ObservableComposer> windowComposer) {
-        this.windowComposer = windowComposer;
     }
 
     /**
@@ -660,7 +651,7 @@ public class GenPurposeFieldsController {
 //                enableDisableButtons();
 
                 // Persist the edited field values as an uncommitted version. The window may not
-                // commit right away — in the Publish-flow window it stages until the toolbar's
+                // commit right away — in the Publish-flow window it stays uncommitted until the toolbar's
                 // Publish button, and otherwise create mode defers until every required pattern
                 // is satisfied — and the details area re-renders from the stored version, so the
                 // values must be saved, not left pending in the editable overlay.
@@ -668,9 +659,9 @@ public class GenPurposeFieldsController {
 
                 if (defaultsForm) {
                     // The pattern's field defaults publish right here: they are not part of the
-                    // window's own staged changes, and they only take effect once published (see
+                    // window's own uncommitted changes, and they only take effect once published (see
                     // PatternFieldDefaults.defaultsSemanticVersion), so there is nothing to gain
-                    // from staging them until the toolbar's Publish button.
+                    // from leaving them uncommitted until the toolbar's Publish button.
                     getComposer().commit();
                     onCloseRequested.run();
                     toast().show(Toast.Status.SUCCESS, "Field defaults published");
