@@ -1,6 +1,6 @@
 schema: 1
-standards-version: '257'
-applied: '2026-09-25T19:34:16.599555Z'
+standards-version: '259'
+applied: '2026-09-27T15:33:11.468608Z'
 files:
   .gitignore:
     tier: tracked-block
@@ -12,7 +12,7 @@ files:
     applied-sha: sha256:f35d94f35bcaf8ccad88be7b48866bf54a44b9fc2f40eaeab0b466b67b1a0ff7
   .mvn/wrapper/maven-wrapper.properties:
     tier: tool-owned
-    template-sha: sha256:d4b609014fb33a0e487722bad2ec6d7aad9850250880b2e253d7a71657563256
+    template-sha: sha256:eab6ba2299ec9ba62a381065b2db8d4275510650414b8d756dd8ba76f687c1f1
   mvnw:
     tier: tool-owned
     template-sha: sha256:cae96cef89ebea3531221f4ae17c23cf8edf67d00eae8306d4186ae1bbed4d02
