@@ -18,7 +18,7 @@ import dev.ikm.komet.kview.controls.AxiomRuleAction;
 import dev.ikm.komet.kview.controls.KLDiTreeControl;
 import dev.ikm.komet.kview.controls.KLDiTreeControlFactory;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
-import dev.ikm.komet.layout.InlineEditStager;
+import dev.ikm.komet.layout.InlineEditSaver;
 import dev.ikm.komet.layout.version.field.KlDirectedTreeField;
 import dev.ikm.tinkar.common.util.broadcast.Subscriber;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
@@ -64,9 +64,9 @@ import java.util.List;
  * transaction. Templates for new content live only in the control until their concepts are
  * picked, so incomplete edits never touch the store.</p>
  *
- * <p>In a window with a Publish action of its own the field stages instead: handed an
- * {@link InlineEditStager}, it passes each applied edit to the stager — the window saves it as a
- * version not published yet, alongside its other staged changes — rather than committing it.</p>
+ * <p>In a window with a Publish action of its own the field saves uncommitted instead: handed an
+ * {@link InlineEditSaver}, it passes each applied edit to the saver — the window saves it as an
+ * uncommitted version, alongside its other uncommitted changes — rather than committing it.</p>
  */
 public class KlStatedAxiomDiTreeField extends BaseDefaultKlField<DiTreeEntity> implements KlDirectedTreeField<DiTreeEntity> {
 
@@ -74,8 +74,8 @@ public class KlStatedAxiomDiTreeField extends BaseDefaultKlField<DiTreeEntity> i
 
     private final int fieldIndex;
 
-    /** What applied edits stage through until the host window publishes; null to commit them right away. */
-    private InlineEditStager inlineEditStager;
+    /** What applied edits are saved uncommitted through until the host window publishes; null to commit them right away. */
+    private InlineEditSaver inlineEditSaver;
 
     /** Strong reference — the entity provider holds its subscribers weakly. */
     private Subscriber<Integer> entityChangeSubscriber;
@@ -103,12 +103,12 @@ public class KlStatedAxiomDiTreeField extends BaseDefaultKlField<DiTreeEntity> i
      * the full {@link ViewProperties} that the {@code KlFieldFactory} contract does not carry —
      * the same extra-parameter precedent as {@code KlReadOnlyComponentSetFieldFactory}.
      *
-     * @param inlineEditStager what applied edits stage through until the host window publishes
+     * @param inlineEditSaver what applied edits are saved uncommitted through until the host window publishes
      *                         them (see {@code persist}); null to commit them right away
      */
-    public KlStatedAxiomDiTreeField(ObservableField<DiTreeEntity> observableDiTreeField, ViewProperties viewProperties, ObservableStamp stamp4field, InlineEditStager inlineEditStager) {
+    public KlStatedAxiomDiTreeField(ObservableField<DiTreeEntity> observableDiTreeField, ViewProperties viewProperties, ObservableStamp stamp4field, InlineEditSaver inlineEditSaver) {
         this(observableDiTreeField, viewProperties.nodeView(), stamp4field);
-        this.inlineEditStager = inlineEditStager;
+        this.inlineEditSaver = inlineEditSaver;
         KLDiTreeControl control = (KLDiTreeControl) fxObject();
         control.setRuleActionsProvider(vertex -> ruleActions(vertex, viewProperties, control));
         // Other writers (e.g. the classic axiom control in another window) persist straight to
@@ -185,10 +185,10 @@ public class KlStatedAxiomDiTreeField extends BaseDefaultKlField<DiTreeEntity> i
             // writer persisted it.
             return;
         }
-        if (inlineEditStager != null) {
-            // The host window publishes: the edit stages with the window's other changes, and the
+        if (inlineEditSaver != null) {
+            // The host window publishes: the edit stays uncommitted with the window's other changes, and the
             // value now comes from a version not published yet.
-            inlineEditStager.stageFieldValue(semanticNid, fieldIndex, newTree);
+            inlineEditSaver.saveUncommittedFieldValue(semanticNid, fieldIndex, newTree);
             ((KLDiTreeControl) fxObject()).setUnpublished(true);
             return;
         }

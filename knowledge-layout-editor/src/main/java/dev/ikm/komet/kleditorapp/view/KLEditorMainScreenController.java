@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 import static dev.ikm.komet.kview.events.EventTopics.KL_TOPIC;
@@ -82,6 +83,8 @@ public class KLEditorMainScreenController {
 
     private EditorWindowModel editorWindowModel;
 
+    private boolean standardWindows;
+
     private WindowSettings windowSettings;
 
     /**
@@ -99,6 +102,7 @@ public class KLEditorMainScreenController {
                      boolean standardWindows) {
         this.windowsPreferences = windowsPreferences;
         this.windowSettings = windowSettings;
+        this.standardWindows = standardWindows;
 
         canvasScrollPane.viewportBoundsProperty().subscribe(viewportBounds -> {
             canvas.setMinSize(viewportBounds.getWidth(), viewportBounds.getHeight());
@@ -142,6 +146,35 @@ public class KLEditorMainScreenController {
 
         // setup Toast Manager
         KLToastManager.initParent(klEditorMainContainer);
+    }
+
+    /**
+     * The title of the saved layout this window holds, for reopening it at the next launch
+     * (IKE-Network/ike-issues#1151). A layout that has never been saved has no stored definition
+     * to reopen, so it answers empty.
+     *
+     * @return the saved layout's title, or empty while the layout is unsaved
+     */
+    public Optional<String> savedWindowTitle() {
+        if (editorWindowModel == null || windowsPreferences == null) {
+            return Optional.empty();
+        }
+        String title = editorWindowModel.getTitle();
+        try {
+            return title != null && !title.isBlank() && windowsPreferences.nodeExists(title)
+                    ? Optional.of(title) : Optional.empty();
+        } catch (Exception ex) {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Whether this window edits a standard window layout rather than a user one.
+     *
+     * @return true for a standard window layout
+     */
+    public boolean isStandardWindows() {
+        return standardWindows;
     }
 
     public void shutdown() {

@@ -8,7 +8,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.AbstractPatternSemanticsPresenter;
-import dev.ikm.komet.layout.InlineEditStager;
+import dev.ikm.komet.layout.InlineEditSaver;
 import dev.ikm.komet.layout.PatternSemanticsPresenter;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
@@ -54,8 +54,8 @@ public class PatternSemanticsStandardPresenter extends AbstractPatternSemanticsP
      */
     private final StandardPatternProperties factoryProperties;
 
-    /** Stages inline edits until the window publishes; null to commit them as applied (see {@link #setInlineEditStager}). */
-    private InlineEditStager inlineEditStager;
+    /** Saves inline edits uncommitted until the window publishes; null to commit them as applied (see {@link #setInlineEditSaver}). */
+    private InlineEditSaver inlineEditSaver;
 
     public PatternSemanticsStandardPresenter(EditorPatternModel editorPatternModel, ViewProperties viewProperties, ObservableComposer composer, UUID journalTopic) {
         this.composer = composer;
@@ -143,8 +143,8 @@ public class PatternSemanticsStandardPresenter extends AbstractPatternSemanticsP
     }
 
     @Override
-    public void setInlineEditStager(InlineEditStager inlineEditStager) {
-        this.inlineEditStager = inlineEditStager;
+    public void setInlineEditSaver(InlineEditSaver inlineEditSaver) {
+        this.inlineEditSaver = inlineEditSaver;
     }
 
     private KLReadOnlyBaseControl addFieldView(ObservableField<?> observableField, EditorFieldModel fieldModel, SemanticStandardControl semanticViewControl) {
@@ -158,7 +158,7 @@ public class PatternSemanticsStandardPresenter extends AbstractPatternSemanticsP
                 viewProperties,
                 null,
                 journalTopic,
-                inlineEditStager
+                inlineEditSaver
         );
 
         fieldModel.rowIndexProperty().subscribe(newRowIndex -> {

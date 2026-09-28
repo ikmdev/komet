@@ -6631,13 +6631,116 @@ Styling a context menu for kview ui/ux controls
    window's blue and the tab chip a darker shade of it — the same darker-tab relationship
    the default grey chrome has. GenPurposeDetailsController adds the theme class when the
    layout's authored type (EditorWindowType) is STANDARD_CONCEPT; the other standard
-   windows and user-created Semantics Windows keep the default grey chrome. */
+   windows keep the default grey chrome and user-created Semantics Windows get the light
+   theme below. */
 .gen-purpose-window.concept-window-theme .lidr-rounded-tab {
     -tab-color: derive(-Secondary-06, -25%);
 }
 
 .gen-purpose-window.concept-window-theme .kl-window-control-toolbar .window-header-control {
     -bar-color: -Secondary-06;
+}
+
+/* Light theme for user-created windows (EditorWindowType.SEMANTICS, added by
+   GenPurposeDetailsController): the standard windows keep their dark filled chrome, while a
+   window the user built in the KL editor drops it for a white bar and tab chip with dark text
+   and glyphs and a hairline under the bar — the chrome all but disappears, so it reads as a
+   lighter-weight, editable layout and can't be mistaken for a built-in window. Every white
+   glyph, text and white-tint hover plate of the dark chrome is restated in a dark shade. */
+.gen-purpose-window.custom-window-theme .lidr-rounded-tab {
+    -tab-color: #f0f0f0;
+}
+
+/* White chrome on a light desktop leans on the shadow to hold the window's shape, so it is
+   a little stronger than the default; the focused shadow is restated so this rule (same
+   specificity, later) doesn't override it. */
+.gen-purpose-window.custom-window-theme {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.26), 12, 0.0, 0, 3);
+}
+
+.gen-purpose-window.custom-window-theme:window-focused {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.36), 28, 0.0, 0, 10);
+}
+
+/* Lightening a pale tab reads as nothing; the drag affordance darkens it instead. */
+.gen-purpose-window.custom-window-theme .kl-window-control-toolbar .lidr-rounded-tab:drag-hover {
+    -fx-background-color: derive(-tab-color, -8%);
+}
+
+.gen-purpose-window.custom-window-theme .lidr-rounded-tab .nine-dots-icon {
+    -fx-background-color: -Grey-10;
+}
+
+.gen-purpose-window.custom-window-theme .lidr-rounded-tab .lidr-tab-text {
+    -fx-fill: #1F2A44;
+    -fx-text-fill: #1F2A44;
+}
+
+.gen-purpose-window.custom-window-theme .lidr-rounded-tab .draft-chip {
+    -fx-text-fill: #1F2A44;
+    -fx-border-color: #1F2A44BF;
+}
+
+/* The bar is two layers: the hairline color underneath, and the white fill inset 1px from the
+   bottom so the hairline shows between the bar and the (also white) body — no border, so the
+   toolbar's layout is untouched. The corner radius restates .rounded-upper-right-only. */
+.gen-purpose-window.custom-window-theme .kl-window-control-toolbar .window-header-control {
+    -bar-color: #f8f8f8;
+    -hairline-color: #ededed;
+
+    -fx-background-color: -hairline-color, -bar-color;
+    -fx-background-insets: 0, 0 0 1 0;
+    -fx-background-radius: 0 10 0 0, 0 10 0 0;
+}
+
+.gen-purpose-window.custom-window-theme .kl-window-control-toolbar .window-header-control:drag-hover {
+    -fx-background-color: -hairline-color, derive(-bar-color, -5%);
+}
+
+/* Dark glyphs in place of the dark chrome's near-white ones. */
+.gen-purpose-window.custom-window-theme .window-header-control .coordinate,
+.gen-purpose-window.custom-window-theme .window-header-control .timeline-icon,
+.gen-purpose-window.custom-window-theme .window-header-control .field-defaults-icon,
+.gen-purpose-window.custom-window-theme .window-header-control .close-window {
+    -fx-background-color: -Grey-10;
+}
+
+.gen-purpose-window.custom-window-theme .kl-window-control-toolbar .properties-toggle {
+    -fx-fill: #1F2A44;
+}
+
+/* Hover/armed plates: a dark tint, since the white tint of the dark chrome vanishes on a
+   pale bar. The timeline and field-defaults buttons keep their green plates (white glyph)
+   when hovered or selected, which read fine on the pale bar. */
+.gen-purpose-window.custom-window-theme .kl-window-control-toolbar .window-header-control .coordinate-plate:hover,
+.gen-purpose-window.custom-window-theme .kl-window-control-toolbar .window-header-control .button:hover,
+.gen-purpose-window.custom-window-theme .kl-window-control-toolbar .window-header-control .toggle-button.timeline:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.08);
+}
+
+.gen-purpose-window.custom-window-theme .kl-window-control-toolbar .window-header-control .coordinate-plate:pressed,
+.gen-purpose-window.custom-window-theme .kl-window-control-toolbar .window-header-control .button:armed,
+.gen-purpose-window.custom-window-theme .kl-window-control-toolbar .window-header-control .toggle-button.timeline:armed {
+    -fx-background-color: rgba(0, 0, 0, 0.14);
+}
+
+.gen-purpose-window.custom-window-theme .kl-window-control-toolbar .window-header-control .properties-toggle-button:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.30), 7, 0.5, 0, 0);
+}
+
+/* The Publish plate keeps the app's blue accent; only its ghosted disabled state changes,
+   since a white-tinted plate and text are invisible on the pale bar. */
+.gen-purpose-window.custom-window-theme .kl-window-control-toolbar .window-header-control .button.publish-button:hover {
+    -fx-background-color: -Secondary-04;
+}
+
+.gen-purpose-window.custom-window-theme .kl-window-control-toolbar .window-header-control .button.publish-button:armed {
+    -fx-background-color: -Secondary-06;
+}
+
+.gen-purpose-window.custom-window-theme .kl-window-control-toolbar .window-header-control .button.publish-button:disabled {
+    -fx-background-color: rgba(0, 0, 0, 0.06);
+    -fx-text-fill: rgba(31, 42, 68, 0.45);
 }
 
 /*******************************************************************************

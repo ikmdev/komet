@@ -45,7 +45,6 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.JOURNAL_NAME;
 import static dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel.WINDOW_SETTINGS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.TASK_PROPERTY;
@@ -53,7 +52,6 @@ import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_AUTHOR;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_DIR_NAME;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_HEIGHT;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_LAST_EDIT;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_WIDTH;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_SCROLL_H;
 import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_SCROLL_V;
@@ -126,6 +124,7 @@ import dev.ikm.komet.kview.klwindows.genpurpose.GenPurposeKLWindow;
 import dev.ikm.komet.kview.klwindows.genpurpose.GenPurposeKLWindowFactory;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
+import dev.ikm.komet.kview.mvvm.model.JournalNames;
 import dev.ikm.komet.kview.mvvm.view.concept.ConceptNode;
 import dev.ikm.komet.kview.mvvm.view.navigation.ConceptPatternNavController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
@@ -194,6 +193,9 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.DataFormat;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.util.Subscription;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.input.MouseButton;
@@ -261,6 +263,9 @@ public class JournalController {
 
     @FXML
     private ComboBox<String> journalComboBox;
+
+    /** Keeps the header's name in step with the journal's live name; released at shutdown. */
+    private Subscription journalNameSubscription;
 
     @FXML
     private ToggleGroup sidebarToggleGroup;
@@ -455,15 +460,12 @@ public class JournalController {
             slideOut(newValue);
         });
 
-        // next to the menu, have the text be in the format "Project Journal #x" where x is the Journal number
-        // that matches the window title
-        journalComboBox.setPromptText(formatPromptText(journalViewModel.getPropertyValue(JOURNAL_NAME)));
+        setupJournalNameEditor();
         journalWindows.addListener((ListChangeListener<ChapterKlWindow<Pane>>) change -> {
             while (change.next()) {
                 PrefX journalWindowPref = PrefX.create();
                 journalWindowPref.setValue(WINDOW_COUNT, journalWindows.size());
                 journalWindowPref.setValue(JOURNAL_TOPIC, getJournalTopic());
-                journalWindowPref.setValue(JOURNAL_TITLE, getTitle());
                 journalWindowPref.setValue(JOURNAL_DIR_NAME, getJournalDirName());
 
                 journalEventBus.publish(JOURNAL_TOPIC,
@@ -801,8 +803,41 @@ public class JournalController {
         setupWorkspaceWindow(cardWindow);
     }
 
-    private String formatPromptText(String title) {
-        return title.replace("Journal ", "Project Journal #");
+    /**
+     * Makes the name in the journal header editable in place (ike-issues#1128). The header follows
+     * the journal's live name, so a rename made from the landing-page card appears here too. Enter,
+     * or moving focus away, renames the journal to the edited text; Escape restores the current name.
+     * A blank name is rejected and the journal keeps its previous name.
+     */
+    private void setupJournalNameEditor() {
+        final JournalNames journalNames = JournalNames.get();
+        journalComboBox.setEditable(true);
+        // The editor's text is set as well as the value: set before the combo box has its skin, a value
+        // alone never reaches the editor, and the header shows only the prompt text.
+        journalNameSubscription = journalNames.nameProperty(journalTopic).subscribe(name -> {
+            journalComboBox.setValue(name);
+            journalComboBox.getEditor().setText(name);
+        });
+        // The combo box commits its editor's text as its value on Enter and on losing focus.
+        journalComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+            final String currentName = journalNames.name(journalTopic);
+            if (newValue == null || newValue.equals(currentName)) {
+                return;
+            }
+            if (journalNames.rename(journalTopic, newValue).isEmpty()) {
+                // Rejected: show the name the journal keeps.
+                Platform.runLater(() -> journalComboBox.setValue(journalNames.name(journalTopic)));
+            }
+        });
+        // On the combo box, not its editor: an editable combo box holds the focus and handles Escape
+        // itself, so the key never reaches a filter on the editor.
+        journalComboBox.addEventFilter(KeyEvent.KEY_PRESSED, keyEvent -> {
+            if (keyEvent.getCode() == KeyCode.ESCAPE) {
+                keyEvent.consume();
+                journalComboBox.getEditor().setText(journalNames.name(journalTopic));
+                journalRootPane.requestFocus();
+            }
+        });
     }
 
     /**
@@ -1336,6 +1371,12 @@ public class JournalController {
         // cleanup code here...
         LOG.info("Journal Window is shutting down...");
 
+        // The journal's name outlives this window; stop the header following it.
+        if (journalNameSubscription != null) {
+            journalNameSubscription.unsubscribe();
+            journalNameSubscription = null;
+        }
+
         // remove the listener, the node and activity streams
         navigatorNode.getController().getTreeView().getSelectionModel().getSelectedItems().removeListener(navigatorNode.getSelectionListener());
         navigatorNode = null;
@@ -1352,16 +1393,17 @@ public class JournalController {
 
     /**
      * Iterate through all available KometNodeFactories that will be displayed on the journal.
-     * Note: Each journal will have a unique navigation activity stream.
+     * Note: Each journal will have a unique navigation activity stream, keyed on the journal's
+     * topic — its identity — never its name, which is display text and need not be unique
+     * (ike-issues#1127). The key also names the stream's persisted history node.
      *
      * @param navigationFactory A factory to create navigation view.
      * @param searchFactory     A factory to create a search bump out view.
      */
-    public void launchKometFactoryNodes(String journalName,
-                                        KometNodeFactory navigationFactory,
+    public void launchKometFactoryNodes(KometNodeFactory navigationFactory,
                                         KometNodeFactory searchFactory) {
         // Generate a unique activity stream for a navigator for each journal launched. Children (window Panels will subscribe to them).
-        String uniqueNavigatorTopic = "navigation-%s".formatted(journalName);
+        String uniqueNavigatorTopic = "navigation-%s".formatted(journalTopic);
         UUID uuid = UuidT5Generator.get(uniqueNavigatorTopic);
         final PublicIdStringKey<ActivityStream> navigationActivityStreamKey = new PublicIdStringKey(PublicIds.of(uuid.toString()), uniqueNavigatorTopic);
         navigatorActivityStream = ActivityStreams.create(navigationActivityStreamKey);
@@ -1370,7 +1412,7 @@ public class JournalController {
         loadNavigationPanel(this.windowView);
         loadClassicConceptNavigatorPanel(navigationActivityStreamKey, this.windowView, navigationFactory);
 
-        String uniqueSearchTopic = "search-%s".formatted(journalName);
+        String uniqueSearchTopic = "search-%s".formatted(journalTopic);
         UUID uuidSearch = UuidT5Generator.get(uniqueSearchTopic);
         final PublicIdStringKey<ActivityStream> searchActivityStreamKey = new PublicIdStringKey(PublicIds.of(uuidSearch.toString()), uniqueSearchTopic);
         searchActivityStream = ActivityStreams.create(searchActivityStreamKey);
@@ -1884,9 +1926,13 @@ public class JournalController {
         };
     }
 
+    /**
+     * Returns the journal's current name, the same text its window title shows.
+     *
+     * @return the journal's name
+     */
     public String getTitle() {
-        Stage stage = (Stage) journalRootPane.getScene().getWindow();
-        return stage.getTitle();
+        return JournalNames.get().name(journalTopic);
     }
 
     public void close() {
@@ -1947,8 +1993,8 @@ public class JournalController {
 
         // Put journal metadata in our preferences.
         final Stage stage = (Stage) journalRootPane.getScene().getWindow();
+        // The journal's name is not written here: JournalNames stores it on every rename (ike-issues#1128).
         journalWindowPreferences.putUuid(JOURNAL_TOPIC, getJournalTopic());
-        journalWindowPreferences.put(JOURNAL_TITLE, stage.getTitle());
         journalWindowPreferences.put(JOURNAL_DIR_NAME, getJournalDirName());
         journalWindowPreferences.putDouble(JOURNAL_WIDTH, stage.getWidth());
         journalWindowPreferences.putDouble(JOURNAL_HEIGHT, stage.getHeight());
@@ -2004,7 +2050,7 @@ public class JournalController {
      */
     public void restoreWindows(WindowSettings windowSettings, PrefX journalWindowSettings) {
         Objects.requireNonNull(journalWindowSettings, "journalWindowSettings cannot be null");
-        final String journalName = journalWindowSettings.getValue(JOURNAL_TITLE);
+        final String journalName = getTitle();
 
         try {
             final KometPreferences journalPreferences = getJournalPreferences(journalTopic);

@@ -30,7 +30,6 @@ import static dev.ikm.komet.kview.events.EventTopics.KL_TOPIC;
 import static dev.ikm.komet.kview.events.EventTopics.USER_TOPIC;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNALS;
 import static dev.ikm.komet.preferences.JournalWindowPreferences.JOURNAL_IDS;
-import static dev.ikm.komet.preferences.JournalWindowSettings.JOURNAL_TITLE;
 import static dev.ikm.tinkar.events.FrameworkTopics.IMPORT_TOPIC;
 import com.jpro.webapi.WebAPI;
 import de.jangassen.MenuToolkit;
@@ -230,8 +229,7 @@ public class App extends Application  {
         Subscriber<CreateJournalEvent> summonJournalWindowSubscriber = evt -> {
             final PrefX journalWindowSettingsObjectMap = evt.getWindowSettingsObjectMap();
             final UUID journalTopic = journalWindowSettingsObjectMap.getValue(JOURNAL_TOPIC);
-            final String journalName = journalWindowSettingsObjectMap.getValue(JOURNAL_TITLE);
-            // Check if a journal window with the same title is already open
+            // Check if a window for this journal (by topic) is already open
             journalControllersList.stream()
                     .filter(journalController ->
                             journalController.getJournalTopic().equals(journalTopic))
@@ -240,7 +238,7 @@ public class App extends Application  {
                                 if (IS_BROWSER) {
                                     // Similar to the desktop version, bring the existing tab to the front
                                     Stage journalStage = (Stage) journalController.getJournalRootPane().getScene().getWindow();
-                                    webAPI.openStageAsTab(journalStage, journalName.replace(" ", "_"));
+                                    webAPI.openStageAsTab(journalStage, journalController.getJournalDirName());
                                 } else {
                                     // Bring the existing window to the front
                                     journalController.windowToFront();

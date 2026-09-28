@@ -8,24 +8,15 @@ import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.kview.mvvm.view.concept.ConceptNode;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.GenPurposeDetailsController;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.GenPurposeWindowView;
-import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.FormMode;
-import dev.ikm.komet.kview.mvvm.viewmodel.GenPurposeViewModel;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.WindowEditSession;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.terms.EntityFacade;
-import javafx.beans.property.ObjectProperty;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.UUID;
-
-import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.FIELDS_COLLECTION;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.REF_COMPONENT;
-import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.WINDOW_TOPIC;
 
 public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
 
@@ -45,7 +36,8 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
      */
     private final KometPreferences klEditorWindowPreferences;
 
-    private final GenPurposeViewModel genPurposeViewModel;
+    /** What the window is editing: its component and whether it exists yet. */
+    private final WindowEditSession session;
 
     private final GenPurposeDetailsController controller;
 
@@ -67,15 +59,8 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
 
         // No component to open means the window was launched from the Journal's "+" button to create a
         // new one; a supplied component means it was opened ("Open as ...") to edit that component.
-        final FormMode mode = entityFacade == null ? FormMode.CREATE : FormMode.EDIT;
-
-        genPurposeViewModel = new GenPurposeViewModel();
-        genPurposeViewModel.setPropertyValue(VIEW_PROPERTIES, getViewProperties())
-                .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
-                .setPropertyValue(WINDOW_TOPIC, getWindowTopic())
-                .setPropertyValue(FIELDS_COLLECTION, new ArrayList<String>()) // Ordered collection of Fields
-                .setPropertyValue(REF_COMPONENT, entityFacade);
-        genPurposeViewModel.setMode(mode);
+        // Edits go through the window's derived coordinate (#660), not the raw journal one.
+        session = new WindowEditSession(getViewProperties(), entityFacade);
 
         // The view is the window's root pane. The window's KL ViewContext goes on it before the
         // controller builds the definition's sections, whose KL areas resolve that context (#660).
@@ -83,10 +68,8 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
         paneWindow = view;
         establishViewContext();
 
-        // Wires the window's behavior onto the view for the definition, against the window's
-        // derived coordinate (#660), not the raw journal one.
-        controller = new GenPurposeDetailsController(view, genPurposeViewModel, klEditorWindowPreferences,
-                getViewProperties());
+        // Wires the window's behavior onto the view for the definition.
+        controller = new GenPurposeDetailsController(view, session, journalTopic, klEditorWindowPreferences);
 
         // Calls the remove method to remove and concepts that were closed by the user.
         controller.setOnCloseConceptWindow(windowEvent -> {
@@ -148,9 +131,8 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
     }
 
     private void listenToEntityChanges() {
-        // Listen to semantic changes (caused by a newly commited semantic)
-        ObjectProperty<EntityFacade> refComponentProperty = genPurposeViewModel.getProperty(REF_COMPONENT);
-        refComponentProperty.subscribe((eF) -> {
+        // The component the window frames: the one created in create mode, once it exists.
+        session.componentProperty().subscribe((eF) -> {
             this.setEntityFacade(eF);
             // save to preference
             this.save(); // call captureAdditionalState of AbstractEntityChapterKLWindow

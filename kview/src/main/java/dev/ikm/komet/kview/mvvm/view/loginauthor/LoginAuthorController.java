@@ -88,8 +88,9 @@ public class LoginAuthorController {
         userChooser.valueProperty().bindBidirectional(loginAuthorViewModel.getProperty(SELECTED_AUTHOR));
         passwordField.textProperty().bindBidirectional(loginAuthorViewModel.getProperty(PASSWORD));
 
-        // Default the picker to the last-used author from preferences (ike-issues#754).
-        ComponentWithNid defaultAuthor = resolveDefaultAuthor();
+        // Default the picker to the last-used author from preferences (ike-issues#754), unless the
+        // launch preselected one (a --user whose password did not check, ike-issues#1139).
+        ComponentWithNid defaultAuthor = userChooser.getValue() != null ? null : resolveDefaultAuthor();
         if (defaultAuthor != null) {
             userChooser.setValue(defaultAuthor);
         }

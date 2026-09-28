@@ -118,6 +118,60 @@
     -fx-stroke: null;
 }
 
+/* Pinned ancestors of the first visible concept (ikmdev/komet-desktop#151) */
+.concept-navigator-control.tree-view > .pinned-ancestors {
+    -fx-background-color: -Grey-6, -Grey-2;
+    -fx-background-insets: 0, 0 0 1 0;
+    -fx-padding: 0 0 3 0;
+    -fx-effect: dropshadow(gaussian, #21243047, 6, 0, 0, 3);
+}
+
+.concept-navigator-control.tree-view > .pinned-ancestors > .toggle-row {
+    -fx-padding: 0 8 0 4;
+    -fx-border-color: transparent transparent -Grey-5 transparent;
+    -fx-border-style: dashed;
+    -fx-border-width: 0 0 1 0;
+}
+
+.concept-navigator-control.tree-view > .pinned-ancestors > .toggle-row > .button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 2 0 2 0;
+    -fx-graphic-text-gap: 6;
+    -fx-cursor: hand;
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: 500;
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: -Secondary-06;
+}
+
+.concept-navigator-control.tree-view > .pinned-ancestors > .toggle-row > .button:hover {
+    -fx-text-fill: -Secondary-07;
+    -fx-underline: true;
+}
+
+.concept-navigator-control.tree-view > .pinned-ancestors > .toggle-row > .button > .chevron {
+    -fx-shape: "M0 0 L1.4 0 L5 4 L1.4 8 L0 8 L3.6 4 Z";
+    -fx-background-color: -Secondary-06;
+    -fx-min-width: 5;
+    -fx-pref-width: 5;
+    -fx-max-width: 5;
+    -fx-min-height: 8;
+    -fx-pref-height: 8;
+    -fx-max-height: 8;
+}
+
+.concept-navigator-control.tree-view > .pinned-ancestors > .toggle-row > .button:expanded > .chevron {
+    -fx-rotate: 90;
+}
+
+.concept-navigator-control.tree-view > .pinned-ancestors > .toggle-row > .count-label {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: -Grey-9;
+}
+
 .navigator-tree-cell.tree-cell {
     -fx-background: transparent;
     -fx-background-insets: 0;

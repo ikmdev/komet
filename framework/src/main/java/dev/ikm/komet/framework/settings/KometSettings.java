@@ -50,6 +50,7 @@ public final class KometSettings {
     static final String SHOW_DEFINITION_STATUS_KEY = KEY_PREFIX + "showDefinitionStatus";
     static final String SHOW_MULTIPLE_PARENTS_KEY = KEY_PREFIX + "showMultipleParents";
     static final String DISPLAY_LANGUAGE_KEY = KEY_PREFIX + "displayLanguage";
+    static final String REOPEN_WINDOWS_KEY = KEY_PREFIX + "reopenWindowsAtLaunch";
 
     /** Lazily created so the preferences service is only looked up on first use. */
     private static final class Holder {
@@ -85,12 +86,14 @@ public final class KometSettings {
         showDefinitionStatus.set(preferences.getBoolean(SHOW_DEFINITION_STATUS_KEY, true));
         showMultipleParents.set(preferences.getBoolean(SHOW_MULTIPLE_PARENTS_KEY, true));
         displayLanguage.set(readEnum(DISPLAY_LANGUAGE_KEY, DisplayLanguage.SYSTEM_DEFAULT));
+        reopenWindowsAtLaunch.set(preferences.getBoolean(REOPEN_WINDOWS_KEY, true));
 
         textSize.subscribe(() -> store(TEXT_SIZE_KEY, textSize.get().name()));
         showKindSigil.subscribe(() -> store(SHOW_KIND_SIGIL_KEY, showKindSigil.get()));
         showDefinitionStatus.subscribe(() -> store(SHOW_DEFINITION_STATUS_KEY, showDefinitionStatus.get()));
         showMultipleParents.subscribe(() -> store(SHOW_MULTIPLE_PARENTS_KEY, showMultipleParents.get()));
         displayLanguage.subscribe(() -> store(DISPLAY_LANGUAGE_KEY, displayLanguage.get().name()));
+        reopenWindowsAtLaunch.subscribe(() -> store(REOPEN_WINDOWS_KEY, reopenWindowsAtLaunch.get()));
     }
 
     /*=*************************************************************************
@@ -174,6 +177,23 @@ public final class KometSettings {
     }
     public final void setDisplayLanguage(DisplayLanguage value) {
         displayLanguage.set(value);
+    }
+
+    // -- reopen windows at launch
+    /**
+     * Whether opening a knowledge base reopens the journals and KL editor windows that were open
+     * when Komet last quit on it, where they were (IKE-Network/ike-issues#1151). On by default;
+     * the {@code --no-restore} launch option skips it for one launch.
+     */
+    private final BooleanProperty reopenWindowsAtLaunch = new SimpleBooleanProperty(this, "reopenWindowsAtLaunch");
+    public final BooleanProperty reopenWindowsAtLaunchProperty() {
+        return reopenWindowsAtLaunch;
+    }
+    public final boolean isReopenWindowsAtLaunch() {
+        return reopenWindowsAtLaunch.get();
+    }
+    public final void setReopenWindowsAtLaunch(boolean value) {
+        reopenWindowsAtLaunch.set(value);
     }
 
     /*=*************************************************************************
