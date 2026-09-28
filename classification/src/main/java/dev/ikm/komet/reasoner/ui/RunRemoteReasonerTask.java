@@ -68,7 +68,9 @@ public class RunRemoteReasonerTask extends TrackingCallable<RemoteReasonerServic
                 reasonerService.runFullReasoner((step, totalSteps, message) -> {
                     updateMessage("Step " + step + " of " + totalSteps + ": " + message);
                     updateProgress(step, totalSteps);
-                });
+                }, this);
+        // this, as the tracker: Komet's cancel calls cancel() on this task, and the remote
+        // service watches it to stop the classification server-side.
         updateMessage("Reasoner run complete in " + durationString());
         if (outcomeConsumer != null) {
             outcomeConsumer.accept(outcome);

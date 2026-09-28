@@ -112,6 +112,10 @@ public class TaskWrapper<V> extends Task<V> implements TrackingListener<V> {
     @Override
     protected void cancelled() {
         this.trackingCallable.cancel();
+        // Removed as succeeded() and failed() do: left in executingTasks, a cancelled task keeps
+        // the Activity indicator spinning forever.
+        TaskListsService.get().pendingTasks().remove(this);
+        TaskListsService.get().executingTasks().remove(this);
     }
 
     @Override

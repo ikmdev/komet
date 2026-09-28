@@ -260,10 +260,11 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 				Thread.currentThread().interrupt();
 				LOG.info(ie.getMessage(), ie);
 			} catch (CancellationException ce) {
-				// Cancels the local wait only: the server keeps classifying, because the RPC has
-				// no cancellation hook yet. The user stops watching, not the work.
-				LOG.info(ce.getMessage(), ce);
-				task.updateMessage("Stopped waiting for the remote reasoner");
+				// Stops the run on the server, not just the wait: cancelling the task is what the
+				// remote client watches for, and it then asks the server to cancel. Expected, so
+				// logged without a stack trace.
+				LOG.info("Remote reasoner cancelled");
+				task.updateMessage("Cancelled full reasoner");
 				task.cancel();
 				ProgressHelper.cancel(javafxTask);
 			}
