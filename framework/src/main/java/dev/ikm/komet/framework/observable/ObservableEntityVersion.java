@@ -1,5 +1,6 @@
 package dev.ikm.komet.framework.observable;
 
+import dev.ikm.tinkar.common.util.SetOnce;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import dev.ikm.tinkar.entity.*;
@@ -60,7 +61,7 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
     private final ReadOnlyObjectWrapper<ConceptFacade> pathProperty = new ReadOnlyObjectWrapper<>();
 
     private final Supplier<ReadOnlyProperty<Feature<ObservableVersion>>> featurePropertySupplier =
-            StableValue.supplier(() -> new ReadOnlyObjectWrapper<>(this.getObservableEntity(),
+            SetOnce.supplier(() -> new ReadOnlyObjectWrapper<>(this.getObservableEntity(),
                     this.getClass().getSimpleName(),
                     (Feature<ObservableVersion>) this).getReadOnlyProperty());
 
@@ -362,8 +363,8 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
                 int analogueNid = analogue.nid();
                 LOG.info("save(): entity nid={} -> patternSeq={}, elementSeq={} (entityClass={})",
                         analogueNid,
-                        dev.ikm.tinkar.common.id.impl.NidCodec6.decodePatternSequence(analogueNid),
-                        dev.ikm.tinkar.common.id.impl.NidCodec6.decodeElementSequence(analogueNid),
+                        dev.ikm.tinkar.common.id.impl.NidLayout.active().decodePatternSequence(analogueNid),
+                        dev.ikm.tinkar.common.id.impl.NidLayout.active().decodeElementSequence(analogueNid),
                         analogue.getClass().getSimpleName());
                 LOG.info("save(): Saving uncommitted version to database: entity: \n{}" +
                         "\n\n new version: {}, \n\n old version: {}", analogue, newVersion, oldVersion);

@@ -22,6 +22,6 @@ mvn clean verify -DskipTests -T4
 
 - GroupId: `dev.ikm.komet`
 - Parent: `network.ike:ike-parent`
-- Uses `--enable-preview` (Java 25)
+- Uses `--enable-preview` (Java 27)
 - BOM: imports `dev.ikm.ike:ike-bom`
 - 18 submodules using `<subprojects>` aggregation

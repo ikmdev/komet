@@ -9,6 +9,9 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityHandle;
 import javafx.scene.image.Image;
 
+import java.util.OptionalInt;
+import java.util.UUID;
+
 /**
  * Creates {@link KLDiTreeControl}s wired to the rest of the app — the counterpart of
  * {@link KLComponentControlFactory} for the editable axiom tree. The control itself is a pure UI
@@ -43,8 +46,23 @@ public final class KLDiTreeControlFactory {
         // Seeds for newly added property sets, mirroring the classic axiom control's
         // AddPropertySet / AddDataPropertySet / AddIntervalPropertySet actions
         // (SnomedIds.concept_model_object_attribute / concept_model_data_attribute).
-        control.setPropertySetSeedNid(PrimitiveData.nid(UuidUtil.fromSNOMED("762705008")));
-        control.setDataPropertySetSeedNid(PrimitiveData.nid(UuidUtil.fromSNOMED("762706009")));
+        // Seeds only when the knowledge base has SNOMED; otherwise they stay unset (zero) and
+        // the add-property-set items are disabled, rather than the whole view failing
+        // (IKE-Network/ike-issues#1141).
+        seedNid(UuidUtil.fromSNOMED("762705008")).ifPresent(control::setPropertySetSeedNid);
+        seedNid(UuidUtil.fromSNOMED("762706009")).ifPresent(control::setDataPropertySetSeedNid);
         return control;
+    }
+
+    /**
+     * Resolves a seed concept's nid, or empty if the knowledge base does not contain it.
+     *
+     * @param uuid the seed concept's UUID
+     * @return the nid, if the concept exists
+     */
+    private static OptionalInt seedNid(UUID uuid) {
+        return PrimitiveData.get().hasUuid(uuid)
+                ? OptionalInt.of(PrimitiveData.nid(uuid))
+                : OptionalInt.empty();
     }
 }

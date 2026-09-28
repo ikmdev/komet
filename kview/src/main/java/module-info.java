@@ -65,7 +65,7 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view.timeline to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.timeline;
 
-    opens dev.ikm.komet.kview.mvvm.view.journal to javafx.fxml, org.carlfx.cognitive, dev.ikm.komet.application;
+    opens dev.ikm.komet.kview.mvvm.view.journal to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.journal;
 
     opens dev.ikm.komet.kview.mvvm.view.landingpage to javafx.fxml, org.carlfx.cognitive;
@@ -165,7 +165,7 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.klwindows.genediting to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.klwindows;
     opens dev.ikm.komet.kview.klwindows to javafx.fxml, org.carlfx.cognitive;
-    opens dev.ikm.komet.kview.mvvm.viewmodel to dev.ikm.komet.application, javafx.fxml, org.carlfx.cognitive;
+    opens dev.ikm.komet.kview.mvvm.viewmodel to javafx.fxml, org.carlfx.cognitive;
 
     exports dev.ikm.komet.kview.mvvm.view.confirmation;
     opens dev.ikm.komet.kview.mvvm.view.confirmation;
@@ -176,7 +176,7 @@ module dev.ikm.komet.kview {
     exports dev.ikm.komet.kview.mvvm.view.loginauthor;
     opens dev.ikm.komet.kview.mvvm.view.loginauthor;
     exports dev.ikm.komet.kview.mvvm.viewmodel.stamp;
-    opens dev.ikm.komet.kview.mvvm.viewmodel.stamp to dev.ikm.komet.application, javafx.fxml, org.carlfx.cognitive;
+    opens dev.ikm.komet.kview.mvvm.viewmodel.stamp to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.genpurpose.control;
     opens dev.ikm.komet.kview.mvvm.view.genpurpose.control to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.genpurpose.control.table;
