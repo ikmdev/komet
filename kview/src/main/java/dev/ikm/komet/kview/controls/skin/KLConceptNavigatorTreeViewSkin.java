@@ -45,6 +45,7 @@ import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.control.ScrollToEvent;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.skin.TreeViewSkin;
@@ -103,6 +104,8 @@ import static dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem.PS_STATE;
  * <p>During the drag gesture, an image of the {@link ConceptTile} of each selected item is combined
  * to create the {@link Dragboard#setDragView(Image) dragView}.
  * <p>Two context menus are created, based on single or multiple selection.</p>
+ * <p>The ancestors of the first visible concept are pinned on top of the treeView, with a
+ * {@link PinnedAncestorsPane}, so they are known at any scroll position.</p>
  */
 public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> {
 
@@ -114,6 +117,8 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
     private final KLConceptNavigatorControl treeView;
     private ConceptNavigatorVirtualFlow virtualFlow;
     private final Path draggingBox;
+    private final PinnedAncestorsPane pinnedAncestors;
+    private ConceptNavigatorTreeItem scrollTarget;
     private Group sheet;
     private double x, y;
     private double xMin, yMin, xMax, yMax;
@@ -171,7 +176,18 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
         clip.widthProperty().bind(virtualFlow.widthProperty());
         clip.heightProperty().bind(virtualFlow.heightProperty());
         draggingBox.setClip(clip);
-        getChildren().addAll(header, draggingBox);
+        pinnedAncestors = new PinnedAncestorsPane(treeView, virtualFlow);
+        virtualFlow.setOnLayout(this::updatePinnedAncestors);
+        getChildren().addAll(header, pinnedAncestors, draggingBox);
+
+        // The pinned ancestors cover the top of the virtual flow: an item that is scrolled to the top
+        // has to be moved below them, once the virtual flow has it in place
+        treeView.addEventHandler(ScrollToEvent.scrollToTopIndex(), e -> {
+            if (treeView.getTreeItem(e.getScrollTarget()) instanceof ConceptNavigatorTreeItem item) {
+                scrollTarget = item;
+                virtualFlow.requestLayout();
+            }
+        });
 
         ObservableList<TreeItem<ConceptFacade>> selectedItems = treeView.getSelectionModel().getSelectedItems();
         selectedItems.addListener((ListChangeListener<TreeItem<ConceptFacade>>) c -> {
@@ -497,6 +513,35 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
     }
 
     /**
+     * <p>After each layout pass of the virtual flow, finds the ancestors to pin for the new scroll position.
+     * <p>If the layout pass follows a request to scroll to an item, the item is at the top of the virtual flow,
+     * where its own pinned ancestors cover it. In that case, the virtual flow is scrolled back, until
+     * the item shows up right below them.
+     */
+    private void updatePinnedAncestors() {
+        pinnedAncestors.update();
+        if (scrollTarget == null) {
+            return;
+        }
+        ConceptNavigatorTreeItem target = scrollTarget;
+        scrollTarget = null;
+        // the first pass relies on the estimated height of the pinned ancestors of the item, and
+        // the second one on the actual height, once these are pinned
+        for (int i = 0; i < 2; i++) {
+            boolean estimated = i == 0;
+            getCellForTreeItem(target).ifPresent(cell -> {
+                double top = virtualFlow.sceneToLocal(cell.localToScene(0, 0)).getY();
+                double height = estimated ? pinnedAncestors.getHeightFor(target) :
+                        pinnedAncestors.covers(cell) ? pinnedAncestors.getHeight() : 0;
+                if (height - top >= 0.5) {
+                    virtualFlow.scrollPixels(top - height);
+                    pinnedAncestors.update();
+                }
+            });
+        }
+    }
+
+    /**
      * Gets the group node of the virtual flow, which contains the actual {@link KLConceptNavigatorTreeCell cells}.
      *
      * @return the {@link Group} node with cells.
@@ -528,6 +573,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
      */
     private void unmarkAllItems(STATE state) {
         getConceptNavigatorTreeCellStream().forEach(ConceptNavigatorHelper::unselectItem);
+        pinnedAncestors.getCellStream().forEach(ConceptNavigatorHelper::unselectItem);
         ConceptNavigatorUtils.iterateTree((ConceptNavigatorTreeItem) getSkinnable().getRoot(), model -> {
             PS_STATE.clearBitsRange(model.getBitSet(), state);
             markCellDirty(model);
@@ -607,6 +653,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
      */
     private void markCellDirty(ConceptNavigatorTreeItem treeItem) {
         getCellForTreeItem(treeItem).ifPresent(ConceptNavigatorHelper::markCellDirty);
+        pinnedAncestors.getCellForTreeItem(treeItem).ifPresent(ConceptNavigatorHelper::markCellDirty);
     }
 
     /**
@@ -645,6 +692,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
             yMax = Double.MIN_VALUE;
             getConceptNavigatorTreeCellStream()
                     .filter(cell -> cell.getGraphic() != null)
+                    .filter(cell -> !pinnedAncestors.covers(cell))
                     .forEach(cell -> {
                         Node graphic = cell.getGraphic();
                         Bounds sceneBounds = graphic.localToScene(graphic.getLayoutBounds());
@@ -911,8 +959,8 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
         Platform.runLater(() -> {
             treeView.getSelectionModel().select(item);
             int index = treeView.getSelectionModel().getSelectedIndex();
-            // check if the item is visible
-            if (getCellForTreeItem(item).isEmpty()) {
+            // check if the item is visible, and not covered by the pinned ancestors
+            if (getCellForTreeItem(item).filter(cell -> !pinnedAncestors.covers(cell)).isEmpty()) {
                 // else scroll to it (in case of a long list of previous siblings)
                 treeView.scrollTo(index);
             }

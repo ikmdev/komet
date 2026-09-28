@@ -23,6 +23,7 @@ module dev.ikm.komet.kview.test {
     requires dev.ikm.komet.kview;
     requires dev.ikm.komet.preferences;
     requires dev.ikm.komet.layout;
+    requires dev.ikm.komet.navigator;
     requires dev.ikm.tinkar.entity;
     requires org.eclipse.collections.api;
     requires dev.ikm.tinkar.common;
