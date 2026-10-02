@@ -223,9 +223,14 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
+                        <!-- Lucene 10.5.1 turns its Vector API code on only up to Java 26 and warns on 27.
+                             The property raises that limit; the full suite passes with it. Drop it when
+                             a Lucene release supports Java 27. -->
                         <argLine>
                             --enable-preview
+                            --enable-native-access=ALL-UNNAMED
                             --add-modules jdk.incubator.vector
+                            -Dorg.apache.lucene.vectorization.upperJavaFeatureVersion=27
                         </argLine>
                     </configuration>
                 </plugin>
@@ -284,9 +289,14 @@
                                     <includes>
                                         <include>**/*ITestFX.java</include>
                                     </includes>
+                                    <!-- Lucene 10.5.1 turns its Vector API code on only up to Java 26 and warns on 27.
+                                         The property raises that limit; the full suite passes with it. Drop it when
+                                         a Lucene release supports Java 27. -->
                                     <argLine>
                                         --enable-preview
+                                        --enable-native-access=ALL-UNNAMED
                                         --add-modules jdk.incubator.vector
+                                        -Dorg.apache.lucene.vectorization.upperJavaFeatureVersion=27
                                         ${commonTestFXArgs}
                                     </argLine>
                                     <forkCount>1</forkCount>
@@ -331,9 +341,14 @@
                                     <includes>
                                         <include>**/*UTestFX.java</include>
                                     </includes>
+                                    <!-- Lucene 10.5.1 turns its Vector API code on only up to Java 26 and warns on 27.
+                                         The property raises that limit; the full suite passes with it. Drop it when
+                                         a Lucene release supports Java 27. -->
                                     <argLine>
                                         --enable-preview
+                                        --enable-native-access=ALL-UNNAMED
                                         --add-modules jdk.incubator.vector
+                                        -Dorg.apache.lucene.vectorization.upperJavaFeatureVersion=27
                                         ${commonTestFXArgs}
                                     </argLine>
                                 </configuration>
