@@ -15,10 +15,8 @@
  */
 package dev.ikm.komet.kview.klwindows;
 
+import dev.ikm.komet.framework.ComponentLookup;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.common.id.PublicIds;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Maps;
 import org.slf4j.Logger;
@@ -289,10 +287,12 @@ public class EntityKlWindowState {
 
     /**
      * Resolves the entity associated with this window to its nid in the open knowledge base.
-     * <p>     * The entity is stored by UUID only. A nid is local to one knowledge base, so it is
+     *
+     * <p>The entity is stored by UUID only. A nid is local to one knowledge base, so it is
      * never stored; it is looked up here each time, against the knowledge base that is open
      * now ({@code IKE-Network/ike-issues#1171}). A UUID the open knowledge base does not hold
-     * resolves to nothing, and no nid is assigned for it.
+     * resolves to nothing, and no nid is assigned for it. In a knowledge base served remotely
+     * the entity is fetched to find out ({@link ComponentLookup}).
      *
      * @return the nid of the associated entity, or empty if no entity is associated or the
      *         open knowledge base does not hold it
@@ -301,11 +301,7 @@ public class EntityKlWindowState {
         if (entityUuid == null) {
             return OptionalInt.empty();
         }
-        PublicId publicId = PublicIds.of(entityUuid);
-        if (!PrimitiveData.get().hasPublicId(publicId)) {
-            return OptionalInt.empty();
-        }
-        return OptionalInt.of(PrimitiveData.nid(publicId));
+        return ComponentLookup.nid(entityUuid);
     }
 
     /**
