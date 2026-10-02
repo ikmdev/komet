@@ -247,6 +247,7 @@
                             <argLine>
                                 --enable-preview
                                 --enable-native-access=ALL-UNNAMED
+                                --sun-misc-unsafe-memory-access=allow
                                 --add-modules jdk.incubator.vector
                                 -Dorg.apache.lucene.vectorization.upperJavaFeatureVersion=27
                                 -Dtestfx.headless=true
