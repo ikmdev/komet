@@ -16,6 +16,9 @@
 package dev.ikm.komet.kview.klwindows;
 
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.common.service.PrimitiveData;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Maps;
 import org.slf4j.Logger;
@@ -23,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 import java.util.prefs.BackingStoreException;
 import java.util.stream.Stream;
@@ -38,7 +42,9 @@ import static dev.ikm.komet.kview.controls.KLWorkspace.DEFAULT_WINDOW_WIDTH;
  * <p>The class includes:
  * <ul>
  *   <li>Core window properties (position, size, identifier)</li>
- *   <li>Entity reference properties (UUID, NID, type information)</li>
+ *   <li>Entity reference properties (UUID, type information). The entity's nid is not stored:
+ *       a nid is local to one knowledge base, and is resolved from the UUID when the window
+ *       is restored ({@link #resolveEntityNid()})</li>
  *   <li>Support for arbitrary additional properties through a key-value mechanism</li>
  *   <li>Builder pattern for convenient instance creation</li>
  *   <li>Preference persistence and restoration facilities</li>
@@ -106,12 +112,15 @@ public class EntityKlWindowState {
     public static final String ENTITY_UUID = "ENTITY_UUID";
 
     /**
-     * Preference key for the associated entity's NID (Node Identifier).
+     * Preference key under which earlier builds stored the associated entity's nid. It is no
+     * longer written or read; saving a window's state removes it
+     * ({@code IKE-Network/ike-issues#1171}).
      */
-    public static final String ENTITY_NID = "ENTITY_NID";
+    private static final String LEGACY_ENTITY_NID = "ENTITY_NID";
 
     /**
-     * Preference key for the associated entity's NID type classification.
+     * Preference key for how the associated entity is to be read when the window is restored:
+     * the name of a {@code NidTextEnum} constant. It holds no nid.
      */
     public static final String ENTITY_NID_TYPE = "ENTITY_NID_TYPE";
 
@@ -135,7 +144,6 @@ public class EntityKlWindowState {
 
     // Entity properties
     private UUID entityUuid;
-    private int entityNid;
     private String entityNidType;
 
     // Additional custom properties
@@ -280,23 +288,24 @@ public class EntityKlWindowState {
     }
 
     /**
-     * Returns the NID (Node Identifier) of the entity associated with this window.
-     * <p>     * The NID is an internal identifier used to reference entities within the
-     * knowledge model system.
+     * Resolves the entity associated with this window to its nid in the open knowledge base.
+     * <p>     * The entity is stored by UUID only. A nid is local to one knowledge base, so it is
+     * never stored; it is looked up here each time, against the knowledge base that is open
+     * now ({@code IKE-Network/ike-issues#1171}). A UUID the open knowledge base does not hold
+     * resolves to nothing, and no nid is assigned for it.
      *
-     * @return the associated entity's NID, or 0 if no entity is associated
+     * @return the nid of the associated entity, or empty if no entity is associated or the
+     *         open knowledge base does not hold it
      */
-    public int getEntityNid() {
-        return entityNid;
-    }
-
-    /**
-     * Sets the NID (Node Identifier) of the entity associated with this window.
-     *
-     * @param entityNid the NID of the entity to associate with this window
-     */
-    public void setEntityNid(int entityNid) {
-        this.entityNid = entityNid;
+    public OptionalInt resolveEntityNid() {
+        if (entityUuid == null) {
+            return OptionalInt.empty();
+        }
+        PublicId publicId = PublicIds.of(entityUuid);
+        if (!PrimitiveData.get().hasPublicId(publicId)) {
+            return OptionalInt.empty();
+        }
+        return OptionalInt.of(PrimitiveData.nid(publicId));
     }
 
     /**
@@ -545,17 +554,6 @@ public class EntityKlWindowState {
         }
 
         /**
-         * Sets the associated entity NID.
-         *
-         * @param nid the entity NID to associate with the window
-         * @return this builder instance for method chaining
-         */
-        public Builder entityNid(int nid) {
-            state.setEntityNid(nid);
-            return this;
-        }
-
-        /**
          * Sets the associated entity NID type.
          *
          * @param nidType the entity NID type classification
@@ -621,9 +619,9 @@ public class EntityKlWindowState {
                 preferences.put(ENTITY_UUID, entityUuid.toString());
             }
 
-            if (entityNid != 0) {
-                preferences.putInt(ENTITY_NID, entityNid);
-            }
+            // A node saved by an earlier build holds the entity's nid as well. Remove it, so
+            // that no nid stays in preferences.
+            preferences.remove(LEGACY_ENTITY_NID);
 
             if (entityNidType != null) {
                 preferences.put(ENTITY_NID_TYPE, entityNidType);
@@ -742,8 +740,9 @@ public class EntityKlWindowState {
 
     /**
      * Helper method to load entity properties from preferences.
-     * <p>     * This method extracts entity-related properties (UUID, NID, and NID type)
-     * from the given preferences node and populates the window state object.
+     * <p>     * This method extracts entity-related properties (UUID and NID type)
+     * from the given preferences node and populates the window state object. A nid
+     * stored by an earlier build is not read.
      *
      * @param preferences the preferences node to load from
      * @param state       the window state instance to populate
@@ -757,7 +756,6 @@ public class EntityKlWindowState {
             }
         });
 
-        preferences.getInt(ENTITY_NID).ifPresent(nid -> state.entityNid = nid);
         preferences.get(ENTITY_NID_TYPE).ifPresent(nidType -> state.entityNidType = nidType);
     }
 
@@ -917,7 +915,6 @@ public class EntityKlWindowState {
                 ", position=(" + xPos + "," + yPos + ")" +
                 ", size=(" + width + "x" + height + ")" +
                 ", entityUuid=" + entityUuid +
-                ", entityNid=" + entityNid +
                 ", entityNidType=" + entityNidType +
                 ", additionalProperties={" + additionalProperties.entrySet().stream().map(
                 entry -> entry.getKey() + "=" + entry.getValue()

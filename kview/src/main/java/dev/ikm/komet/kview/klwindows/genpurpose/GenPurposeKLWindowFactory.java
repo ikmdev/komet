@@ -90,12 +90,12 @@ public class GenPurposeKLWindowFactory implements EntityKlWindowFactory {
                 final ViewProperties viewProperties = journalViewProperties;
 
                 // Try to extract entity facade from saved state
-                final int entityNid = windowState.getEntityNid();
+                final OptionalInt entityNid = windowState.resolveEntityNid();
                 final NidTextEnum nidTextEnum = NidTextEnum.fromString(windowState.getEntityNidType())
                         .orElse(NidTextEnum.NID_TEXT);
                 EntityFacade entityFacade = null;
-                if (entityNid != 0) {
-                    entityFacade = fetchEntity(entityNid, nidTextEnum);
+                if (entityNid.isPresent()) {
+                    entityFacade = fetchEntity(entityNid.getAsInt(), nidTextEnum);
                 }
 
                 // Resolve the KL-editor window definition (title, sections, fields) the window

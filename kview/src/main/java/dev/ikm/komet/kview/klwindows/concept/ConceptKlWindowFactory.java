@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
@@ -76,12 +77,12 @@ public class ConceptKlWindowFactory implements EntityKlWindowFactory {
                 final ViewProperties viewProperties = journalViewProperties;
 
                 // Try to extract entity facade from saved state
-                final int entityNid = windowState.getEntityNid();
+                final OptionalInt entityNid = windowState.resolveEntityNid();
                 final NidTextEnum nidTextEnum = NidTextEnum.fromString(windowState.getEntityNidType())
                         .orElse(NidTextEnum.NID_TEXT);
                 ConceptFacade conceptFacade = null;
-                if (entityNid != 0) {
-                    conceptFacade = createConceptEntity(entityNid, nidTextEnum);
+                if (entityNid.isPresent()) {
+                    conceptFacade = createConceptEntity(entityNid.getAsInt(), nidTextEnum);
                 }
 
                 // Create the window with the extracted parameters

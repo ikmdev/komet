@@ -27,6 +27,7 @@ import javafx.scene.layout.Pane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.OptionalInt;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
@@ -207,8 +208,8 @@ public final class DynamicCardKlWindow extends AbstractChapterKlWindow<Pane> {
         // Migration fallback: a window saved before the card persisted its own content has an empty card
         // node, so revert() loaded no layout — seed the card from the legacy window-state copy.
         if (!card.isContentRestored()) {
-            final int entityNid = windowState.getEntityNid();
-            card.setReferenceComponent(entityNid != 0 ? Entity.getFast(entityNid) : null);
+            final OptionalInt entityNid = windowState.resolveEntityNid();
+            card.setReferenceComponent(entityNid.isPresent() ? Entity.getFast(entityNid.getAsInt()) : null);
             preferences.get(DYNAMIC_CARD_LAYOUT_TITLE).ifPresent(title ->
                     card.setEditorWindowPreferences(KometPreferencesImpl.getConfigurationRootPreferences()
                             .node(KL_EDITOR_APP).node(KL_USER_WINDOWS_DIR).node(title)));
@@ -275,8 +276,8 @@ public final class DynamicCardKlWindow extends AbstractChapterKlWindow<Pane> {
 
     @Override
     protected void captureAdditionalState(EntityKlWindowState state) {
+        // The entity is stored by UUID only; a nid is local to one knowledge base.
         if (entityFacade != null) {
-            state.setEntityNid(entityFacade.nid());
             if (entityFacade.publicId() != null) {
                 UUID[] uuids = entityFacade.publicId().asUuidArray();
                 if (uuids.length > 0) {

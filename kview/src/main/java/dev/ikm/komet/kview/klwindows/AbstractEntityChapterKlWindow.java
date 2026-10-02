@@ -205,9 +205,9 @@ public abstract class AbstractEntityChapterKlWindow extends AbstractChapterKlWin
 
     @Override
     protected void captureAdditionalState(EntityKlWindowState state) {
-        // Save entity information if available
+        // Save entity information if available: its UUID only. A nid is local to one knowledge
+        // base, so it is never stored (IKE-Network/ike-issues#1171).
         if (entityFacade != null) {
-            state.setEntityNid(entityFacade.nid());
             if (entityFacade.publicId() != null) {
                 UUID[] uuids = entityFacade.publicId().asUuidArray();
                 if (uuids.length > 0) {

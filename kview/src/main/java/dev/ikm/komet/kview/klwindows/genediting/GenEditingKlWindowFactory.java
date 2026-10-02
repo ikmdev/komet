@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
@@ -68,10 +69,10 @@ public class GenEditingKlWindowFactory implements EntityKlWindowFactory {
                 final ViewProperties viewProperties = journalViewProperties;
 
                 // Try to extract entity facade from saved state
-                final int entityNid = windowState.getEntityNid();
+                final OptionalInt entityNid = windowState.resolveEntityNid();
                 EntityFacade entityFacade = null;
-                if (entityNid != 0) {
-                    entityFacade = EntityService.get().getEntityFast(entityNid);
+                if (entityNid.isPresent()) {
+                    entityFacade = EntityService.get().getEntityFast(entityNid.getAsInt());
                 }
 
                 // Create the window with the extracted parameters
