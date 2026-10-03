@@ -245,6 +245,7 @@
                                  The property raises that limit; the full suite passes with it. Drop it when
                                  a Lucene release supports Java 27. -->
                             <argLine>
+                                @{failsafeArgLine}
                                 --enable-preview
                                 --enable-native-access=ALL-UNNAMED
                                 --sun-misc-unsafe-memory-access=allow
