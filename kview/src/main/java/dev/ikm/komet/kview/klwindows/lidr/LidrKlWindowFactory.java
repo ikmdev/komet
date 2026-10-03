@@ -18,8 +18,6 @@ package dev.ikm.komet.kview.klwindows.lidr;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.klwindows.*;
-import dev.ikm.komet.layout.context.KlContextFactory;
-import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -48,11 +46,6 @@ public class LidrKlWindowFactory implements EntityKlWindowFactory {
     public LidrKlWindow create(UUID journalTopic, EntityFacade deviceConcept,
                                ViewProperties viewProperties, KometPreferences preferences) {
         return new LidrKlWindow(journalTopic, deviceConcept, viewProperties, preferences);
-    }
-
-    @Override
-    public LidrKlWindow create(KlPreferencesFactory preferencesFactory) {
-        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     public LidrKlWindow restore(WindowSettings windowSettings, KometPreferences preferences,
@@ -98,8 +91,4 @@ public class LidrKlWindowFactory implements EntityKlWindowFactory {
         return EntityKlWindowTypes.LIDR;
     }
 
-    @Override
-    public AbstractEntityChapterKlWindow restore(KometPreferences preferences) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
 }

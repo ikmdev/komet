@@ -1,18 +1,12 @@
 package dev.ikm.komet.kview.klwindows.genpurpose;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
-import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.WINDOW_ID;
-import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.WINDOW_TYPE;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
-import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowFactory;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowState;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
-import dev.ikm.komet.layout.LayoutComputer;
-import dev.ikm.komet.layout.area.AreaGridSettings;
-import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.preferences.NidTextEnum;
@@ -59,17 +53,6 @@ public class GenPurposeKLWindowFactory implements EntityKlWindowFactory {
                                      KometPreferences preferences,
                                      KometPreferences editorWindowPreferences) {
         return new GenPurposeKLWindow(journalTopic, entityFacade, viewProperties, preferences, editorWindowPreferences);
-    }
-
-    @Override
-    public GenPurposeKLWindow create(KlPreferencesFactory preferencesFactory) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    @Override
-    public AbstractEntityChapterKlWindow restore(KometPreferences preferences) {
-        Objects.requireNonNull(preferences, "Preferences cannot be null");
-        return null;
     }
 
     @Override
@@ -135,21 +118,6 @@ public class GenPurposeKLWindowFactory implements EntityKlWindowFactory {
             LOG.error("Failed to restore concept window from preferences", e);
             throw new RuntimeException("Concept window restoration failed", e);
         }
-    }
-
-    @Override
-    public String name() {
-        return EntityKlWindowFactory.super.name();
-    }
-
-    @Override
-    public AbstractEntityChapterKlWindow create(KlPreferencesFactory preferencesFactory, LayoutComputer layoutComputer) {
-        return EntityKlWindowFactory.super.create(preferencesFactory, layoutComputer);
-    }
-
-    @Override
-    public AbstractEntityChapterKlWindow create(KlPreferencesFactory preferencesFactory, AreaGridSettings areaLayoutForArea) {
-        return EntityKlWindowFactory.super.create(preferencesFactory, areaLayoutForArea);
     }
 
     @Override

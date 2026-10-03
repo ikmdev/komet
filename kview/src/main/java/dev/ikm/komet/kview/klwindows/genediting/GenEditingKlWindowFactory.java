@@ -18,8 +18,6 @@ package dev.ikm.komet.kview.klwindows.genediting;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.klwindows.*;
-import dev.ikm.komet.layout.context.KlContextFactory;
-import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -45,11 +43,6 @@ public class GenEditingKlWindowFactory implements EntityKlWindowFactory {
     public GenEditingKlWindow create(UUID journalTopic, EntityFacade entityFacade,
                                      ViewProperties viewProperties, KometPreferences preferences) {
         return new GenEditingKlWindow(journalTopic, entityFacade, viewProperties, preferences);
-    }
-
-    @Override
-    public GenEditingKlWindow create(KlPreferencesFactory preferencesFactory) {
-        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @SuppressWarnings("removal")
@@ -96,8 +89,4 @@ public class GenEditingKlWindowFactory implements EntityKlWindowFactory {
         return EntityKlWindowTypes.GEN_EDITING;
     }
 
-    @Override
-    public AbstractEntityChapterKlWindow restore(KometPreferences preferences) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
 }

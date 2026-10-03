@@ -18,9 +18,6 @@ package dev.ikm.komet.kview.klwindows.pattern;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.klwindows.*;
-import dev.ikm.komet.kview.klwindows.lidr.LidrKlWindow;
-import dev.ikm.komet.layout.context.KlContextFactory;
-import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -47,11 +44,6 @@ public class PatternKlWindowFactory implements EntityKlWindowFactory {
     public PatternKlWindow create(UUID journalTopic, EntityFacade entityFacade,
                                   ViewProperties viewProperties, KometPreferences preferences) {
         return new PatternKlWindow(journalTopic, entityFacade, viewProperties, preferences);
-    }
-
-    @Override
-    public LidrKlWindow create(KlPreferencesFactory preferencesFactory) {
-        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
@@ -98,8 +90,4 @@ public class PatternKlWindowFactory implements EntityKlWindowFactory {
         return EntityKlWindowTypes.PATTERN;
     }
 
-    @Override
-    public AbstractEntityChapterKlWindow restore(KometPreferences preferences) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
 }

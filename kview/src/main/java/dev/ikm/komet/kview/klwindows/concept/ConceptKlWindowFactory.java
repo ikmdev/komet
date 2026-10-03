@@ -18,8 +18,6 @@ package dev.ikm.komet.kview.klwindows.concept;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.klwindows.*;
-import dev.ikm.komet.layout.context.KlContextFactory;
-import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.NidTextEnum;
 import dev.ikm.tinkar.entity.Entity;
@@ -52,11 +50,6 @@ public class ConceptKlWindowFactory implements EntityKlWindowFactory {
                                   ViewProperties viewProperties,
                                   KometPreferences preferences) {
         return new ConceptKlWindow(journalTopic, entityFacade, viewProperties, preferences);
-    }
-
-    @Override
-    public ConceptKlWindow create(KlPreferencesFactory preferencesFactory) {
-        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
@@ -128,8 +121,4 @@ public class ConceptKlWindowFactory implements EntityKlWindowFactory {
         }
     }
 
-    @Override
-    public AbstractEntityChapterKlWindow restore(KometPreferences preferences) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
 }
