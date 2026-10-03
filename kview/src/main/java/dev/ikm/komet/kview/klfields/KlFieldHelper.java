@@ -56,15 +56,6 @@ import dev.ikm.komet.kview.klauthoring.readonly.floatfield.KlReadOnlyFloatFieldF
 import dev.ikm.komet.kview.klauthoring.readonly.imagefield.KlReadOnlyImageFieldFactory;
 import dev.ikm.komet.kview.klauthoring.readonly.integerfield.KlReadOnlyIntegerFieldFactory;
 import dev.ikm.komet.kview.klauthoring.readonly.stringfield.KlReadOnlyStringFieldFactory;
-import dev.ikm.komet.kview.klfields.booleanfield.KlBooleanFieldFactory;
-import dev.ikm.komet.kview.klfields.componentfield.KlComponentFieldFactory;
-import dev.ikm.komet.kview.klfields.componentlistfield.KlComponentListFieldFactory;
-import dev.ikm.komet.kview.klfields.componentsetfield.KlComponentSetFieldFactory;
-import dev.ikm.komet.kview.klfields.floatfield.KlFloatFieldFactory;
-import dev.ikm.komet.kview.klfields.imagefield.KlImageFieldFactory;
-import dev.ikm.komet.kview.klfields.integerfield.KlIntegerFieldFactory;
-import dev.ikm.komet.kview.klfields.readonly.ReadOnlyKLFieldFactory;
-import dev.ikm.komet.kview.klfields.stringfield.KlStringFieldFactory;
 import dev.ikm.komet.layout.InlineEditSaver;
 import dev.ikm.komet.layout.version.field.KlField;
 import dev.ikm.komet.layout.version.field.KlFieldFactory;
@@ -80,7 +71,6 @@ import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.Node;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
@@ -338,74 +328,6 @@ public class KlFieldHelper {
         return factory.create(observableFieldEditable, viewProperties.nodeView(), stamp4field);
 
     }
-    /**
-     * function to return the correct node given the semantic entity and field information
-     * @param fieldRecord
-     * @param observableField
-     * @param viewProperties
-     * @return
-     * @deprecated use {@link KlFieldHelper#createReadOnlyKlField} or {@link KlFieldHelper#createEditableKlField} instead. or
-     */
-    public static Node generateNode(final FieldRecord fieldRecord,
-                                    ObservableField observableField,
-                                    ViewProperties viewProperties,
-                                    ObservableStamp stamp4field,
-                                    UUID journalTopic) {
-
-        Node node = null;
-        ReadOnlyKLFieldFactory rowf = ReadOnlyKLFieldFactory.getInstance();
-        final FeatureDefinition featureDef = fieldRecord.fieldDefinition(viewProperties.calculator());
-        final int dataTypeNid = featureDef.dataTypeNid();
-
-        //TODO use pluggable service loader instead of new instances of factories
-
-        if (dataTypeNid == COMPONENT_FIELD.nid()) {
-            // load a read-only component
-            KlComponentFieldFactory componentFieldFactory = new KlComponentFieldFactory();
-            node = componentFieldFactory.create(observableField, viewProperties.nodeView(), stamp4field).fxObject();
-        } else if (dataTypeNid == CONCEPT_FIELD.nid()) {
-            // TODO: Create validation error message to the user to only allow concepts into this field.
-            //       This will be a read-only component field for now (editable = false).
-            KlComponentFieldFactory componentFieldFactory = new KlComponentFieldFactory();
-            node = componentFieldFactory.create(observableField, viewProperties.nodeView(), stamp4field).fxObject();
-        } else if (dataTypeNid == STRING_FIELD.nid() || dataTypeNid == STRING.nid()) {
-            KlStringFieldFactory stringFieldTextFactory = new KlStringFieldFactory();
-            node = stringFieldTextFactory.create(observableField, viewProperties.nodeView(), stamp4field).fxObject();
-        } else if (dataTypeNid == COMPONENT_ID_SET_FIELD.nid()) {
-            KlComponentSetFieldFactory klComponentSetFieldFactory = new KlComponentSetFieldFactory();
-            node = klComponentSetFieldFactory.create(observableField, viewProperties.nodeView(), stamp4field, journalTopic).fxObject();
-        } else if (dataTypeNid == COMPONENT_ID_LIST_FIELD.nid()) {
-            KlComponentListFieldFactory klComponentListFieldFactory = new KlComponentListFieldFactory();
-            node = klComponentListFieldFactory.create(observableField, viewProperties.nodeView(), stamp4field, journalTopic).fxObject();
-        } else if (dataTypeNid == FLOAT_FIELD.nid() || dataTypeNid == FLOAT.nid()) {
-            KlFloatFieldFactory klFloatFieldFactory = new KlFloatFieldFactory();
-            node = klFloatFieldFactory.create(observableField, viewProperties.nodeView(), stamp4field).fxObject();
-        } else if (dataTypeNid == INTEGER_FIELD.nid()) {
-            KlIntegerFieldFactory klIntegerFieldFactory = new KlIntegerFieldFactory();
-            node = klIntegerFieldFactory.create(observableField, viewProperties.nodeView(), stamp4field).fxObject();
-        } else if (dataTypeNid == BOOLEAN_FIELD.nid()) {
-            KlBooleanFieldFactory klBooleanFieldFactory = new KlBooleanFieldFactory();
-            node = klBooleanFieldFactory.create(observableField, viewProperties.nodeView(), stamp4field).fxObject();
-        } else if (dataTypeNid == IMAGE_FIELD.nid()) {
-            KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
-            node = imageFieldFactory.create(observableField, viewProperties.nodeView(), stamp4field).fxObject();
-        } else if (dataTypeNid == BYTE_ARRAY_FIELD.nid()) {
-            //TODO: We're using BYTE_ARRAY for the moment for Image data type
-            //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
-            //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
-            KlImageFieldFactory imageFieldFactory = new KlImageFieldFactory();
-            node = imageFieldFactory.create(observableField, viewProperties.nodeView(), stamp4field).fxObject();
-        } else {
-            // This fixes the exceptions the user experiences when a semantic (GenEditWindow) is summoned. The exception
-            // happens when a datatype field that doesn't have a JavaFX custom control created yet.
-            // The else is a catchall for any datatypes we do not support to be shown as read-only.
-            // For example if a digraph or ditree the toString() would show text represented as OWL notation.
-            KlStringFieldFactory stringFieldTextFactory = new KlStringFieldFactory();
-            node = stringFieldTextFactory.create(observableField, viewProperties.nodeView(), stamp4field).fxObject();
-        }
-        return node;
-    }
-
     /**
      * Returns a list of field values.
      * @param patternVersion Pattern Version containing the field definitions

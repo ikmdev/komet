@@ -2,7 +2,6 @@ package dev.ikm.komet.layout_engine.blueprint;
 
 import dev.ikm.komet.framework.observable.*;
 import dev.ikm.komet.layout.KlArea;
-import dev.ikm.komet.layout.area.KlAreaForEntity;
 import dev.ikm.komet.layout.component.KlChronologyArea;
 import dev.ikm.komet.layout.component.KlGenericChronologyArea;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;

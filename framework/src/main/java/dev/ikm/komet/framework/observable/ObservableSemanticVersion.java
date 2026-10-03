@@ -279,19 +279,6 @@ public final class ObservableSemanticVersion
         }
 
         /**
-         * Gets the editable property for a specific field index (convenience method).
-         * <p>         * Equivalent to {@code getEditableField(index).editableValueProperty()}.
-         *
-         * @param index the field index
-         * @return the editable property for that field
-         * @deprecated Use {@link #getEditableField(int)} for better API symmetry
-         */
-        @Deprecated(forRemoval = true)
-        public javafx.beans.property.SimpleObjectProperty<Object> getFieldProperty(int index) {
-            return (javafx.beans.property.SimpleObjectProperty<Object>) editableFields.get(index).editableValueProperty();
-        }
-
-        /**
          * Updates a field value and rebuilds the working version.
          */
         private void updateFieldValue(int fieldIndex, Object newValue) {

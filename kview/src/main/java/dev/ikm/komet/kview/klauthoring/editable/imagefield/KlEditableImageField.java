@@ -10,7 +10,6 @@ import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import javafx.scene.image.Image;
 import javafx.util.Subscription;
 
-import java.io.ByteArrayOutputStream;
 
 /**
  * Image field implementation supporting both read-only and editable patterns.
@@ -46,46 +45,6 @@ public class KlEditableImageField extends BaseDefaultKlField<byte[]> {
         node.setTitle(getTitle());
 
         rebind(observableFieldEditable);
-    }
-
-    /**
-     * Sets up bidirectional binding between editable field and image control.
-     * Uses the ObservableField.Editable pattern for cached editing.
-     * @deprecated Use rebind() method instead.
-     */
-    private void setupEditableBinding(
-            Editable<byte[]> editableField,
-            KLImageControl imageControl) {
-
-        // Editable field → Image control
-        Subscription editableSub = editableField.editableValueProperty().subscribe(newByteArray -> {
-            if (isUpdatingProperty) {
-                return;
-            }
-            isUpdatingImageControl = true;
-            imageControl.setImage(KlFieldHelper.newImageFromByteArray(newByteArray));
-            isUpdatingImageControl = false;
-        });
-        getFieldEditableSubscriptions().add(editableSub);
-
-        // Image control → Editable field
-        Subscription imageSub = imageControl.imageProperty().subscribe(() -> {
-            if (isUpdatingImageControl) {
-                return;
-            }
-            isUpdatingProperty = true;
-
-            byte[] newByteArray = imageControl.getImage() == null
-                ? new ByteArrayOutputStream().toByteArray()
-                : KlFieldHelper.newByteArrayFromImage(imageControl.getImage());
-
-            editableField.setValue(newByteArray);
-            isUpdatingProperty = false;
-        });
-        getFieldEditableSubscriptions().add(imageSub);
-
-        // Set initial value
-        imageControl.setImage(KlFieldHelper.newImageFromByteArray(editableField.getValue()));
     }
 
     @Override
