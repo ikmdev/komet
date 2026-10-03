@@ -143,6 +143,17 @@
             <artifactId>common-java5</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- The shared test logging configuration (log4j2-test.xml); a library ships none of its own. log4j-jul routes java.util.logging (Lucene, JavaFX) into Log4j in the test JVMs. -->
+        <dependency>
+            <groupId>dev.ikm.tinkar</groupId>
+            <artifactId>test-logging</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-jul</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -230,6 +241,7 @@
                             --enable-preview
                             --enable-native-access=ALL-UNNAMED
                             --sun-misc-unsafe-memory-access=allow
+                            -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager
                             --add-modules jdk.incubator.vector
                             -Dorg.apache.lucene.vectorization.upperJavaFeatureVersion=27
                         </argLine>
@@ -297,6 +309,7 @@
                                         --enable-preview
                                         --enable-native-access=ALL-UNNAMED
                                         --sun-misc-unsafe-memory-access=allow
+                                        -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager
                                         --add-modules jdk.incubator.vector
                                         -Dorg.apache.lucene.vectorization.upperJavaFeatureVersion=27
                                         ${commonTestFXArgs}
@@ -350,6 +363,7 @@
                                         --enable-preview
                                         --enable-native-access=ALL-UNNAMED
                                         --sun-misc-unsafe-memory-access=allow
+                                        -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager
                                         --add-modules jdk.incubator.vector
                                         -Dorg.apache.lucene.vectorization.upperJavaFeatureVersion=27
                                         ${commonTestFXArgs}
