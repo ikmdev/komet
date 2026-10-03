@@ -194,7 +194,7 @@
                         <goals>
                             <goal>analyze-only</goal>
                         </goals>
-                        <configuration combine.self="override">
+                        <configuration>
                             <ignoreUnusedRuntime>true</ignoreUnusedRuntime>
                         </configuration>
                     </execution>
