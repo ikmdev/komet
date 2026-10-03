@@ -19,8 +19,6 @@ import static dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent.PATTERN
 import static dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME;
 import static dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent.PATTERN_EDIT_OTHER_NAME;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescriptionTypes;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CASE_SIGNIFICANCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_INVALID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_SUBMITTED;
@@ -36,6 +34,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
+import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -72,6 +71,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
+import java.util.Set;
 
 public class DescriptionNameController {
 
@@ -146,9 +146,11 @@ public class DescriptionNameController {
 
         //TODO These are temp hard coded values:
         // Can use below code later?
-        // setupComboBox(nameDescriptionType, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.DESCRIPTION_TYPE.publicId()));
+        // setupComboBox(nameDescriptionType, NavigationReads.descendantsOf(getViewProperties().calculator(), TinkarTerm.DESCRIPTION_TYPE));
 
-        setupComboBox(nameDescriptionType, fetchDescriptionTypes()); // Hard coded
+        setupComboBox(nameDescriptionType, Set.of(
+                EntityHandle.getConceptOrThrow(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid()),
+                EntityHandle.getConceptOrThrow(TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE.nid()))); // Hard coded
         ObjectProperty<ConceptEntity> nameTypeProp = descrNameViewModel.getProperty(NAME_TYPE);
         nameDescriptionType.valueProperty().bind(nameTypeProp);
         nameTypeProp.addListener(fieldsValidationListener);
@@ -157,25 +159,25 @@ public class DescriptionNameController {
         nameTextField.textProperty().bindBidirectional(nameTextProp);
         nameTextProp.addListener(fieldsValidationListener);
 
-        setupComboBox(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
+        setupComboBox(moduleComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), TinkarTerm.MODULE));
         ObjectProperty<ConceptEntity> moduleProp = descrNameViewModel.getProperty(MODULE);
         moduleComboBox.valueProperty().bindBidirectional(moduleProp);
         moduleProp.addListener(fieldsValidationListener);
 
-        setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId()));
+        setupComboBox(statusComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), TinkarTerm.STATUS_VALUE));
         ObjectProperty<ConceptEntity> statusProp = descrNameViewModel.getProperty(STATUS);
         statusComboBox.valueProperty().bindBidirectional(statusProp);
         statusProp.addListener(fieldsValidationListener);
 
         //TODO These are temp hard coded values:
         // Can use below code later?
-        // setupComboBox(caseSignificanceComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.publicId())); // Hard Coded
+        // setupComboBox(caseSignificanceComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE)); // Hard Coded
         setupComboBox(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants(getViewProperties()));
         ObjectProperty<ConceptEntity> caseSignificanceProp = descrNameViewModel.getProperty(CASE_SIGNIFICANCE);
         caseSignificanceComboBox.valueProperty().bindBidirectional(caseSignificanceProp);
         caseSignificanceProp.addListener(fieldsValidationListener);
 
-        setupComboBox(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
+        setupComboBox(languageComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), TinkarTerm.LANGUAGE));
         ObjectProperty<ConceptEntity> languageProp = descrNameViewModel.getProperty(LANGUAGE);
         languageComboBox.valueProperty().bindBidirectional(languageProp);
         languageProp.addListener(fieldsValidationListener);

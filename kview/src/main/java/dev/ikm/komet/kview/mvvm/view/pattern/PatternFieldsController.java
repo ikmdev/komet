@@ -20,7 +20,6 @@ import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FI
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_CONTINUE_ADD_FIELDS;
 import static dev.ikm.komet.kview.events.pattern.ShowPatternFormInBumpOutEvent.SHOW_CONTINUE_EDIT_FIELDS;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchFieldDefinitionDataTypes;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_INVALID;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel.ADD_EDIT_LABEL;
@@ -35,6 +34,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
 
+import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.*;
@@ -55,6 +55,7 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.TinkarTermV2;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;
@@ -253,7 +254,7 @@ public class PatternFieldsController {
             }
         }));
 
-        dataTypeComboBox.getItems().addAll(fetchFieldDefinitionDataTypes(getViewProperties()).stream().sorted((entityFacade1, entityFacade2) -> {
+        dataTypeComboBox.getItems().addAll(NavigationReads.childrenOf(getViewProperties().calculator(), TinkarTermV2.DISPLAY_FIELDS).stream().sorted((entityFacade1, entityFacade2) -> {
             ViewCalculator viewCalculator = getViewProperties().calculator();
             return viewCalculator.getRegularDescriptionText(entityFacade1).get()
                             .compareToIgnoreCase(viewCalculator.getRegularDescriptionText(entityFacade2).get());

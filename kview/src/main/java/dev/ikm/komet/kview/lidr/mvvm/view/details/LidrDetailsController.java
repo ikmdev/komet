@@ -38,7 +38,6 @@ import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.VIEW;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ViewModelHelper.addNewLidrRecord;
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.ViewModelHelper.toStampDetail;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.MODE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel.PATHS_PROPERTY;
@@ -49,6 +48,7 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
 
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
@@ -521,8 +521,8 @@ public class LidrDetailsController {
                         .setPropertyValue(AUTHOR, stamp.author())
                         .setPropertyValue(MODULE, stamp.module())
                         .setPropertyValue(PATH, stamp.path())
-                        .setPropertyValues(MODULES_PROPERTY, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()), true)
-                        .setPropertyValues(PATHS_PROPERTY, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.PATH.publicId()), true);
+                        .setPropertyValues(MODULES_PROPERTY, NavigationReads.descendantsOf(getViewProperties().calculator(), TinkarTerm.MODULE), true)
+                        .setPropertyValues(PATHS_PROPERTY, NavigationReads.descendantsOf(getViewProperties().calculator(), TinkarTerm.PATH), true);
 
                 getLidrViewModel().setPropertyValue(STAMP_VIEW_MODEL,stampViewModel);
             } else {
@@ -752,11 +752,11 @@ public class LidrDetailsController {
         if (stampEdit !=null && stampEditController != null) {
             // refresh modules
             getStampViewModel().getObservableList(MODULES_PROPERTY).clear();
-            getStampViewModel().getObservableList(MODULES_PROPERTY).addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
+            getStampViewModel().getObservableList(MODULES_PROPERTY).addAll(NavigationReads.descendantsOf(getViewProperties().calculator(), TinkarTerm.MODULE));
 
             // refresh path
             getStampViewModel().getObservableList(PATHS_PROPERTY).clear();
-            getStampViewModel().getObservableList(PATHS_PROPERTY).addAll(fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.PATH.publicId()));
+            getStampViewModel().getObservableList(PATHS_PROPERTY).addAll(NavigationReads.descendantsOf(getViewProperties().calculator(), TinkarTerm.PATH));
 
             stampEdit.show((Node) event.getSource());
             stampEditController.selectActiveStatusToggle();

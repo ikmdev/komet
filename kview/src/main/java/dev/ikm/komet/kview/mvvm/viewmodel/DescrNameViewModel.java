@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
 import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.CASE_SIGNIFICANCE_OPTIONS;
+import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.tinkar.common.id.PublicId;
@@ -120,7 +121,7 @@ public class DescrNameViewModel extends FormViewModel {
     }
 
     public Set<ConceptEntity> findAllCaseSignificants(ViewProperties viewProperties) {
-        //FIXME after connect-a-thon put this query back or call fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.publicId())
+        //FIXME after connect-a-thon put this query back or call NavigationReads.descendantsOf(getViewProperties().calculator(), TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE)
         return CASE_SIGNIFICANCE_OPTIONS;
     }
 

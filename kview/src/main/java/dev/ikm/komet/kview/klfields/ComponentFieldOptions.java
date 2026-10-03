@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.kview.klfields;
 
-import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.komet.layout.KlTerms;
 import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -23,6 +22,7 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.TinkarTerm;
 
 import java.util.Comparator;
 import java.util.List;
@@ -59,6 +59,21 @@ import static dev.ikm.tinkar.terms.TinkarTerm.STATUS_VALUE;
  */
 public final class ComponentFieldOptions {
 
+    /**
+     * The field data types a pattern field may be given here; the data types with no
+     * editor (trees, graphs, arrays, points, instants, UUIDs) are left out.
+     */
+    private static final List<EntityProxy.Concept> SUPPORTED_FIELD_DATA_TYPES = List.of(
+            TinkarTerm.STRING,
+            TinkarTerm.COMPONENT_FIELD,
+            TinkarTerm.COMPONENT_ID_SET_FIELD,
+            TinkarTerm.COMPONENT_ID_LIST_FIELD,
+            TinkarTerm.INTEGER_FIELD,
+            TinkarTerm.FLOAT_FIELD,
+            TinkarTerm.BOOLEAN_FIELD,
+            TinkarTerm.BYTE_ARRAY_FIELD,
+            TinkarTerm.IMAGE_FIELD);
+
     private ComponentFieldOptions() {
     }
 
@@ -80,7 +95,7 @@ public final class ComponentFieldOptions {
     private static Optional<List<EntityProxy>> optionsForConcept(ViewCalculator viewCalculator, int conceptNid) {
         // Description types are deliberately NOT the descendants of DESCRIPTION_TYPE — that subtree
         // also holds unrelated metadata concepts (extended relationship type, inferred navigation, ...).
-        // Use a fixed set instead: the classic windows' pair (DataModelHelper.fetchDescriptionTypes)
+        // Use a fixed set instead: the classic windows' pair
         // plus the definition description type.
         if (conceptNid == DESCRIPTION_TYPE.nid()) {
             return Optional.of(sortedByName(viewCalculator,
@@ -89,10 +104,10 @@ public final class ComponentFieldOptions {
         }
         // The data type of a pattern field (the Fields pattern of the pattern-definition patterns) is
         // one of the data types the field editors support: the same fixed set the classic Pattern
-        // window offers in its data type drop-down (DataModelHelper.fetchFieldDefinitionDataTypes).
+        // window offers in its data type drop-down (SUPPORTED_FIELD_DATA_TYPES).
         if (conceptNid == KlTerms.FIELD_DATA_TYPE.nid()) {
             return Optional.of(sortedByName(viewCalculator,
-                    DataModelHelper.fetchFieldDefinitionDataTypes().stream().map(ConceptEntity::toProxy)));
+                    SUPPORTED_FIELD_DATA_TYPES.stream()));
         }
         return optionsParentForConcept(conceptNid)
                 .map(parent -> sortedByName(viewCalculator, fetchDescendents(viewCalculator, parent)));

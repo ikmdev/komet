@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CASE_SIGNIFICANCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_SUBMITTED;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.LANGUAGE;
@@ -26,6 +25,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
+import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.CreateConceptEvent;
@@ -437,11 +437,11 @@ public class EditDescriptionFormController implements BasicController {
      */
     public void setConceptAndPopulateForm(DescrName descrName) {
         editDescrName = descrName;
-        setupComboBox(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
-        setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId()));
+        setupComboBox(moduleComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), TinkarTerm.MODULE));
+        setupComboBox(statusComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), TinkarTerm.STATUS_VALUE));
         setupComboBox(caseSignificanceComboBox, otherNameViewModel.findAllCaseSignificants(getViewProperties()));
-        setupComboBox(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
-        setupComboBox(typeDisplayComboBox, fetchDescendentsOfConcept(getViewProperties(), DESCRIPTION_TYPE.publicId()));
+        setupComboBox(languageComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), TinkarTerm.LANGUAGE));
+        setupComboBox(typeDisplayComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), DESCRIPTION_TYPE));
         otherNameViewModel.setPropertyValue(NAME_TEXT, descrName.getNameText())
                 .setPropertyValue(CASE_SIGNIFICANCE, descrName.getCaseSignificance())
                 .setPropertyValue(STATUS, descrName.getStatus())

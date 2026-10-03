@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CASE_SIGNIFICANCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_SUBMITTED;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.LANGUAGE;
@@ -27,6 +26,7 @@ import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_TYPE;
 import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
 import static dev.ikm.tinkar.terms.TinkarTerm.STATUS_VALUE;
+import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.CreateConceptEvent;
@@ -281,14 +281,14 @@ public class EditFullyQualifiedNameController implements BasicController {
             this.fqnText.setText(fullyQualifiedName);
 
             // get all descendant modules
-            setupComboBox(moduleComboBox,  fetchDescendentsOfConcept(viewProperties,TinkarTerm.MODULE.publicId()));
+            setupComboBox(moduleComboBox,  NavigationReads.descendantsOf(viewProperties.calculator(), TinkarTerm.MODULE));
 
             // populate the current module and select it (e.g. 'SNOMED CT core module')
             findByNid(moduleComboBox.getItems(), stampEntity.moduleNid())
                     .ifPresent(concept -> fqnViewModel.setPropertyValue(MODULE, concept));
 
             // get all statuses
-            setupComboBox(statusComboBox, fetchDescendentsOfConcept(viewProperties,STATUS_VALUE.publicId()));
+            setupComboBox(statusComboBox, NavigationReads.descendantsOf(viewProperties.calculator(), STATUS_VALUE));
 
             // populate the current status (ACTIVE | INACTIVE) and select it
             findByNid(statusComboBox.getItems(), stampEntity.stateNid())
@@ -296,7 +296,7 @@ public class EditFullyQualifiedNameController implements BasicController {
 
 
             // populate all case significance choices
-            setupComboBox(caseSignificanceComboBox, fetchDescendentsOfConcept(viewProperties,DESCRIPTION_CASE_SIGNIFICANCE.publicId()));
+            setupComboBox(caseSignificanceComboBox, NavigationReads.descendantsOf(viewProperties.calculator(), DESCRIPTION_CASE_SIGNIFICANCE));
 
             // get case concept's case sensitivity (e.g. 'Case insensitive')
             PatternEntity<PatternEntityVersion> patternEntity = latestEntityVersion.get().pattern();
@@ -311,7 +311,7 @@ public class EditFullyQualifiedNameController implements BasicController {
 
 
             // get all available languages
-            setupComboBox(languageComboBox, fetchDescendentsOfConcept(viewProperties, TinkarTerm.LANGUAGE.publicId()));
+            setupComboBox(languageComboBox, NavigationReads.descendantsOf(viewProperties.calculator(), TinkarTerm.LANGUAGE));
             // get the language (e.g. 'English language')
             int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);
             ConceptFacade langConceptFacade = FieldHandle.of(latestEntityVersion.get().fieldValues().get(indexLang)).expectConcept();
@@ -319,7 +319,7 @@ public class EditFullyQualifiedNameController implements BasicController {
                     .ifPresent(concept -> fqnViewModel.setPropertyValue(LANGUAGE, concept));
 
             // get all descendant types
-            setupComboBox(typeDisplayComboBox, fetchDescendentsOfConcept(viewProperties, DESCRIPTION_TYPE.publicId()));
+            setupComboBox(typeDisplayComboBox, NavigationReads.descendantsOf(viewProperties.calculator(), DESCRIPTION_TYPE));
             //Set selected value for DESCRIPTION TYPE
             int indexType = patternEntityVersion.indexForMeaning(DESCRIPTION_TYPE);
             ConceptFacade typeConceptFacade = FieldHandle.of(latestEntityVersion.get().fieldValues().get(indexType)).expectConcept();
@@ -398,11 +398,11 @@ public class EditFullyQualifiedNameController implements BasicController {
      * @param descrName model values that need to be prepopulated.
      */
     public void setConceptAndPopulateForm(DescrName descrName) {
-        setupComboBox(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
-        setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), STATUS_VALUE.publicId()));
+        setupComboBox(moduleComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), TinkarTerm.MODULE));
+        setupComboBox(statusComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), STATUS_VALUE));
         setupComboBox(caseSignificanceComboBox, fqnViewModel.findAllCaseSignificants(getViewProperties()));
-        setupComboBox(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
-        setupComboBox(typeDisplayComboBox, fetchDescendentsOfConcept(getViewProperties(), DESCRIPTION_TYPE.publicId()));
+        setupComboBox(languageComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), TinkarTerm.LANGUAGE));
+        setupComboBox(typeDisplayComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), DESCRIPTION_TYPE));
         fqnViewModel.setPropertyValue(NAME_TEXT, descrName.getNameText())
                 .setPropertyValue(CASE_SIGNIFICANCE, descrName.getCaseSignificance())
                 .setPropertyValue(STATUS, descrName.getStatus())

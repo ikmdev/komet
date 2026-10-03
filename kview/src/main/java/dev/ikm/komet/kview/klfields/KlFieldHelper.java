@@ -457,7 +457,7 @@ public class KlFieldHelper {
      * @param observableFieldEditablesList
      * @return hashCode for all the field values.
      *
-     * TODO: This method can be moved to DataModelHelper class.
+     * TODO: This method could move to a framework read helper.
      *  During create (new Semantic) the user can change the reference component.
      *  the hash is stating any change. By default a reference component during created would be TinkarTerms.ANONOUMOUS_CONCEPT (I can't remember).
      */

@@ -23,8 +23,6 @@ import static dev.ikm.komet.kview.events.JournalTileEvent.CREATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalDirName;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchLeafDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SET;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SHOWING;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
@@ -48,6 +46,7 @@ import static dev.ikm.tinkar.events.FrameworkTopics.IMPORT_TOPIC;
 import static dev.ikm.tinkar.events.FrameworkTopics.LANDING_PAGE_TOPIC;
 import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
 import dev.ikm.komet.framework.events.appevents.ProgressEvent;
+import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.view.ObservableEditCoordinate;
@@ -862,7 +861,7 @@ public class LandingPageController implements BasicController {
     private void populateAvailableAuthors(ViewProperties viewProperties, EditCoordinateOptionsPopup editCoordOptionsPopup) {
         ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
         // Authors are the leaf descendants of USER — named users only, excluding grouping concepts (ike-issues#754).
-        Set<ConceptEntity> conceptEntitySet = fetchLeafDescendentsOfConcept(viewCalculator, TinkarTerm.USER.publicId());
+        Set<ConceptEntity> conceptEntitySet = NavigationReads.leafDescendantsOf(viewCalculator, TinkarTerm.USER);
         List<ConceptEntity> authors = conceptEntitySet.stream().toList();
         editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getAuthorForChange().availableOptions().addAll(authors);
         ConceptFacade defaultAuthor = authors
@@ -876,7 +875,7 @@ public class LandingPageController implements BasicController {
 
     private void populateAvailablePaths(ViewProperties viewProperties, EditCoordinateOptionsPopup editCoordOptionsPopup) {
         ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
-        Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewCalculator, TinkarTerm.PATH.publicId());
+        Set<ConceptEntity> conceptEntitySet = NavigationReads.descendantsOf(viewCalculator, TinkarTerm.PATH);
         List<ConceptEntity> entities = conceptEntitySet.stream().toList();
         editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getDefaultPath().availableOptions().addAll(entities);
         ConceptFacade defaultPath = entities

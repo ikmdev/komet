@@ -1,6 +1,5 @@
 package dev.ikm.komet.kview.mvvm.viewmodel.stamp;
 
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.AUTHOR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TIME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TITLE;
@@ -13,6 +12,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Pr
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUSES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.TIME;
+import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
@@ -106,10 +106,10 @@ public abstract class StampFormViewModelBase extends FormViewModel {
         this.topic = topic;
 
         // initialize observable lists
-        Set<ComponentWithNid> modules = fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId()).stream().map(conceptEntity -> (ComponentWithNid) conceptEntity).collect(Collectors.toSet());
+        Set<ComponentWithNid> modules = NavigationReads.descendantsOf(viewProperties.calculator(), TinkarTerm.MODULE).stream().map(conceptEntity -> (ComponentWithNid) conceptEntity).collect(Collectors.toSet());
         // add default module just in case it isn't a descendent
         modules.add(viewProperties.nodeView().editCoordinate().defaultModuleProperty().get());
-        Set<ComponentWithNid> paths = fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()).stream().map(conceptEntity -> (ComponentWithNid) conceptEntity).collect(Collectors.toSet());
+        Set<ComponentWithNid> paths = NavigationReads.descendantsOf(viewProperties.calculator(), TinkarTerm.PATH).stream().map(conceptEntity -> (ComponentWithNid) conceptEntity).collect(Collectors.toSet());
 
         if (getObservableList(MODULES).isEmpty()) {
             setPropertyValues(MODULES, modules);

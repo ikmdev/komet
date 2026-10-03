@@ -21,7 +21,6 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;

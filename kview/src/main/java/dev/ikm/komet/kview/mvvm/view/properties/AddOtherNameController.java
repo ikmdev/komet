@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CASE_SIGNIFICANCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_SUBMITTED;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.LANGUAGE;
@@ -27,6 +26,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNamePro
 import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.DESCRIPTION_LANGUAGE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.HAS_OTHER_NAME;
 import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_TYPE;
+import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.CreateConceptEvent;
@@ -242,11 +242,11 @@ public class AddOtherNameController extends AbstractBasicController {
     @Override
     public void updateView() {
         // populate form combo fields module, status, case significance, lang.
-        populate(typeDisplayComboBox, fetchDescendentsOfConcept(getViewProperties(), DESCRIPTION_TYPE.publicId()));
-        populate(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
-        populate(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId()));
+        populate(typeDisplayComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), DESCRIPTION_TYPE));
+        populate(moduleComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), TinkarTerm.MODULE));
+        populate(statusComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), TinkarTerm.STATUS_VALUE));
         populate(caseSignificanceComboBox, otherNameViewModel.findAllCaseSignificants(getViewProperties()));
-        populate(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
+        populate(languageComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), TinkarTerm.LANGUAGE));
 
         typeDisplayComboBox.setValue(TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE);
 

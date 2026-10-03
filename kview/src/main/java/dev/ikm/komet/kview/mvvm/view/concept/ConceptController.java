@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.concept;
 
+import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.events.ClosePropertiesPanelEvent.CLOSE_PROPERTIES;
 import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.ATTACHMENT;
 import static dev.ikm.komet.kview.fxutils.IconsHelper.IconType.COMMENTS;
@@ -25,10 +26,6 @@ import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.slideOut;
 import static dev.ikm.komet.kview.fxutils.ViewportHelper.clipChildren;
 import static dev.ikm.komet.layout_engine.window.DraggableSupport.addDraggableNodes;
 import static dev.ikm.komet.layout_engine.window.DraggableSupport.removeDraggableNodes;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.addToMembershipPattern;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.getMembershipPatterns;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.isInMembershipPattern;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.removeFromMembershipPattern;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
 import dev.ikm.komet.layout.controls.FilterOptionsPopup;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ConceptViewModel.AXIOM;
@@ -59,11 +56,13 @@ import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTI
 import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
+import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
+import dev.ikm.komet.framework.observable.read.MembershipReads;
 import dev.ikm.komet.framework.propsheet.KometPropertySheet;
 import dev.ikm.komet.framework.propsheet.SheetItem;
 import dev.ikm.komet.framework.view.ViewMenuModel;
@@ -82,6 +81,7 @@ import dev.ikm.komet.kview.events.EditOtherNameConceptEvent;
 import dev.ikm.komet.kview.events.OpenPropertiesPanelEvent;
 import dev.ikm.komet.kview.events.StampEvent;
 import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
+import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.fxutils.IconsHelper;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
@@ -159,6 +159,8 @@ import java.time.format.FormatStyle;
 import java.util.*;
 import java.util.function.*;
 import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
+import dev.ikm.tinkar.common.id.PublicIds;
+import dev.ikm.tinkar.entity.EntityHandle;
 
 public class ConceptController {
 
@@ -362,7 +364,7 @@ public class ConceptController {
             // show offset to the right of the identicon
             ViewCalculator viewCalculator = conceptViewModel.getViewProperties().calculator();
             EntityFacade currentConceptFacade = conceptViewModel.getPropertyValue(CURRENT_ENTITY);
-            List<PatternEntityVersion> patterns = getMembershipPatterns();
+            List<PatternEntityVersion> patterns = MembershipReads.membershipPatterns(viewCalculator);
             ContextMenu membershipContextMenu = new ContextMenu();
             membershipContextMenu.getStyleClass().add("kview-context-menu");
 
@@ -371,13 +373,13 @@ public class ConceptController {
             List<MenuItem> removedMenuItems = new ArrayList<>();
             for (PatternEntityVersion pattern : patterns) {
                 MenuItem menuItem = new MenuItem();
-                if (isInMembershipPattern(currentConceptFacade.nid(), pattern.nid(), viewCalculator)) {
+                if (MembershipReads.isMember(viewCalculator, currentConceptFacade.nid(), pattern.nid())) {
                     menuItem.setText("Remove from " + pattern.entity().description());
-                    menuItem.setOnAction(evt -> removeFromMembershipPattern(currentConceptFacade.nid(), pattern.entity(), viewCalculator));
+                    menuItem.setOnAction(evt -> setMembership(currentConceptFacade, pattern, viewCalculator, false));
                     addedMenuItems.add(menuItem);
                 } else {
                     menuItem.setText("Add to " + pattern.entity().description());
-                    menuItem.setOnAction(evt -> addToMembershipPattern(currentConceptFacade, pattern.entity(), viewCalculator));
+                    menuItem.setOnAction(evt -> setMembership(currentConceptFacade, pattern, viewCalculator, true));
                     removedMenuItems.add(menuItem);
                 }
             }
@@ -1714,5 +1716,30 @@ public class ConceptController {
         }
 
         updateDraggableNodesForPropertiesPanel(isOpen);
+    }
+
+    /**
+     * Makes the concept a member of the pattern, or ends its membership: a membership
+     * semantic (no fields) is composed under the view's coordinate, active or inactive,
+     * and committed. The semantic's id is a function of the pattern and the concept, so
+     * the first add creates it and every later change versions it. The author is the
+     * edit coordinate's; the module is the pattern's; the path is the view's.
+     */
+    private static void setMembership(EntityFacade concept, PatternEntityVersion pattern,
+                                      ViewCalculator viewCalculator, boolean member) {
+        if (!member && !MembershipReads.isMember(viewCalculator, concept.nid(), pattern.nid())) {
+            throw new IllegalStateException("Asking to retire element that was never a member...");
+        }
+        ObservableComposer composer = ObservableComposer.create(viewCalculator,
+                member ? State.ACTIVE : State.INACTIVE,
+                viewCalculator.viewCoordinateRecord().editCoordinate().getAuthorForChanges(),
+                EntityHandle.getConceptOrThrow(pattern.moduleNid()),
+                EntityHandle.getConceptOrThrow(viewCalculator.viewCoordinateRecord().stampCoordinate().pathNidForFilter()),
+                (member ? "Add to " : "Remove from ") + pattern.entity().description());
+        composer.composeSemantic(PublicIds.singleSemanticId(pattern.publicId(), concept.publicId()),
+                concept, pattern.entity().toProxy()).save();
+        composer.commit();
+        EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,
+                new PatternSavedEvent(member ? concept : pattern.entity(), PatternSavedEvent.PATTERN_CREATION_EVENT));
     }
 }
