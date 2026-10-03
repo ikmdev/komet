@@ -5,7 +5,7 @@
  <parent>
         <groupId>network.ike.platform</groupId>
         <artifactId>ike-parent</artifactId>
-        <version>193</version>
+        <version>195</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
@@ -265,10 +265,8 @@
                              logging binding and the LogManager are chosen by
                              name, test-logging holds only a configuration file,
                              and the JUnit and surefire artifacts are launcher
-                             infrastructure. The zips are ike-parent's standards
-                             and site theme, unpacked at validate; drop those two
-                             entries when ike-parent ignores them itself
-                             (IKE-Network/ike-issues#1193). -->
+                             infrastructure. ike-parent ignores its own provided
+                             zips itself (IKE-Network/ike-issues#1193). -->
                         <execution>
                             <id>analyze</id>
                             <configuration>
@@ -279,8 +277,6 @@
                                     <ignoredUnusedDeclaredDependency>org.junit.jupiter:junit-jupiter</ignoredUnusedDeclaredDependency>
                                     <ignoredUnusedDeclaredDependency>org.junit.platform:junit-platform-console</ignoredUnusedDeclaredDependency>
                                     <ignoredUnusedDeclaredDependency>org.apache.maven.surefire:common-java5</ignoredUnusedDeclaredDependency>
-                                    <ignoredUnusedDeclaredDependency>network.ike.tooling:ike-build-standards</ignoredUnusedDeclaredDependency>
-                                    <ignoredUnusedDeclaredDependency>network.ike:ike-base-parent</ignoredUnusedDeclaredDependency>
                                 </ignoredUnusedDeclaredDependencies>
                             </configuration>
                         </execution>
