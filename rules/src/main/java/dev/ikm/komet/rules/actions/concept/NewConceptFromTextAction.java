@@ -59,7 +59,7 @@ public class NewConceptFromTextAction extends AbstractActionImmediate implements
             Transaction transaction = Transaction.make("New concept for: " + newConceptText);
             StampEntity stampEntity = transaction.getStamp(State.ACTIVE, editCoordinate.getAuthorNidForChanges(),
                     editCoordinate.getDefaultModuleNid(), editCoordinate.getDefaultPathNid());
-            Entity.provider().putStamp(stampEntity);
+            Entity.provider().putEntity(stampEntity);
 
             ConceptEntityBuilder newConceptBuilder = ConceptEntityBuilder.builder(stampEntity);
             // TODO automate UK dialect at some point.
