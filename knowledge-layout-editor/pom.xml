@@ -40,6 +40,23 @@
             <groupId>one.jpro.platform</groupId>
             <artifactId>jpro-auth-core</artifactId>
         </dependency>
+        <!-- JPMS-packaged jjwt in place of the automatic io.jsonwebtoken jars
+             excluded from jpro-auth-core in komet-bom. -->
+        <dependency>
+            <groupId>one.jpro.platform.jpms</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>one.jpro.platform.jpms</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>one.jpro.platform.jpms</groupId>
+            <artifactId>jjwt-orgjson</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <dependency>
             <groupId>one.jpro.platform</groupId>
             <artifactId>jpro-file</artifactId>

@@ -34,7 +34,7 @@ module dev.ikm.komet.kview {
 
     requires transitive dev.ikm.komet.layout;
     requires jdk.jfr;
-    requires org.eclipse.jgit;
+    requires dev.ikm.jpms.jgit;
     requires dev.ikm.tinkar.reasoner.service;
     requires org.eclipse.collections.api;
     requires org.eclipse.collections.impl;

@@ -25,7 +25,7 @@ open module dev.ikm.komet.kleditorapp {
 
     requires transitive dev.ikm.komet.layout;
     requires jdk.jfr;
-    requires org.eclipse.jgit;
+    requires dev.ikm.jpms.jgit;
 
     requires javafx.graphics;
     requires javafx.fxml;
