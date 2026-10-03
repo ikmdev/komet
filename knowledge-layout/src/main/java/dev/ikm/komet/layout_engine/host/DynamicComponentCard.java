@@ -1,7 +1,6 @@
 package dev.ikm.komet.layout_engine.host;
 
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.dnd.ClipboardHelper;
 import dev.ikm.komet.framework.dnd.DragAndDropHelper;
 import dev.ikm.komet.framework.dnd.KometClipboard;
@@ -15,6 +14,7 @@ import dev.ikm.komet.layout.area.AreaGridSettings;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.layout_engine.component.area.EditingArea;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntity;
@@ -322,7 +322,7 @@ public final class DynamicComponentCard extends DynamicCard {
         }
         final State state = stamp.state();
         statusLabel.setText(state == null ? "" : calculator.getPreferredDescriptionTextWithFallbackOrNid(state.nid()));
-        lastUpdatedLabel.setText(TimeUtils.toShortDateString(stamp.time()));
+        lastUpdatedLabel.setText(DateTimeUtil.format(stamp.time(), DateTimeUtil.DAY_FORMATTER));
         final ConceptFacade author = stamp.author();
         authorLabel.setText(author == null ? "" : calculator.getPreferredDescriptionTextWithFallbackOrNid(author.nid()));
         final ConceptFacade module = stamp.module();

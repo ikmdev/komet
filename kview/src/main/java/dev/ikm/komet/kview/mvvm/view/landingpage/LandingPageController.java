@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.landingpage;
 
-import static dev.ikm.komet.framework.controls.TimeUtils.calculateTimeAgoWithPeriodAndDuration;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
 import static dev.ikm.komet.layout.controls.FilterOptionsPopup.FILTER_TYPE.LANDING_PAGE;
 import static dev.ikm.komet.kview.events.CreateJournalEvent.CREATE_JOURNAL;
@@ -74,6 +73,7 @@ import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
@@ -112,8 +112,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.*;
 import java.util.prefs.*;
@@ -257,10 +256,10 @@ public class LandingPageController implements BasicController {
             PrefX journalWindowSettingsObjectMap = evt.getJournalWindowSettingsMap();
             if (null != journalWindowSettingsObjectMap) {
                 journalTopic = journalWindowSettingsObjectMap.getValue(JOURNAL_TOPIC);
-                LocalDateTime nowDateTime = LocalDateTime.now();
-                ZoneId nowZoneId = ZoneId.systemDefault();
-                String calculatedTimeAgo = calculateTimeAgoWithPeriodAndDuration(nowDateTime, nowZoneId);
-                journalCardController.setJournalTimestampValue(calculatedTimeAgo);
+                // JournalController records the last edit in epoch seconds.
+                Long lastEditSeconds = journalWindowSettingsObjectMap.getValue(JOURNAL_LAST_EDIT);
+                journalCardController.setJournalTimestampValue(lastEditSeconds == null ? "Edited Now"
+                        : "Edited " + DateTimeUtil.elapsedSince(Instant.ofEpochSecond(lastEditSeconds)));
                 List<String> journalWindowNames = journalWindowSettingsObjectMap.getValue(WINDOW_NAMES);
                 journalCardController.setJournalCardWindowCount(journalWindowNames != null ?
                         "Windows: " + journalWindowNames.size() : "Windows: 0");

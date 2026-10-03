@@ -22,7 +22,6 @@ import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupView
 import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
 
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
 import dev.ikm.komet.framework.observable.ObservableField;
@@ -59,6 +58,7 @@ import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowType;
 import dev.ikm.komet.layout_engine.window.WindowSupport;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
@@ -447,7 +447,7 @@ public class GenPurposeDetailsController {
 
             // -- time
             long newTime = stampEntity.time();
-            stampViewControl.setLastUpdated(TimeUtils.toShortDateString(newTime));
+            stampViewControl.setLastUpdated(DateTimeUtil.format(newTime, DateTimeUtil.DAY_FORMATTER));
 
             // -- author
             ConceptFacade authorConcept = stampEntity.author();
