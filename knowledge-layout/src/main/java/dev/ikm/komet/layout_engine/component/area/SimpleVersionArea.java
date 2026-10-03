@@ -122,7 +122,7 @@ public class SimpleVersionArea
         if (simpleGenericFieldPane.getFeature().isPresent()) {
             Feature feature = simpleGenericFieldPane.getFeature().get();
             MenuItem editGridLayout = new MenuItem("Edit grid layout for: " +
-                    calculatorForContext().getPreferredDescriptionStringOrNid(feature.definition(calculatorForContext()).meaningNid()) + "");
+                    calculatorForContext().getPreferredDescriptionTextOrNid(feature.definition(calculatorForContext()).meaningNid()) + "");
             editGridLayout.setOnAction(event -> {
                 AreaLayoutPropertySheet areaLayoutPropertySheet = new AreaLayoutPropertySheet(simpleGenericFieldPane);
                 Stage stage = new Stage(UTILITY);

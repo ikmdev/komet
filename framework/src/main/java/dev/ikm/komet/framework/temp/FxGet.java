@@ -77,7 +77,7 @@ public class FxGet {
     private static void addPaths(ViewCalculator viewCalculator) {
 
         PathService.get().getPaths().forEach(stampPathImmutable -> {
-            String pathDescription = viewCalculator.getPreferredDescriptionStringOrNid(stampPathImmutable.pathConceptNid());
+            String pathDescription = viewCalculator.getPreferredDescriptionTextOrNid(stampPathImmutable.pathConceptNid());
             PublicIdStringKey pathKey = new PublicIdStringKey(stampPathImmutable.pathConcept().publicId(), pathDescription);
             PATHS.put(pathKey, stampPathImmutable);
         });

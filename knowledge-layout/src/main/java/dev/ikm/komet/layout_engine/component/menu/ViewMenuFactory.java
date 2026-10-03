@@ -107,7 +107,7 @@ public class ViewMenuFactory {
                             collectionBuilder);
                     sb.append(" (*)\n").append(collectionBuilder);
                 } else {
-                    viewCalculator.toEntityString(value, viewCalculator::getPreferredDescriptionStringOrNid, sb);
+                    viewCalculator.toEntityString(value, viewCalculator::getPreferredDescriptionTextOrNid, sb);
                 }
             } else {
                 Object obj = collection.iterator().next();
@@ -132,7 +132,7 @@ public class ViewMenuFactory {
         } else if (value instanceof StateSet) {
             sb.append(((StateSet) value).toUserString());
         } else {
-            viewCalculator.toEntityString(value, viewCalculator::getPreferredDescriptionStringOrNid, sb);
+            viewCalculator.toEntityString(value, viewCalculator::getPreferredDescriptionTextOrNid, sb);
         }
         return sb.toString();
     }

@@ -207,14 +207,14 @@ public class ChangeListItemController {
             if (isDataTypeConceptField.apply(dataTypeNid)) {
                 // preferred description of concept or component.
                 formatFunction = value -> switch (value) {
-                    case ConceptFacade conceptFacade -> viewCalculator.getPreferredDescriptionStringOrNid(conceptFacade);
+                    case ConceptFacade conceptFacade -> viewCalculator.getPreferredDescriptionTextOrNid(conceptFacade);
                     default -> value.toString();
                 };
             }
 
             // Output Type Field label. eg Text:
             if (includeFieldDefinition) {
-                sb.append(viewCalculator.getPreferredDescriptionStringOrNid(meaningNid)).append(": ");
+                sb.append(viewCalculator.getPreferredDescriptionTextOrNid(meaningNid)).append(": ");
             }
 
             // Output the prior value

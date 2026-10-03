@@ -164,7 +164,7 @@ public class MenuChangeItemsForStampTask implements Callable<MenuItem>, ScopedVa
         });
 
         StampService.get().getModulesInUse().forEach(moduleConcept -> {
-            CheckMenuItem item = new CheckMenuItem(viewCalculator.getPreferredDescriptionStringOrNid(moduleConcept));
+            CheckMenuItem item = new CheckMenuItem(viewCalculator.getPreferredDescriptionTextOrNid(moduleConcept));
             item.setSelected(observableCoordinate.moduleSpecificationsProperty().get().contains(moduleConcept));
             if (item.isSelected()) {
                 item.setOnAction(event -> {
@@ -225,7 +225,7 @@ public class MenuChangeItemsForStampTask implements Callable<MenuItem>, ScopedVa
             });
         }
         StampService.get().getModulesInUse().forEach(moduleConcept -> {
-            CheckMenuItem item = new CheckMenuItem(viewCalculator.getPreferredDescriptionStringOrNid(moduleConcept));
+            CheckMenuItem item = new CheckMenuItem(viewCalculator.getPreferredDescriptionTextOrNid(moduleConcept));
             item.setSelected(observableCoordinate.excludedModuleSpecificationsProperty().get().contains(moduleConcept));
             if (item.isSelected()) {
                 item.setOnAction(event -> {
