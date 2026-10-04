@@ -16,6 +16,7 @@
 package dev.ikm.komet.framework.propsheet;
 
 import dev.ikm.komet.framework.controls.EntityLabelWithDragAndDrop;
+import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.panel.axiom.AxiomView;
@@ -203,7 +204,7 @@ public class KometPropertyEditorFactory implements Callback<PropertySheet.Item, 
                             LOG.debug("Could not determine axiom premise type from field definition, defaulting to STATED: {}", e.getMessage());
                         }
                         int semanticNid = property.observableField.field().nid();
-                        ObservableSemantic axiomSemantic = ObservableSemantic.get(semanticNid);
+                        ObservableSemantic axiomSemantic = ObservableEntityHandle.get(semanticNid).asSemantic().orElse(null);
                         if (axiomSemantic == null) {
                             LOG.warn("Axiom semantic not available for NID {} — returning no editor (gRPC mode)", semanticNid);
                             return Optional.empty();

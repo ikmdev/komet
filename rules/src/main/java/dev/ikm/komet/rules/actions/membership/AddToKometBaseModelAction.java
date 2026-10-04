@@ -77,7 +77,7 @@ public class AddToKometBaseModelAction extends AbstractActionSuggested {
             transaction.addComponent(newSemantic);
             Entity.provider().putEntity(newSemantic);
         }, () -> {
-            throw new IllegalStateException("No latest pattern version for: " + Entity.getFast(KOMET_BASE_MODEL_COMPONENT_PATTERN));
+            throw new IllegalStateException("No latest pattern version for: " + EntityHandle.get(KOMET_BASE_MODEL_COMPONENT_PATTERN).orNull());
         });
         CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
         TinkExecutor.threadPool().submit(commitTransactionTask);
@@ -85,7 +85,7 @@ public class AddToKometBaseModelAction extends AbstractActionSuggested {
     }
 
     private void updateSemantic(int semanticNid, EditCoordinateRecord editCoordinateRecord) {
-        SemanticRecord semanticEntity = Entity.getFast(semanticNid);
+        SemanticRecord semanticEntity = EntityHandle.get(semanticNid).expectSemanticRecord();
         Transaction transaction = Transaction.make();
         ViewCoordinateRecord viewRecord = viewCalculator.viewCoordinateRecord();
 
@@ -98,7 +98,7 @@ public class AddToKometBaseModelAction extends AbstractActionSuggested {
             transaction.addComponent(analogue);
             Entity.provider().putEntity(analogue);
         }, () -> {
-            throw new IllegalStateException("No latest pattern version for: " + Entity.getFast(KOMET_BASE_MODEL_COMPONENT_PATTERN));
+            throw new IllegalStateException("No latest pattern version for: " + EntityHandle.get(KOMET_BASE_MODEL_COMPONENT_PATTERN).orNull());
         });
         CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
         TinkExecutor.threadPool().submit(commitTransactionTask);

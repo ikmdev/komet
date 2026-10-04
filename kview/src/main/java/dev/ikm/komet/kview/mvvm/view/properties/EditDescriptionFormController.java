@@ -197,8 +197,8 @@ public class EditDescriptionFormController implements BasicController {
     @SuppressWarnings("removal")
     private void populateDialectComboBoxes() {
         // currently no UNACCEPTABLE in TinkarTerm
-        Entity<? extends EntityVersion> acceptable = EntityService.get().getEntityFast(TinkarTerm.ACCEPTABLE);
-        Entity<? extends EntityVersion> preferred = EntityService.get().getEntityFast(TinkarTerm.PREFERRED);
+        Entity<? extends EntityVersion> acceptable = EntityHandle.get(TinkarTerm.ACCEPTABLE).expectConcept();
+        Entity<? extends EntityVersion> preferred = EntityHandle.get(TinkarTerm.PREFERRED).expectConcept();
 
         // In gRPC read-only mode the ephemeral entity store may not contain vocabulary meta-concepts;
         // skip dialect population rather than throwing NPE.
@@ -207,12 +207,12 @@ public class EditDescriptionFormController implements BasicController {
         }
 
         // each combo box has a separate list instance
-        setupComboBox(dialectComboBox1, Arrays.asList(Entity.getFast(acceptable.nid()), Entity.getFast(preferred.nid())));
-        dialectComboBox1.getSelectionModel().select(Entity.getFast(acceptable.nid()));
-        setupComboBox(dialectComboBox2, Arrays.asList(Entity.getFast(acceptable.nid()), Entity.getFast(preferred.nid())));
-        dialectComboBox2.getSelectionModel().select(Entity.getFast(preferred.nid()));
-        setupComboBox(dialectComboBox3, Arrays.asList(Entity.getFast(acceptable.nid()), Entity.getFast(preferred.nid())));
-        dialectComboBox3.getSelectionModel().select(Entity.getFast(preferred.nid()));
+        setupComboBox(dialectComboBox1, Arrays.asList(EntityHandle.get(acceptable.nid()).expectConcept(), EntityHandle.get(preferred.nid()).expectConcept()));
+        dialectComboBox1.getSelectionModel().select(EntityHandle.get(acceptable.nid()).expectConcept());
+        setupComboBox(dialectComboBox2, Arrays.asList(EntityHandle.get(acceptable.nid()).expectConcept(), EntityHandle.get(preferred.nid()).expectConcept()));
+        dialectComboBox2.getSelectionModel().select(EntityHandle.get(preferred.nid()).expectConcept());
+        setupComboBox(dialectComboBox3, Arrays.asList(EntityHandle.get(acceptable.nid()).expectConcept(), EntityHandle.get(preferred.nid()).expectConcept()));
+        dialectComboBox3.getSelectionModel().select(EntityHandle.get(preferred.nid()).expectConcept());
     }
 
     public void setEditDescriptionTitleLabel(String addAxiomTitleLabelText) {
@@ -320,13 +320,13 @@ public class EditDescriptionFormController implements BasicController {
             String otherName = viewCalculator.getDescriptionText(nid).get();
             this.otherNameTextField.setText(otherName);
 
-            Entity<? extends EntityVersion> moduleEntity = EntityService.get().getEntityFast(TinkarTerm.MODULE);
+            Entity<? extends EntityVersion> moduleEntity = EntityHandle.get(TinkarTerm.MODULE).expectConcept();
             IntIdSet moduleDescendents = viewProperties.parentView().calculator().descendentsOf(moduleEntity.nid());
 
             // get all descendant modules
             Set<ConceptEntity> allModules =
                     moduleDescendents.intStream()
-                            .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
+                            .mapToObj(moduleNid -> EntityHandle.get(moduleNid).expectConcept())
                             .collect(Collectors.toSet());
             setupComboBox(moduleComboBox, allModules);
 
@@ -337,7 +337,7 @@ public class EditDescriptionFormController implements BasicController {
             // get all statuses
             IntIdSet statusDescendents = viewProperties.parentView().calculator().descendentsOf(TinkarTerm.STATUS_VALUE.nid());
             Set<ConceptEntity> allStatuses = statusDescendents.intStream()
-                    .mapToObj(statusNid -> (ConceptEntity) Entity.getFast(statusNid))
+                    .mapToObj(statusNid -> EntityHandle.get(statusNid).expectConcept())
                     .collect(Collectors.toSet());
             setupComboBox(statusComboBox, allStatuses);
 
@@ -369,7 +369,7 @@ public class EditDescriptionFormController implements BasicController {
             // get all available languages
             IntIdSet languageDescendents = viewProperties.parentView().calculator().descendentsOf(TinkarTerm.LANGUAGE.nid());
             Set<ConceptEntity> allLangs = languageDescendents.intStream()
-                    .mapToObj(langNid -> (ConceptEntity) Entity.getFast(langNid))
+                    .mapToObj(langNid -> EntityHandle.get(langNid).expectConcept())
                     .collect(Collectors.toSet());
             setupComboBox(languageComboBox, allLangs);
 
@@ -385,7 +385,7 @@ public class EditDescriptionFormController implements BasicController {
             IntIdSet descriptionTypeDecendants = viewProperties.parentView().calculator().descendentsOf(DESCRIPTION_TYPE.nid());
             Set<ConceptEntity> allDescritionTypes =
                     descriptionTypeDecendants.intStream()
-                            .mapToObj(typeNid -> (ConceptEntity) Entity.getFast(typeNid))
+                            .mapToObj(typeNid -> EntityHandle.get(typeNid).expectConcept())
                             .collect(Collectors.toSet());
             setupComboBox(typeDisplayComboBox, allDescritionTypes);
             //Set selected value for DESCRIPTION TYPE

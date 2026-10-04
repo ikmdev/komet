@@ -53,6 +53,7 @@ import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
@@ -635,7 +636,7 @@ public class ClauseView {
         };
 
         try {
-            KometClipboard content = new KometClipboard((Entity) Entity.getFast(conceptNid));
+            KometClipboard content = new KometClipboard((Entity) EntityHandle.get(conceptNid).expectEntity());
             db.setContent(content);
         } catch (Exception e) {
             Dialogs.showErrorDialog("Error dragging object...", e.getClass().getSimpleName() + " during drag.", e.getLocalizedMessage());

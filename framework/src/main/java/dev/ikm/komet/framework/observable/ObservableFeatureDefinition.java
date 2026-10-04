@@ -55,11 +55,11 @@ public final class ObservableFeatureDefinition
         this.containingComponent = containingComponent;
         this.locator = locator;
         fieldDefinitionReference = new AtomicReference<>(fieldDefinitionRecord);
-        dataTypeProperty.set(Entity.getFast(fieldDefinitionRecord.dataTypeNid()));
+        dataTypeProperty.set(EntityHandle.get(fieldDefinitionRecord.dataTypeNid()).expectConcept());
         dataTypeProperty.addListener(this::dataTypeChanged);
-        purposeProperty.set(Entity.getFast(fieldDefinitionRecord.purposeNid()));
+        purposeProperty.set(EntityHandle.get(fieldDefinitionRecord.purposeNid()).expectConcept());
         purposeProperty.addListener(this::purposeChanged);
-        meaningProperty.set(Entity.getFast(fieldDefinitionRecord.meaningNid()));
+        meaningProperty.set(EntityHandle.get(fieldDefinitionRecord.meaningNid()).expectConcept());
         meaningProperty.addListener(this::meaningChanged);
     }
 
@@ -116,7 +116,7 @@ public final class ObservableFeatureDefinition
     private void handleVersionChange(FIELD changedField, ObservableValue<? extends EntityFacade> observableValue, EntityFacade newValue) {
         StampRecord oldStamp = Entity.getStamp(fieldDefinitionReference.get().patternVersionStampNid());
         FieldDefinitionRecord oldFieldDefinition = fieldDefinitionReference.get();
-        PatternRecord patternRecord = Entity.getFast(oldFieldDefinition.patternNid());
+        PatternRecord patternRecord = EntityHandle.get(oldFieldDefinition.patternNid()).expectPatternRecord();
         PatternVersionRecord oldPatternVersion = patternRecord.getVersionFast(oldStamp.nid());
         if (oldStamp.lastVersion().committed()) {
             // Create new version...

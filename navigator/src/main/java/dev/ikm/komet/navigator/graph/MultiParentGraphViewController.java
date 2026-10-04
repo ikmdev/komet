@@ -50,6 +50,7 @@ import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.VersionProxy;
 import dev.ikm.tinkar.entity.VersionProxyFactory;
 import dev.ikm.tinkar.terms.*;
@@ -967,7 +968,7 @@ public class MultiParentGraphViewController implements RefreshListener {
         }
         for (int rootNid : this.navigatorProperty.get().getRootNids()) {
             MultiParentVertexImpl graphRoot = new MultiParentVertexImpl(
-                    Entity.getFast(rootNid),
+                    EntityHandle.get(rootNid).expectConcept(),
                     MultiParentGraphViewController.this,
                     IntIds.set.empty(),
                     Icon.TAXONOMY_ROOT_ICON.makeIcon());

@@ -66,7 +66,7 @@ public final class ObservableSemantic
     }
 
     public static ObservableSemanticSnapshot getSemanticSnapshot(int semanticNid, ViewCalculator calculator) {
-        ObservableSemantic observableSemantic = get(semanticNid);
+        ObservableSemantic observableSemantic = ObservableEntityHandle.get(semanticNid).expectSemantic();
         return observableSemantic.getSnapshot(calculator);
     }
 

@@ -31,7 +31,7 @@ import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.slf4j.Logger;
@@ -87,7 +87,7 @@ public class MultiParentVertexImpl
     }
 
     public MultiParentVertexImpl(int conceptNid, MultiParentGraphViewController graphController, IntIdSet typeNids) {
-        this(Entity.getFast(conceptNid), graphController, typeNids, null);
+        this(EntityHandle.get(conceptNid).expectConcept(), graphController, typeNids, null);
     }
 
     public MultiParentVertexImpl(ConceptEntity conceptEntity
@@ -199,7 +199,7 @@ public class MultiParentVertexImpl
                     }
 
                     for (Edge childLink : childLinks) {
-                        ConceptEntity childChronology = Entity.getFast(childLink.destinationNid());
+                        ConceptEntity childChronology = EntityHandle.get(childLink.destinationNid()).expectConcept();
                         MultiParentVertexImpl childItem = new MultiParentVertexImpl(childChronology, graphController, childLink.typeNids(), null);
                         ObservableView observableView = graphController.getObservableView();
 

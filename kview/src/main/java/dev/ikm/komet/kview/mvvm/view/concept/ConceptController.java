@@ -57,7 +57,7 @@ import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.framework.observable.ObservableComposer;
-import dev.ikm.komet.framework.observable.ObservableEntity;
+import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
@@ -732,7 +732,7 @@ public class ConceptController {
     private void showAddAnotherNameUI() {
         ConceptEntity currentConcept = null;
         if (getConceptViewModel().getPropertyValue(CURRENT_ENTITY) instanceof EntityProxy.Concept concept) {
-            currentConcept = (ConceptEntity) EntityService.get().getEntity(concept.nid()).get();
+            currentConcept = EntityHandle.get(concept.nid()).expectConcept();
         } else {
             currentConcept = getConceptViewModel().getPropertyValue(CURRENT_ENTITY);
         }
@@ -962,7 +962,7 @@ public class ConceptController {
             return;
         }
         final Object mode = getConceptViewModel().getPropertyValue(ViewModelKey.MODE);
-        final boolean entityResolved = Entity.getFast(entityFacade.nid()) != null;
+        final boolean entityResolved = EntityHandle.get(entityFacade.nid()).isPresent();
         final boolean dataLoaded = conceptViewModel.getViewProperties().calculator()
                 .latest(entityFacade).isPresent();
         // Counts may include a single "No version for view" placeholder VBox when the list is otherwise empty.
@@ -1384,7 +1384,7 @@ public class ConceptController {
                     }
 
                     // Latest is uncommitted, search for latest committed version in history
-                    ImmutableList<EntityVersion> entityVersionsList = Entity.getFast(semanticEntity.nid()).versions();
+                    ImmutableList<EntityVersion> entityVersionsList = EntityHandle.get(semanticEntity.nid()).expectSemantic().versions();
 
                     // Return true if any committed version exists
                     return entityVersionsList.stream()
@@ -1435,7 +1435,7 @@ public class ConceptController {
      */
     private static ImmutableList<ObservableField> fields(SemanticEntityVersion semanticEntityVersion, PatternEntityVersion patternVersion, ViewCalculator viewCalculator) {
 
-        ObservableSemantic observableSemantic = (ObservableSemantic) ObservableEntity.get(semanticEntityVersion.entity());
+        ObservableSemantic observableSemantic = ObservableEntityHandle.get(semanticEntityVersion.entity().nid()).expectSemantic();
         ObservableSemanticSnapshot observableSemanticSnapshot = observableSemantic.getSnapshot(viewCalculator);
         Latest<ObservableSemanticVersion> latest = observableSemanticSnapshot.getLatestVersion();
         if(latest.isPresent()){

@@ -7,7 +7,7 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ComponentWithNid;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
@@ -65,7 +65,7 @@ public class LoginAuthorController {
         //If there are no authors mentioned in the stated or inferred then we use the default tinkar term user.
         if (conceptEntitySet.isEmpty()) {
             //TODO further refactoring should be done to be more abstract and UI should only use light entity facade to be more abstract.
-            conceptEntitySet.add(EntityService.get().getEntityFast(TinkarTerm.USER));
+            conceptEntitySet.add(EntityHandle.get(TinkarTerm.USER).expectConcept());
         }
 
         loginAuthorViewModel.getObservableList(AUTHORS).addAll(conceptEntitySet);
@@ -161,7 +161,7 @@ public class LoginAuthorController {
         try {
             java.util.UUID uuid = java.util.UUID.fromString(uuidText.trim());
             return available.stream()
-                    .filter(author -> EntityService.get().getEntityFast(author.nid()).publicId().asUuidList().contains(uuid))
+                    .filter(author -> EntityHandle.get(author.nid()).expectEntity().publicId().asUuidList().contains(uuid))
                     .findFirst();
         } catch (IllegalArgumentException e) {
             return java.util.Optional.empty();
@@ -180,7 +180,7 @@ public class LoginAuthorController {
         }
         try {
             KometPreferences authorPrefs = KometPreferencesImpl.getConfigurationRootPreferences().node(AUTHOR_LOGIN_NODE);
-            String uuid = EntityService.get().getEntityFast(author.nid()).publicId().asUuidList().get(0).toString();
+            String uuid = EntityHandle.get(author.nid()).expectEntity().publicId().asUuidList().get(0).toString();
             authorPrefs.put(LAST_AUTHOR_KEY, uuid);
             java.util.LinkedHashSet<String> selected = new java.util.LinkedHashSet<>();
             for (String existing : authorPrefs.get(SELECTED_AUTHORS_KEY).orElse("").split(",")) {

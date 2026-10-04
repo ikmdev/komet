@@ -13,6 +13,7 @@ import dev.ikm.komet.preferences.NidTextEnum;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_USER_WINDOWS_DIR;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,11 +140,11 @@ public class GenPurposeKLWindowFactory implements EntityKlWindowFactory {
             return Entity.getConceptForSemantic(entityNid)
                     .orElseGet(() -> {
                         LOG.warn("Referenced semantic entity with NID {} no longer exists, falling back to direct access", entityNid);
-                        return Entity.getFast(entityNid);
+                        return EntityHandle.get(entityNid).asConcept().orElse(null);
                     });
         } else {
             // For other types, just return the entity directly
-            return Entity.getFast(entityNid);
+            return EntityHandle.get(entityNid).orNull();
         }
     }
 }

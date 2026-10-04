@@ -2,7 +2,7 @@ package dev.ikm.komet.layout_engine.blueprint;
 
 import dev.ikm.komet.framework.observable.Feature;
 import dev.ikm.komet.framework.observable.FeatureKey;
-import dev.ikm.komet.framework.observable.ObservableEntity;
+import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.layout.KlViewLayoutLifecycle;
 import dev.ikm.komet.layout.area.KlAreaForFeature;
 import dev.ikm.komet.layout.area.KlFeaturePropertyForArea;
@@ -69,7 +69,7 @@ public class FeaturePropertyHelper<F extends Feature<?>> implements KlFeaturePro
             preferences.sync();
             preferences.getObject(KlAreaForFeature.PreferenceKeys.AREA_FEATURE_KEY).ifPresent(object -> {
                 if (object instanceof FeatureKey featureKey) {
-                    Feature<?> feature = ObservableEntity.get(featureKey.nid()).getFeature(featureKey);
+                    Feature<?> feature = ObservableEntityHandle.get(featureKey.nid()).expectEntity().getFeature(featureKey);
                     setFeatureProperty((ReadOnlyProperty<F>) feature.featureProperty());
                 }
             });

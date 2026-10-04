@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import dev.ikm.tinkar.common.util.broadcast.Subscriber;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
@@ -48,7 +49,7 @@ public class EditedConceptTracker {
 		}
 		changedEntityNids.add(nid);
 		if (LOG.isDebugEnabled()) {
-			Entity entity = Entity.getFast(nid);
+			Entity entity = EntityHandle.get(nid).orNull();
 			if (entity != null) {
 				LOG.debug("Entity changed: nid={}, type={}", nid, entity.getClass().getSimpleName());
 			} else {
@@ -106,7 +107,7 @@ public class EditedConceptTracker {
 		
 		for (Integer nid : changedEntityNids.toArray(new Integer[0])) {
 			try {
-				Entity entity = Entity.getFast(nid);
+				Entity entity = EntityHandle.get(nid).orNull();
 				if (entity == null) {
 					LOG.info("  -> Skipped nid={}: entity not found in data store", nid);
 					skippedCount++;
@@ -141,7 +142,7 @@ public class EditedConceptTracker {
 					LOG.info("     Found {} semantic(s) with stated pattern for concept", semanticNids.length);
 
 					for (int semanticNid : semanticNids) {
-						Entity semanticEntity = Entity.getFast(semanticNid);
+						Entity semanticEntity = EntityHandle.get(semanticNid).orNull();
 						if (semanticEntity instanceof SemanticEntity<?> semantic) {
 							Latest<SemanticEntityVersion> latestSemantic = viewCalculator.latest(semantic.nid());
 							if (latestSemantic.isPresent()) {

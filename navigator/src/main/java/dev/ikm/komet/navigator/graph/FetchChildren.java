@@ -24,7 +24,7 @@ import dev.ikm.tinkar.common.util.thread.TaskCountManager;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.application.Platform;
 import org.eclipse.collections.api.collection.ImmutableCollection;
@@ -92,7 +92,7 @@ public class FetchChildren extends TrackingCallable<Void> {
                     taskCountManager.acquire();
                     TinkExecutor.threadPool().execute(() -> {
                         try {
-                            ConceptEntity childChronology = Entity.getFast(childLink.destinationNid());
+                            ConceptEntity childChronology = EntityHandle.get(childLink.destinationNid()).expectConcept();
                             MultiParentVertexImpl childItem = new MultiParentVertexImpl(childChronology, parentGraphItem.getGraphController(), childLink.typeNids(), null);
                             try {
                                 childItem.setDefined(this.viewCalculator.hasSufficientSet(childChronology));

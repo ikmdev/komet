@@ -30,6 +30,7 @@ import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinate;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.ProxyFactory;
@@ -63,10 +64,10 @@ public class PropertySheetItemConceptWrapper implements ConceptFacade, PropertyS
         this.name = name;
         this.conceptProperty = (SimpleObjectProperty<ConceptFacade>) conceptProperty;
         if (allowedValues.length > 0) {
-            this.conceptProperty.set(Entity.getFast(allowedValues[0]));
+            this.conceptProperty.set(EntityHandle.get(allowedValues[0]).expectConcept());
         }
         for (int allowedNid : allowedValues) {
-            this.allowedValues.add(Entity.getFast(allowedNid));
+            this.allowedValues.add(EntityHandle.get(allowedNid).expectConcept());
         }
         bindProperties();
 

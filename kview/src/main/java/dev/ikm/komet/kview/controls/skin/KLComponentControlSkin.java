@@ -277,7 +277,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
             int nid = extractNid(event);
             if (nid != Integer.MIN_VALUE) {  //
-                EntityProxy entity = Entity.getFast(nid).toProxy();
+                EntityProxy entity = EntityHandle.get(nid).expectEntity().toProxy();
 
                 control.setEntity(entity);
                 addConceptNode(entity, control.getComponentNameRenderer());
@@ -405,7 +405,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
             Object uuidsContent = dragEvent.getDragboard().getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
             if (uuidsContent instanceof List list) {
                 if (!list.isEmpty() && list.get(0) instanceof UUID[]) {
-                    Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForUuids((UUID[]) list.get(0)));
+                    Entity<?> entity = EntityHandle.get(EntityService.get().nidForUuids((UUID[]) list.get(0))).expectEntity();
                     return getSkinnable().getComponentAllowedFilter().test(entity.publicId());
                 } else if (uuidsContent instanceof List<?>) {
                     // Drag & dropping multiple concepts

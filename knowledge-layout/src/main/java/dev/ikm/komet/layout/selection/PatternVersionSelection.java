@@ -101,7 +101,8 @@ public record PatternVersionSelection(PublicId componentPublicId, PublicId stamp
         for (PatternAttribute patternAttribute: PatternAttribute.values()) {
             selectableElements.add(new PatternAttributeSelection(patternAttribute));
         }
-        Optional<PatternEntity<PatternEntityVersion>> optionalPattern = EntityService.get().getEntity(componentPublicId);
+        Optional<PatternEntity<PatternEntityVersion>> optionalPattern = EntityHandle.get(componentPublicId).asPattern()
+                .filter(e -> !e.canceled()).map(e -> (PatternEntity<PatternEntityVersion>) e);
         optionalPattern.ifPresent(patternEntity -> {
             patternEntity.getVersion(stampPublicId).ifPresent(patternVersion -> {
                 selectableElements.add(new PatternAttributeSelection(PatternAttribute.PATTERN_MEANING));

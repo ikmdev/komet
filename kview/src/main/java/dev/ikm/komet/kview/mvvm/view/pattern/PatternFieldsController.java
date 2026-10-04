@@ -53,6 +53,7 @@ import dev.ikm.komet.kview.mvvm.viewmodel.PatternFieldsViewModel;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.TinkarTermV2;
@@ -127,7 +128,7 @@ public class PatternFieldsController {
 
         patternFieldsViewModel.getProperty(MEANING_ENTITY).subscribe(meaningObject -> {
             if (meaningObject != null) {
-                ConceptEntity conceptEntity = Entity.getFast((EntityFacade) meaningObject);
+                ConceptEntity conceptEntity = EntityHandle.get((EntityFacade) meaningObject).asConcept().orElse(null);
                 if (conceptEntity != null && viewProperties != null) {
                     LanguageCalculator languageCalculator = viewProperties.calculator().languageCalculator();
                     displayNameTextField.setText(languageCalculator.getDescriptionTextOrNid(conceptEntity.nid()));

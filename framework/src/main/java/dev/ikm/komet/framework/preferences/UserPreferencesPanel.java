@@ -20,7 +20,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.ProxyFactory;
 import dev.ikm.tinkar.terms.TinkarTerm;
@@ -77,21 +77,21 @@ public final class UserPreferencesPanel extends AbstractPreferences implements U
     @Override
     protected void saveFields() throws BackingStoreException {
 
-        preferencesNode.put(Keys.USER_CONCEPT, Entity.getFast(userConceptProperty.get()).toXmlFragment());
+        preferencesNode.put(Keys.USER_CONCEPT, EntityHandle.get(userConceptProperty.get()).expectConcept().toXmlFragment());
         List<String> userConceptOptionExternalStrings = new ArrayList<>();
         for (ConceptFacade spec : userConceptOptions) {
             userConceptOptionExternalStrings.add(spec.toXmlFragment());
         }
         preferencesNode.putList(Keys.USER_CONCEPT_OPTIONS, userConceptOptionExternalStrings);
 
-        preferencesNode.put(Keys.PATH_CONCEPT, Entity.getFast(pathConceptProperty.get()).toXmlFragment());
+        preferencesNode.put(Keys.PATH_CONCEPT, EntityHandle.get(pathConceptProperty.get()).expectConcept().toXmlFragment());
         List<String> pathConceptOptionExternalStrings = new ArrayList<>();
         for (ConceptFacade spec : pathConceptOptions) {
             pathConceptOptionExternalStrings.add(spec.toXmlFragment());
         }
         preferencesNode.putList(Keys.PATH_CONCEPT_OPTIONS, pathConceptOptionExternalStrings);
 
-        preferencesNode.put(Keys.MODULE_CONCEPT, Entity.getFast(moduleConceptProperty.get()).toXmlFragment());
+        preferencesNode.put(Keys.MODULE_CONCEPT, EntityHandle.get(moduleConceptProperty.get()).expectConcept().toXmlFragment());
         List<String> moduleConceptOptionExternalStrings = new ArrayList<>();
         for (ConceptFacade spec : moduleConceptOptions) {
             moduleConceptOptionExternalStrings.add(spec.toXmlFragment());

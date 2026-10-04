@@ -92,10 +92,10 @@ public class DataModelHelper {
 
     //FIXME this is just a work around for the May 2024 Connect-A-Thon
     public static final Set<ConceptEntity> CASE_SIGNIFICANCE_OPTIONS = Set.of(
-            Entity.getFast(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE.nid()),
-            Entity.getFast(TinkarTerm.NOT_APPLICABLE.nid()),
-            Entity.getFast(TinkarTerm.DESCRIPTION_CASE_SENSITIVE.nid()),
-            Entity.getFast(TinkarTerm.DESCRIPTION_INITIAL_CHARACTER_CASE_SENSITIVE.nid())
+            EntityHandle.get(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE.nid()).expectConcept(),
+            EntityHandle.get(TinkarTerm.NOT_APPLICABLE.nid()).expectConcept(),
+            EntityHandle.get(TinkarTerm.DESCRIPTION_CASE_SENSITIVE.nid()).expectConcept(),
+            EntityHandle.get(TinkarTerm.DESCRIPTION_INITIAL_CHARACTER_CASE_SENSITIVE.nid()).expectConcept()
     );
 
 
@@ -116,7 +116,7 @@ public class DataModelHelper {
 
     @SuppressWarnings("removal")
     public static SpecimenRecord makeSpecimenRecord(PublicId specimenId) {
-        Optional<Entity> specimenEntity = EntityService.get().getEntity(specimenId.asUuidArray());
+        Optional<Entity<? extends EntityVersion>> specimenEntity = EntityHandle.get(specimenId.asUuidArray()).entity().filter(e -> !e.canceled());
         if (specimenEntity.isEmpty()) {
             throw new IllegalArgumentException("PublicId " + specimenId + " is not in database.");
         }
@@ -132,7 +132,7 @@ public class DataModelHelper {
     }
     @SuppressWarnings("removal")
     public static TargetRecord makeTargetRecord(PublicId targetId) {
-        Optional<Entity> targetEntity = EntityService.get().getEntity(targetId.asUuidArray());
+        Optional<Entity<? extends EntityVersion>> targetEntity = EntityHandle.get(targetId.asUuidArray()).entity().filter(e -> !e.canceled());
         if (targetEntity.isEmpty()) {
             throw new IllegalArgumentException("PublicId " + targetId + " is not in database.");
         }
@@ -147,7 +147,7 @@ public class DataModelHelper {
     }
     @SuppressWarnings("removal")
     public static ResultConformanceRecord makeResultConformanceRecord(PublicId resultConformanceId) {
-        Optional<Entity> resultConformanceEntity = EntityService.get().getEntity(resultConformanceId.asUuidArray());
+        Optional<Entity<? extends EntityVersion>> resultConformanceEntity = EntityHandle.get(resultConformanceId.asUuidArray()).entity().filter(e -> !e.canceled());
         if (resultConformanceEntity.isEmpty()) {
             throw new IllegalArgumentException("PublicId " + resultConformanceId + " is not in database.");
         }
@@ -171,7 +171,7 @@ public class DataModelHelper {
     }
     @SuppressWarnings("removal")
     public static LidrRecord makeLidrRecord(PublicId lidrRecordId) {
-        Optional<Entity> lidrRecordEntity = EntityService.get().getEntity(lidrRecordId.asUuidArray());
+        Optional<Entity<? extends EntityVersion>> lidrRecordEntity = EntityHandle.get(lidrRecordId.asUuidArray()).entity().filter(e -> !e.canceled());
         if (lidrRecordEntity.isEmpty()) {
             throw new IllegalArgumentException("PublicId " + lidrRecordId + " is not in database.");
         }
@@ -203,7 +203,7 @@ public class DataModelHelper {
 
     @SuppressWarnings("removal")
     public static AnalyteRecord makeAnalyteRecord(PublicId analyteId) {
-        Optional<Entity> analyteEntity = EntityService.get().getEntity(analyteId.asUuidArray());
+        Optional<Entity<? extends EntityVersion>> analyteEntity = EntityHandle.get(analyteId.asUuidArray()).entity().filter(e -> !e.canceled());
         if (analyteEntity.isEmpty()) {
             throw new IllegalArgumentException("PublicId " + analyteId + " is not in database.");
         }
@@ -380,7 +380,7 @@ public class DataModelHelper {
         //               > Instrument Equipment Semantic
         //               > LIDR Record Semantic
         //
-        Optional<Entity> referenceComponent = EntityService.get().getEntity(referencedComponentPublicId.asUuidList());
+        Optional<Entity<? extends EntityVersion>> referenceComponent = EntityHandle.get(referencedComponentPublicId.asUuidArray()).entity().filter(e -> !e.canceled());
         if (!referenceComponent.isPresent()) {
             throw new RuntimeException("Error reference component does not exist in database: " + referencedComponentPublicId);
         }

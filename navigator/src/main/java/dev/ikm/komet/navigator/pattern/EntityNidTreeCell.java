@@ -40,6 +40,7 @@ import dev.ikm.komet.framework.dnd.DraggableWithImage;
 import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.PatternEntity;
 import org.eclipse.collections.api.list.ImmutableList;
 
@@ -102,7 +103,7 @@ public class EntityNidTreeCell extends TreeCell<Object>
                 setText(stringItem);
             } else if (item instanceof Integer nid) {
                 String entityDescriptionText = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(nid);
-                Entity entity = Entity.getFast(nid);
+                Entity entity = EntityHandle.get(nid).orNull();
                 Node icon;
                 if (entity instanceof PatternEntity) {
                     icon = Icon.PATTERN.makeIcon();

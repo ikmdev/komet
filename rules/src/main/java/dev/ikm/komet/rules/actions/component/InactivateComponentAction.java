@@ -25,6 +25,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptRecord;
 import dev.ikm.tinkar.entity.ConceptVersionRecord;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
@@ -56,7 +57,7 @@ public class InactivateComponentAction extends AbstractActionSuggested {
     }
 
     private void appendInactiveVersion(int entityNid, EditCoordinateRecord editCoordinateRecord) {
-        Entity entity = Entity.getFast(entityNid);
+        Entity entity = EntityHandle.get(entityNid).orNull();
 
         Transaction transaction = Transaction.make();
         ViewCoordinateRecord viewRecord = viewCalculator.viewCoordinateRecord();
@@ -91,7 +92,7 @@ public class InactivateComponentAction extends AbstractActionSuggested {
             CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
             TinkExecutor.threadPool().submit(commitTransactionTask);
         }, () -> {
-            throw new IllegalStateException("No latest pattern version for: " + Entity.getFast(TINKAR_BASE_MODEL_COMPONENT_PATTERN));
+            throw new IllegalStateException("No latest pattern version for: " + EntityHandle.get(TINKAR_BASE_MODEL_COMPONENT_PATTERN).orNull());
         });
 
 

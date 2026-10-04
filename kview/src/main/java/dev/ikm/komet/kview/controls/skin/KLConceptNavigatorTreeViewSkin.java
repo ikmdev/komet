@@ -915,7 +915,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
 
             BiConsumer<ConceptFacade, String> handler = treeView.getOnConceptNavigationFailed();
             if (notifyUser && handler != null) {
-                ConceptFacade facade = EntityHandle.get(nid).isConcept() ? Entity.getFast(nid) : null;
+                ConceptFacade facade = EntityHandle.get(nid).asConcept().orElse(null);
                 Platform.runLater(() -> handler.accept(facade, diagnosis.summary()));
             }
         });

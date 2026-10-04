@@ -32,7 +32,7 @@ import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -159,7 +159,7 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
 
         // Set UI to default values
         caseSignificanceComboBox.setValue(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
-        statusComboBox.setValue(Entity.getFast(State.ACTIVE.nid()));
+        statusComboBox.setValue(EntityHandle.get(State.ACTIVE.nid()).expectConcept());
         moduleComboBox.setValue(TinkarTerm.DEVELOPMENT_MODULE);
         languageComboBox.setValue(TinkarTerm.ENGLISH_LANGUAGE);
         typeDisplayComboBox.setValue(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);

@@ -23,7 +23,7 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -154,7 +154,7 @@ public interface EntityKlWindowFactory {
             }
 
             try {
-                Entity<?> entity = EntityService.get().getEntityFast(uuids);
+                Entity<?> entity = EntityHandle.get(uuids).orNull();
                 if (entity == null) {
                     LOG.warn("No entity found for UUID array: {}", ArrayIterate.makeString(uuids));
                     return null;

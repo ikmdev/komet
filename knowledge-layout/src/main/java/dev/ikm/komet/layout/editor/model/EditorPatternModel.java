@@ -7,7 +7,7 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
@@ -116,7 +116,7 @@ public class EditorPatternModel extends EditorGridNodeModel {
         visibleFields.addListener(this::fieldsChanged);
 
         // -- the fields the Pattern is defined with in the database
-        Entity<EntityVersion> entity = EntityService.get().getEntityFast(patternFacade);
+        Entity<EntityVersion> entity = EntityHandle.get(patternFacade).expectPattern();
         Latest<EntityVersion> optionalLatest = viewCalculator.latest(entity);
         fieldDefinitions = optionalLatest.isPresent()
                 ? ((PatternVersionRecord) optionalLatest.get()).fieldDefinitions()

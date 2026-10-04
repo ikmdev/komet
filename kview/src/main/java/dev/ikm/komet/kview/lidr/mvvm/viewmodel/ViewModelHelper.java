@@ -28,7 +28,8 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.component.Concept;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityHandle;
+import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpression;
 import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpressionBuilder;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -71,7 +72,7 @@ public class ViewModelHelper {
     @SuppressWarnings("removal")
     public static String findDescrNameText(PublicId publicId, String defaultValue) {
         if (publicId == null) return defaultValue;
-        Optional<Entity> entity = EntityService.get().getEntity(publicId.asUuidArray());
+        Optional<Entity<? extends EntityVersion>> entity = EntityHandle.get(publicId.asUuidArray()).entity();
         Optional<String> stringOptional = DataModelHelper.viewPropertiesNode().calculator().getFullyQualifiedNameText(entity.get().nid());
         return stringOptional.orElse(defaultValue);
     }

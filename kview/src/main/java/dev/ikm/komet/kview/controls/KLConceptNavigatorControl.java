@@ -4,7 +4,7 @@ import dev.ikm.komet.kview.controls.skin.ConceptNavigatorHelper;
 import dev.ikm.komet.kview.controls.skin.KLConceptNavigatorTreeViewSkin;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
@@ -549,7 +549,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
      * @return a {@link ConceptNavigatorTreeItem} for that concept, without children.
      */
     private ConceptNavigatorTreeItem createSingleConceptNavigatorTreeItem(int nid, int parentNid) {
-        ConceptFacade facade = Entity.getFast(nid);
+        ConceptFacade facade = EntityHandle.get(nid).asConcept().orElse(null);
         if (facade == null) {
             return null;
         }

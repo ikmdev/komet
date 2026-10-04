@@ -64,7 +64,7 @@ public abstract class StampAddFormViewModelBase extends StampFormViewModelBase {
     }
 
     protected void loadStamp() {
-        ObservableEntity observableEntity = ObservableEntity.get(entityFacade.nid());
+        ObservableEntity observableEntity = dev.ikm.komet.framework.observable.ObservableEntityHandle.get(entityFacade.nid()).expectEntity();
         ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
         Latest<EntityVersion> latestEntityVersion = retrieveCommittedLatestVersion(observableEntitySnapshot);
         latestEntityVersion

@@ -10,7 +10,6 @@ import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import org.eclipse.collections.api.factory.Lists;
@@ -435,7 +434,7 @@ public class FilterOptionsUtils {
 
     private static int findNidForDescription(FilterOptionsNavigator navigator, int nid, String description) {
         return navigator.getChildEdges(nid).stream()
-                .filter(edge -> Entity.getFast(edge.destinationNid()).description().equals(description))
+                .filter(edge -> EntityHandle.get(edge.destinationNid()).expectEntity().description().equals(description))
                 .findFirst()
                 .map(Edge::destinationNid)
                 .orElseThrow();
@@ -447,7 +446,7 @@ public class FilterOptionsUtils {
             nid = findNidForDescription(navigator, nid, s);
         }
         return navigator.getViewCalculator().descendentsOf(nid).intStream().boxed()
-                .map(i -> (EntityFacade) Entity.getFast(i))
+                .map(i -> (EntityFacade) EntityHandle.get(i).expectEntity())
                 .sorted()
                 .toList();
     }
@@ -456,7 +455,7 @@ public class FilterOptionsUtils {
         return switch (t) {
             case String value -> value;
             case State value -> viewCalculator == null ?
-                    Entity.getFast(value.nid()).description() :
+                    EntityHandle.get(value.nid()).expectConcept().description() :
                     getDescriptionTextOrNid(viewCalculator, value.nid());
             case Long value -> String.valueOf(value);
             case EntityFacade value -> {

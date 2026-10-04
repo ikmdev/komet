@@ -31,7 +31,7 @@ import dev.ikm.tinkar.coordinate.view.VertexSort;
 import dev.ikm.tinkar.coordinate.view.VertexSortNaturalOrder;
 import dev.ikm.tinkar.coordinate.view.VertexSortNone;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.StampService;
 import dev.ikm.tinkar.terms.*;
 import javafx.application.Platform;
@@ -115,7 +115,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             item.setUserData(FxGet.pathCoordinates(viewCalculator).get(key));
             item.setOnAction(event -> {
                 StampPathImmutable path = (StampPathImmutable) item.getUserData();
-                Platform.runLater(() -> observableCoordinate.pathConceptProperty().setValue(Entity.getFast(path.pathConceptNid())));
+                Platform.runLater(() -> observableCoordinate.pathConceptProperty().setValue(EntityHandle.get(path.pathConceptNid()).expectConcept()));
                 event.consume();
             });
             changePathMenu.getItems().add(item);

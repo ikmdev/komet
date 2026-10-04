@@ -20,7 +20,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.util.text.DescriptionToToken;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.Field;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -106,7 +106,7 @@ public class DocBook {
 
     public static String getGlossentry(int entityNid,
                                        ViewProperties viewProperties, String svgString) {
-        return getGlossentry(Entity.getFast(entityNid), viewProperties, svgString);
+        return getGlossentry(EntityHandle.get(entityNid).expectEntity(), viewProperties, svgString);
     }
 
     public static String getGlossentry(EntityFacade entity,

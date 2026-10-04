@@ -247,12 +247,12 @@ public final class WindowEditSession {
     public int commitUnpublishedTransactions(Collection<SemanticEntity<SemanticEntityVersion>> unpublishedSemantics) {
         List<Entity<?>> unpublished = new ArrayList<>(unpublishedSemantics);
         if (getComponent() != null) {
-            unpublished.add(Entity.getFast(getComponent().nid()));
+            unpublished.add(EntityHandle.get(getComponent().nid()).expectEntity());
         }
 
         Set<Transaction> transactions = new HashSet<>();
         for (Entity<?> entity : unpublished) {
-            for (EntityVersion version : Entity.getFast(entity.nid()).versions()) {
+            for (EntityVersion version : EntityHandle.get(entity.nid()).expectEntity().versions()) {
                 if (version.uncommitted()) {
                     Transaction.forStamp(version.stamp().publicId()).ifPresent(transactions::add);
                 }
@@ -261,7 +261,7 @@ public final class WindowEditSession {
         transactions.forEach(Transaction::commit);
 
         return (int) unpublished.stream()
-                .filter(entity -> Entity.getFast(entity.nid()).uncommitted())
+                .filter(entity -> EntityHandle.get(entity.nid()).expectEntity().uncommitted())
                 .count();
     }
 

@@ -66,7 +66,7 @@ public class TableNode extends ExplorationNodeAbstract {
 
     private void focusChanged(ObservableValue<? extends EntityFacade> observable, EntityFacade oldValue, EntityFacade newValue) {
         this.root.getChildren().clear();
-        Optional<? extends Entity<? extends EntityVersion>> optionalNewEntity = Entity.get(newValue);
+        Optional<? extends Entity<? extends EntityVersion>> optionalNewEntity = EntityHandle.get(newValue).entity().filter(e -> !e.canceled());
         optionalNewEntity.ifPresent(newEntity -> {
             if (newEntity instanceof ConceptEntity conceptEntity) {
                 // Don't know what to do...
@@ -134,11 +134,11 @@ public class TableNode extends ExplorationNodeAbstract {
                     AtomicInteger count = new AtomicInteger();
                     PrimitiveData.get().forEachSemanticNidOfPattern(patternEntity.nid(), semanticNid -> {
                         if (count.getAndIncrement() < 5000) {
-                            SemanticEntity semanticEntity = Entity.getFast(semanticNid);
+                            SemanticEntity semanticEntity = EntityHandle.get(semanticNid).asSemantic().orElse(null);
                             if (semanticEntity == null) {
                                 return;
                             }
-                            TreeItem semanticParent = new TreeItem(Entity.getFast(semanticEntity.referencedComponentNid()));
+                            TreeItem semanticParent = new TreeItem(EntityHandle.get(semanticEntity.referencedComponentNid()).orNull());
                             semanticParent.setExpanded(true);
                             Platform.runLater(() -> this.root.getChildren().add(semanticParent));
                             semanticEntity.versions().forEach(semanticEntityVersion -> {
@@ -153,8 +153,8 @@ public class TableNode extends ExplorationNodeAbstract {
     }
 
     private void setupSemantic(SemanticEntity semanticEntity) {
-        setupPattern(Entity.getFast(semanticEntity.patternNid()), false);
-        TreeItem semanticParent = new TreeItem(Entity.getFast(semanticEntity.referencedComponentNid()));
+        setupPattern(EntityHandle.get(semanticEntity.patternNid()).expectPattern(), false);
+        TreeItem semanticParent = new TreeItem(EntityHandle.get(semanticEntity.referencedComponentNid()).orNull());
         semanticParent.setExpanded(true);
         Platform.runLater(() -> this.root.getChildren().add(semanticParent));
         semanticEntity.versions().forEach(semanticEntityVersion -> {

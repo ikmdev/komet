@@ -8,6 +8,7 @@ import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
@@ -108,7 +109,7 @@ public class SearchCellTopComponent extends SearchCellBase {
 
                     controller.setIdenticon(Identicon.generateIdenticonImage(entityVersion.publicId()));
                     controller.setWindowView(observableViewNoOverride);
-                    Entity entity = Entity.get(entityVersion.nid()).get();
+                    Entity entity = EntityHandle.get(entityVersion.nid()).expectEntity();
                     controller.setData(entity);
                     controller.setComponentText(highlightedTitle(topText));
 

@@ -44,7 +44,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.ConceptRecord;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
@@ -207,7 +207,7 @@ public class PatternViewModel extends FormViewModel {
         ObjectProperty<EntityFacade> patternProperty = getProperty(ViewModelKey.PATTERN);
         EntityFacade patternFacade = patternProperty.getValue();
         if (patternFacade != null && getPropertyValue(ViewModelKey.MODE).equals(EDIT)) {
-            Entity entity = EntityService.get().getEntityFast(patternFacade);
+            Entity entity = EntityHandle.get(patternFacade).expectPattern();
             ViewCalculator viewCalculator = getViewProperties().calculator();
 
             // Load Fields data.
@@ -247,8 +247,8 @@ public class PatternViewModel extends FormViewModel {
                     EntityFacade caseSignificance = (EntityFacade) semanticEntityVersion.fieldValues().get(2);
                     EntityFacade descriptionType = (EntityFacade) semanticEntityVersion.fieldValues().get(3);
                     DescrName descrName = new DescrName(null, nameText, descriptionType,
-                        Entity.getFast(caseSignificance.nid()), Entity.getFast(semanticEntityVersion.state().nid()),
-                            Entity.getFast(semanticEntityVersion.module().nid()),Entity.getFast(language.nid()), semanticEntityVersion.publicId());
+                        EntityHandle.get(caseSignificance.nid()).expectConcept(), EntityHandle.get(semanticEntityVersion.state().nid()).expectConcept(),
+                            EntityHandle.get(semanticEntityVersion.module().nid()).expectConcept(),EntityHandle.get(language.nid()).expectConcept(), semanticEntityVersion.publicId());
                 if (PublicId.equals(descriptionType.publicId(), REGULAR_NAME_DESCRIPTION_TYPE.publicId())) {
                     ObservableList<DescrName> otherNamesList = getObservableList(OTHER_NAMES);
                     HashMap<DescrName, SemanticEntityVersion> regularNamesMap = getPropertyValue(OTHER_NAME_SEMANTIC_VERSION_MAP);
@@ -289,7 +289,7 @@ public class PatternViewModel extends FormViewModel {
                     + "(persisted nid did not resolve to an entity at restore; load block skipped)", mode);
             return;
         }
-        final Entity entity = EntityService.get().getEntityFast(patternFacade.nid());
+        final Entity entity = EntityHandle.get(patternFacade.nid()).orNull();
         final boolean entityResolved = entity != null;
         final boolean dataLoaded = entityResolved
                 && getViewProperties().calculator().latest(entity).isPresent();
@@ -324,8 +324,8 @@ public class PatternViewModel extends FormViewModel {
         EntityFacade fqnCaseSignificance = (EntityFacade) fqnSemanticEntityVersion.fieldValues().get(2);
         EntityFacade fqnDescriptionType = (EntityFacade) fqnSemanticEntityVersion.fieldValues().get(3);
         DescrName fqnDescrName = new DescrName(null, fqnString, fqnDescriptionType,
-                Entity.getFast(fqnCaseSignificance.nid()), Entity.getFast(fqnSemanticEntityVersion.state().nid()),
-                Entity.getFast(fqnSemanticEntityVersion.module().nid()),Entity.getFast(fqnLanguage.nid()), fqnSemanticEntityVersion.publicId());
+                EntityHandle.get(fqnCaseSignificance.nid()).expectConcept(), EntityHandle.get(fqnSemanticEntityVersion.state().nid()).expectConcept(),
+                EntityHandle.get(fqnSemanticEntityVersion.module().nid()).expectConcept(),EntityHandle.get(fqnLanguage.nid()).expectConcept(), fqnSemanticEntityVersion.publicId());
         setPropertyValue(FQN_DESCRIPTION_NAME, fqnDescrName);
         setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, fqnString);
         setPropertyValue(FQN_CASE_SIGNIFICANCE, fqnCaseSignificance);

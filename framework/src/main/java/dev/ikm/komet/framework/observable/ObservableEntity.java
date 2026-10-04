@@ -27,6 +27,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.ConceptRecord;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
@@ -408,38 +409,12 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
     protected abstract OV wrap(EntityVersion version);
 
     /**
-     * @deprecated Use {@link ObservableEntityHandle#getSnapshot(int, ViewCalculator)} instead.
-     * <p>     * This static accessor method is being phased out in favor of the fluent
-     * {@link ObservableEntityHandle} API, which provides better type safety, null handling,
-     * and composability. This method will be made module-internal in a future release.
-     * <p>     * <b>Migration:</b>
-     * <pre>{@code
-     * // Old (deprecated):
-     * ObservableEntitySnapshot snapshot = ObservableEntity.getSnapshot(nid, calculator);
-     *
-     * // New (recommended):
-     * Optional<ObservableEntitySnapshot<?, ?>> snapshot =
-     *     ObservableEntityHandle.getSnapshot(nid, calculator);
-     * }</pre>
-     *
-     * @see ObservableEntityHandle#getSnapshot(int, ViewCalculator)
-     * @see ObservableEntityHandle#getConceptSnapshotOrThrow(int, ViewCalculator)
-     * @see ObservableEntityHandle#getSemanticSnapshotOrThrow(int, ViewCalculator)
-     * @see ObservableEntityHandle#getPatternSnapshotOrThrow(int, ViewCalculator)
-     */
-    @Deprecated(since = "Current", forRemoval = true)
-    public static <OE extends ObservableEntity<OV>, OV extends ObservableEntityVersion<?,EV>, EV extends EntityVersion>
-    ObservableEntitySnapshot<OE, OV> getSnapshot(int nid, ViewCalculator calculator) {
-        return packagePrivateGetSnapshot(nid, calculator);
-    }
-
-    /**
      * Package-private method for internal use by ObservableEntityHandle.
      * External code should use {@link ObservableEntityHandle#getSnapshot(int, ViewCalculator)}.
      */
     static <OE extends ObservableEntity<OV>, OV extends ObservableEntityVersion<?,EV>, EV extends EntityVersion>
     ObservableEntitySnapshot<OE, OV> packagePrivateGetSnapshot(int nid, ViewCalculator calculator) {
-        return packagePrivateGet(Entity.packagePrivateGetFast(nid)).getSnapshot(calculator);
+        return packagePrivateGet(EntityHandle.get(nid).orNull()).getSnapshot(calculator);
     }
 
     public abstract ObservableEntitySnapshot<?,?> getSnapshot(ViewCalculator calculator);
@@ -475,35 +450,6 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
     }
     static ObservableSemantic packagePrivateGetSemantic(SemanticEntity entity) {
         return packagePrivateGet((Entity<? extends EntityVersion>) entity);
-    }
-
-    /**
-     * @deprecated Use {@link ObservableEntityHandle#get(int)} or type-specific methods instead.
-     * <p>     * This static accessor method is being phased out in favor of the fluent
-     * {@link ObservableEntityHandle} API, which provides better type safety, null handling,
-     * and composability. This method will be made module-internal in a future release.
-     * <p>     * <b>Migration:</b>
-     * <pre>{@code
-     * // Old (deprecated):
-     * ObservableConcept concept = ObservableEntity.get(nid);
-     *
-     * // New (recommended - type-safe):
-     * ObservableConcept concept = ObservableEntityHandle.getConceptOrThrow(nid);
-     *
-     * // Or with safe Optional handling:
-     * ObservableEntityHandle.get(nid)
-     *     .asConcept()
-     *     .ifPresent(concept -> process(concept));
-     * }</pre>
-     *
-     * @see ObservableEntityHandle#get(int)
-     * @see ObservableEntityHandle#getConceptOrThrow(int)
-     * @see ObservableEntityHandle#getSemanticOrThrow(int)
-     * @see ObservableEntityHandle#getPatternOrThrow(int)
-     */
-    @Deprecated(since = "Current", forRemoval = true)
-    public static <OE extends ObservableEntity> OE get(Entity<? extends EntityVersion> entity) {
-        return packagePrivateGet(entity);
     }
 
     /**
@@ -558,36 +504,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
      * External code should use {@link ObservableEntityHandle#get(int)}.
      */
     static <OE extends ObservableEntity> OE packagePrivateGet(int nid) {
-        return packagePrivateGet(Entity.packagePrivateGetFast(nid));
-    }
-
-    /**
-     * @deprecated Use {@link ObservableEntityHandle#get(int)} or type-specific methods instead.
-     * <p>     * This static accessor method is being phased out in favor of the fluent
-     * {@link ObservableEntityHandle} API, which provides better type safety, null handling,
-     * and composability. This method will be made module-internal in a future release.
-     * <p>     * <b>Migration:</b>
-     * <pre>{@code
-     * // Old (deprecated):
-     * ObservableConcept concept = ObservableEntity.get(nid);
-     *
-     * // New (recommended - type-safe):
-     * ObservableConcept concept = ObservableEntityHandle.getConceptOrThrow(nid);
-     *
-     * // Or using fluent API:
-     * ObservableEntityHandle.get(nid)
-     *     .ifConcept(concept -> process(concept))
-     *     .ifAbsent(() -> handleMissing());
-     * }</pre>
-     *
-     * @see ObservableEntityHandle#get(int)
-     * @see ObservableEntityHandle#getConceptOrThrow(int)
-     * @see ObservableEntityHandle#getSemanticOrThrow(int)
-     * @see ObservableEntityHandle#getPatternOrThrow(int)
-     */
-    @Deprecated(since = "Current", forRemoval = true)
-    public static <OE extends ObservableEntity> OE get(int nid) {
-        return packagePrivateGet(nid);
+        return packagePrivateGet(EntityHandle.get(nid).orNull());
     }
 
     /**
@@ -744,9 +661,9 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
             // Do nothing with item, but request another...
             if (CANONICAL_INSTANCES.getIfPresent(nid) != null) {
                 if (!Platform.isFxApplicationThread()) {
-                    Platform.runLater(() -> get(nid));
+                    Platform.runLater(() -> packagePrivateGet(nid));
                 } else {
-                    get(nid);
+                    packagePrivateGet(nid);
                 }
             }
         }

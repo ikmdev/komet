@@ -21,7 +21,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.events.EvtBus;
@@ -188,8 +188,8 @@ public class KLEditorMainScreenController {
         PrimitiveData.get().forEachPatternNid(patternNid -> {
             Latest<PatternEntityVersion> latestPattern = viewCalculator.latest(patternNid);
             latestPattern.ifPresent(patternEntityVersion -> {
-                if (EntityService.get().getEntity(patternEntityVersion.nid()).isPresent()) {
-                    Entity<EntityVersion> entity = EntityService.get().getEntity(patternNid).get();
+                if (EntityHandle.get(patternEntityVersion.nid()).entity().filter(e -> !e.canceled()).isPresent()) {
+                    Entity<EntityVersion> entity = EntityHandle.get(patternNid).expectPattern();
                     PatternBrowserItem patternBrowserItem = new PatternBrowserItem(entity, viewCalculator);
                     patternsList.add(patternBrowserItem);
                 }

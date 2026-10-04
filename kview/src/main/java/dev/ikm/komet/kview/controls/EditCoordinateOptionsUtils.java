@@ -8,7 +8,7 @@ import dev.ikm.komet.framework.view.ObservableStampCoordinate;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.layout.controls.FilterOptions;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
@@ -693,7 +693,7 @@ public class EditCoordinateOptionsUtils {
         return switch (t) {
             case String value -> value;
             case State value -> viewCalculator == null ?
-                    Entity.getFast(value.nid()).description() :
+                    EntityHandle.get(value.nid()).expectConcept().description() :
                     getDescriptionTextOrNid(viewCalculator, value.nid());
             case Long value -> String.valueOf(value);
             case EntityFacade value -> {

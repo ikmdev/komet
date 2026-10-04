@@ -32,6 +32,7 @@ import dev.ikm.komet.kview.mvvm.view.BasicController;
 import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -156,7 +157,7 @@ public class AnalyteGroupController implements BasicController {
             // to the view model
             if (analyteGroupViewModel.getPropertyValue(ANALYTE_ENTITY) == null) {
                 // query public Id to get entity.
-                Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+                Entity entity = EntityHandle.get(EntityService.get().nidForPublicId(publicId)).expectEntity();
                 analyteGroupViewModel.setPropertyValue(ANALYTE_ENTITY, entity);
                 analyteGroupViewModel.save();
                 // update the UI with the new analyte
@@ -166,7 +167,7 @@ public class AnalyteGroupController implements BasicController {
         // setup drag n drop
         setupDragNDrop(targetsSearchStackPane, (publicId) -> {
             // query public Id to get entity.
-            Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+            Entity entity = EntityHandle.get(EntityService.get().nidForPublicId(publicId)).expectEntity();
             // there can be one to many results
             analyteGroupViewModel.getObservableList(TARGET_ENTITIES).add(entity);
             analyteGroupViewModel.save();
@@ -175,7 +176,7 @@ public class AnalyteGroupController implements BasicController {
         });
         setupDragNDrop(resultSearchStackPane, (publicId) -> {
             // query public Id to get entity.
-            Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+            Entity entity = EntityHandle.get(EntityService.get().nidForPublicId(publicId)).expectEntity();
             // there can be one to many results
             analyteGroupViewModel.getObservableList(RESULT_ENTITIES).add(entity);
             analyteGroupViewModel.save();
@@ -184,7 +185,7 @@ public class AnalyteGroupController implements BasicController {
         });
         setupDragNDrop(specimenSearchStackPane, (publicId) -> {
             // query public Id to get entity.
-            Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+            Entity entity = EntityHandle.get(EntityService.get().nidForPublicId(publicId)).expectEntity();
             // there can be one to many specimens
             analyteGroupViewModel.getObservableList(SPECIMEN_ENTITIES).add(entity);
             analyteGroupViewModel.save();
@@ -358,7 +359,7 @@ public class AnalyteGroupController implements BasicController {
             // to the view model
             if (analyteGroupViewModel.getPropertyValue(ANALYTE_ENTITY) == null) {
                 // query public Id to get entity.
-                Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+                Entity entity = EntityHandle.get(EntityService.get().nidForPublicId(publicId)).expectEntity();
                 analyteGroupViewModel.setPropertyValue(ANALYTE_ENTITY, entity);
                 analyteGroupViewModel.save();
                 // update the UI with the new analyte

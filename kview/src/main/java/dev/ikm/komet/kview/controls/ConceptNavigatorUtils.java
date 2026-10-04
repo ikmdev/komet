@@ -5,7 +5,6 @@ import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -143,7 +142,7 @@ public class ConceptNavigatorUtils {
     static List<InvertedTree.ConceptItem> getSecondaryParents(int childNid, int primaryNid, Navigator navigator) {
         return new ArrayList<>(Arrays.stream(getParentNids(navigator, childNid)).boxed()
                 .filter(nid -> nid != primaryNid)
-                .map(nid -> new InvertedTree.ConceptItem(nid, childNid, Entity.getFast(nid).description()))
+                .map(nid -> new InvertedTree.ConceptItem(nid, childNid, EntityHandle.get(nid).expectConcept().description()))
                 .toList());
     }
 
@@ -167,7 +166,7 @@ public class ConceptNavigatorUtils {
      * @return an {@link InvertedTree}
      */
     public static InvertedTree buildInvertedTree(int nid, Navigator navigator) {
-        ConceptFacade facade = Entity.getFast(nid);
+        ConceptFacade facade = EntityHandle.get(nid).expectConcept();
         InvertedTree.ConceptItem item = new InvertedTree.ConceptItem(facade.nid(), facade.nid(), facade.description());
         InvertedTree tree = new InvertedTree(item);
         addAllAncestors(facade.nid(), tree, navigator);
@@ -216,7 +215,7 @@ public class ConceptNavigatorUtils {
         System.out.println("\n\nTree =======");
         printInvertedTree(deepestNid, navigator);
         System.out.println("\n\nEnd Tree =======");
-        System.out.println("\n\nMax level = " + levelCounter + ", nid = " + deepestNid + ", description = " + Entity.getFast(deepestNid).description());
+        System.out.println("\n\nMax level = " + levelCounter + ", nid = " + deepestNid + ", description = " + EntityHandle.get(deepestNid).expectConcept().description());
     }
 
     /**

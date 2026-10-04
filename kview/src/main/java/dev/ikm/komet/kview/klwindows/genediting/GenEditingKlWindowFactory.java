@@ -19,7 +19,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.klwindows.*;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +65,7 @@ public class GenEditingKlWindowFactory implements EntityKlWindowFactory {
                 final OptionalInt entityNid = windowState.resolveEntityNid();
                 EntityFacade entityFacade = null;
                 if (entityNid.isPresent()) {
-                    entityFacade = EntityService.get().getEntityFast(entityNid.getAsInt());
+                    entityFacade = EntityHandle.get(entityNid.getAsInt()).orNull();
                 }
 
                 // Create the window with the extracted parameters

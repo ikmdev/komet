@@ -21,7 +21,7 @@ import dev.ikm.komet.layout_engine.host.DynamicCard;
 import dev.ikm.komet.layout_engine.host.DynamicComponentCard;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.scene.layout.Pane;
 import org.slf4j.Logger;
@@ -209,7 +209,7 @@ public final class DynamicCardKlWindow extends AbstractChapterKlWindow<Pane> {
         // node, so revert() loaded no layout — seed the card from the legacy window-state copy.
         if (!card.isContentRestored()) {
             final OptionalInt entityNid = windowState.resolveEntityNid();
-            card.setReferenceComponent(entityNid.isPresent() ? Entity.getFast(entityNid.getAsInt()) : null);
+            card.setReferenceComponent(entityNid.isPresent() ? EntityHandle.get(entityNid.getAsInt()).orNull() : null);
             preferences.get(DYNAMIC_CARD_LAYOUT_TITLE).ifPresent(title ->
                     card.setEditorWindowPreferences(KometPreferencesImpl.getConfigurationRootPreferences()
                             .node(KL_EDITOR_APP).node(KL_USER_WINDOWS_DIR).node(title)));

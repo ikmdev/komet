@@ -164,7 +164,7 @@ public class ChangeListItemController {
 
         boolean showPriorValue = false;
         StringBuilder sb = new StringBuilder();
-        Entity referencedEntity = EntityService.get().getEntityFast(getEntityNid());
+        Entity referencedEntity = EntityHandle.get(getEntityNid()).expectEntity();
         // Identicon
         Image identicon = Identicon.generateIdenticonImage(referencedEntity.publicId());
         identiconImageView.setImage(identicon);

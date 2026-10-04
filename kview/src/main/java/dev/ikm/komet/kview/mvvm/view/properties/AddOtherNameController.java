@@ -33,7 +33,7 @@ import dev.ikm.komet.kview.events.CreateConceptEvent;
 import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -257,7 +257,7 @@ public class AddOtherNameController extends AbstractBasicController {
         } else {
             caseSignificanceComboBox.setValue(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
         }
-        statusComboBox.setValue(Entity.getFast(State.ACTIVE.nid()));
+        statusComboBox.setValue(EntityHandle.get(State.ACTIVE.nid()).expectConcept());
         moduleComboBox.setValue(TinkarTerm.DEVELOPMENT_MODULE);
         if (hasOtherName) {
             languageComboBox.setValue(getViewModel().getValue(DESCRIPTION_LANGUAGE));

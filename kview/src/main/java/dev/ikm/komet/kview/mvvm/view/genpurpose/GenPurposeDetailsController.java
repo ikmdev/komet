@@ -23,6 +23,7 @@ import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
 
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.observable.ObservableEntity;
+import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -423,7 +424,7 @@ public class GenPurposeDetailsController {
     }
 
     private void updateStampControl(EntityFacade refConcept) {
-        ObservableEntity observableEntity = ObservableEntity.get(refConcept.nid());
+        ObservableEntity observableEntity = ObservableEntityHandle.get(refConcept.nid()).expectEntity();
         ObservableEntitySnapshot observableEntitySnapshot;
         try {
             observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
@@ -1606,7 +1607,7 @@ public class GenPurposeDetailsController {
                 return;
             }
             boolean allByCurrentAuthor = unpublished.stream()
-                    .flatMap(semantic -> Entity.getFast(semantic.nid()).versions().stream())
+                    .flatMap(semantic -> EntityHandle.get(semantic.nid()).expectEntity().versions().stream())
                     .filter(EntityVersion::uncommitted)
                     .allMatch(version -> version.stamp().authorNid() == currentAuthorNid);
             titledPane.setUnpublishedNote((unpublished.size() == 1 ? "1 change" : unpublished.size() + " changes")
@@ -1622,7 +1623,7 @@ public class GenPurposeDetailsController {
      */
     private List<SemanticEntity<SemanticEntityVersion>> unpublishedSemantics() {
         return displayedSemantics.values().stream()
-                .filter(semantic -> Entity.getFast(semantic.nid()).uncommitted())
+                .filter(semantic -> EntityHandle.get(semantic.nid()).expectSemantic().uncommitted())
                 .toList();
     }
 
@@ -1634,7 +1635,7 @@ public class GenPurposeDetailsController {
     private int unpublishedChangeCount() {
         int count = unpublishedSemantics().size();
         EntityFacade refComponent = session.getComponent();
-        if (refComponent != null && Entity.getFast(refComponent.nid()).uncommitted()) {
+        if (refComponent != null && EntityHandle.get(refComponent.nid()).expectEntity().uncommitted()) {
             count++;
         }
         return count;

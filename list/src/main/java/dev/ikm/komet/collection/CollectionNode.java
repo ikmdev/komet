@@ -51,7 +51,7 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.id.*;
 import dev.ikm.tinkar.common.util.uuid.UuidUtil;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.ProxyFactory;
@@ -149,7 +149,7 @@ public abstract class CollectionNode<T extends IntIdCollection> extends Explorat
         if (!collectionEditor.getSelectionModel().getSelectedIndices().isEmpty()) {
             List<EntityProxy> entityProxyList = new ArrayList<>();
             for (Integer nid : collectionEditor.getSelectionModel().getSelectedItems()) {
-                entityProxyList.add(Entity.getFast(nid).toProxy());
+                entityProxyList.add(EntityHandle.get(nid).expectEntity().toProxy());
             }
             KometClipboard content = new KometClipboard(entityProxyList);
             Clipboard.getSystemClipboard().setContent(content);
@@ -222,7 +222,7 @@ public abstract class CollectionNode<T extends IntIdCollection> extends Explorat
                     MutableIntList nidsToAdd = IntLists.mutable.empty();
                     while (proxyText != null) {
                         ProxyFactory.fromXmlFragmentOptional(proxyText).ifPresent(entityProxy ->
-                                Entity.get(entityProxy.nid()).ifPresentOrElse(
+                                EntityHandle.get(entityProxy.nid()).entity().filter(e -> !e.canceled()).ifPresentOrElse(
                                         entity -> nidsToAdd.add(entity.nid()),
                                         () -> AlertStreams.dispatchToRoot(new IllegalStateException("No entity in database for: " + entityProxy))));
                         proxyText = bufferedReader.readLine();
@@ -281,7 +281,7 @@ public abstract class CollectionNode<T extends IntIdCollection> extends Explorat
                     MutableIntList nidsToAdd = IntLists.mutable.empty();
                     while (proxyText != null) {
                         ProxyFactory.fromXmlFragmentOptional(proxyText).ifPresent(entityProxy ->
-                                Entity.get(entityProxy.nid()).ifPresentOrElse(
+                                EntityHandle.get(entityProxy.nid()).entity().filter(e -> !e.canceled()).ifPresentOrElse(
                                         entity -> nidsToAdd.add(entity.nid()),
                                         () -> AlertStreams.dispatchToRoot(new IllegalStateException("No entity in database for: " + entityProxy))));
                         proxyText = bufferedReader.readLine();
@@ -304,7 +304,7 @@ public abstract class CollectionNode<T extends IntIdCollection> extends Explorat
                     EntityFacade[] selectionArray = new EntityFacade[c.getList().size()];
                     int i = 0;
                     for (Integer nid : c.getList()) {
-                        selectionArray[i++] = Entity.getFast(nid);
+                        selectionArray[i++] = EntityHandle.get(nid).orNull();
                     }
                     activityStream.dispatch(selectionArray);
                     LOG.atTrace().log("Selected: " + c.getList());
@@ -324,7 +324,7 @@ public abstract class CollectionNode<T extends IntIdCollection> extends Explorat
             writer.write(UuidUtil.toString(collectionKeyProperty.get().getPublicId().asUuidArray()));
             writer.newLine();
             for (int nid : this.collectionEditor.getItems()) {
-                writer.write(Entity.getFast(nid).toXmlFragment());
+                writer.write(EntityHandle.get(nid).expectEntity().toXmlFragment());
                 writer.newLine();
             }
         } catch (IOException e) {

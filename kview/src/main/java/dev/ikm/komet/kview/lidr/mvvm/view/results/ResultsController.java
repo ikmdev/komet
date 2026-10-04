@@ -35,7 +35,9 @@ import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.terms.ComponentWithNid;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -345,7 +347,7 @@ public class ResultsController extends AbstractBasicController implements BasicC
             List<EntityFacade> allowableResults = resultsViewModel.getObservableList(ALLOWABLE_RESULTS);
 
             // query public Id to get entity.
-            Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(chosenAllowResultPublicId));
+            Entity entity = EntityHandle.get(EntityService.get().nidForPublicId(chosenAllowResultPublicId)).expectEntity();
             // there can be one to many results
             allowableResults.add(entity);
             resultsViewModel.validate();
@@ -561,7 +563,7 @@ public class ResultsController extends AbstractBasicController implements BasicC
             resultConformanceRecordPublicId = ViewModelHelper.createQuanitativeResultConcept(resultsViewModel, getStampDetail());
         }
 
-        Optional<Entity> entityOptional = EntityService.get().getEntity(resultConformanceRecordPublicId.asUuidArray());
+        Optional<Entity<? extends EntityVersion>> entityOptional = EntityHandle.get(resultConformanceRecordPublicId.asUuidArray()).entity();
         Entity entity = entityOptional.get();
         evtBus.publish(getConceptTopic(), new ShowPanelEvent(event.getSource(), SHOW_ADD_ANALYTE_GROUP));
         evtBus.publish(getConceptTopic(), new AddResultEvent(event.getSource(), ADD_RESULT_TO_ANALYTE_GROUP, entity));

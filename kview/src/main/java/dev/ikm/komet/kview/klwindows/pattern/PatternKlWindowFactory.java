@@ -19,7 +19,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.klwindows.*;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import org.slf4j.Logger;
@@ -66,7 +66,7 @@ public class PatternKlWindowFactory implements EntityKlWindowFactory {
                 final OptionalInt entityNid = windowState.resolveEntityNid();
                 PatternFacade patternFacade = null;
                 if (entityNid.isPresent()) {
-                    patternFacade = Entity.getFast(entityNid.getAsInt());
+                    patternFacade = EntityHandle.get(entityNid.getAsInt()).asPattern().orElse(null);
                 }
 
                 // Create the window with the extracted parameters

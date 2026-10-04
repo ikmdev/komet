@@ -26,7 +26,7 @@ import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
@@ -288,7 +288,7 @@ public class ConceptPatternNavController {
                 if (selectedItem != null) {
                     conceptNavigatorControl.getNavigator().getParentNids(selectedItem.getValue().nid());
                     List<ConceptFacade> list = Arrays.stream(conceptNavigatorControl.getNavigator().getParentNids(selectedItem.getValue().nid())).boxed()
-                            .map(nid -> (ConceptFacade) Entity.getFast(nid)).toList();
+                            .map(nid -> (ConceptFacade) EntityHandle.get(nid).expectConcept()).toList();
                     ((ConceptNavigatorTreeItem) selectedItem).setRelatedConcepts(list);
                 }
                 yield i -> LOG.info("Click on {}", i.description());

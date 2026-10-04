@@ -5,6 +5,7 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
@@ -77,7 +78,7 @@ public class SearchCellNid extends SearchCellBase {
                     controller.setIdenticon(Identicon.generateIdenticonImage(entityVersion.publicId()));
                     controller.setSemanticText(topText);
                     controller.setWindowView(observableViewNoOverride);
-                    Entity entity = Entity.get(entityVersion.nid()).get();
+                    Entity entity = EntityHandle.get(entityVersion.nid()).expectEntity();
                     controller.setData(entity);
                     if (entityVersion.active()) {
                         controller.getRetiredHBox().getChildren().remove(controller.getRetiredLabel());

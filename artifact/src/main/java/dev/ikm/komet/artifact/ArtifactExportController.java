@@ -314,9 +314,9 @@ public class ArtifactExportController {
         int[] pathSemanticNids = EntityService.get().semanticNidsOfPattern(TinkarTerm.PATHS_PATTERN.nid());
         //For each Path semantic get the concept that the semantic is referencing
         for (int pathSemanticNid : pathSemanticNids) {
-            SemanticEntity<SemanticEntityVersion> semanticEntity = Entity.getFast(pathSemanticNid);
+            SemanticEntity<SemanticEntityVersion> semanticEntity = EntityHandle.get(pathSemanticNid).expectSemantic();
             int pathConceptNid = semanticEntity.referencedComponentNid();
-            paths.add(EntityService.get().getEntityFast(pathConceptNid));
+            paths.add(EntityHandle.get(pathConceptNid).expectConcept());
         }
         return paths;
     }
@@ -340,7 +340,7 @@ public class ArtifactExportController {
                     if (patternEntityVersionLatest.isPresent() && patternEntityVersionLatest.get().active()) {
                         PatternEntityVersion patternEntityVersion = patternEntityVersionLatest.get();
                         if (patternEntityVersion.semanticPurposeNid() == TinkarTerm.MEMBERSHIP_SEMANTIC.nid()) {
-                            membershipPatterns.add(Entity.getFast(patternNid));
+                            membershipPatterns.add(EntityHandle.get(patternNid).expectPattern());
                         }
                     }
                 });

@@ -379,7 +379,7 @@ public class ExportController {
             List<PublicId> membershipPublicIds = tagsData.stream().filter(t -> t.tagSelected).map(
                     tagsDataModel ->
                         // map TagsDataModel to a publicId
-                        EntityService.get().getEntityFast(Integer.parseInt(tagsDataModel.tagNid)).publicId()
+                        EntityHandle.get(Integer.parseInt(tagsDataModel.tagNid)).expectEntity().publicId()
                     ).toList();
             ExportEntitiesToProtobufFile exportEntities = new ExportEntitiesToProtobufFile(exportFile, membershipPublicIds);
             CompletableFuture<dev.ikm.tinkar.common.service.EntityCountSummary> exportFuture = ProgressHelper.progress(exportEntities, "Cancel Export");

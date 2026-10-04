@@ -25,6 +25,7 @@ import static dev.ikm.tinkar.terms.TinkarTerm.STRING_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.UUID_FIELD;
 import static dev.ikm.tinkar.terms.TinkarTerm.VERTEX_FIELD;
 import dev.ikm.komet.framework.observable.ObservableEntity;
+import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.observable.ObservablePatternSnapshot;
@@ -64,6 +65,7 @@ import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
@@ -128,7 +130,7 @@ public class KlFieldHelper {
      * @return boolean true if any field has an unsupported field.
      */
     public static boolean hasAnyUnsupportedFieldType(PatternFacade pattern) {
-        Optional<Entity<EntityVersion>> patternEntityOpt =  Entity.get(pattern);
+        Optional<Entity<? extends EntityVersion>> patternEntityOpt =  EntityHandle.get(pattern).entity().filter(e -> !e.canceled());
         if (patternEntityOpt.isPresent()) {
             PatternEntityVersion patternEntityVersion = (PatternEntityVersion) patternEntityOpt.get().versions().get(0);
             List<Integer> nids = patternEntityVersion
@@ -154,7 +156,7 @@ public class KlFieldHelper {
         if (pattern == null) {
             return false;
         }
-        Optional<Entity<EntityVersion>> patternEntityOpt =  Entity.get(pattern);
+        Optional<Entity<? extends EntityVersion>> patternEntityOpt =  EntityHandle.get(pattern).entity().filter(e -> !e.canceled());
         if (patternEntityOpt.isPresent()) {
             PatternEntityVersion patternEntityVersion = (PatternEntityVersion) patternEntityOpt.get().versions().get(0);
             List<Integer> nids = patternEntityVersion
@@ -420,7 +422,7 @@ public class KlFieldHelper {
      * @return fieldValues.toImmutable() - returns list of immutable field values.
      */
     public static ImmutableList<Object> createDefaultFieldValues(EntityFacade pattern, ViewProperties viewProperties) {
-        ObservableEntity observableEntity = ObservableEntity.get(pattern.nid());
+        ObservableEntity observableEntity = ObservableEntityHandle.get(pattern.nid()).expectPattern();
         ObservablePatternSnapshot observablePatternSnapshot = (ObservablePatternSnapshot) observableEntity.getSnapshot(viewProperties.calculator());
         ObservablePatternVersion observablePatternVersion = observablePatternSnapshot.getLatestVersion().get();
         MutableList<Object> fieldsValues = generateDefaultFieldValues(observablePatternVersion);

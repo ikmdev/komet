@@ -21,6 +21,7 @@ import dev.ikm.komet.kview.klwindows.*;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.NidTextEnum;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import org.slf4j.Logger;
@@ -113,11 +114,11 @@ public class ConceptKlWindowFactory implements EntityKlWindowFactory {
             return Entity.getConceptForSemantic(entityNid)
                     .orElseGet(() -> {
                         LOG.warn("Referenced semantic entity with NID {} no longer exists, falling back to direct access", entityNid);
-                        return Entity.getFast(entityNid);
+                        return EntityHandle.get(entityNid).asConcept().orElse(null);
                     });
         } else {
             // For other types, just return the entity directly
-            return Entity.getFast(entityNid);
+            return EntityHandle.get(entityNid).asConcept().orElse(null);
         }
     }
 

@@ -390,7 +390,7 @@ public class ConceptDetailsNode extends ExplorationNodeAbstract {
         this.nodePreferences.putConceptList(ConceptDetailNodeKeys.DESCRIPTION_SEMANTIC_ORDER, this.semanticOrderForDescriptionDetails);
         this.nodePreferences.putConceptList(ConceptDetailNodeKeys.AXIOM_SEMANTIC_ORDER, this.semanticOrderForAxiomDetails);
         optionalFocus.ifPresentOrElse(identifiedObject -> {
-            this.nodePreferences.putConceptProxy(ConceptDetailNodeKeys.FOCUS_CONCEPT, Entity.provider().getEntityFast(identifiedObject.nid()));
+            this.nodePreferences.putConceptProxy(ConceptDetailNodeKeys.FOCUS_CONCEPT, (EntityProxy.Concept) EntityHandle.get(identifiedObject.nid()).expectConcept());
         }, () -> this.nodePreferences.remove(ConceptDetailNodeKeys.FOCUS_CONCEPT));
 
     }
@@ -540,9 +540,9 @@ public class ConceptDetailsNode extends ExplorationNodeAbstract {
         populateVersionBranchGrid();
         componentPanelBox.getChildren().add(toolGrid);
         Optional.ofNullable(entityFocusProperty.getValue()).ifPresent(entityFacade -> {
-            ConceptEntity<ConceptEntityVersion> conceptEntity = Entity.provider().getEntityFast(entityFacade.nid());
+            ConceptEntity<ConceptEntityVersion> conceptEntity = EntityHandle.get(entityFacade.nid()).expectConcept();
             titleProperty.set(this.viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(entityFacade));
-            ObservableConcept observableConcept = ObservableEntity.get(conceptEntity);
+            ObservableConcept observableConcept = ObservableEntityHandle.get(conceptEntity).expectConcept();
             animateFocus(observableConcept);
         });
     }
@@ -791,13 +791,13 @@ public class ConceptDetailsNode extends ExplorationNodeAbstract {
         }
         PrimitiveData.get().forEachSemanticNidForComponent(
                 entity.nid(),
-                semanticNid -> updateStampControls(Entity.provider().getEntityFast(semanticNid)));
+                semanticNid -> updateStampControls(EntityHandle.get(semanticNid).orNull()));
     }
 
     public void updateFocusedObject(EntityFacade component) {
         if (component != null) {
             Platform.runLater(() -> {
-                Optional<? extends Entity> optionalEntity = Entity.get(component.nid());
+                Optional<? extends Entity> optionalEntity = EntityHandle.get(component.nid()).entity().filter(e -> !e.canceled());
                 optionalEntity.ifPresent(chronology -> {
                     if (chronology instanceof ConceptEntity conceptEntity) {
                         setConcept(conceptEntity);

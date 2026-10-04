@@ -23,7 +23,7 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.RecordListBuilder;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticRecord;
@@ -138,7 +138,7 @@ public class DescrNameViewModel extends FormViewModel {
 
 
         // existing semantic
-        SemanticEntity theSemantic = EntityService.get().getEntityFast(publicId.asUuidList());
+        SemanticEntity theSemantic = EntityHandle.get(publicId.asUuidArray()).expectSemantic();
 
 
         // the versions that we will first populate with the existing versions of the semantic
@@ -213,7 +213,7 @@ public class DescrNameViewModel extends FormViewModel {
                 viewProperties.nodeView().editCoordinate().getDefaultPath().nid()); // path from the edit coordinate (ike-issues#752)
 
         // existing semantic
-        SemanticEntity theSemantic = EntityService.get().getEntityFast(publicId.asUuidList());
+        SemanticEntity theSemantic = EntityHandle.get(publicId.asUuidArray()).expectSemantic();
 
 
         // the versions that we will first populate with the existing versions of the semantic
