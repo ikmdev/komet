@@ -1,8 +1,8 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -53,9 +53,9 @@ public class InstancesController {
         AtomicInteger childCount = new AtomicInteger();
 
         // populate the collection of instance for each pattern
-        PrimitiveData.get().forEachSemanticNidOfPattern(patternNid, semanticNid -> {
+        EntityService.get().forEachSemanticOfPattern(patternNid, semantic -> {
             if (childCount.incrementAndGet() < MAX_INSTANCES) {
-                patternChildren.add(semanticNid);
+                patternChildren.add(semantic.nid());
             }
         });
         if (childCount.get() >= MAX_INSTANCES) {

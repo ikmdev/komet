@@ -1,8 +1,8 @@
 package dev.ikm.komet.layout.orchestration;
 
 import dev.ikm.tinkar.common.service.PluggableService;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TrackingCallable;
+import dev.ikm.tinkar.entity.EntityService;
 
 import java.text.NumberFormat;
 import java.util.concurrent.atomic.LongAdder;
@@ -29,7 +29,7 @@ public class CountSemantics extends TrackingCallable<Void> {
     protected Void compute() throws Exception {
         LongAdder count = new LongAdder();
         try {
-            PrimitiveData.get().forEachSemanticNid((nid) -> count.increment());
+            EntityService.get().forEachSemanticEntity(semantic -> count.increment());
             PluggableService.first(StatusReportService.class).reportStatus("Total semantic count: " + NumberFormat.getInstance().format(count.sum()));
             return null;
         } finally {

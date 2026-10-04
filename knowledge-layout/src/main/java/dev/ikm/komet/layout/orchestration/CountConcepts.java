@@ -1,8 +1,8 @@
 package dev.ikm.komet.layout.orchestration;
 
 import dev.ikm.tinkar.common.service.PluggableService;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TrackingCallable;
+import dev.ikm.tinkar.entity.EntityService;
 
 import java.text.NumberFormat;
 import java.util.concurrent.atomic.LongAdder;
@@ -28,7 +28,7 @@ public class CountConcepts extends TrackingCallable<Void> {
     protected Void compute() throws Exception {
         LongAdder count = new LongAdder();
         try {
-            PrimitiveData.get().forEachConceptNid((nid) -> count.increment());
+            EntityService.get().forEachConceptEntity(concept -> count.increment());
             PluggableService.first(StatusReportService.class).reportStatus("Total concept count: " + NumberFormat.getInstance().format(count.sum()));
             return null;
         } finally {

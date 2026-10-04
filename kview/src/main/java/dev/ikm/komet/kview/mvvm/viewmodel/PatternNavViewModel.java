@@ -3,7 +3,6 @@ package dev.ikm.komet.kview.mvvm.viewmodel;
 import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.observable.*;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
@@ -55,30 +54,10 @@ public class PatternNavViewModel extends FormViewModel {
 
             // Step 1: Collect all patterns with valid versions
             List<PatternFacade> patterns = new ArrayList<>();
-            PrimitiveData.get().forEachPatternNid(patternNid -> {
-                EntityHandle entityHandle = EntityHandle.get(patternNid);
-                if (entityHandle.isPresent()) {
-                    switch (entityHandle.expectEntity()) {
-                        case PatternEntity patternEntity -> {
-                            Latest<ObservablePatternVersion> latest = viewProperties.calculator().latest(patternEntity);
-                            if (latest.isPresent()) {
-                                patterns.add(patternEntity);
-                            }
-                        }
-                        case ConceptEntity conceptEntity -> LOG.warn(
-                                "Unexpected concept {} {} found in pattern collection. Skipping...",
-                                conceptEntity.publicId(), viewProperties.calculator().getDescriptionTextOrNid(conceptEntity)
-                        );
-                        case StampEntity stampEntity -> LOG.warn(
-                                "Unexpected stamp {} {} found in pattern collection. Skipping...",
-                                stampEntity.publicId(), viewProperties.calculator().languageCalculator().getTextForStamp(stampEntity)
-                        );
-                        case SemanticEntity semanticEntity -> LOG.warn(
-                                "Unexpected semantic {} {} found in pattern collection. Skipping...",
-                                semanticEntity.publicId(), viewProperties.calculator().getDescriptionTextOrNid(semanticEntity)
-                        );
-                        default -> throw new IllegalStateException("Unexpected value: " + entityHandle.expectEntity());
-                    }
+            EntityService.get().forEachPatternEntity(patternEntity -> {
+                Latest<PatternEntityVersion> latest = viewProperties.calculator().latest(patternEntity);
+                if (latest.isPresent()) {
+                    patterns.add(patternEntity);
                 }
             });
 

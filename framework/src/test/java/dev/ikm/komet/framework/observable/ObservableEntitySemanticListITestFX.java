@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Integration tests for {@link ObservableEntity#getObservableSemanticList()} against entity data
  * loaded into an ephemeral store from the Tinkar starter-data protobuf file.
  * <p>The accessor is verified to enumerate exactly the semantics that primitive data reports as
- * referencing a component ({@link EntityService#semanticNidsForComponent(int)}), to wrap each as an
+ * referencing a component ({@link EntityService#semanticsForComponent(int)}), to wrap each as an
  * {@link ObservableSemantic}, and to surface the correct referenced-component back-reference.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -98,9 +98,7 @@ class ObservableEntitySemanticListITestFX {
             int conceptNid = concept.nid();
 
             Set<Integer> expectedNids = new HashSet<>();
-            for (int semanticNid : EntityService.get().semanticNidsForComponent(conceptNid)) {
-                expectedNids.add(semanticNid);
-            }
+            EntityService.get().forEachSemanticForComponent(conceptNid, semantic -> expectedNids.add(semantic.nid()));
 
             ObservableConcept observableConcept = ObservableEntityHandle.getConceptOrThrow(conceptNid);
 
@@ -113,7 +111,7 @@ class ObservableEntitySemanticListITestFX {
             }
 
             assertEquals(expectedNids, observedNids,
-                    "Observable enumeration must match primitive semanticNidsForComponent for " + concept);
+                    "Observable enumeration must match EntityService semanticsForComponent for " + concept);
             totalSemantics += observedNids.size();
         }
 
@@ -132,7 +130,7 @@ class ObservableEntitySemanticListITestFX {
     void observableSemanticListIsEmptyWhenNoReferencingSemantics() {
         for (ConceptFacade concept : SAMPLE_CONCEPTS) {
             int conceptNid = concept.nid();
-            if (EntityService.get().semanticNidsForComponent(conceptNid).length != 0) {
+            if (EntityService.get().semanticsForComponent(conceptNid).findAny().isPresent()) {
                 continue;
             }
             ObservableConcept observableConcept = ObservableEntityHandle.getConceptOrThrow(conceptNid);

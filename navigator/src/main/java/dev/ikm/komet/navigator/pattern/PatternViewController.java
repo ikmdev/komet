@@ -24,13 +24,13 @@ import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.coordinate.stamp.StampPathImmutable;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -155,10 +155,10 @@ public class PatternViewController {
         this.rootTreeItem.getChildren().clear();
         TinkExecutor.threadPool().execute(() -> {
             ArrayList<TreeItem<Object>> patternItems = new ArrayList<>();
-            PrimitiveData.get().forEachPatternNid(patternNid -> {
-                Latest<PatternEntityVersion> latestPattern = viewProperties.calculator().latest(patternNid);
+            EntityService.get().forEachPatternEntity(pattern -> {
+                Latest<PatternEntityVersion> latestPattern = viewProperties.calculator().latest(pattern);
                 latestPattern.ifPresent(patternEntityVersion -> {
-                    patternItems.add(new TreeItem<>(patternNid));
+                    patternItems.add(new TreeItem<>(pattern.nid()));
                 });
             });
             patternItems.sort((o1, o2) -> {
@@ -174,9 +174,9 @@ public class PatternViewController {
                 ArrayList<TreeItem<Object>> patternChildren = new ArrayList<>();
                 int patternNid = (Integer) patternItem.getValue();
                 AtomicInteger childCount = new AtomicInteger();
-                PrimitiveData.get().forEachSemanticNidOfPattern(patternNid, semanticNid -> {
+                EntityService.get().forEachSemanticOfPattern(patternNid, semantic -> {
                     if (childCount.incrementAndGet() < maxChildrenInPatternViewer) {
-                        patternChildren.add(new TreeItem<>(semanticNid));
+                        patternChildren.add(new TreeItem<>(semantic.nid()));
                     }
                 });
                 if (childCount.get() >= maxChildrenInPatternViewer) {

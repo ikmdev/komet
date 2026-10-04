@@ -27,6 +27,7 @@ import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityHandle;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
@@ -176,9 +177,9 @@ public class ConceptPatternNavController {
                 ObservableList<Object> patternChildren = FXCollections.observableArrayList();
                 AtomicInteger childCount = new AtomicInteger();
                 // populate the collection of instance for each pattern
-                PrimitiveData.get().forEachSemanticNidOfPattern(patternNid, semanticNid -> {
+                EntityService.get().forEachSemanticOfPattern(patternNid, semantic -> {
                     if (childCount.incrementAndGet() < maxChildrenInPatternViewer) {
-                        patternChildren.add(semanticNid);
+                        patternChildren.add(semantic.nid());
                     }
                 });
 

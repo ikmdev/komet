@@ -22,12 +22,16 @@ import dev.ikm.komet.rules.actions.membership.AddToKometBaseModelAction;
 import dev.ikm.komet.rules.actions.membership.AddToTinkarBaseModelAction;
 import dev.ikm.komet.rules.actions.membership.RemoveFromKometBaseModelAction;
 import dev.ikm.komet.rules.actions.membership.RemoveFromTinkarBaseModelAction;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.ConceptEntityVersion;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.evrete.dsl.annotation.*;
+
+import java.util.List;
 
 /**
  * Rules related to component-related observations.
@@ -85,35 +89,36 @@ public class ComponentFocusRules extends RulesBase {
     public void conceptVersionFocused(ObservationRecord $observation) {
         //TODO see if we can get more in the @Where annotation, and maybe split into multiple rules.
         if ($observation.subject() instanceof ConceptEntityVersion conceptVersion) {
-            int[] tinkarSemanticNidsForComponent = PrimitiveData.get().semanticNidsForComponentOfPattern(conceptVersion.nid(),
-                    TinkarTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN.nid());
-            int[] kometSemanticNidsForComponent = PrimitiveData.get().semanticNidsForComponentOfPattern(conceptVersion.nid(),
-                    TinkarTerm.KOMET_BASE_MODEL_COMPONENT_PATTERN.nid());
+            // At most two of each: enough to tell none, one, and more than one apart.
+            List<SemanticEntity<SemanticEntityVersion>> tinkarSemanticsForComponent = EntityService.get().semanticsForComponentOfPattern(conceptVersion.nid(),
+                    TinkarTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN.nid()).limit(2).toList();
+            List<SemanticEntity<SemanticEntityVersion>> kometSemanticsForComponent = EntityService.get().semanticsForComponentOfPattern(conceptVersion.nid(),
+                    TinkarTerm.KOMET_BASE_MODEL_COMPONENT_PATTERN.nid()).limit(2).toList();
             // case 1: never a member of tinkar or komet
-            if (tinkarSemanticNidsForComponent.length == 0 && kometSemanticNidsForComponent.length == 0) {
+            if (tinkarSemanticsForComponent.isEmpty() && kometSemanticsForComponent.isEmpty()) {
                 addToTinkar(conceptVersion);
                 addToKomet(conceptVersion);
             } else {
-                if (tinkarSemanticNidsForComponent.length == 1 && kometSemanticNidsForComponent.length == 0) {
+                if (tinkarSemanticsForComponent.size() == 1 && kometSemanticsForComponent.isEmpty()) {
                     // case 2: a member of tinkar only but maybe inactive
-                    addRemoveTinkarBasedOnActive(conceptVersion, tinkarSemanticNidsForComponent);
+                    addRemoveTinkarBasedOnActive(conceptVersion, tinkarSemanticsForComponent.getFirst());
                     addToKomet(conceptVersion);
-                } else if (tinkarSemanticNidsForComponent.length == 0 && kometSemanticNidsForComponent.length == 1) {
+                } else if (tinkarSemanticsForComponent.isEmpty() && kometSemanticsForComponent.size() == 1) {
                     // case 3: a member of komet only but maybe inactive
                     addToTinkar(conceptVersion);
-                    addRemoveKometBasedOnActive(conceptVersion, kometSemanticNidsForComponent);
-                } else if (tinkarSemanticNidsForComponent.length == 1 && kometSemanticNidsForComponent.length == 1) {
+                    addRemoveKometBasedOnActive(conceptVersion, kometSemanticsForComponent.getFirst());
+                } else if (tinkarSemanticsForComponent.size() == 1 && kometSemanticsForComponent.size() == 1) {
                     // case 4: a member of both tinkar and komet
-                    addRemoveTinkarBasedOnActive(conceptVersion, tinkarSemanticNidsForComponent);
-                    addRemoveKometBasedOnActive(conceptVersion, kometSemanticNidsForComponent);
+                    addRemoveTinkarBasedOnActive(conceptVersion, tinkarSemanticsForComponent.getFirst());
+                    addRemoveKometBasedOnActive(conceptVersion, kometSemanticsForComponent.getFirst());
                 }
 
             }
         }
     }
 
-    private void addRemoveKometBasedOnActive(ConceptEntityVersion conceptVersion, int[] kometSemanticNidsForComponent) {
-        Latest<EntityVersion> latestKometSemanticVersion = calculator().latest(kometSemanticNidsForComponent[0]);
+    private void addRemoveKometBasedOnActive(ConceptEntityVersion conceptVersion, SemanticEntity<SemanticEntityVersion> kometSemanticForComponent) {
+        Latest<SemanticEntityVersion> latestKometSemanticVersion = calculator().latest(kometSemanticForComponent);
         if (latestKometSemanticVersion.isPresent()) {
             if (latestKometSemanticVersion.get().active()) {
                 removeFromKomet(conceptVersion);
@@ -123,8 +128,8 @@ public class ComponentFocusRules extends RulesBase {
         }
     }
 
-    private void addRemoveTinkarBasedOnActive(ConceptEntityVersion conceptVersion, int[] tinkarSemanticNidsForComponent) {
-        Latest<EntityVersion> latestTinkarSemanticVersion = calculator().latest(tinkarSemanticNidsForComponent[0]);
+    private void addRemoveTinkarBasedOnActive(ConceptEntityVersion conceptVersion, SemanticEntity<SemanticEntityVersion> tinkarSemanticForComponent) {
+        Latest<SemanticEntityVersion> latestTinkarSemanticVersion = calculator().latest(tinkarSemanticForComponent);
         if (latestTinkarSemanticVersion.isPresent()) {
             if (latestTinkarSemanticVersion.get().active()) {
                 removeFromTinkar(conceptVersion);

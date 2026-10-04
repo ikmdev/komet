@@ -62,20 +62,19 @@ public final class CommentReader {
      */
     public static List<CommentEntry> getComments(int componentNid, ViewCalculator view) {
         List<CommentEntry> comments = new ArrayList<>();
-        int[] commentSemanticNids = EntityService.get()
-                .semanticNidsForComponentOfPattern(componentNid, TinkarTerm.COMMENT_PATTERN.nid());
-        for (int semanticNid : commentSemanticNids) {
-            Latest<SemanticEntityVersion> latest = view.stampCalculator().latest(semanticNid);
-            if (latest.isPresent()) {
-                SemanticEntityVersion version = latest.get();
-                ImmutableList<Object> fields = version.fieldValues();
-                if (!fields.isEmpty() && fields.get(0) != null) {
-                    StampEntity<?> stamp = version.stamp();
-                    comments.add(new CommentEntry(String.valueOf(fields.get(0)),
-                            stamp.authorNid(), stamp.time(), semanticNid));
-                }
-            }
-        }
+        EntityService.get().forEachSemanticForComponentOfPattern(componentNid, TinkarTerm.COMMENT_PATTERN.nid(),
+                semantic -> {
+                    Latest<SemanticEntityVersion> latest = view.stampCalculator().latest(semantic);
+                    if (latest.isPresent()) {
+                        SemanticEntityVersion version = latest.get();
+                        ImmutableList<Object> fields = version.fieldValues();
+                        if (!fields.isEmpty() && fields.get(0) != null) {
+                            StampEntity<?> stamp = version.stamp();
+                            comments.add(new CommentEntry(String.valueOf(fields.get(0)),
+                                    stamp.authorNid(), stamp.time(), semantic.nid()));
+                        }
+                    }
+                });
         comments.sort(Comparator.comparingLong(CommentEntry::time));
         return comments;
     }

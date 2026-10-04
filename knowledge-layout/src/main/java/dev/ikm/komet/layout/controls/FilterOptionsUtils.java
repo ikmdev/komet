@@ -6,11 +6,11 @@ import dev.ikm.komet.framework.view.ObservableLanguageCoordinate;
 import dev.ikm.komet.framework.view.ObservableNavigationCoordinate;
 import dev.ikm.komet.framework.view.ObservableStampCoordinate;
 import dev.ikm.komet.framework.view.ObservableView;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityHandle;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
@@ -419,12 +419,8 @@ public class FilterOptionsUtils {
 
     public static List<ZonedDateTime> getTimesInUse() {
         SortedSet<ZonedDateTime> sortedSet = new TreeSet<>(Comparator.reverseOrder());
-        PrimitiveData.get().forEachStampNid(nid -> {
-            EntityHandle handle = EntityHandle.get(nid);
-            if (handle.isAbsent()) {
-                return;
-            }
-            long time = handle.expectStamp().time();
+        EntityService.get().forEachStampEntity(stamp -> {
+            long time = stamp.time();
             if (time != PRE_INCEPTION_TIME) {
                 sortedSet.add(Instant.ofEpochMilli(time).atZone(ZoneOffset.systemDefault()));
             }

@@ -18,6 +18,8 @@ package dev.ikm.komet.framework.dnd;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.scene.input.DataFormat;
@@ -26,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.io.File;
+import java.util.Optional;
 import java.util.OptionalInt;
 
 import static dev.ikm.komet.framework.dnd.KometClipboard.KOMET_CONCEPT_PROXY;
@@ -80,10 +83,10 @@ class KometClipboardComponentITestFX {
     @Test
     void aDescriptionAdvertisesBothItsSemanticProxyAndTheResolvedConcept() {
         int conceptNid = TinkarTerm.ENGLISH_LANGUAGE.nid();
-        int[] descriptionNids = EntityService.get().semanticNidsForComponentOfPattern(
-                conceptNid, TinkarTerm.DESCRIPTION_PATTERN.nid());
-        assertTrue(descriptionNids.length > 0, "English Language must carry description semantics");
-        int descriptionNid = descriptionNids[0];
+        Optional<SemanticEntity<SemanticEntityVersion>> description = EntityService.get()
+                .semanticsForComponentOfPattern(conceptNid, TinkarTerm.DESCRIPTION_PATTERN.nid()).findFirst();
+        assertTrue(description.isPresent(), "English Language must carry description semantics");
+        int descriptionNid = description.get().nid();
 
         KometClipboard content = KometClipboard.forComponent(descriptionNid);
 

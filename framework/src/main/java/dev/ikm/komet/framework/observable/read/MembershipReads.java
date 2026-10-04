@@ -15,8 +15,8 @@
  */
 package dev.ikm.komet.framework.observable.read;
 
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.terms.TinkarTerm;
 
@@ -38,8 +38,8 @@ public final class MembershipReads {
     public static List<PatternEntityVersion> membershipPatterns(ViewCalculator viewCalculator) {
         Objects.requireNonNull(viewCalculator, "View calculator cannot be null");
         List<PatternEntityVersion> membershipPatterns = new ArrayList<>();
-        PrimitiveData.get().forEachPatternNid(patternNid ->
-                viewCalculator.stampCalculator().<PatternEntityVersion>latest(patternNid)
+        EntityService.get().forEachPatternEntity(pattern ->
+                viewCalculator.stampCalculator().latest(pattern)
                         .ifPresent(patternVersion -> {
                             if (patternVersion.semanticPurposeNid() == TinkarTerm.MEMBERSHIP_SEMANTIC.nid()) {
                                 membershipPatterns.add(patternVersion);
@@ -51,7 +51,8 @@ public final class MembershipReads {
     /** Whether the concept's membership semantic for the pattern exists and is active under the calculator. */
     public static boolean isMember(ViewCalculator viewCalculator, int conceptNid, int patternNid) {
         Objects.requireNonNull(viewCalculator, "View calculator cannot be null");
-        int[] semanticNids = PrimitiveData.get().semanticNidsForComponentOfPattern(conceptNid, patternNid);
-        return semanticNids.length > 0 && viewCalculator.stampCalculator().isLatestActive(semanticNids[0]);
+        return EntityService.get().semanticsForComponentOfPattern(conceptNid, patternNid).findFirst()
+                .map(semantic -> viewCalculator.stampCalculator().isLatestActive(semantic.nid()))
+                .orElse(false);
     }
 }

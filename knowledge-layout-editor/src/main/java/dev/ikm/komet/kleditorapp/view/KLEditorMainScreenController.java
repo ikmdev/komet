@@ -16,13 +16,10 @@ import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.KLEditorWindowCreatedOrRemovedEvent;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.service.PluggableService;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityHandle;
-import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -185,12 +182,11 @@ public class KLEditorMainScreenController {
     @SuppressWarnings("removal")
     private void initPatternsList(ViewCalculator viewCalculator) {
         patternsList = FXCollections.observableArrayList();
-        PrimitiveData.get().forEachPatternNid(patternNid -> {
-            Latest<PatternEntityVersion> latestPattern = viewCalculator.latest(patternNid);
+        EntityService.get().forEachPatternEntity(pattern -> {
+            Latest<PatternEntityVersion> latestPattern = viewCalculator.latest(pattern);
             latestPattern.ifPresent(patternEntityVersion -> {
-                if (EntityHandle.get(patternEntityVersion.nid()).entity().filter(e -> !e.canceled()).isPresent()) {
-                    Entity<EntityVersion> entity = EntityHandle.get(patternNid).expectPattern();
-                    PatternBrowserItem patternBrowserItem = new PatternBrowserItem(entity, viewCalculator);
+                if (!pattern.canceled()) {
+                    PatternBrowserItem patternBrowserItem = new PatternBrowserItem(pattern, viewCalculator);
                     patternsList.add(patternBrowserItem);
                 }
             });

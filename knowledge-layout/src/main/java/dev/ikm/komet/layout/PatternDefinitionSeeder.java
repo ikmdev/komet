@@ -117,7 +117,7 @@ public final class PatternDefinitionSeeder {
     private static void projectStoredPatternDefinitions(ObservableComposer composer,
                                                         ViewCalculator viewCalculator) {
         MutableIntList patternNids = IntLists.mutable.empty();
-        PrimitiveData.get().forEachPatternNid(patternNids::add);
+        EntityService.get().forEachPatternEntity(pattern -> patternNids.add(pattern.nid()));
         patternNids.forEach(patternNid -> viewCalculator.latest(patternNid).ifPresent(version -> {
             if (version instanceof PatternEntityVersion patternVersion) {
                 projectPatternDefinition(composer, patternNid, patternVersion);
@@ -165,13 +165,13 @@ public final class PatternDefinitionSeeder {
     private static boolean isDefinedBySemantics(int patternNid) {
         PublicId patternId = PrimitiveData.publicId(patternNid);
         List<PublicId> semanticIds = new ArrayList<>();
-        PrimitiveData.get().forEachSemanticNidForComponentOfPattern(patternNid,
+        EntityService.get().forEachSemanticForComponentOfPattern(patternNid,
                 PatternDefinitionTerms.MEANING_AND_PURPOSE_PATTERN.nid(),
-                semanticNid -> semanticIds.add(PrimitiveData.publicId(semanticNid)));
+                semantic -> semanticIds.add(semantic.publicId()));
         int meaningAndPurposeCount = semanticIds.size();
-        PrimitiveData.get().forEachSemanticNidForComponentOfPattern(patternNid,
+        EntityService.get().forEachSemanticForComponentOfPattern(patternNid,
                 PatternDefinitionTerms.FIELDS_PATTERN.nid(),
-                semanticNid -> semanticIds.add(PrimitiveData.publicId(semanticNid)));
+                semantic -> semanticIds.add(semantic.publicId()));
         int fieldSemanticCount = semanticIds.size() - meaningAndPurposeCount;
         return semanticIds.stream()
                 .anyMatch(semanticId -> !isProjectedSemanticId(patternId, semanticId, fieldSemanticCount));

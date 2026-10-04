@@ -29,10 +29,8 @@ import dev.ikm.komet.framework.panel.pattern.PatternPanel;
 import dev.ikm.komet.framework.panel.semantic.SemanticPanel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.EntityHandle;
-import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,9 +77,8 @@ public abstract class ComponentPanelAbstract {
     protected void addSemanticReferences(ObservableEntitySnapshot entity, SimpleObjectProperty<EntityFacade> topEnclosingComponentProperty) {
         if (entity != null) {
             TinkExecutor.threadPool().execute(() -> {
-                PrimitiveData.get().forEachSemanticNidForComponent(entity.nid(), semanticNid -> {
-                    Platform.runLater(() -> referencedNids.add(semanticNid));
-                    SemanticEntity semanticEntity = EntityHandle.get(semanticNid).expectSemantic();
+                EntityService.get().forEachSemanticForComponent(entity.nid(), semanticEntity -> {
+                    Platform.runLater(() -> referencedNids.add(semanticEntity.nid()));
                     if (!semanticEntity.canceled()) {
                         Platform.runLater(() -> {
                             ObservableSemanticSnapshot semanticSnapshot = (ObservableSemanticSnapshot) ObservableEntityHandle.get(semanticEntity.nid()).expectSemantic().getSnapshot(this.viewProperties.calculator());

@@ -567,9 +567,9 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
     /**
      * Returns the semantics that reference this entity's component, each wrapped as an
      * {@link ObservableSemantic}.
-     * <p>The referencing semantic nids are resolved through
-     * {@link EntityService#semanticNidsForComponent(int)} for this entity's {@link #nid()}, and each
-     * is mapped to its canonical {@link ObservableSemantic} instance from the shared
+     * <p>The referencing semantics are resolved through
+     * {@link EntityService#forEachSemanticForComponent(int, java.util.function.Consumer)} for this
+     * entity's {@link #nid()}, and each is mapped to its canonical {@link ObservableSemantic} instance from the shared
      * {@link #CANONICAL_INSTANCES} pool (the same resolution path used by the other
      * {@code ObservableEntity} accessors). The returned list is a point-in-time projection of the
      * semantics present when this method is called; it is not a live view, so semantics added after
@@ -581,12 +581,11 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
      *         are resolved on the JavaFX application thread only
      */
     public Iterable<ObservableSemantic> getObservableSemanticList() {
-        int[] semanticNids = EntityService.get().semanticNidsForComponent(nid());
         MutableList<ObservableSemantic> observableSemantics = Lists.mutable.empty();
-        for (int semanticNid : semanticNids) {
-            ObservableSemantic observableSemantic = packagePrivateGet(semanticNid);
+        EntityService.get().forEachSemanticForComponent(nid(), semantic -> {
+            ObservableSemantic observableSemantic = packagePrivateGetSemantic(semantic);
             observableSemantics.add(observableSemantic);
-        }
+        });
         return observableSemantics.toImmutable();
     }
 
@@ -600,12 +599,11 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
      * @return the observable semantics of {@code patternNid} referencing this component; empty if none
      */
     public Iterable<ObservableSemantic> getObservableSemanticListOfPattern(int patternNid) {
-        int[] semanticNids = EntityService.get().semanticNidsForComponentOfPattern(nid(), patternNid);
         MutableList<ObservableSemantic> observableSemantics = Lists.mutable.empty();
-        for (int semanticNid : semanticNids) {
-            ObservableSemantic observableSemantic = packagePrivateGet(semanticNid);
+        EntityService.get().forEachSemanticForComponentOfPattern(nid(), patternNid, semantic -> {
+            ObservableSemantic observableSemantic = packagePrivateGetSemantic(semantic);
             observableSemantics.add(observableSemantic);
-        }
+        });
         return observableSemantics.toImmutable();
     }
 

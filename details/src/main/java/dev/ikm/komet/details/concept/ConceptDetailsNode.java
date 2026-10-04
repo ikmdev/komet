@@ -24,7 +24,6 @@ import dev.ikm.komet.framework.propsheet.KometPropertySheet;
 import dev.ikm.komet.framework.view.SimpleEqualityBasedListProperty;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -789,9 +788,9 @@ public class ConceptDetailsNode extends ExplorationNodeAbstract {
         for (int stampNid : entity.stampNids().toArray()) {
             stampOrderHashMap.put(stampNid, 0);
         }
-        PrimitiveData.get().forEachSemanticNidForComponent(
+        EntityService.get().forEachSemanticForComponent(
                 entity.nid(),
-                semanticNid -> updateStampControls(EntityHandle.get(semanticNid).orNull()));
+                semantic -> updateStampControls(semantic));
     }
 
     public void updateFocusedObject(EntityFacade component) {

@@ -28,7 +28,6 @@ import dev.ikm.komet.framework.TopPanelFactory;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.component.Component;
 import dev.ikm.tinkar.coordinate.stamp.StampFields;
@@ -37,7 +36,6 @@ import dev.ikm.tinkar.terms.EntityFacade;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class TableNode extends ExplorationNodeAbstract {
     protected static final String STYLE_ID = "table-node";
@@ -131,21 +129,14 @@ public class TableNode extends ExplorationNodeAbstract {
             this.treeTableView.getColumns().add(makeColumn("Path", "Define path that this version is created on", StampFields.PATH));
             if (populate) {
                 TinkExecutor.threadPool().execute(() -> {
-                    AtomicInteger count = new AtomicInteger();
-                    PrimitiveData.get().forEachSemanticNidOfPattern(patternEntity.nid(), semanticNid -> {
-                        if (count.getAndIncrement() < 5000) {
-                            SemanticEntity semanticEntity = EntityHandle.get(semanticNid).asSemantic().orElse(null);
-                            if (semanticEntity == null) {
-                                return;
-                            }
-                            TreeItem semanticParent = new TreeItem(EntityHandle.get(semanticEntity.referencedComponentNid()).orNull());
-                            semanticParent.setExpanded(true);
-                            Platform.runLater(() -> this.root.getChildren().add(semanticParent));
-                            semanticEntity.versions().forEach(semanticEntityVersion -> {
-                                TreeItem semanticVersionItem = new TreeItem(semanticEntityVersion);
-                                Platform.runLater(() -> semanticParent.getChildren().add(semanticVersionItem));
-                            });
-                        }
+                    EntityService.get().semanticsOfPattern(patternEntity.nid()).limit(5000).forEach(semanticEntity -> {
+                        TreeItem semanticParent = new TreeItem(EntityHandle.get(semanticEntity.referencedComponentNid()).orNull());
+                        semanticParent.setExpanded(true);
+                        Platform.runLater(() -> this.root.getChildren().add(semanticParent));
+                        semanticEntity.versions().forEach(semanticEntityVersion -> {
+                            TreeItem semanticVersionItem = new TreeItem(semanticEntityVersion);
+                            Platform.runLater(() -> semanticParent.getChildren().add(semanticVersionItem));
+                        });
                     });
                 });
             }

@@ -24,6 +24,7 @@ import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -33,6 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.io.File;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -79,10 +81,10 @@ class KonceptKindResolverITestFX {
 
     @Test
     void aDescriptionSemanticResolvesToDescriptionViaTheCoordinate() {
-        int[] descriptionNids = EntityService.get().semanticNidsForComponentOfPattern(
-                TinkarTerm.ENGLISH_LANGUAGE.nid(), TinkarTerm.DESCRIPTION_PATTERN.nid());
-        assertTrue(descriptionNids.length > 0, "English Language must carry description semantics");
-        int descriptionNid = descriptionNids[0];
+        Optional<SemanticEntity<SemanticEntityVersion>> description = EntityService.get().semanticsForComponentOfPattern(
+                TinkarTerm.ENGLISH_LANGUAGE.nid(), TinkarTerm.DESCRIPTION_PATTERN.nid()).findFirst();
+        assertTrue(description.isPresent(), "English Language must carry description semantics");
+        int descriptionNid = description.get().nid();
 
         assertEquals(KonceptKind.DESCRIPTION, KonceptKindResolver.resolve(descriptionNid, calculator),
                 "a semantic on the coordinate's description pattern is a Description");
@@ -98,13 +100,13 @@ class KonceptKindResolverITestFX {
         outer:
         for (ConceptFacade concept : new ConceptFacade[]{
                 TinkarTerm.ENGLISH_LANGUAGE, TinkarTerm.DEVELOPMENT_PATH, TinkarTerm.USER}) {
-            for (int semanticNid : EntityService.get().semanticNidsForComponent(concept.nid())) {
-                Entity<?> entity = EntityHandle.get(semanticNid).entity().orElse(null);
-                if (entity instanceof SemanticEntity<?> semantic
-                        && semantic.patternNid() != TinkarTerm.DESCRIPTION_PATTERN.nid()) {
-                    otherSemanticNid = semanticNid;
-                    break outer;
-                }
+            Optional<SemanticEntity<SemanticEntityVersion>> other = EntityService.get()
+                    .semanticsForComponent(concept.nid())
+                    .filter(semantic -> semantic.patternNid() != TinkarTerm.DESCRIPTION_PATTERN.nid())
+                    .findFirst();
+            if (other.isPresent()) {
+                otherSemanticNid = other.get().nid();
+                break outer;
             }
         }
         assertNotEquals(Integer.MIN_VALUE, otherSemanticNid,
