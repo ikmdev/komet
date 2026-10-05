@@ -15,13 +15,13 @@
  */
 package dev.ikm.komet.framework.view;
 
+import dev.ikm.tinkar.terms.KernelTerm;
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -226,11 +226,11 @@ class ObservableViewSetOverridesITestFX {
         child.addListener((obs, oldValue, newValue) -> { });    // keep child listening, as the journal's view is
 
         int defaultAuthor = defaultView.editCoordinate().getAuthorNidForChanges();
-        int namedUser = TinkarTerm.KOMET_USER.nid();
+        int namedUser = KernelTerm.KOMET_USER.nid();
         assertNotEquals(defaultAuthor, namedUser, "precondition: KOMET user is not the default author");
 
         // Set the commit author on the PARENT, as login/landing does for the logged-in user.
-        parent.editCoordinate().authorForChangesProperty().setValue(TinkarTerm.KOMET_USER);
+        parent.editCoordinate().authorForChangesProperty().setValue(KernelTerm.KOMET_USER);
 
         // It folds into the parent's composite record (the registration that makes the author ride the cascade)...
         assertEquals(namedUser, parent.getValue().editCoordinate().getAuthorNidForChanges(),

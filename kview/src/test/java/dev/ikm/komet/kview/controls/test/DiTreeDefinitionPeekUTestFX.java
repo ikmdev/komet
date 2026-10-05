@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls.test;
 
+import dev.ikm.tinkar.terms.KernelTerm;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
@@ -10,7 +11,6 @@ import dev.ikm.tinkar.common.service.ServiceKeys;
 import dev.ikm.tinkar.common.service.ServiceProperties;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpressionBuilder;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -74,9 +74,9 @@ class DiTreeDefinitionPeekUTestFX {
                 Files.createTempDirectory("ditree-peek-test").toFile());
         PrimitiveData.selectControllerByName("Load Ephemeral Store");
         PrimitiveData.start();
-        A = TinkarTerm.ANONYMOUS_CONCEPT.nid();
-        B = TinkarTerm.ACTIVE_STATE.nid();
-        C = TinkarTerm.INACTIVE_STATE.nid();
+        A = KernelTerm.ANONYMOUS_CONCEPT.nid();
+        B = KernelTerm.ACTIVE_STATE.nid();
+        C = KernelTerm.INACTIVE_STATE.nid();
     }
 
     @AfterAll
@@ -95,7 +95,7 @@ class DiTreeDefinitionPeekUTestFX {
             control.setTitle("Definition");
             // No public id: the chip's glyph resolution stays off the (empty) store.
             control.setComponentItemResolver(nid -> new ComponentItem(names.get(nid),
-                    Identicon.generateIdenticonImage(TinkarTerm.ANONYMOUS_CONCEPT.publicId()), null, true));
+                    Identicon.generateIdenticonImage(KernelTerm.ANONYMOUS_CONCEPT.publicId()), null, true));
             control.setDescriptionResolver(names::get);
             control.setDefinitionResolver(definitions::get);
             control.setValue(definitionNaming(A));

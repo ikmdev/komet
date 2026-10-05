@@ -15,13 +15,13 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import dev.ikm.tinkar.terms.KernelTerm;
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
@@ -55,11 +55,11 @@ class ObservableEntitySemanticListITestFX {
      * so the set collectively exercises the non-empty enumeration path.
      */
     private static final ConceptFacade[] SAMPLE_CONCEPTS = {
-            TinkarTerm.ENGLISH_LANGUAGE,
-            TinkarTerm.DEVELOPMENT_PATH,
-            TinkarTerm.PRIMORDIAL_MODULE,
-            TinkarTerm.USER,
-            TinkarTerm.KOMET_USER
+            KernelTerm.ENGLISH_LANGUAGE,
+            KernelTerm.DEVELOPMENT_PATH,
+            KernelTerm.PRIMORDIAL_MODULE,
+            KernelTerm.USER,
+            KernelTerm.KOMET_USER
     };
 
     @BeforeAll

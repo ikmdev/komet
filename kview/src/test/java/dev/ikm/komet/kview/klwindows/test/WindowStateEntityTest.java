@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.klwindows.test;
 
+import dev.ikm.tinkar.terms.KernelTerm;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowState;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -24,7 +25,6 @@ import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.ServiceKeys;
 import dev.ikm.tinkar.common.service.ServiceProperties;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -86,7 +86,7 @@ class WindowStateEntityTest {
 
     @Test
     void theEntityIsStoredByUuidAndNoNidIsWritten() {
-        UUID uuid = uuidOf(TinkarTerm.ENGLISH_LANGUAGE);
+        UUID uuid = uuidOf(KernelTerm.ENGLISH_LANGUAGE);
 
         assertTrue(stateFor(uuid).saveToPreferences(preferences));
 
@@ -96,8 +96,8 @@ class WindowStateEntityTest {
 
     @Test
     void aRestoredWindowFindsItsEntityThroughTheUuid() {
-        int nid = TinkarTerm.ENGLISH_LANGUAGE.nid();
-        stateFor(uuidOf(TinkarTerm.ENGLISH_LANGUAGE)).saveToPreferences(preferences);
+        int nid = KernelTerm.ENGLISH_LANGUAGE.nid();
+        stateFor(uuidOf(KernelTerm.ENGLISH_LANGUAGE)).saveToPreferences(preferences);
 
         EntityKlWindowState restored = EntityKlWindowState.fromPreferences(preferences);
 
@@ -106,8 +106,8 @@ class WindowStateEntityTest {
 
     @Test
     void anyOfTheEntitysUuidsFindsIt() {
-        int nid = TinkarTerm.ENGLISH_LANGUAGE.nid();
-        for (UUID any : TinkarTerm.ENGLISH_LANGUAGE.publicId().asUuidArray()) {
+        int nid = KernelTerm.ENGLISH_LANGUAGE.nid();
+        for (UUID any : KernelTerm.ENGLISH_LANGUAGE.publicId().asUuidArray()) {
             stateFor(any).saveToPreferences(preferences);
 
             assertEquals(OptionalInt.of(nid), EntityKlWindowState.fromPreferences(preferences).resolveEntityNid(),
@@ -120,11 +120,11 @@ class WindowStateEntityTest {
         // Preferences as an earlier build left them, read against a knowledge base in which the
         // stored nid belongs to a different component: the UUID is English Language, and the
         // nid is the one this knowledge base gives Language.
-        int english = TinkarTerm.ENGLISH_LANGUAGE.nid();
-        int language = TinkarTerm.LANGUAGE.nid();
+        int english = KernelTerm.ENGLISH_LANGUAGE.nid();
+        int language = KernelTerm.LANGUAGE.nid();
         preferences.put(EntityKlWindowState.WINDOW_ID, UUID.randomUUID().toString());
         preferences.put(EntityKlWindowState.WINDOW_TYPE, EntityKlWindowTypes.CONCEPT.toString());
-        preferences.put(EntityKlWindowState.ENTITY_UUID, uuidOf(TinkarTerm.ENGLISH_LANGUAGE).toString());
+        preferences.put(EntityKlWindowState.ENTITY_UUID, uuidOf(KernelTerm.ENGLISH_LANGUAGE).toString());
         preferences.putInt(ENTITY_NID_KEY_OF_EARLIER_BUILDS, language);
 
         EntityKlWindowState restored = EntityKlWindowState.fromPreferences(preferences);
@@ -135,7 +135,7 @@ class WindowStateEntityTest {
         assertTrue(restored.saveToPreferences(preferences));
         assertTrue(preferences.get(ENTITY_NID_KEY_OF_EARLIER_BUILDS).isEmpty(),
                 "saving removes the nid an earlier build stored");
-        assertEquals(Optional.of(uuidOf(TinkarTerm.ENGLISH_LANGUAGE).toString()),
+        assertEquals(Optional.of(uuidOf(KernelTerm.ENGLISH_LANGUAGE).toString()),
                 preferences.get(EntityKlWindowState.ENTITY_UUID));
     }
 

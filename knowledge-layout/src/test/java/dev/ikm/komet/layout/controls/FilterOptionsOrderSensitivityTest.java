@@ -15,9 +15,9 @@
  */
 package dev.ikm.komet.layout.controls;
 
+import dev.ikm.tinkar.terms.KernelTerm;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.collections.FXCollections;
 import org.junit.jupiter.api.Test;
 
@@ -50,8 +50,8 @@ class FilterOptionsOrderSensitivityTest {
             EnumSet.of(FilterOptions.Option.BUTTON.NONE);
 
     private static FilterOptions.Option<EntityFacade> descriptionType(EntityFacade... preferenceOrder) {
-        List<EntityFacade> available = List.of(TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE,
-                TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+        List<EntityFacade> available = List.of(KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE,
+                KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
         return new FilterOptions.Option<>(FilterOptions.OPTION_ITEM.DESCRIPTION_TYPE, "description.option.title",
                 new ArrayList<>(available), FXCollections.observableArrayList(preferenceOrder), null,
                 true, false, NONE, false);
@@ -67,9 +67,9 @@ class FilterOptionsOrderSensitivityTest {
     @Test
     void descriptionTypeReorderIsNotEqual() {
         FilterOptions.Option<EntityFacade> fqnFirst = descriptionType(
-                TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE, TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE);
+                KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE, KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE);
         FilterOptions.Option<EntityFacade> regularFirst = descriptionType(
-                TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE, TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+                KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE, KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
         assertNotEquals(fqnFirst, regularFirst,
                 "description-type is an ordered preference list; a reorder must register as a different Option "
                         + "(else the override dot/REVERT never appear — ike-issues#710)");
@@ -78,9 +78,9 @@ class FilterOptionsOrderSensitivityTest {
     @Test
     void descriptionTypeSameOrderIsEqual() {
         FilterOptions.Option<EntityFacade> a = descriptionType(
-                TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE, TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE);
+                KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE, KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE);
         FilterOptions.Option<EntityFacade> b = descriptionType(
-                TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE, TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE);
+                KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE, KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE);
         assertEquals(a, b, "identical description-type preference orders must compare equal "
                 + "(so an unchanged dimension shows no spurious override)");
     }

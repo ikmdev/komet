@@ -15,12 +15,12 @@
  */
 package dev.ikm.komet.framework.search;
 
+import dev.ikm.tinkar.terms.KernelTerm;
 import dev.ikm.komet.framework.ComponentLookup;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.ServiceKeys;
 import dev.ikm.tinkar.common.service.ServiceProperties;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -62,11 +62,11 @@ class IdentifierQueryTest {
                 Files.createTempDirectory("identifier-query-test").toFile());
         PrimitiveData.selectControllerByName("Load Ephemeral Store");
         PrimitiveData.start();
-        englishNid = TinkarTerm.ENGLISH_LANGUAGE.nid();
-        languageNid = TinkarTerm.LANGUAGE.nid();
+        englishNid = KernelTerm.ENGLISH_LANGUAGE.nid();
+        languageNid = KernelTerm.LANGUAGE.nid();
         // The UUID storedForm writes for each: the least of its UUIDs (ENGLISH_LANGUAGE has three).
-        english = TinkarTerm.ENGLISH_LANGUAGE.publicId().leastUuid();
-        language = TinkarTerm.LANGUAGE.publicId().leastUuid();
+        english = KernelTerm.ENGLISH_LANGUAGE.publicId().leastUuid();
+        language = KernelTerm.LANGUAGE.publicId().leastUuid();
     }
 
     @AfterAll
@@ -93,7 +93,7 @@ class IdentifierQueryTest {
     @Test
     void aUuidFindsItsComponent() {
         assertArrayEquals(new int[]{englishNid}, IdentifierQuery.parse(english.toString()).orElseThrow().nids());
-        for (UUID any : TinkarTerm.ENGLISH_LANGUAGE.publicId().asUuidArray()) {
+        for (UUID any : KernelTerm.ENGLISH_LANGUAGE.publicId().asUuidArray()) {
             assertArrayEquals(new int[]{englishNid}, IdentifierQuery.parse(any.toString()).orElseThrow().nids(),
                     "any of a component's UUIDs finds it: " + any);
         }
@@ -163,6 +163,6 @@ class IdentifierQueryTest {
     @Test
     void aPublicIdTheStoreHoldsIsLookedUpToItsNid() {
         assertEquals(OptionalInt.of(englishNid), ComponentLookup.nid(english));
-        assertEquals(OptionalInt.of(languageNid), ComponentLookup.nid(TinkarTerm.LANGUAGE.publicId()));
+        assertEquals(OptionalInt.of(languageNid), ComponentLookup.nid(KernelTerm.LANGUAGE.publicId()));
     }
 }

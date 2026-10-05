@@ -15,13 +15,13 @@
  */
 package dev.ikm.komet.framework.dnd;
 
+import dev.ikm.tinkar.terms.KernelTerm;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.scene.input.DataFormat;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -71,7 +71,7 @@ class KometClipboardComponentITestFX {
 
     @Test
     void aConceptAdvertisesItsConceptProxyAndNoSemantic() {
-        int conceptNid = TinkarTerm.ENGLISH_LANGUAGE.nid();
+        int conceptNid = KernelTerm.ENGLISH_LANGUAGE.nid();
         KometClipboard content = KometClipboard.forComponent(conceptNid);
 
         assertEquals(OptionalInt.of(conceptNid), nidOf(content, KOMET_CONCEPT_PROXY),
@@ -82,9 +82,9 @@ class KometClipboardComponentITestFX {
 
     @Test
     void aDescriptionAdvertisesBothItsSemanticProxyAndTheResolvedConcept() {
-        int conceptNid = TinkarTerm.ENGLISH_LANGUAGE.nid();
+        int conceptNid = KernelTerm.ENGLISH_LANGUAGE.nid();
         Optional<SemanticEntity<SemanticEntityVersion>> description = EntityService.get()
-                .semanticsForComponentOfPattern(conceptNid, TinkarTerm.DESCRIPTION_PATTERN.nid()).findFirst();
+                .semanticsForComponentOfPattern(conceptNid, KernelTerm.DESCRIPTION_PATTERN.nid()).findFirst();
         assertTrue(description.isPresent(), "English Language must carry description semantics");
         int descriptionNid = description.get().nid();
 
@@ -98,7 +98,7 @@ class KometClipboardComponentITestFX {
 
     @Test
     void aPatternAdvertisesItsPatternProxyButNoConcept() {
-        int patternNid = TinkarTerm.DESCRIPTION_PATTERN.nid();
+        int patternNid = KernelTerm.DESCRIPTION_PATTERN.nid();
         KometClipboard content = KometClipboard.forComponent(patternNid);
 
         assertEquals(OptionalInt.of(patternNid), nidOf(content, KOMET_PATTERN_PROXY),

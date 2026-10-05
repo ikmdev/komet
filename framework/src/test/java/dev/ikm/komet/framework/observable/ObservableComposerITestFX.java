@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import dev.ikm.tinkar.terms.KernelTerm;
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
@@ -89,17 +90,17 @@ class ObservableComposerITestFX {
     ObservableComposer composer = ObservableComposer.create(
             Calculators.View.Default(),
             State.ACTIVE,
-            TinkarTerm.USER,
-            TinkarTerm.PRIMORDIAL_MODULE,
-            TinkarTerm.DEVELOPMENT_PATH,
+            KernelTerm.USER,
+            KernelTerm.PRIMORDIAL_MODULE,
+            KernelTerm.DEVELOPMENT_PATH,
             "Integration test transaction"
     );
 
     assertNotNull(composer);
     assertEquals(State.ACTIVE, composer.getDefaultState());
-    assertEquals(TinkarTerm.USER.nid(), composer.getAuthorNid());
-    assertEquals(TinkarTerm.PRIMORDIAL_MODULE.nid(), composer.getModuleNid());
-    assertEquals(TinkarTerm.DEVELOPMENT_PATH.nid(), composer.getPathNid());
+    assertEquals(KernelTerm.USER.nid(), composer.getAuthorNid());
+    assertEquals(KernelTerm.PRIMORDIAL_MODULE.nid(), composer.getModuleNid());
+    assertEquals(KernelTerm.DEVELOPMENT_PATH.nid(), composer.getPathNid());
 
     LOG.info("Created composer with loaded entity context");
     }
@@ -112,9 +113,9 @@ class ObservableComposerITestFX {
     ObservableComposer composer = ObservableComposer.create(
             Calculators.View.Default(),
             State.ACTIVE,
-            TinkarTerm.USER,
-            TinkarTerm.PRIMORDIAL_MODULE,
-            TinkarTerm.DEVELOPMENT_PATH
+            KernelTerm.USER,
+            KernelTerm.PRIMORDIAL_MODULE,
+            KernelTerm.DEVELOPMENT_PATH
     );
 
     assertEquals(ObservableComposer.TransactionState.NONE, composer.getTransactionState());
@@ -134,9 +135,9 @@ class ObservableComposerITestFX {
 
     ObservableComposer composer = ObservableComposer.builder()
             .viewCalculator(Calculators.View.Default())
-            .author(TinkarTerm.USER)
-            .module(TinkarTerm.PRIMORDIAL_MODULE)
-            .path(TinkarTerm.DEVELOPMENT_PATH)
+            .author(KernelTerm.USER)
+            .module(KernelTerm.PRIMORDIAL_MODULE)
+            .path(KernelTerm.DEVELOPMENT_PATH)
             .defaultState(State.ACTIVE)
             .transactionComment("Lifecycle test")
             .build();
@@ -171,18 +172,18 @@ class ObservableComposerITestFX {
     ObservableComposer composer1 = ObservableComposer.create(
             Calculators.View.Default(),
             State.ACTIVE,
-            TinkarTerm.USER,
-            TinkarTerm.PRIMORDIAL_MODULE,
-            TinkarTerm.DEVELOPMENT_PATH,
+            KernelTerm.USER,
+            KernelTerm.PRIMORDIAL_MODULE,
+            KernelTerm.DEVELOPMENT_PATH,
             "Composer 1"
     );
 
     ObservableComposer composer2 = ObservableComposer.create(
             Calculators.View.Default(),
             State.INACTIVE,
-            TinkarTerm.USER,
-            TinkarTerm.PRIMORDIAL_MODULE,
-            TinkarTerm.DEVELOPMENT_PATH,
+            KernelTerm.USER,
+            KernelTerm.PRIMORDIAL_MODULE,
+            KernelTerm.DEVELOPMENT_PATH,
             "Composer 2"
     );
 
@@ -218,9 +219,9 @@ class ObservableComposerITestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 state,
-                TinkarTerm.USER,
-                TinkarTerm.PRIMORDIAL_MODULE,
-                TinkarTerm.DEVELOPMENT_PATH
+                KernelTerm.USER,
+                KernelTerm.PRIMORDIAL_MODULE,
+                KernelTerm.DEVELOPMENT_PATH
         );
 
         assertEquals(state, composer.getDefaultState());
@@ -240,9 +241,9 @@ class ObservableComposerITestFX {
     ObservableComposer composer = ObservableComposer.create(
             Calculators.View.Default(),
             State.ACTIVE,
-            TinkarTerm.USER,
-            TinkarTerm.PRIMORDIAL_MODULE,
-            TinkarTerm.DEVELOPMENT_PATH
+            KernelTerm.USER,
+            KernelTerm.PRIMORDIAL_MODULE,
+            KernelTerm.DEVELOPMENT_PATH
     );
 
     AtomicReference<ObservableComposer.TransactionState> capturedState = new AtomicReference<>();
@@ -274,14 +275,14 @@ class ObservableComposerITestFX {
     void testComposerWithDifferentAuthors() {
 
     // Test with different author entities
-    EntityProxy[] authors = {TinkarTerm.USER, TinkarTerm.KOMET_USER};
+    EntityProxy[] authors = {KernelTerm.USER, KernelTerm.KOMET_USER};
 
     for (EntityProxy author : authors) {
         ObservableComposer composer = ObservableComposer.builder()
                 .viewCalculator(Calculators.View.Default())
                 .author(author)
-                .module(TinkarTerm.PRIMORDIAL_MODULE)
-                .path(TinkarTerm.DEVELOPMENT_PATH)
+                .module(KernelTerm.PRIMORDIAL_MODULE)
+                .path(KernelTerm.DEVELOPMENT_PATH)
                 .build();
 
         assertNotNull(composer);
@@ -304,9 +305,9 @@ class ObservableComposerITestFX {
     ObservableComposer composer = ObservableComposer.create(
             Calculators.View.Default(),
             State.ACTIVE,
-            TinkarTerm.USER,
-            TinkarTerm.PRIMORDIAL_MODULE,
-            TinkarTerm.DEVELOPMENT_PATH
+            KernelTerm.USER,
+            KernelTerm.PRIMORDIAL_MODULE,
+            KernelTerm.DEVELOPMENT_PATH
     );
 
     // Call getOrCreateTransaction multiple times rapidly
