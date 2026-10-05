@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Integration tests for {@link KonceptKindResolver} against the Tinkar starter data, per the
+ * Integration tests for {@link KonceptKindResolver} against the IKE starter set, per the
  * coordinate-behaviour testing discipline (resolve real components, don't mock). Confirms the four
  * atoms map from the entity type, that a semantic on the view coordinate's description pattern is
  * {@link KonceptKind#DESCRIPTION} (and a plain {@link KonceptKind#SEMANTIC} otherwise), and that

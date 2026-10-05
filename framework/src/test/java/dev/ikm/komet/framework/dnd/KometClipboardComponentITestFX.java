@@ -39,8 +39,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Integration tests for the eager {@link KometClipboard#forComponent(int)} builder against the Tinkar
- * starter data (ike-issues#638). Verifies the centralized base-type matrix: every component advertises
+ * Integration tests for the eager {@link KometClipboard#forComponent(int)} builder against the IKE
+ * starter set (ike-issues#638). Verifies the centralized base-type matrix: every component advertises
  * its <em>actual</em> base type, and any concept-referencing component <em>also</em> advertises the
  * resolved concept proxy — so a concept drop target always finds a concept and a description-aware
  * target still sees the description, with no per-target conversion.

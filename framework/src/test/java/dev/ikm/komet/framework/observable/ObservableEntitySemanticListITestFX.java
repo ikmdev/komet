@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Integration tests for {@link ObservableEntity#getObservableSemanticList()} against entity data
- * loaded into an ephemeral store from the Tinkar starter-data protobuf file.
+ * loaded into an ephemeral store from the IKE starter set protobuf file.
  * <p>The accessor is verified to enumerate exactly the semantics that primitive data reports as
  * referencing a component ({@link EntityService#semanticsForComponent(int)}), to wrap each as an
  * {@link ObservableSemantic}, and to surface the correct referenced-component back-reference.
