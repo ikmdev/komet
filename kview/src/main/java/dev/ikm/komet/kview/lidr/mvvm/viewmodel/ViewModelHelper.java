@@ -151,7 +151,8 @@ public class ViewModelHelper {
         stampWriter.write(stampDetail);
 
         // Create Result Concept
-        PublicId resultPublicId = PublicIds.newRandom();
+        UUID resultUuid = UUID.randomUUID();
+        PublicId resultPublicId = PublicIds.of(resultUuid);
         ConceptWriter conceptWriter = new ConceptWriter(newStampPublicId);
         conceptWriter.write(resultPublicId);
 
@@ -162,7 +163,7 @@ public class ViewModelHelper {
 
         // Identifier
         PublicId identifierUUID = PublicIds.newRandom();
-        descrSemantic.identifier(identifierUUID, resultPublicId, UUID_CONCEPT.publicId(), resultPublicId.asUuidArray()[0].toString());
+        descrSemantic.identifier(identifierUUID, resultPublicId, UUID_CONCEPT.publicId(), resultUuid.toString());
 
         // Result Conformance Semantic has pattern of
         SemanticWriter resultConformanceSemantic = new SemanticWriter(newStampPublicId);

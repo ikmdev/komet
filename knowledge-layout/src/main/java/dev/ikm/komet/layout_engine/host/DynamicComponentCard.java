@@ -25,7 +25,6 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.ProxyFactory;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.TinkarTerm;
-import org.eclipse.collections.api.list.ImmutableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
@@ -292,9 +291,8 @@ public final class DynamicComponentCard extends DynamicCard {
         identifiersBox.getChildren().clear();
         if (component.publicId() != null) {
             identiconView.setImage(Identicon.generateIdenticonImage(component.publicId()));
-            ImmutableList<UUID> uuids = component.publicId().asUuidList();
-            if (!uuids.isEmpty()) {
-                UUID kometId = uuids.getFirst();
+            // Every UUID: any of them identifies the component, so none is left out.
+            for (UUID kometId : component.publicId().asUuidList()) {
                 identifiersBox.getChildren().add(copyableIdRow("Komet ID: " + kometId, kometId.toString()));
             }
         }

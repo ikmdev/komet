@@ -105,6 +105,17 @@ class WindowStateEntityTest {
     }
 
     @Test
+    void anyOfTheEntitysUuidsFindsIt() {
+        int nid = TinkarTerm.ENGLISH_LANGUAGE.nid();
+        for (UUID any : TinkarTerm.ENGLISH_LANGUAGE.publicId().asUuidArray()) {
+            stateFor(any).saveToPreferences(preferences);
+
+            assertEquals(OptionalInt.of(nid), EntityKlWindowState.fromPreferences(preferences).resolveEntityNid(),
+                    "restored through " + any);
+        }
+    }
+
+    @Test
     void aNidLeftByAnEarlierBuildIsNotReadAndIsRemovedOnSave() {
         // Preferences as an earlier build left them, read against a knowledge base in which the
         // stored nid belongs to a different component: the UUID is English Language, and the
@@ -161,7 +172,8 @@ class WindowStateEntityTest {
                 .build();
     }
 
+    /** The UUID a window stores for its entity: the least of the entity's UUIDs. */
     private static UUID uuidOf(EntityFacade facade) {
-        return facade.publicId().asUuidArray()[0];
+        return facade.publicId().leastUuid();
     }
 }

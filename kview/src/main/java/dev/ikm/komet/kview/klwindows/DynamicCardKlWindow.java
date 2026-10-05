@@ -278,11 +278,10 @@ public final class DynamicCardKlWindow extends AbstractChapterKlWindow<Pane> {
     protected void captureAdditionalState(EntityKlWindowState state) {
         // The entity is stored by UUID only; a nid is local to one knowledge base.
         if (entityFacade != null) {
-            if (entityFacade.publicId() != null) {
-                UUID[] uuids = entityFacade.publicId().asUuidArray();
-                if (uuids.length > 0) {
-                    state.setEntityUuid(uuids[0]);
-                }
+            // Any of the entity's UUIDs finds it again; the least keeps the stored one
+            // independent of the order the store lists them in.
+            if (entityFacade.publicId() != null && entityFacade.publicId().uuidCount() > 0) {
+                state.setEntityUuid(entityFacade.publicId().leastUuid());
             }
         }
         if (journalTopic != null) {

@@ -21,13 +21,11 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.*;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.primitive.LongLists;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class PatternWriter implements Writer {
+public class PatternWriter {
 
     public final PublicId stamp;
 
@@ -41,11 +39,8 @@ public class PatternWriter implements Writer {
         //Create empty version list
         RecordListBuilder<PatternVersionRecord> versions = RecordListBuilder.make();
 
-        //Pull out primordial UUID from PublicId
-        UUID primordialUUID = pattern.asUuidArray()[0];
-
-        //Process additional UUID longs from PublicId
-        long[] additionalLongs = createAdditionalLongs(pattern);
+        //Every UUID of the PublicId goes into the record header
+        PublicIdentifierRecord identifier = PublicIdentifierRecord.make(pattern);
 
         //Assign nids for Pattern component Concepts
         int patternNid = EntityService.get().nidForPublicId(pattern);
@@ -56,9 +51,9 @@ public class PatternWriter implements Writer {
         //Create Pattern Chronology
         PatternRecord patternRecord = PatternRecordBuilder.builder()
                 .nid(patternNid)
-                .leastSignificantBits(primordialUUID.getLeastSignificantBits())
-                .mostSignificantBits(primordialUUID.getMostSignificantBits())
-                .additionalUuidLongs(LongLists.immutable.of(additionalLongs))
+                .leastSignificantBits(identifier.leastSignificantBits())
+                .mostSignificantBits(identifier.mostSignificantBits())
+                .additionalUuidLongs(identifier.additionalUuidLongs())
                 .versions(versions.toImmutable())
                 .build();
 

@@ -64,8 +64,9 @@ class IdentifierQueryTest {
         PrimitiveData.start();
         englishNid = TinkarTerm.ENGLISH_LANGUAGE.nid();
         languageNid = TinkarTerm.LANGUAGE.nid();
-        english = TinkarTerm.ENGLISH_LANGUAGE.publicId().asUuidArray()[0];
-        language = TinkarTerm.LANGUAGE.publicId().asUuidArray()[0];
+        // The UUID storedForm writes for each: the least of its UUIDs (ENGLISH_LANGUAGE has three).
+        english = TinkarTerm.ENGLISH_LANGUAGE.publicId().leastUuid();
+        language = TinkarTerm.LANGUAGE.publicId().leastUuid();
     }
 
     @AfterAll
@@ -92,6 +93,10 @@ class IdentifierQueryTest {
     @Test
     void aUuidFindsItsComponent() {
         assertArrayEquals(new int[]{englishNid}, IdentifierQuery.parse(english.toString()).orElseThrow().nids());
+        for (UUID any : TinkarTerm.ENGLISH_LANGUAGE.publicId().asUuidArray()) {
+            assertArrayEquals(new int[]{englishNid}, IdentifierQuery.parse(any.toString()).orElseThrow().nids(),
+                    "any of a component's UUIDs finds it: " + any);
+        }
     }
 
     @Test

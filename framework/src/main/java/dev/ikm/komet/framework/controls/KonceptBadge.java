@@ -483,14 +483,16 @@ public class KonceptBadge extends HBox {
     /**
      * The badge's canonical id-bearing {@code k:} interchange token
      * ({@code k:uuid=<id>[Name]}, ike-issues#735) — the paste-everywhere form; the bare name
-     * when the badge has no identifier.
+     * when the badge has no identifier. The token carries one UUID, the least of the public
+     * id's ({@link PublicId#leastUuid()}): any of them resolves the concept, and the least
+     * keeps the token independent of the order the UUIDs are listed in.
      */
     private String interchangeToken() {
         String name = conceptName == null ? "" : conceptName;
-        if (publicId == null || publicId.asUuidArray().length == 0) {
+        if (publicId == null || publicId.uuidCount() == 0) {
             return name;
         }
-        return "k:uuid=" + publicId.asUuidArray()[0] + "[" + name + "]";
+        return "k:uuid=" + publicId.leastUuid() + "[" + name + "]";
     }
 
     /** Puts {@code value} on the system clipboard as plain text. */

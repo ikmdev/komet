@@ -23,12 +23,11 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.primitive.LongLists;
 
 import java.util.UUID;
 
 
-public class SemanticWriter implements Writer {
+public class SemanticWriter {
 
     private final PublicId stamp;
 
@@ -249,8 +248,8 @@ public class SemanticWriter implements Writer {
 //    }
 
     private void write(PublicId semantic, SemanticDetail semanticDetail){
-        //Assign primordial UUID from PublicId
-        UUID primordialUUID = semantic.asUuidArray()[0];
+        //Every UUID of the PublicId goes into the record header
+        PublicIdentifierRecord identifier = PublicIdentifierRecord.make(semantic);
 
         //Assign nids for PublicIds
         int semanticNid = EntityService.get().nidForPublicId(semantic);
@@ -258,18 +257,15 @@ public class SemanticWriter implements Writer {
         int referencedComponentNid = EntityService.get().nidForPublicId(semanticDetail.referencedComponent());
         int stampNid = EntityService.get().nidForPublicId(stamp);
 
-        //Process additional UUID longs from PublicId
-        long[] additionalLongs = createAdditionalLongs(semantic);
-
         //Create empty version list
         RecordListBuilder<SemanticVersionRecord> versions = RecordListBuilder.make();
 
         //Create Semantic Chronology
         SemanticRecord semanticRecord = SemanticRecordBuilder.builder()
                 .nid(semanticNid)
-                .leastSignificantBits(primordialUUID.getLeastSignificantBits())
-                .mostSignificantBits(primordialUUID.getMostSignificantBits())
-                .additionalUuidLongs(LongLists.immutable.of(additionalLongs))
+                .leastSignificantBits(identifier.leastSignificantBits())
+                .mostSignificantBits(identifier.mostSignificantBits())
+                .additionalUuidLongs(identifier.additionalUuidLongs())
                 .patternNid(patternNid)
                 .referencedComponentNid(referencedComponentNid)
                 .versions(versions.toImmutable())

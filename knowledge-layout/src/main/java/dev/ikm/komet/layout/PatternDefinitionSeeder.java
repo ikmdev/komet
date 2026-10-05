@@ -399,8 +399,13 @@ public final class PatternDefinitionSeeder {
         dialectComposer.save();
     }
 
+    /**
+     * A semantic identity T5-derived from the referenced component's {@linkplain
+     * PublicId#leastUuid() least UUID}, so the derivation does not depend on the order the
+     * referenced component's UUIDs are listed in.
+     */
     private static PublicId semanticId(PublicId referencedId, String discriminator) {
-        UUID namespace = referencedId.asUuidArray()[0];
+        UUID namespace = referencedId.leastUuid();
         return PublicIds.of(UuidT5Generator.get(namespace, discriminator));
     }
 

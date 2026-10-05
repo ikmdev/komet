@@ -47,10 +47,11 @@ public final class PatternFieldDefaults {
     /**
      * The identity of the defaults semantic holding the defaults of the pattern with the passed in
      * identity — T5-derived from the pattern's identity, so the same pattern always maps to the same
-     * defaults semantic.
+     * defaults semantic. The namespace is the pattern's {@linkplain PublicId#leastUuid() least
+     * UUID}, so the derivation does not depend on the order the pattern's UUIDs are listed in.
      */
     public static PublicId defaultsSemanticId(PublicId patternId) {
-        UUID namespace = patternId.asUuidArray()[0];
+        UUID namespace = patternId.leastUuid();
         return PublicIds.of(UuidT5Generator.get(namespace, DEFAULTS_SEMANTIC_DISCRIMINATOR));
     }
 

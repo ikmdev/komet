@@ -75,6 +75,41 @@ class PublicIdHashKeyGuardTest {
                 + " deliberate exception with // " + EXCEPTION_MARK + " <reason>");
     }
 
+    /**
+     * A public id's first UUID taken as if it meant something: a shared UUID proves identity, the
+     * first or any other, but a differing first UUID proves nothing, so neither a key nor an
+     * identity check may rest on one. Derive from {@code leastUuid()}, compare with
+     * {@code PublicId.equals}, show {@code idString()}. A deliberate exception is marked on its
+     * line: {@code // first-uuid: <reason>}.
+     */
+    static final Pattern FIRST_UUID = Pattern.compile(
+            "asUuidArray\\(\\)\\s*\\[\\s*0\\s*\\]|asUuidList\\(\\)\\s*\\.\\s*(get\\(\\s*0\\s*\\)|getFirst\\(\\))"
+                    + "|getUuids\\(\\s*0\\s*\\)|getUuidsList\\(\\)\\s*\\.\\s*get\\(\\s*0\\s*\\)");
+    static final String FIRST_UUID_MARK = "first-uuid:";
+
+    @Test
+    void noFirstUuidIsTakenAsAnIdentity() throws IOException {
+        Path repository = repositoryRoot();
+        List<String> found = new ArrayList<>();
+        try (Stream<Path> files = Files.walk(repository)) {
+            for (Path file : files.filter(PublicIdHashKeyGuardTest::isMainSource).toList()) {
+                List<String> lines = Files.readAllLines(file);
+                for (int i = 0; i < lines.size(); i++) {
+                    String line = lines.get(i);
+                    String trimmed = line.strip();
+                    if (trimmed.startsWith("*") || trimmed.startsWith("//") || line.contains(FIRST_UUID_MARK)) {
+                        continue;
+                    }
+                    if (FIRST_UUID.matcher(line).find()) {
+                        found.add(repository.relativize(file) + ":" + (i + 1) + ": " + trimmed);
+                    }
+                }
+            }
+        }
+        assertEquals(List.of(), found, "first UUIDs taken as an identity; use leastUuid(), PublicId.equals or"
+                + " idString(), or mark a deliberate exception with // " + FIRST_UUID_MARK + " <reason>");
+    }
+
     static boolean isMainSource(Path file) {
         String path = file.toString().replace('\\', '/');
         return path.endsWith(".java") && path.contains("/src/main/java/") && !path.contains("/target/");

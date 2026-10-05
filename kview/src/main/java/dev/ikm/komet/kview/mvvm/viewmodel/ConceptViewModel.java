@@ -153,8 +153,7 @@ public class ConceptViewModel extends FormViewModel {
         ConceptEntityBuilder newConceptBuilder = ConceptEntityBuilder.builder(stampEntity);
 
 
-        PublicId conceptPublicId = PublicIds.newRandom();
-        ConceptRecord conceptRecord = ConceptRecord.build(conceptPublicId.asUuidList().get(0), stampEntity.lastVersion());
+        ConceptRecord conceptRecord = ConceptRecord.build(UUID.randomUUID(), stampEntity.lastVersion());
 
         ConceptFacade conceptFacade = EntityProxy.Concept.make(conceptRecord.publicId()) ;
 

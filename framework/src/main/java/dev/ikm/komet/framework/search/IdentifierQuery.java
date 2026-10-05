@@ -126,7 +126,7 @@ public final class IdentifierQuery {
 
     /**
      * This query written with UUIDs only: a single UUID, or a bracketed list of them. A nid is
-     * replaced by the first UUID of the component it names in the open knowledge base. A nid
+     * replaced by the least UUID of the component it names in the open knowledge base. A nid
      * that names nothing there is left out.
      *
      * <p>The result is itself an identifier query, so it can be run again from preferences,
@@ -139,7 +139,7 @@ public final class IdentifierQuery {
         for (Identifier identifier : identifiers) {
             switch (identifier) {
                 case Uuid typed -> uuids.add(typed.uuid().toString());
-                case Nid typed -> firstUuid(typed.nid()).ifPresent(uuid -> uuids.add(uuid.toString()));
+                case Nid typed -> leastUuid(typed.nid()).ifPresent(uuid -> uuids.add(uuid.toString()));
             }
         }
         if (uuids.isEmpty()) {
@@ -181,14 +181,19 @@ public final class IdentifierQuery {
         }
     }
 
-    /** The first UUID of the component a nid names in the open knowledge base, if it names one. */
-    private static Optional<UUID> firstUuid(int nid) {
+    /**
+     * The UUID that stands for the component a nid names in the open knowledge base, if it names
+     * one: the least of its UUIDs ({@link PublicId#leastUuid()}). Any of them names the component
+     * in another knowledge base; the least is chosen so the stored form does not depend on the
+     * order this one lists them in.
+     */
+    private static Optional<UUID> leastUuid(int nid) {
         try {
             PublicId publicId = PrimitiveData.publicId(nid);
-            if (publicId == null || publicId.asUuidArray().length == 0) {
+            if (publicId == null || publicId.uuidCount() == 0) {
                 return Optional.empty();
             }
-            return Optional.of(publicId.asUuidArray()[0]);
+            return Optional.of(publicId.leastUuid());
         } catch (RuntimeException namesNothing) {
             return Optional.empty();
         }

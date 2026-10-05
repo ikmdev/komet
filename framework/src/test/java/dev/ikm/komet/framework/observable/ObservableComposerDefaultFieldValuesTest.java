@@ -25,7 +25,7 @@ class ObservableComposerDefaultFieldValuesTest {
         assertTrue(ObservableComposer.isDefaultFieldValue(null), "null, an unsupported data type's start");
         assertTrue(ObservableComposer.isDefaultFieldValue(BLANK_CONCEPT), "the blank concept");
         assertTrue(ObservableComposer.isDefaultFieldValue(
-                EntityProxy.Concept.make("Blank", BLANK_CONCEPT.asUuidArray()[0])), "any facade of the blank concept");
+                EntityProxy.Concept.make("Blank", BLANK_CONCEPT.leastUuid())), "any facade of the blank concept");
         assertTrue(ObservableComposer.isDefaultFieldValue(""), "empty string");
         assertTrue(ObservableComposer.isDefaultFieldValue(0), "zero integer");
         assertTrue(ObservableComposer.isDefaultFieldValue(0.0F), "zero float");

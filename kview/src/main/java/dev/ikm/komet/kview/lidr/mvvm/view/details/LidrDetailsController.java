@@ -588,7 +588,7 @@ public class LidrDetailsController {
         final ViewCalculator viewCalculator = getViewProperties().calculator();
 
         // Public ID (UUID)
-        String uuidStr = entityFacade.publicId() != null ? entityFacade.publicId().asUuidArray()[0].toString(): "";
+        String uuidStr = entityFacade.publicId() != null ? entityFacade.publicId().idString() : "";
         identifierText.setText(uuidStr);
         identifierTooltip.setText(uuidStr);
 

@@ -180,7 +180,9 @@ public class LoginAuthorController {
         }
         try {
             KometPreferences authorPrefs = KometPreferencesImpl.getConfigurationRootPreferences().node(AUTHOR_LOGIN_NODE);
-            String uuid = EntityHandle.get(author.nid()).expectEntity().publicId().asUuidList().get(0).toString();
+            // Any of the author's UUIDs finds it again (findByUuid); the least keeps the stored
+            // one independent of the order the store lists them in.
+            String uuid = EntityHandle.get(author.nid()).expectEntity().publicId().leastUuid().toString();
             authorPrefs.put(LAST_AUTHOR_KEY, uuid);
             java.util.LinkedHashSet<String> selected = new java.util.LinkedHashSet<>();
             for (String existing : authorPrefs.get(SELECTED_AUTHORS_KEY).orElse("").split(",")) {
