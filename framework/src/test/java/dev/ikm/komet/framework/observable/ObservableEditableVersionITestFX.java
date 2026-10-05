@@ -43,7 +43,7 @@ class ObservableEditableVersionITestFX {
 
     private static final Logger LOG = LoggerFactory.getLogger(ObservableEditableVersionITestFX.class);
     private static final File TEST_DATA_DIR = new File("target/data");
-    private static final File PB_STARTER_DATA = new File(TEST_DATA_DIR, "tinkar-starter-data-reasoned-pb.zip");
+    private static final File PB_STARTER_DATA = new File(TEST_DATA_DIR, "ike-starter-set-reasoned-pb.zip");
 
     private dev.ikm.tinkar.common.service.EntityCountSummary loadedEntitiesSummary;
     private ObservableConcept testConcept;
@@ -67,7 +67,7 @@ class ObservableEditableVersionITestFX {
     void loadTestData() {
         assertTrue(PB_STARTER_DATA.exists(),
                 "Test data file not found at: " + PB_STARTER_DATA.getAbsolutePath() +
-                ". Ensure maven-dependency-plugin has downloaded tinkar-starter-data.");
+                ". Ensure maven-dependency-plugin has downloaded the IKE starter set.");
 
         LOG.info("Loading test data from: {}", PB_STARTER_DATA.getAbsolutePath());
         LoadEntitiesFromProtobufFile loadProto = new LoadEntitiesFromProtobufFile(PB_STARTER_DATA);

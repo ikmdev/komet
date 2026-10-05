@@ -58,7 +58,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ExtendWith(JavaFXThreadExtension.class)
 class ObservableViewSetOverridesITestFX {
 
-    private static final File STARTER = new File("target/data", "tinkar-starter-data-reasoned-pb.zip");
+    private static final File STARTER = new File("target/data", "ike-starter-set-reasoned-pb.zip");
 
     @BeforeAll
     void startStore() {

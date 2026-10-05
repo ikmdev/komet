@@ -24,7 +24,6 @@ import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
@@ -47,7 +46,7 @@ class ObservableComposerITestFX {
 
     private static final Logger LOG = LoggerFactory.getLogger(ObservableComposerITestFX.class);
     private static final File TEST_DATA_DIR = new File("target/data");
-    private static final File PB_STARTER_DATA = new File(TEST_DATA_DIR, "tinkar-starter-data-reasoned-pb.zip");
+    private static final File PB_STARTER_DATA = new File(TEST_DATA_DIR, "ike-starter-set-reasoned-pb.zip");
 
     private dev.ikm.tinkar.common.service.EntityCountSummary loadedEntitiesSummary;
 
@@ -78,7 +77,7 @@ class ObservableComposerITestFX {
             assertTrue(loadedEntitiesSummary.getTotalCount() > 0, "Should load entities from protobuf file");
         } else {
             LOG.warn("Test data file not found at: {}. Some tests may be limited.", PB_STARTER_DATA.getAbsolutePath());
-            LOG.info("Tests will proceed using built-in TinkarTerm entities");
+            LOG.info("Tests will proceed using built-in kernel entities");
         }
     }
 

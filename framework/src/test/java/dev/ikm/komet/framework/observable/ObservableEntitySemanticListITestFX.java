@@ -48,7 +48,7 @@ class ObservableEntitySemanticListITestFX {
 
     private static final Logger LOG = LoggerFactory.getLogger(ObservableEntitySemanticListITestFX.class);
     private static final File TEST_DATA_DIR = new File("target/data");
-    private static final File PB_STARTER_DATA = new File(TEST_DATA_DIR, "tinkar-starter-data-reasoned-pb.zip");
+    private static final File PB_STARTER_DATA = new File(TEST_DATA_DIR, "ike-starter-set-reasoned-pb.zip");
 
     /**
      * Well-known concepts present in the starter data. Each carries at least description semantics,

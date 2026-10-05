@@ -77,7 +77,8 @@
         <jpackage.version>1.7.3</jpackage.version>
         <maven.github-flow.version>1.21.1-r11</maven.github-flow.version>
         <javafx-maven-plugin.version>0.0.8</javafx-maven-plugin.version>
-        <tinkar-starter-data.version>1.1.2</tinkar-starter-data.version>
+        <!-- The IKE starter set the tests load, from starter-data-ws, which builds after this repository. -->
+        <ike-starter-set.version>1-64bit-SNAPSHOT</ike-starter-set.version>
 
         <!-- TestFX / Monocle -->
         <commonTestFXArgs>
