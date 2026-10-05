@@ -188,9 +188,10 @@ public class DataModelHelper {
         PublicId testPerformedId = (PublicId) vals.get(LidrRecord.IDX_TEST_PERFORMED);
         PublicId dataResultsTypeId = (PublicId) vals.get(LidrRecord.IDX_DATA_RESULTS_TYPE);
         PublicId analyteId = (PublicId) vals.get(LidrRecord.IDX_ANALYTES);
-        Set<PublicId> targetIds = ((IntIdSet) vals.get(LidrRecord.IDX_TARGETS)).mapToSet(PrimitiveData::publicId);
-        Set<PublicId> specimenIds = ((IntIdSet) vals.get(LidrRecord.IDX_SPECIMENS)).mapToSet(PrimitiveData::publicId);
-        Set<PublicId> resultConformanceIds = ((IntIdSet) vals.get(LidrRecord.IDX_RESULT_CONFORMANCES)).mapToSet(PrimitiveData::publicId);
+        // Lists, not sets: a public id is never a hash key. The nid sets already hold each component once.
+        List<PublicId> targetIds = ((IntIdSet) vals.get(LidrRecord.IDX_TARGETS)).mapToList(PrimitiveData::publicId);
+        List<PublicId> specimenIds = ((IntIdSet) vals.get(LidrRecord.IDX_SPECIMENS)).mapToList(PrimitiveData::publicId);
+        List<PublicId> resultConformanceIds = ((IntIdSet) vals.get(LidrRecord.IDX_RESULT_CONFORMANCES)).mapToList(PrimitiveData::publicId);
 
         AnalyteRecord analyte = makeAnalyteRecord(analyteId);
         Set<TargetRecord> targets = targetIds.stream().map(DataModelHelper::makeTargetRecord).collect(Collectors.toSet());
