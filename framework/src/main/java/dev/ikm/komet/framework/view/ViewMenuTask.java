@@ -17,13 +17,11 @@ package dev.ikm.komet.framework.view;
 
 import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.temp.FxGet;
-import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
-import dev.ikm.tinkar.coordinate.PathService;
 import dev.ikm.tinkar.coordinate.edit.Activity;
 import dev.ikm.tinkar.coordinate.stamp.StampPathImmutable;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
@@ -408,67 +406,6 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             }
             excludedModulesMenu.getItems().add(item);
         });
-    }
-
-    private static void addChangeItemsForEdit(ViewCalculator viewCalculator, List<MenuItem> menuItems, ObservableEditCoordinate observableCoordinate) {
-        Menu changeAuthorMenu = new Menu("Change author");
-        menuItems.add(changeAuthorMenu);
-
-        IntIdSet authors = viewCalculator.kindOf(TinkarTerm.USER.nid());
-
-        // Create author assemblage
-        for (int author : authors.toArray()) {
-            CheckMenuItem item = new CheckMenuItem(getPreferredDescriptionTextOrNid(viewCalculator, author));
-            item.setSelected(observableCoordinate.getAuthorNidForChanges() == author);
-            changeAuthorMenu.getItems().add(item);
-            item.setOnAction(event -> {
-                observableCoordinate.authorForChangesProperty().setValue(EntityProxy.Concept.make(author));
-                event.consume();
-            });
-        }
-        changeAuthorMenu.getItems().sort((o1, o2) -> NaturalOrder.compareStrings(o1.getText(), o2.getText()));
-
-        Menu changeDefaultModuleMenu = new Menu("Change default module");
-        menuItems.add(changeDefaultModuleMenu);
-        // Create module assemblage
-        for (ConceptFacade module : new ConceptFacade[]{TinkarTerm.SOLOR_OVERLAY_MODULE, TinkarTerm.SOLOR_MODULE,
-                TinkarTerm.KOMET_MODULE, TinkarTerm.TEST_MODULE, TinkarTerm.TEST_PROMOTION_MODULE}) {
-            CheckMenuItem item = new CheckMenuItem(getPreferredDescriptionTextOrNid(viewCalculator, module));
-            item.setSelected(observableCoordinate.getDefaultModuleNid() == module.nid());
-            changeDefaultModuleMenu.getItems().add(item);
-            item.setOnAction(event -> {
-                Platform.runLater(() -> observableCoordinate.defaultModuleProperty().setValue(module));
-                event.consume();
-            });
-        }
-
-        Menu changeDestinationModuleMenu = new Menu("Change destination module");
-        menuItems.add(changeDestinationModuleMenu);
-        // Create module assemblage
-        for (ConceptFacade module : new ConceptFacade[]{TinkarTerm.SOLOR_OVERLAY_MODULE, TinkarTerm.SOLOR_MODULE,
-                TinkarTerm.KOMET_MODULE}) {
-            CheckMenuItem item = new CheckMenuItem(getPreferredDescriptionTextOrNid(viewCalculator, module));
-            item.setSelected(observableCoordinate.getDestinationModuleNid() == module.nid());
-            changeDestinationModuleMenu.getItems().add(item);
-            item.setOnAction(event -> {
-                Platform.runLater(() -> observableCoordinate.destinationModuleProperty().setValue(module));
-                event.consume();
-            });
-        }
-
-
-        Menu changePromotionPathMenu = new Menu("Change promotion path");
-        menuItems.add(changePromotionPathMenu);
-
-        for (StampPathImmutable path : PathService.get().getPaths()) {
-            CheckMenuItem item = new CheckMenuItem(getPreferredDescriptionTextOrNid(viewCalculator, path.pathConceptNid()));
-            item.setSelected(observableCoordinate.getPromotionPathNid() == path.pathConceptNid());
-            changePromotionPathMenu.getItems().add(item);
-            item.setOnAction(event -> {
-                Platform.runLater(() -> observableCoordinate.promotionPathProperty().setValue(EntityProxy.Concept.make(path.pathConceptNid())));
-                event.consume();
-            });
-        }
     }
 
     private static void addChangeItemsForNavigation(ViewCalculator viewCalculator,

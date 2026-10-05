@@ -47,7 +47,7 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.collections.ObservableList;
 import org.carlfx.cognitive.validator.MessageType;
@@ -165,11 +165,11 @@ public class ConceptViewModel extends FormViewModel {
         // determine sufficient or necessary
         if (NECESSARY_SET.equals(getValue(AXIOM))) {
             ab.withNecessarySet(
-                ab.makeConceptReference(TinkarTerm.ANONYMOUS_CONCEPT)
+                ab.makeConceptReference(KernelTerm.ANONYMOUS_CONCEPT)
             );
         } else if (SUFFICIENT_SET.equals(getValue(AXIOM))) {
             ab.withSufficientSet(
-                ab.makeConceptReference(TinkarTerm.ANONYMOUS_CONCEPT)
+                ab.makeConceptReference(KernelTerm.ANONYMOUS_CONCEPT)
             );
         }
 
@@ -219,7 +219,7 @@ public class ConceptViewModel extends FormViewModel {
 
         ImmutableList<Object> axiomField = Lists.immutable.of(axiomTreeEntityBuilder.build());
         SemanticRecord statedAxioms = SemanticRecord.build(UUID.randomUUID(),
-                TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid(),
+                KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid(),
                 conceptRecord.nid(),
                 stampEntity.lastVersion(),
                 axiomField);
@@ -244,7 +244,7 @@ public class ConceptViewModel extends FormViewModel {
         // the versions that we will first populate with the existing versions of the semantic
         RecordListBuilder versions = RecordListBuilder.make();
 
-        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(fqnPublicId, TinkarTerm.DESCRIPTION_PATTERN.nid(),
+        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(fqnPublicId, KernelTerm.DESCRIPTION_PATTERN.nid(),
                 conceptFacade.nid(), versions);
 
         // we are grabbing the form data
@@ -255,7 +255,7 @@ public class ConceptViewModel extends FormViewModel {
         descriptionFields.add(fqnNameDescr.getLanguage());
         descriptionFields.add(fqnNameDescr.getNameText());
         descriptionFields.add(fqnNameDescr.getCaseSignificance());
-        descriptionFields.add(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+        descriptionFields.add(KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
 
 
         // adding the new (edit form) version here
@@ -288,7 +288,7 @@ public class ConceptViewModel extends FormViewModel {
             // the versions that we will first populate with the existing versions of the semantic
             RecordListBuilder versions = RecordListBuilder.make();
 
-            SemanticRecord descriptionSemantic = SemanticRecord.makeNew(otherNamePublicId, TinkarTerm.DESCRIPTION_PATTERN.nid(),
+            SemanticRecord descriptionSemantic = SemanticRecord.makeNew(otherNamePublicId, KernelTerm.DESCRIPTION_PATTERN.nid(),
                     conceptFacade.nid(), versions);
 
             // we are grabbing the form data
@@ -297,7 +297,7 @@ public class ConceptViewModel extends FormViewModel {
             descriptionFields.add(descrName.getLanguage());
             descriptionFields.add(descrName.getNameText());
             descriptionFields.add(descrName.getCaseSignificance());
-            descriptionFields.add(TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE);
+            descriptionFields.add(KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE);
 
             // iterating over the existing versions and adding them to a new record list builder
             descriptionSemantic.versions().forEach(version -> versions.add(version));
@@ -342,7 +342,7 @@ public class ConceptViewModel extends FormViewModel {
         // the new semantic will need a new public id
         PublicId newOtherNamePublicId = PublicIds.newRandom();
 
-        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(newOtherNamePublicId, TinkarTerm.DESCRIPTION_PATTERN.nid(),
+        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(newOtherNamePublicId, KernelTerm.DESCRIPTION_PATTERN.nid(),
                 conceptNid, versions);
 
         // we are grabbing the form data
@@ -351,7 +351,7 @@ public class ConceptViewModel extends FormViewModel {
         descriptionFields.add(otherName.getLanguage());
         descriptionFields.add(otherName.getNameText());
         descriptionFields.add(otherName.getCaseSignificance());
-        descriptionFields.add(TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE);
+        descriptionFields.add(KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE);
 
         // iterating over the existing versions and adding them to a new record list builder
         descriptionSemantic.versions().forEach(version -> versions.add(version));

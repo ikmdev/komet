@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 
 import static dev.ikm.tinkar.events.FrameworkTopics.RULES_TOPIC;
-import static dev.ikm.tinkar.terms.TinkarTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN;
+import static dev.ikm.tinkar.terms.KernelTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN;
 
 public abstract class AbstractAxiomAction extends AbstractActionSuggested {
 	

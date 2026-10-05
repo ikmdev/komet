@@ -9,7 +9,7 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -45,17 +45,18 @@ public abstract class ChronologyAreaBlueprint<OC extends ObservableChronology>
         fxObject().setTop(toolBar);
         fxObject().setCenter(gridPaneForChildren);
         MenuItem procedure = new MenuItem("Procedure");
-        procedure.setOnAction(event -> componentProperty.set((OC) ObservableEntityHandle.get(TinkarTerm.PROCEDURE.nid()).expectConcept()));
+        ConceptFacade procedureFacade = EntityProxy.Concept.make("Procedure (SOLOR)", UUID.fromString("fe927a8b-bb07-5aa5-89c3-896fe3ce7e9c"));
+        procedure.setOnAction(event -> componentProperty.set((OC) ObservableEntityHandle.get(procedureFacade.nid()).expectConcept()));
 
         MenuItem tofMenuItem = new MenuItem("Tetralogy of Fallot");
         ConceptFacade tofFacade = EntityProxy.Concept.make("Tetralogy of Fallot", UUID.fromString("4ebf1040-5f4c-5f56-96a7-8ee8de0a5bb2"));
         tofMenuItem.setOnAction(event -> componentProperty.set((OC) ObservableEntityHandle.get((tofFacade.nid())).expectConcept()));
 
         MenuItem descriptionPattern = new MenuItem("Description Pattern");
-        descriptionPattern.setOnAction(event -> componentProperty.set((OC) ObservableEntityHandle.get((TinkarTerm.DESCRIPTION_PATTERN.nid())).expectConcept()));
+        descriptionPattern.setOnAction(event -> componentProperty.set((OC) ObservableEntityHandle.get((KernelTerm.DESCRIPTION_PATTERN.nid())).expectConcept()));
 
         MenuItem description = new MenuItem("English Description");
-        description.setOnAction(event -> componentProperty.set((OC) ObservableEntityHandle.get(TinkarTerm.ENGLISH_LANGUAGE.nid()).expectConcept()));
+        description.setOnAction(event -> componentProperty.set((OC) ObservableEntityHandle.get(KernelTerm.ENGLISH_LANGUAGE.nid()).expectConcept()));
 
         MenuItem stamp = new MenuItem("Non-existent Stamp");
         stamp.setOnAction(event -> componentProperty.set((OC) ObservableEntityHandle.get(StampRecord.nonExistentStamp().nid()).expectStamp()));

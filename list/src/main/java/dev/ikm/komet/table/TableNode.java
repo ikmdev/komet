@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.table;
 
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
@@ -58,7 +59,7 @@ public class TableNode extends ExplorationNodeAbstract {
         Platform.runLater(() -> {
             setupTopPanel(viewProperties);
             // TODO: temp line for development simplicity. Use preferences in the future.
-            // Platform.runLater(() -> entityFocusProperty.set(TinkarTerm.PATH_ORIGINS_PATTERN));
+            // Platform.runLater(() -> entityFocusProperty.set(KernelTerm.PATH_ORIGINS_PATTERN));
         });
     }
 

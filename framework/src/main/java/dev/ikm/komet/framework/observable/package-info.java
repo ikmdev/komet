@@ -136,9 +136,9 @@
  * // Create a composer with STAMP coordinates
  * ObservableComposer composer = ObservableComposer.builder()
  *     .stampCalculator(stampCalculator)
- *     .author(TinkarTerm.USER)
- *     .module(TinkarTerm.PRIMORDIAL_MODULE)
- *     .path(TinkarTerm.DEVELOPMENT_PATH)
+ *     .author(KernelTerm.USER)
+ *     .module(KernelTerm.PRIMORDIAL_MODULE)
+ *     .path(KernelTerm.DEVELOPMENT_PATH)
  *     .defaultState(State.ACTIVE)
  *     .build();
  *
@@ -166,9 +166,9 @@
  * <pre>{@code
  * ObservableComposer composer = ObservableComposer.builder()
  *     .stampCalculator(stampCalculator)
- *     .author(TinkarTerm.USER)
- *     .module(TinkarTerm.PRIMORDIAL_MODULE)
- *     .path(TinkarTerm.DEVELOPMENT_PATH)
+ *     .author(KernelTerm.USER)
+ *     .module(KernelTerm.PRIMORDIAL_MODULE)
+ *     .path(KernelTerm.DEVELOPMENT_PATH)
  *     .build();
  *
  * // Get existing semantic
@@ -342,3 +342,5 @@
  * @since 1.0
  */
 package dev.ikm.komet.framework.observable;
+
+import dev.ikm.tinkar.terms.KernelTerm;

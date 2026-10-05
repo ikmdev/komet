@@ -24,7 +24,7 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.ProxyFactory;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
@@ -129,13 +129,13 @@ public final class DynamicComponentCard extends DynamicCard {
         }
         List<SemanticEntity<SemanticEntityVersion>> descriptions = new ArrayList<>();
         EntityService.get().forEachSemanticForComponentOfPattern(
-                component.nid(), TinkarTerm.DESCRIPTION_PATTERN.nid(), descriptions::add);
+                component.nid(), KernelTerm.DESCRIPTION_PATTERN.nid(), descriptions::add);
         if (descriptions.isEmpty()) {
             return;
         }
         SemanticEntity<SemanticEntityVersion> descriptionSemantic = descriptions.getFirst();
         ObservableSemanticVersion.Editable editableVersion = composer()
-                .composeSemantic(descriptionSemantic.publicId(), component, TinkarTerm.DESCRIPTION_PATTERN)
+                .composeSemantic(descriptionSemantic.publicId(), component, KernelTerm.DESCRIPTION_PATTERN)
                 .getEditableVersion();
         for (ObservableField.Editable<?> editableField : editableVersion.getEditableFields()) {
             if (editableField.getValue() instanceof String) {

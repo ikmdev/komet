@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.lidr.mvvm.viewmodel;
 
+import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.komet.kview.data.schema.STAMPDetail;
 import dev.ikm.komet.kview.data.schema.SemanticDetail;
 import dev.ikm.komet.kview.data.persistence.ConceptWriter;
@@ -35,7 +36,7 @@ import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpressionBuilder;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import org.carlfx.cognitive.validator.ValidationMessage;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.eclipse.collections.api.factory.Lists;
@@ -119,15 +120,15 @@ public class ViewModelHelper {
             LOG.error("Error(s) with validation message(s)\n" + sb);
         }
         State state = stampViewModel.getValue(STATUS);
-        PublicId statusPublicId = state != null ? state.publicId() : TinkarTerm.ACTIVE_STATE.publicId();
+        PublicId statusPublicId = state != null ? state.publicId() : KernelTerm.ACTIVE_STATE.publicId();
         Concept author = stampViewModel.getValue(AUTHOR);
-        PublicId authorPublicId = author != null ? author.publicId() : TinkarTerm.USER.publicId();
+        PublicId authorPublicId = author != null ? author.publicId() : KernelTerm.USER.publicId();
         Long time = stampViewModel.getValue(TIME);
         long epochMillis = time == null ? System.currentTimeMillis() : time; // This may change due to when the actual record is written.
         Concept module = stampViewModel.getValue(MODULE);
-        PublicId modulePublicId = module != null ? module.publicId() : TinkarTerm.DEVELOPMENT_MODULE.publicId();
+        PublicId modulePublicId = module != null ? module.publicId() : KometTerm.DEVELOPMENT_MODULE.publicId();
         Concept path = stampViewModel.getValue(PATH);
-        PublicId pathPublicId = path != null ? path.publicId() : TinkarTerm.DEVELOPMENT_PATH.publicId();
+        PublicId pathPublicId = path != null ? path.publicId() : KernelTerm.DEVELOPMENT_PATH.publicId();
 
         return new STAMPDetail(statusPublicId, epochMillis, authorPublicId, modulePublicId, pathPublicId);
 
@@ -187,7 +188,7 @@ public class ViewModelHelper {
         PublicId newAxiomId = PublicIds.newRandom();
         axiomSemantic.semantic(newAxiomId,
                 new SemanticDetail(
-                        TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN,
+                        KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN,
                         resultPublicId,
                         () -> {
                             MutableList<Object> semanticFields = Lists.mutable.empty();
@@ -206,8 +207,8 @@ public class ViewModelHelper {
         LogicalExpressionBuilder leb = new LogicalExpressionBuilder();
         leb.SufficientSet(leb.And(
                 leb.ConceptAxiom(RESULT_CONFORMANCE_CONCEPT),
-                leb.SomeRole(TinkarTerm.ROLE_GROUP, leb.And(leb.SomeRole(LOINC_PROPERTY, leb.ConceptAxiom(LOINC_ACNC)))),
-                leb.SomeRole(TinkarTerm.ROLE_GROUP, leb.And(leb.SomeRole(LOINC_SCALE, leb.ConceptAxiom(scaleType.nid()))))));
+                leb.SomeRole(KernelTerm.ROLE_GROUP, leb.And(leb.SomeRole(LOINC_PROPERTY, leb.ConceptAxiom(LOINC_ACNC)))),
+                leb.SomeRole(KernelTerm.ROLE_GROUP, leb.And(leb.SomeRole(LOINC_SCALE, leb.ConceptAxiom(scaleType.nid()))))));
         return leb.build();
     }
     public static PublicId createQuanitativeResultConcept(ResultsViewModel resultsViewModel, STAMPDetail stampDetail) {

@@ -3,7 +3,7 @@ package dev.ikm.komet.rules.actions.axiom;
 import dev.ikm.komet.framework.panel.axiom.AxiomSubjectRecord;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 
 import java.util.Optional;
 
@@ -34,7 +34,7 @@ public class SetValueBoolean extends SetValue {
      */
     @Override
     protected String currentValue(AxiomSubjectRecord axiomSubjectRecord) {
-        Optional optionalValue = axiomSubjectRecord.getAxiomVertex().property(TinkarTerm.LITERAL_VALUE);
+        Optional optionalValue = axiomSubjectRecord.getAxiomVertex().property(KernelTerm.LITERAL_VALUE);
         return optionalValue.isPresent() ? optionalValue.get().toString() : "false";
     }
 

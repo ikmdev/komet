@@ -9,7 +9,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ComponentWithNid;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -58,14 +58,14 @@ public class LoginAuthorController {
     public void initialize() {
         ViewProperties viewProperties = getViewProperties();
         // Create new instance of ViewCalculator to have stated navigation along with inferred.
-        ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
+        ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, KernelTerm.STATED_NAVIGATION_PATTERN.nid());
         // Only leaf descendants of USER are named users; grouping concepts in the subtree are excluded (ike-issues#754).
-        Set<ConceptEntity> conceptEntitySet = NavigationReads.leafDescendantsOf(viewCalculator, TinkarTerm.USER);
+        Set<ConceptEntity> conceptEntitySet = NavigationReads.leafDescendantsOf(viewCalculator, KernelTerm.USER);
 
         //If there are no authors mentioned in the stated or inferred then we use the default tinkar term user.
         if (conceptEntitySet.isEmpty()) {
             //TODO further refactoring should be done to be more abstract and UI should only use light entity facade to be more abstract.
-            conceptEntitySet.add(EntityHandle.get(TinkarTerm.USER).expectConcept());
+            conceptEntitySet.add(EntityHandle.get(KernelTerm.USER).expectConcept());
         }
 
         loginAuthorViewModel.getObservableList(AUTHORS).addAll(conceptEntitySet);

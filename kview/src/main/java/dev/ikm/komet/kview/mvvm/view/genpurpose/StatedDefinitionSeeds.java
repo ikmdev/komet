@@ -15,9 +15,9 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
+import dev.ikm.tinkar.terms.KernelTerm;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpressionBuilder;
-import dev.ikm.tinkar.terms.TinkarTerm;
 
 /**
  * The definitions a new stated-axiom semantic is seeded with — the classic concept window's
@@ -38,9 +38,9 @@ public final class StatedDefinitionSeeds {
     public static DiTreeEntity seedDefinition(boolean necessary) {
         LogicalExpressionBuilder builder = new LogicalExpressionBuilder();
         if (necessary) {
-            builder.NecessarySet(builder.And(builder.ConceptAxiom(TinkarTerm.ANONYMOUS_CONCEPT.nid())));
+            builder.NecessarySet(builder.And(builder.ConceptAxiom(KernelTerm.ANONYMOUS_CONCEPT.nid())));
         } else {
-            builder.SufficientSet(builder.And(builder.ConceptAxiom(TinkarTerm.ANONYMOUS_CONCEPT.nid())));
+            builder.SufficientSet(builder.And(builder.ConceptAxiom(KernelTerm.ANONYMOUS_CONCEPT.nid())));
         }
         return switch (builder.build().sourceGraph()) {
             case DiTreeEntity tree -> tree;

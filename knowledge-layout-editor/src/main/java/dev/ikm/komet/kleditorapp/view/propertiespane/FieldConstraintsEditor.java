@@ -18,8 +18,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.CONCEPT_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.CONCEPT_FIELD;
 
 /**
  * The per-field constraint editor shared by the rules of {@link PatternRequirementsView} and

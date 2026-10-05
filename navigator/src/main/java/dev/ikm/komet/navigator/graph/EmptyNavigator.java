@@ -23,7 +23,7 @@ import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 
 import java.util.ArrayList;
 
@@ -71,7 +71,7 @@ public class EmptyNavigator implements Navigator {
     @Override
     public int[] getRootNids() {
         if (roots.isEmpty()) {
-            return new int[]{TinkarTerm.UNINITIALIZED_COMPONENT.nid()};
+            return new int[]{KernelTerm.UNINITIALIZED_COMPONENT.nid()};
         }
         return roots.stream().mapToInt(value -> value.nid()).toArray();
     }

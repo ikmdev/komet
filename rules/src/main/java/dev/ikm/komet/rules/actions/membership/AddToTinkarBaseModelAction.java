@@ -33,7 +33,7 @@ import dev.ikm.tinkar.terms.State;
 
 import java.util.Optional;
 
-import static dev.ikm.tinkar.terms.TinkarTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN;
+import static dev.ikm.tinkar.terms.KernelTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN;
 
 public class AddToTinkarBaseModelAction extends AbstractActionSuggested {
     final ConceptEntityVersion conceptVersion;

@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.lidr.mvvm.model;
 
+import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.komet.framework.builder.AxiomBuilderRecord;
 import dev.ikm.komet.framework.panel.axiom.LogicalOperatorsForVertex;
 import dev.ikm.komet.framework.view.ObservableView;
@@ -46,7 +47,7 @@ import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -92,10 +93,10 @@ public class DataModelHelper {
 
     //FIXME this is just a work around for the May 2024 Connect-A-Thon
     public static final Set<ConceptEntity> CASE_SIGNIFICANCE_OPTIONS = Set.of(
-            EntityHandle.get(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE.nid()).expectConcept(),
-            EntityHandle.get(TinkarTerm.NOT_APPLICABLE.nid()).expectConcept(),
-            EntityHandle.get(TinkarTerm.DESCRIPTION_CASE_SENSITIVE.nid()).expectConcept(),
-            EntityHandle.get(TinkarTerm.DESCRIPTION_INITIAL_CHARACTER_CASE_SENSITIVE.nid()).expectConcept()
+            EntityHandle.get(KernelTerm.DESCRIPTION_NOT_CASE_SENSITIVE.nid()).expectConcept(),
+            EntityHandle.get(KometTerm.NOT_APPLICABLE.nid()).expectConcept(),
+            EntityHandle.get(KernelTerm.DESCRIPTION_CASE_SENSITIVE.nid()).expectConcept(),
+            EntityHandle.get(KernelTerm.DESCRIPTION_INITIAL_CHARACTER_CASE_SENSITIVE.nid()).expectConcept()
     );
 
 
@@ -270,8 +271,8 @@ public class DataModelHelper {
 
         for (int navigationPatternNid : navCalc.navigationCoordinate().navigationPatternNids().toArray()) {
             int logicalDefintionPatternNid =
-                    navigationPatternNid != TinkarTerm.STATED_NAVIGATION_PATTERN.nid() ?
-                            TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid() : TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
+                    navigationPatternNid != KernelTerm.STATED_NAVIGATION_PATTERN.nid() ?
+                            KernelTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid() : KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
 
             EntityService.get().forEachSemanticForComponentOfPattern(componentNid, logicalDefintionPatternNid, (semanticEntity) -> {
                 stampCalculator.latest(semanticEntity)
@@ -295,10 +296,10 @@ public class DataModelHelper {
         ImmutableList<EntityVertex> vertexList = logicalDefinition.vertexMap();
         for (EntityVertex vertex : vertexList) {
             if (LogicalOperatorsForVertex.ROLE.semanticallyEqual((EntityFacade) vertex.meaning())) {
-                ConceptFacade roleTypeProperty = vertex.propertyAsConcept(TinkarTerm.ROLE_TYPE).get();
+                ConceptFacade roleTypeProperty = vertex.propertyAsConcept(KernelTerm.ROLE_TYPE).get();
                 if (roleTypeProperty.equals(roleTypeToFind)) {
                     EntityVertex manufacturerVertex = logicalDefinition.successors(vertex).get(0);
-                    return manufacturerVertex.propertyAsConcept(TinkarTerm.CONCEPT_REFERENCE);
+                    return manufacturerVertex.propertyAsConcept(KernelTerm.CONCEPT_REFERENCE);
                 }
             }
         }
@@ -318,8 +319,8 @@ public class DataModelHelper {
 
         for (int navigationPatternNid : navCalc.navigationCoordinate().navigationPatternNids().toArray()) {
             int logicalDefintionPatternNid =
-                    navigationPatternNid != TinkarTerm.STATED_NAVIGATION.nid() ?
-                            TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid() : TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
+                    navigationPatternNid != KometTerm.STATED_NAVIGATION.nid() ?
+                            KernelTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid() : KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
 
             EntityService.get().forEachSemanticForComponentOfPattern(componentNid, logicalDefintionPatternNid, (semanticEntity) -> {
                 stampCalculator.latest(semanticEntity)
@@ -340,7 +341,7 @@ public class DataModelHelper {
         ImmutableList<Vertex> vertexList = logicalDefinition.vertexMap();
         for (Vertex vertex : vertexList) {
             if (LogicalOperatorsForVertex.CONCEPT.semanticallyEqual((EntityFacade) vertex.meaning())) {
-                EntityFacade refConcept = (EntityFacade) vertex.propertyAsConcept(TinkarTerm.CONCEPT_REFERENCE).get();
+                EntityFacade refConcept = (EntityFacade) vertex.propertyAsConcept(KernelTerm.CONCEPT_REFERENCE).get();
                 if (refConcept.nid() == deviceComponentNid) {
                     //Vertex manufacturerVertex = logicalDefinition.successors(vertex).get(0);
                     return true;
@@ -362,7 +363,7 @@ public class DataModelHelper {
         ImmutableList<EntityVertex> vertexList = logicalDefinition.get().vertexMap();
         for (EntityVertex vertex : vertexList) {
             if (LogicalOperatorsForVertex.CONCEPT.semanticallyEqual((EntityFacade) vertex.meaning())) {
-                EntityFacade refConcept = (EntityFacade) vertex.propertyAsConcept(TinkarTerm.CONCEPT_REFERENCE).get();
+                EntityFacade refConcept = (EntityFacade) vertex.propertyAsConcept(KernelTerm.CONCEPT_REFERENCE).get();
                 if (refConcept.nid() == deviceComponentNid) {
                     return true;
                 }
@@ -509,7 +510,7 @@ public class DataModelHelper {
 
         ImmutableList<Object> axiomField = Lists.immutable.of(axiomTreeEntityBuilder.build());
         SemanticRecord statedAxioms = SemanticRecord.build(UUID.randomUUID(),
-                TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid(),
+                KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid(),
                 conceptRecord.nid(),
                 stampEntity.lastVersion(),
                 axiomField);

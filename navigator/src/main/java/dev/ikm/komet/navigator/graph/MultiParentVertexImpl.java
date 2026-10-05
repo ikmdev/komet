@@ -33,7 +33,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,7 +83,7 @@ public class MultiParentVertexImpl
         super();
         this.graphController = graphController;
         this.nid = Integer.MAX_VALUE;
-        this.typeNids = IntIds.set.of(TinkarTerm.UNINITIALIZED_COMPONENT.nid());
+        this.typeNids = IntIds.set.of(KernelTerm.UNINITIALIZED_COMPONENT.nid());
     }
 
     public MultiParentVertexImpl(int conceptNid, MultiParentGraphViewController graphController, IntIdSet typeNids) {
@@ -351,7 +351,7 @@ public class MultiParentVertexImpl
         if (this.nid == Integer.MAX_VALUE) {
             return true;
         }
-        if (TinkarTerm.ROOT_VERTEX.nid() == this.nid) {
+        if (KernelTerm.ROOT_VERTEX.nid() == this.nid) {
             return true;
         } else if (this.getParent() == null) {
             return true;

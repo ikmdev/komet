@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.komet.framework.panel.axiom.ConcreteDomainOperators;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.search.SearchResultCell;
@@ -23,7 +24,7 @@ import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpressionBuilder;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.application.Platform;
 import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
@@ -296,10 +297,10 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
             return;
         }
         int meaning = vertex.getMeaningNid();
-        boolean isSet = meaning == TinkarTerm.NECESSARY_SET.nid()
-                || meaning == TinkarTerm.SUFFICIENT_SET.nid()
-                || meaning == TinkarTerm.INCLUSION_SET.nid();
-        boolean isRoleGroup = meaning == TinkarTerm.ROLE.nid();
+        boolean isSet = meaning == KernelTerm.NECESSARY_SET.nid()
+                || meaning == KernelTerm.SUFFICIENT_SET.nid()
+                || meaning == KernelTerm.INCLUSION_SET.nid();
+        boolean isRoleGroup = meaning == KernelTerm.ROLE.nid();
         if (!isSet && !isRoleGroup) {
             // Property sets, features, … have no add items of their own; the rules engine
             // supplies their actions (set value, choose feature type, …) plus removal —
@@ -379,7 +380,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
                 e -> addSetTemplate(childrenBox, true));
         DiTreeEntity current = getSkinnable().getValue();
         // Mirrors AxiomFocusedRules: only one necessary set is allowed per definition.
-        necessary.setDisable(current != null && current.containsVertexWithMeaning(TinkarTerm.NECESSARY_SET));
+        necessary.setDisable(current != null && current.containsVertexWithMeaning(KernelTerm.NECESSARY_SET));
         menu.getItems().add(necessary);
         menu.getItems().add(createMenuItem("Add sufficient set", KometIcon.IconValue.PLUS,
                 e -> addSetTemplate(childrenBox, false)));
@@ -455,7 +456,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
                         e -> addConcreteRole(vertex));
                 case "ChangeSetType" -> createMenuItem(command.text(), KometIcon.IconValue.PENCIL,
                         e -> changeSetType(vertex, command.text().contains("necessary")
-                                ? TinkarTerm.NECESSARY_SET : TinkarTerm.SUFFICIENT_SET));
+                                ? KernelTerm.NECESSARY_SET : KernelTerm.SUFFICIENT_SET));
                 default -> defaultMenuItem(ruleAction, vertex);
             };
         }
@@ -586,8 +587,8 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
         if (!isEditable()) {
             return super.createIntervalBoundsNode(vertex);
         }
-        boolean lowerOpen = vertex.propertyFast(TinkarTerm.LOWER_BOUND_OPEN);
-        boolean upperOpen = vertex.propertyFast(TinkarTerm.UPPER_BOUND_OPEN);
+        boolean lowerOpen = vertex.propertyFast(KernelTerm.LOWER_BOUND_OPEN);
+        boolean upperOpen = vertex.propertyFast(KernelTerm.UPPER_BOUND_OPEN);
         TextField lowerField = boundField(vertex, true);
         TextField upperField = boundField(vertex, false);
         Runnable commit = () -> commitIntervalBounds(vertex, lowerField, upperField);
@@ -620,7 +621,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
 
     private TextField boundField(EntityVertex vertex, boolean lower) {
         BigDecimal stored = vertex.propertyFast(
-                lower ? TinkarTerm.INTERVAL_LOWER_BOUND : TinkarTerm.INTERVAL_UPPER_BOUND);
+                lower ? KernelTerm.INTERVAL_LOWER_BOUND : KernelTerm.INTERVAL_UPPER_BOUND);
         TextField field = new TextField(stored.toPlainString());
         field.getStyleClass().addAll("ditree-bound-field", lower ? "lower" : "upper");
         field.setTextFormatter(new TextFormatter<>(change ->
@@ -669,8 +670,8 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
         BigDecimal lower = lowerText.matches(DECIMAL) ? new BigDecimal(lowerText) : null;
         BigDecimal upper = upperText.matches(DECIMAL) ? new BigDecimal(upperText) : null;
         if (lower == null || upper == null || lower.compareTo(upper) > 0) {
-            return new Bounds(vertex.propertyFast(TinkarTerm.INTERVAL_LOWER_BOUND),
-                    vertex.propertyFast(TinkarTerm.INTERVAL_UPPER_BOUND));
+            return new Bounds(vertex.propertyFast(KernelTerm.INTERVAL_LOWER_BOUND),
+                    vertex.propertyFast(KernelTerm.INTERVAL_UPPER_BOUND));
         }
         return new Bounds(lower, upper);
     }
@@ -680,16 +681,16 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
      * restores the editors to the stored values instead.
      */
     private void commitIntervalBounds(EntityVertex vertex, TextField lowerField, TextField upperField) {
-        BigDecimal storedLower = vertex.propertyFast(TinkarTerm.INTERVAL_LOWER_BOUND);
-        BigDecimal storedUpper = vertex.propertyFast(TinkarTerm.INTERVAL_UPPER_BOUND);
+        BigDecimal storedLower = vertex.propertyFast(KernelTerm.INTERVAL_LOWER_BOUND);
+        BigDecimal storedUpper = vertex.propertyFast(KernelTerm.INTERVAL_UPPER_BOUND);
         Bounds bounds = boundsToApply(vertex, lowerField, upperField);
         if (bounds.lower().compareTo(storedLower) == 0 && bounds.upper().compareTo(storedUpper) == 0) {
             lowerField.setText(storedLower.toPlainString());
             upperField.setText(storedUpper.toPlainString());
             return;
         }
-        boolean lowerOpen = vertex.propertyFast(TinkarTerm.LOWER_BOUND_OPEN);
-        boolean upperOpen = vertex.propertyFast(TinkarTerm.UPPER_BOUND_OPEN);
+        boolean lowerOpen = vertex.propertyFast(KernelTerm.LOWER_BOUND_OPEN);
+        boolean upperOpen = vertex.propertyFast(KernelTerm.UPPER_BOUND_OPEN);
         transform(builder -> builder.updateIntervalRoleValue(
                 (LogicalAxiom.Atom.TypedAtom.IntervalRole) builder.get(vertex.vertexIndex()),
                 bounds.lower(), lowerOpen, bounds.upper(), upperOpen));
@@ -704,8 +705,8 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
     private void toggleIntervalBoundOpen(EntityVertex vertex, TextField lowerField, TextField upperField,
             boolean lower) {
         Bounds bounds = boundsToApply(vertex, lowerField, upperField);
-        boolean lowerOpen = vertex.propertyFast(TinkarTerm.LOWER_BOUND_OPEN);
-        boolean upperOpen = vertex.propertyFast(TinkarTerm.UPPER_BOUND_OPEN);
+        boolean lowerOpen = vertex.propertyFast(KernelTerm.LOWER_BOUND_OPEN);
+        boolean upperOpen = vertex.propertyFast(KernelTerm.UPPER_BOUND_OPEN);
         boolean newLowerOpen = lower ? !lowerOpen : lowerOpen;
         boolean newUpperOpen = lower ? upperOpen : !upperOpen;
         transform(builder -> builder.updateIntervalRoleValue(
@@ -757,12 +758,12 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
         if (!isEditable()) {
             return super.createFeatureValueNode(vertex);
         }
-        Object literal = vertex.propertyFast(TinkarTerm.LITERAL_VALUE);
+        Object literal = vertex.propertyFast(KernelTerm.LITERAL_VALUE);
         Node literalNode = literal instanceof Boolean value
                 ? booleanLiteralToggle(vertex, value)
                 : literalField(vertex, literal);
 
-        ConceptFacade operatorConcept = vertex.propertyFast(TinkarTerm.CONCRETE_DOMAIN_OPERATOR);
+        ConceptFacade operatorConcept = vertex.propertyFast(KernelTerm.CONCRETE_DOMAIN_OPERATOR);
         Label symbol = comparisonLabel(operatorConcept);
         symbol.getStyleClass().add("ditree-value-toggle");
         symbol.setOnMouseClicked(e -> {
@@ -858,7 +859,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
      * restores the editor to the stored value instead.
      */
     private void commitFeatureLiteral(EntityVertex vertex, TextField field) {
-        Object stored = vertex.propertyFast(TinkarTerm.LITERAL_VALUE);
+        Object stored = vertex.propertyFast(KernelTerm.LITERAL_VALUE);
         Object parsed = parseLiteral(stored, field.getText());
         if (parsed == null || parsed.equals(stored)) {
             field.setText(String.valueOf(stored));
@@ -873,7 +874,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
      * literal's type, else the stored value.
      */
     private Object pendingLiteral(EntityVertex vertex, Node literalNode) {
-        Object stored = vertex.propertyFast(TinkarTerm.LITERAL_VALUE);
+        Object stored = vertex.propertyFast(KernelTerm.LITERAL_VALUE);
         if (literalNode instanceof TextField field) {
             Object parsed = parseLiteral(stored, field.getText());
             if (parsed != null) {
@@ -983,11 +984,11 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
                         e -> startChipEdit(chip, chipVertex, kind)));
             }
         }
-        if (rowVertex.getMeaningNid() == TinkarTerm.INTERVAL_ROLE.nid()) {
+        if (rowVertex.getMeaningNid() == KernelTerm.INTERVAL_ROLE.nid()) {
             // Mirrors the classic axiom control's interval menu (ChangeIntervalValuesMenu):
             // toggle each bound open/closed, set each bound value.
-            boolean lowerOpen = rowVertex.propertyFast(TinkarTerm.LOWER_BOUND_OPEN);
-            boolean upperOpen = rowVertex.propertyFast(TinkarTerm.UPPER_BOUND_OPEN);
+            boolean lowerOpen = rowVertex.propertyFast(KernelTerm.LOWER_BOUND_OPEN);
+            boolean upperOpen = rowVertex.propertyFast(KernelTerm.UPPER_BOUND_OPEN);
             menu.getItems().add(createMenuItem("Set Lower Bound " + (lowerOpen ? "Closed" : "Open"),
                     KometIcon.IconValue.PENCIL, e -> toggleIntervalBoundOpen(row, rowVertex, true)));
             menu.getItems().add(createMenuItem("Set Lower Bound", KometIcon.IconValue.PENCIL,
@@ -997,7 +998,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
             menu.getItems().add(createMenuItem("Set Upper Bound " + (upperOpen ? "Closed" : "Open"),
                     KometIcon.IconValue.PENCIL, e -> toggleIntervalBoundOpen(row, rowVertex, false)));
         }
-        if (rowVertex.getMeaningNid() == TinkarTerm.FEATURE.nid()) {
+        if (rowVertex.getMeaningNid() == KernelTerm.FEATURE.nid()) {
             // Mirrors the classic axiom control's feature menu: choose the comparison operator,
             // set the literal value's type (the value itself is edited inline in the row).
             Menu comparison = new Menu("Choose comparison");
@@ -1142,7 +1143,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
         }
         ContextMenu menu = newMenu();
         int meaning = vertex.getMeaningNid();
-        if (meaning == TinkarTerm.ROLE.nid()) {
+        if (meaning == KernelTerm.ROLE.nid()) {
             // role group: mirrors AxiomFocusedRules.axiomIsRoleGroup
             menu.getItems().add(createMenuItem("Add role", KometIcon.IconValue.PLUS,
                     e -> addRoleTemplate(childrenBox, vertex)));
@@ -1163,17 +1164,17 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
             menu.getItems().add(createMenuItem("Add concrete role", KometIcon.IconValue.PLUS,
                     e -> addConcreteRole(vertex)));
         }
-        if (meaning == TinkarTerm.SUFFICIENT_SET.nid()) {
+        if (meaning == KernelTerm.SUFFICIENT_SET.nid()) {
             menu.getItems().add(new SeparatorMenuItem());
             MenuItem toNecessary = createMenuItem("Change to necessary set", KometIcon.IconValue.PENCIL,
-                    e -> changeSetType(vertex, TinkarTerm.NECESSARY_SET));
+                    e -> changeSetType(vertex, KernelTerm.NECESSARY_SET));
             // Mirrors AxiomFocusedRules: only one necessary set is allowed per definition.
-            toNecessary.setDisable(getSkinnable().getValue().containsVertexWithMeaning(TinkarTerm.NECESSARY_SET));
+            toNecessary.setDisable(getSkinnable().getValue().containsVertexWithMeaning(KernelTerm.NECESSARY_SET));
             menu.getItems().add(toNecessary);
-        } else if (meaning == TinkarTerm.NECESSARY_SET.nid()) {
+        } else if (meaning == KernelTerm.NECESSARY_SET.nid()) {
             menu.getItems().add(new SeparatorMenuItem());
             menu.getItems().add(createMenuItem("Change to sufficient set", KometIcon.IconValue.PENCIL,
-                    e -> changeSetType(vertex, TinkarTerm.SUFFICIENT_SET)));
+                    e -> changeSetType(vertex, KernelTerm.SUFFICIENT_SET)));
         }
         menu.getItems().add(new SeparatorMenuItem());
         menu.getItems().add(createMenuItem("Remove axiom", KometIcon.IconValue.TRASH,
@@ -1230,9 +1231,9 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
     private void addIntervalRole(EntityVertex parentVertex) {
         transform(builder -> {
             LogicalAxiom.Atom.TypedAtom.IntervalRole role = builder.IntervalRole(
-                    TinkarTerm.UNMODELED_ROLE_CONCEPT,
+                    KometTerm.UNMODELED_ROLE_CONCEPT,
                     BigDecimal.valueOf(0), true, BigDecimal.valueOf(10), true,
-                    TinkarTerm.UNMODELED_ROLE_CONCEPT);
+                    KometTerm.UNMODELED_ROLE_CONCEPT);
             builder.addToFirstAnd(parentVertex.vertexIndex(), role);
         });
     }
@@ -1244,7 +1245,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
      */
     private void addConcreteRole(EntityVertex parentVertex) {
         transform(builder -> builder.addToFirstAnd(parentVertex.vertexIndex(),
-                builder.FeatureAxiom(TinkarTerm.ANONYMOUS_CONCEPT, TinkarTerm.EQUAL_TO, Integer.valueOf(1))));
+                builder.FeatureAxiom(KernelTerm.ANONYMOUS_CONCEPT, KernelTerm.EQUAL_TO, Integer.valueOf(1))));
     }
 
     private void addRoleTemplate(VBox childrenBox, EntityVertex parentVertex) {
@@ -1269,7 +1270,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
 
         HBox roleRow = roleTemplateRow((type, restriction) ->
                 transform(builder -> builder.addToFirstAnd(setVertex.vertexIndex(),
-                        builder.SomeRole(TinkarTerm.ROLE_GROUP, builder.And(
+                        builder.SomeRole(KernelTerm.ROLE_GROUP, builder.And(
                                 builder.SomeRole(ConceptFacade.make(type.nid()),
                                         builder.ConceptAxiom(restriction.nid())))))));
         groupChildren.getChildren().add(roleRow);

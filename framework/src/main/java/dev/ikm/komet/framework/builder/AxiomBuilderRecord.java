@@ -29,7 +29,7 @@ import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.component.Concept;
 import dev.ikm.tinkar.component.graph.Vertex;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -40,7 +40,7 @@ public record AxiomBuilderRecord(ConceptFacade axiomMeaning, MutableList<AxiomPr
                                  AtomicInteger nextAxiomIndex)
         implements AxiomPart, Vertex {
     public AxiomBuilderRecord(AtomicInteger nextAxiomIndex) {
-        this(TinkarTerm.DEFINITION_ROOT, Lists.mutable.empty(), Lists.mutable.empty(), UUID.randomUUID(),
+        this(KernelTerm.DEFINITION_ROOT, Lists.mutable.empty(), Lists.mutable.empty(), UUID.randomUUID(),
                 nextAxiomIndex.getAndIncrement(), nextAxiomIndex);
     }
 
@@ -110,25 +110,25 @@ public record AxiomBuilderRecord(ConceptFacade axiomMeaning, MutableList<AxiomPr
 
     public AxiomBuilderRecord withAnd(AxiomBuilderRecord... andChildren) {
         MutableList<AxiomBuilderRecord> andChildrenList = Lists.mutable.of(andChildren);
-        AxiomBuilderRecord and = new AxiomBuilderRecord(TinkarTerm.AND, Lists.mutable.empty(), andChildrenList,
+        AxiomBuilderRecord and = new AxiomBuilderRecord(KernelTerm.AND, Lists.mutable.empty(), andChildrenList,
                 UUID.randomUUID(), nextAxiomIndex.getAndIncrement(), nextAxiomIndex);
         this.children.add(and);
         return and;
     }
 
     public AxiomBuilderRecord makeSome(ConceptFacade roleType, ConceptFacade roleRestriction) {
-        AxiomPropertyRecord roleTypeRecord = new AxiomPropertyRecord(TinkarTerm.ROLE_TYPE, roleType);
-        AxiomPropertyRecord roleOperatorRecord = new AxiomPropertyRecord(TinkarTerm.ROLE_OPERATOR, TinkarTerm.EXISTENTIAL_RESTRICTION);
+        AxiomPropertyRecord roleTypeRecord = new AxiomPropertyRecord(KernelTerm.ROLE_TYPE, roleType);
+        AxiomPropertyRecord roleOperatorRecord = new AxiomPropertyRecord(KernelTerm.ROLE_OPERATOR, KernelTerm.EXISTENTIAL_RESTRICTION);
         MutableList<AxiomPropertyRecord> properties = Lists.mutable.of(roleTypeRecord, roleOperatorRecord);
-        AxiomBuilderRecord some = new AxiomBuilderRecord(TinkarTerm.ROLE, properties, Lists.mutable.empty(),
+        AxiomBuilderRecord some = new AxiomBuilderRecord(KernelTerm.ROLE, properties, Lists.mutable.empty(),
                 UUID.randomUUID(), nextAxiomIndex.getAndIncrement(), nextAxiomIndex);
         some.children.add(makeConceptReference(roleRestriction));
         return some;
     }
 
     public AxiomBuilderRecord makeConceptReference(ConceptFacade referencedConcept) {
-        AxiomBuilderRecord conceptReference = AxiomBuilderRecord.make(TinkarTerm.CONCEPT_REFERENCE, nextAxiomIndex,
-                new AxiomPropertyRecord(TinkarTerm.CONCEPT_REFERENCE, referencedConcept));
+        AxiomBuilderRecord conceptReference = AxiomBuilderRecord.make(KernelTerm.CONCEPT_REFERENCE, nextAxiomIndex,
+                new AxiomPropertyRecord(KernelTerm.CONCEPT_REFERENCE, referencedConcept));
         return conceptReference;
     }
 
@@ -147,7 +147,7 @@ public record AxiomBuilderRecord(ConceptFacade axiomMeaning, MutableList<AxiomPr
     }
 
     public void withNecessarySet(AxiomBuilderRecord... setElements) {
-        withSet(TinkarTerm.NECESSARY_SET, setElements);
+        withSet(KernelTerm.NECESSARY_SET, setElements);
     }
 
     public void withSet(ConceptFacade setType, AxiomBuilderRecord... setElements) {
@@ -155,7 +155,7 @@ public record AxiomBuilderRecord(ConceptFacade axiomMeaning, MutableList<AxiomPr
         children.add(logicalSet);
 
         MutableList<AxiomBuilderRecord> andChildrenList = Lists.mutable.of(setElements);
-        AxiomBuilderRecord and = new AxiomBuilderRecord(TinkarTerm.AND, Lists.mutable.empty(), andChildrenList,
+        AxiomBuilderRecord and = new AxiomBuilderRecord(KernelTerm.AND, Lists.mutable.empty(), andChildrenList,
                 UUID.randomUUID(), nextAxiomIndex.getAndIncrement(), nextAxiomIndex);
         logicalSet.children.add(and);
     }
@@ -168,18 +168,18 @@ public record AxiomBuilderRecord(ConceptFacade axiomMeaning, MutableList<AxiomPr
     }
 
     public void withSufficientSet(AxiomBuilderRecord... setElements) {
-        withSet(TinkarTerm.SUFFICIENT_SET, setElements);
+        withSet(KernelTerm.SUFFICIENT_SET, setElements);
     }
 
     public AxiomBuilderRecord makeRoleGroup(AxiomBuilderRecord... groupElements) {
-        AxiomPropertyRecord roleTypeRecord = new AxiomPropertyRecord(TinkarTerm.ROLE_TYPE, TinkarTerm.ROLE_GROUP);
-        AxiomPropertyRecord roleOperatorRecord = new AxiomPropertyRecord(TinkarTerm.ROLE_OPERATOR, TinkarTerm.EXISTENTIAL_RESTRICTION);
+        AxiomPropertyRecord roleTypeRecord = new AxiomPropertyRecord(KernelTerm.ROLE_TYPE, KernelTerm.ROLE_GROUP);
+        AxiomPropertyRecord roleOperatorRecord = new AxiomPropertyRecord(KernelTerm.ROLE_OPERATOR, KernelTerm.EXISTENTIAL_RESTRICTION);
         MutableList<AxiomPropertyRecord> properties = Lists.mutable.of(roleTypeRecord, roleOperatorRecord);
-        AxiomBuilderRecord group = new AxiomBuilderRecord(TinkarTerm.ROLE, properties, Lists.mutable.empty(),
+        AxiomBuilderRecord group = new AxiomBuilderRecord(KernelTerm.ROLE, properties, Lists.mutable.empty(),
                 UUID.randomUUID(), nextAxiomIndex.getAndIncrement(), nextAxiomIndex);
 
         MutableList<AxiomBuilderRecord> andChildrenList = Lists.mutable.of(groupElements);
-        AxiomBuilderRecord and = new AxiomBuilderRecord(TinkarTerm.AND, Lists.mutable.empty(), andChildrenList,
+        AxiomBuilderRecord and = new AxiomBuilderRecord(KernelTerm.AND, Lists.mutable.empty(), andChildrenList,
                 UUID.randomUUID(), nextAxiomIndex.getAndIncrement(), nextAxiomIndex);
         group.children.add(and);
         return group;

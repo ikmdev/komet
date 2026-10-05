@@ -17,7 +17,7 @@ package dev.ikm.komet.layout.controls;
 
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import org.eclipse.collections.api.list.ImmutableList;
 
 /**
@@ -33,7 +33,7 @@ public record CalculatorFilterOptionsNavigator(ViewCalculator viewCalculator) im
 
     @Override
     public int[] getRootNids() {
-        return new int[]{TinkarTerm.ROOT_VERTEX.nid()};
+        return new int[]{KernelTerm.ROOT_VERTEX.nid()};
     }
 
     @Override

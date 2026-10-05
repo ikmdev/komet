@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
+import dev.ikm.komet.terms.KometTerm;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CASE_SIGNIFICANCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_SUBMITTED;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.LANGUAGE;
@@ -22,10 +23,10 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
-import static dev.ikm.tinkar.terms.TinkarTerm.STATUS_VALUE;
+import static dev.ikm.tinkar.terms.KernelTerm.DESCRIPTION_CASE_SIGNIFICANCE;
+import static dev.ikm.tinkar.terms.KernelTerm.DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.KernelTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
+import static dev.ikm.komet.terms.KometTerm.STATUS_VALUE;
 import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
@@ -42,7 +43,7 @@ import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.beans.InvalidationListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -138,7 +139,7 @@ public class EditFullyQualifiedNameController implements BasicController {
         setEditFullyQualifiedNameTitleLabel("Edit Description: Fully Qualified Name");
         populateDialectComboBoxes();
 
-        fqnViewModel.setPropertyValue(NAME_TYPE, TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+        fqnViewModel.setPropertyValue(NAME_TYPE, KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
 
         // bind with viewmodel.
         fqnText.textProperty().bindBidirectional(fqnViewModel.getProperty(NAME_TEXT));
@@ -188,8 +189,8 @@ public class EditFullyQualifiedNameController implements BasicController {
         ConceptEntity acceptable;
         ConceptEntity preferred;
         try {
-            acceptable = EntityHandle.getConceptOrThrow(TinkarTerm.ACCEPTABLE.nid());
-            preferred = EntityHandle.getConceptOrThrow(TinkarTerm.PREFERRED.nid());
+            acceptable = EntityHandle.getConceptOrThrow(KometTerm.ACCEPTABLE.nid());
+            preferred = EntityHandle.getConceptOrThrow(KernelTerm.PREFERRED.nid());
         } catch (Exception e) {
             return;
         }
@@ -281,7 +282,7 @@ public class EditFullyQualifiedNameController implements BasicController {
             this.fqnText.setText(fullyQualifiedName);
 
             // get all descendant modules
-            setupComboBox(moduleComboBox,  NavigationReads.descendantsOf(viewProperties.calculator(), TinkarTerm.MODULE));
+            setupComboBox(moduleComboBox,  NavigationReads.descendantsOf(viewProperties.calculator(), KometTerm.MODULE));
 
             // populate the current module and select it (e.g. 'SNOMED CT core module')
             findByNid(moduleComboBox.getItems(), stampEntity.moduleNid())
@@ -311,7 +312,7 @@ public class EditFullyQualifiedNameController implements BasicController {
 
 
             // get all available languages
-            setupComboBox(languageComboBox, NavigationReads.descendantsOf(viewProperties.calculator(), TinkarTerm.LANGUAGE));
+            setupComboBox(languageComboBox, NavigationReads.descendantsOf(viewProperties.calculator(), KernelTerm.LANGUAGE));
             // get the language (e.g. 'English language')
             int indexLang = patternEntityVersion.indexForMeaning(LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION);
             ConceptFacade langConceptFacade = FieldHandle.of(latestEntityVersion.get().fieldValues().get(indexLang)).expectConcept();
@@ -398,10 +399,10 @@ public class EditFullyQualifiedNameController implements BasicController {
      * @param descrName model values that need to be prepopulated.
      */
     public void setConceptAndPopulateForm(DescrName descrName) {
-        setupComboBox(moduleComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), TinkarTerm.MODULE));
+        setupComboBox(moduleComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), KometTerm.MODULE));
         setupComboBox(statusComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), STATUS_VALUE));
         setupComboBox(caseSignificanceComboBox, fqnViewModel.findAllCaseSignificants(getViewProperties()));
-        setupComboBox(languageComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), TinkarTerm.LANGUAGE));
+        setupComboBox(languageComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), KernelTerm.LANGUAGE));
         setupComboBox(typeDisplayComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), DESCRIPTION_TYPE));
         fqnViewModel.setPropertyValue(NAME_TEXT, descrName.getNameText())
                 .setPropertyValue(CASE_SIGNIFICANCE, descrName.getCaseSignificance())

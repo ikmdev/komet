@@ -25,5 +25,5 @@ module dev.ikm.komet.details {
     exports dev.ikm.komet.details.concept;
 
     provides KometNodeFactory
-        with DetailsNodeFactory; //, ConceptDetailsNodeFactory; // IKM-544 hide concept detail node from option
+        with DetailsNodeFactory;
 }

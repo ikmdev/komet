@@ -30,7 +30,7 @@ import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntityVersion;
 import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.scene.control.Menu;
 import org.evrete.api.annotations.RuleElement;
 import org.evrete.api.events.EnvironmentChangeEvent;
@@ -111,7 +111,7 @@ public abstract class RulesBase {
     public boolean isNotDefinitionRoot(ObservationRecord observation) {
         return observation.subject() instanceof AxiomSubjectRecord axiomSubject
                 &&
-                axiomSubject.axiomMeaningNid() != TinkarTerm.DEFINITION_ROOT.nid();
+                axiomSubject.axiomMeaningNid() != KernelTerm.DEFINITION_ROOT.nid();
     }
 
     /**
@@ -125,7 +125,7 @@ public abstract class RulesBase {
     public boolean isDefinitionRoot(ObservationRecord observation) {
         return observation.subject() instanceof AxiomSubjectRecord axiomSubject
                 &&
-                axiomSubject.axiomMeaningNid() == TinkarTerm.DEFINITION_ROOT.nid();
+                axiomSubject.axiomMeaningNid() == KernelTerm.DEFINITION_ROOT.nid();
     }
 
     /**
@@ -139,7 +139,7 @@ public abstract class RulesBase {
     public boolean isAxiomSet(ObservationRecord observation) {
         return observation.subject() instanceof AxiomSubjectRecord axiomSubject
                 &&
-                axiomSubject.axiomMeaningMatchesAny(TinkarTerm.NECESSARY_SET, TinkarTerm.SUFFICIENT_SET);
+                axiomSubject.axiomMeaningMatchesAny(KernelTerm.NECESSARY_SET, KernelTerm.SUFFICIENT_SET);
     }
 
     /**
@@ -153,7 +153,7 @@ public abstract class RulesBase {
     public boolean isAxiomConcept(ObservationRecord observation) {
         return observation.subject() instanceof AxiomSubjectRecord axiomSubject
                 &&
-                axiomSubject.axiomMeaningNid() == TinkarTerm.CONCEPT_REFERENCE.nid();
+                axiomSubject.axiomMeaningNid() == KernelTerm.CONCEPT_REFERENCE.nid();
     }
 
     /**
@@ -167,9 +167,9 @@ public abstract class RulesBase {
     public boolean isAxiomRoleGroup(ObservationRecord observation) {
         return observation.subject() instanceof AxiomSubjectRecord axiomSubject
                 &&
-                axiomSubject.axiomMeaningNid() == TinkarTerm.ROLE.nid()
+                axiomSubject.axiomMeaningNid() == KernelTerm.ROLE.nid()
                 &&
-                axiomSubject.vertexPropertyEquals(TinkarTerm.ROLE_TYPE, TinkarTerm.ROLE_GROUP);
+                axiomSubject.vertexPropertyEquals(KernelTerm.ROLE_TYPE, KernelTerm.ROLE_GROUP);
     }
 
     /**
@@ -183,9 +183,9 @@ public abstract class RulesBase {
     public boolean isAxiomRoleOnly(ObservationRecord observation) {
         return observation.subject() instanceof AxiomSubjectRecord axiomSubject
                 &&
-                axiomSubject.axiomMeaningNid() == TinkarTerm.ROLE.nid()
+                axiomSubject.axiomMeaningNid() == KernelTerm.ROLE.nid()
                 &&
-                !axiomSubject.vertexPropertyEquals(TinkarTerm.ROLE_TYPE, TinkarTerm.ROLE_GROUP);
+                !axiomSubject.vertexPropertyEquals(KernelTerm.ROLE_TYPE, KernelTerm.ROLE_GROUP);
     }
     
     /**
@@ -199,7 +199,7 @@ public abstract class RulesBase {
     public boolean isAxiomIntervalRole(ObservationRecord observation) {
         return observation.subject() instanceof AxiomSubjectRecord axiomSubject
                 &&
-                axiomSubject.axiomMeaningNid() == TinkarTerm.INTERVAL_ROLE.nid();
+                axiomSubject.axiomMeaningNid() == KernelTerm.INTERVAL_ROLE.nid();
     }
 
     /**
@@ -213,7 +213,7 @@ public abstract class RulesBase {
     public boolean isAxiomFeature(ObservationRecord observation) {
         return observation.subject() instanceof AxiomSubjectRecord axiomSubject
                 &&
-                axiomSubject.axiomMeaningNid() == TinkarTerm.FEATURE.nid();
+                axiomSubject.axiomMeaningNid() == KernelTerm.FEATURE.nid();
     }
 
     /**

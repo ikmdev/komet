@@ -32,7 +32,7 @@ import dev.ikm.tinkar.component.graph.DiTree;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.beans.value.ObservableValue;
@@ -197,7 +197,7 @@ public class KometPropertyEditorFactory implements Callback<PropertySheet.Item, 
                         try {
                             if (property.observableField.field()
                                     .fieldDefinition(viewProperties.calculator()).meaningNid()
-                                    == TinkarTerm.EL_PLUS_PLUS_INFERRED_TERMINOLOGICAL_AXIOMS.nid()) {
+                                    == KernelTerm.EL_PLUS_PLUS_INFERRED_TERMINOLOGICAL_AXIOMS.nid()) {
                                 premiseType = PremiseType.INFERRED;
                             }
                         } catch (Exception e) {

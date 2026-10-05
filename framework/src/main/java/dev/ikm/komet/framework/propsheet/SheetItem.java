@@ -39,7 +39,6 @@ import dev.ikm.tinkar.component.graph.DiTree;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
 
 import java.util.Optional;
 

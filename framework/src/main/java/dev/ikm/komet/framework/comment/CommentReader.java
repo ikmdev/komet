@@ -20,7 +20,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import org.eclipse.collections.api.list.ImmutableList;
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * Reads the commit-comment thread attached to a STAMP (or any component).
  * <p>
- * A commit comment is modeled as a {@link TinkarTerm#COMMENT_PATTERN} semantic whose referenced
+ * A commit comment is modeled as a {@link KernelTerm#COMMENT_PATTERN} semantic whose referenced
  * component is the STAMP's nid, with the comment text in field 0. Because a stamp may be
  * referenced by many such semantics — each authored independently, each carrying its own
  * stamp — the comments form a thread. This is the read side of that model: it replaces the
@@ -52,7 +52,7 @@ public final class CommentReader {
     private CommentReader() {}
 
     /**
-     * Returns every {@link TinkarTerm#COMMENT_PATTERN} semantic whose referenced component is
+     * Returns every {@link KernelTerm#COMMENT_PATTERN} semantic whose referenced component is
      * {@code componentNid} (e.g. a STAMP nid), each taken from its latest version under the
      * supplied view, ordered oldest comment first.
      *
@@ -62,7 +62,7 @@ public final class CommentReader {
      */
     public static List<CommentEntry> getComments(int componentNid, ViewCalculator view) {
         List<CommentEntry> comments = new ArrayList<>();
-        EntityService.get().forEachSemanticForComponentOfPattern(componentNid, TinkarTerm.COMMENT_PATTERN.nid(),
+        EntityService.get().forEachSemanticForComponentOfPattern(componentNid, KernelTerm.COMMENT_PATTERN.nid(),
                 semantic -> {
                     Latest<SemanticEntityVersion> latest = view.stampCalculator().latest(semantic);
                     if (latest.isPresent()) {

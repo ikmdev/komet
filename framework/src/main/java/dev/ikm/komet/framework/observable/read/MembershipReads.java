@@ -15,10 +15,10 @@
  */
 package dev.ikm.komet.framework.observable.read;
 
+import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
-import dev.ikm.tinkar.terms.TinkarTerm;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +26,7 @@ import java.util.Objects;
 
 /**
  * Membership reads under a view calculator: which patterns are membership patterns
- * (semantic purpose {@link TinkarTerm#MEMBERSHIP_SEMANTIC}, no fields), and whether a
+ * (semantic purpose {@link KometTerm#MEMBERSHIP_SEMANTIC}, no fields), and whether a
  * concept is currently a member of one.
  */
 public final class MembershipReads {
@@ -41,7 +41,7 @@ public final class MembershipReads {
         EntityService.get().forEachPatternEntity(pattern ->
                 viewCalculator.stampCalculator().latest(pattern)
                         .ifPresent(patternVersion -> {
-                            if (patternVersion.semanticPurposeNid() == TinkarTerm.MEMBERSHIP_SEMANTIC.nid()) {
+                            if (patternVersion.semanticPurposeNid() == KometTerm.MEMBERSHIP_SEMANTIC.nid()) {
                                 membershipPatterns.add(patternVersion);
                             }
                         }));

@@ -31,7 +31,7 @@ import org.eclipse.collections.api.factory.Lists;
 
 import java.util.Optional;
 
-import static dev.ikm.tinkar.terms.TinkarTerm.KOMET_BASE_MODEL_COMPONENT_PATTERN;
+import static dev.ikm.tinkar.terms.KernelTerm.KOMET_BASE_MODEL_COMPONENT_PATTERN;
 
 public class RemoveFromKometBaseModelAction extends AbstractActionSuggested {
     final ConceptEntityVersion conceptVersion;

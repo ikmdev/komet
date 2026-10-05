@@ -23,7 +23,7 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.TIME;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import org.carlfx.cognitive.validator.MessageType;
 import org.carlfx.cognitive.validator.ValidationMessage;
@@ -40,7 +40,7 @@ public class StampViewModel extends FormViewModel {
     public StampViewModel() {
         super(); // Default to ViewMode
         addProperty(STATUS, State.ACTIVE)
-                .addProperty(AUTHOR, TinkarTerm.USER)
+                .addProperty(AUTHOR, KernelTerm.USER)
                 .addProperty(TIME, System.currentTimeMillis())
                 .addProperty(MODULE, (ConceptEntity) null)
                 .addProperty(PATH, (ConceptEntity) null)

@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.rules.actions.membership;
 
-import static dev.ikm.tinkar.terms.TinkarTerm.KOMET_BASE_MODEL_COMPONENT_PATTERN;
+import static dev.ikm.tinkar.terms.KernelTerm.KOMET_BASE_MODEL_COMPONENT_PATTERN;
 
 import dev.ikm.komet.rules.actions.AbstractActionSuggested;
 import dev.ikm.tinkar.common.id.PublicId;

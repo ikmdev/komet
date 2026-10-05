@@ -49,7 +49,7 @@ import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.reasoner.elksnomed.ElkSnomedReasonerService;
 import dev.ikm.tinkar.reasoner.service.ReasonerService;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
@@ -205,8 +205,8 @@ public class ReasonerResultsNode extends ExplorationNodeAbstract {
 		TinkExecutor.threadPool().execute(() -> {
 			// TODO use a factory for the service and then create here
             LOG.info("Starting full reasoner with coordinate: \n\n " + getViewProperties().calculator().viewCoordinateRecord());
-			reasonerService.init(getViewProperties().calculator(), TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN,
-					TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN);
+			reasonerService.init(getViewProperties().calculator(), KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN,
+					KernelTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN);
 			RunReasonerFullTask task = new RunReasonerFullTask(reasonerService, resultsController::setResults);
 
 			// publish event of task

@@ -47,7 +47,8 @@ import java.util.function.Function;
 
 import static dev.ikm.komet.kview.fxutils.CssHelper.toWebColor;
 import static dev.ikm.tinkar.common.util.Symbols.HEAVY_TRIANGLE_HEADED_RIGHTWARDS_ARROW;
-import static dev.ikm.tinkar.terms.TinkarTerm.*;
+import static dev.ikm.tinkar.terms.KernelTerm.*;
+import static dev.ikm.komet.terms.KometTerm.MODULE_FOR_VERSION;
 
 /**
  * Displays change chronology based on an entity's versions. For example A concept was created and updated over time.

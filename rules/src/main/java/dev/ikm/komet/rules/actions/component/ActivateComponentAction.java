@@ -41,7 +41,7 @@ import dev.ikm.tinkar.terms.State;
 import javafx.event.ActionEvent;
 import org.eclipse.collections.api.list.ImmutableList;
 
-import static dev.ikm.tinkar.terms.TinkarTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN;
+import static dev.ikm.tinkar.terms.KernelTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN;
 
 public class ActivateComponentAction extends AbstractActionSuggested {
 

@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.klfields;
 
+import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.komet.layout.KlTerms;
 import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -22,24 +23,24 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static dev.ikm.tinkar.terms.TinkarTerm.DEFINITION_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_ACCEPTABILITY;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE;
-import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
-import static dev.ikm.tinkar.terms.TinkarTerm.MODULE;
-import static dev.ikm.tinkar.terms.TinkarTerm.PATH;
-import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.STATUS_VALUE;
+import static dev.ikm.tinkar.terms.KernelTerm.DEFINITION_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.KernelTerm.DESCRIPTION_ACCEPTABILITY;
+import static dev.ikm.tinkar.terms.KernelTerm.DESCRIPTION_CASE_SIGNIFICANCE;
+import static dev.ikm.tinkar.terms.KernelTerm.DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.KernelTerm.LANGUAGE;
+import static dev.ikm.tinkar.terms.KernelTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
+import static dev.ikm.komet.terms.KometTerm.MODULE;
+import static dev.ikm.komet.terms.KometTerm.PATH;
+import static dev.ikm.tinkar.terms.KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.komet.terms.KometTerm.STATUS_VALUE;
 
 /**
  * Decides, for a component field of a semantic, whether the user must choose from a
@@ -64,15 +65,15 @@ public final class ComponentFieldOptions {
      * editor (trees, graphs, arrays, points, instants, UUIDs) are left out.
      */
     private static final List<EntityProxy.Concept> SUPPORTED_FIELD_DATA_TYPES = List.of(
-            TinkarTerm.STRING,
-            TinkarTerm.COMPONENT_FIELD,
-            TinkarTerm.COMPONENT_ID_SET_FIELD,
-            TinkarTerm.COMPONENT_ID_LIST_FIELD,
-            TinkarTerm.INTEGER_FIELD,
-            TinkarTerm.FLOAT_FIELD,
-            TinkarTerm.BOOLEAN_FIELD,
-            TinkarTerm.BYTE_ARRAY_FIELD,
-            TinkarTerm.IMAGE_FIELD);
+            KernelTerm.STRING,
+            KernelTerm.COMPONENT_FIELD,
+            KernelTerm.COMPONENT_ID_SET_FIELD,
+            KernelTerm.COMPONENT_ID_LIST_FIELD,
+            KernelTerm.INTEGER_FIELD,
+            KernelTerm.FLOAT_FIELD,
+            KernelTerm.BOOLEAN_FIELD,
+            KernelTerm.BYTE_ARRAY_FIELD,
+            KometTerm.IMAGE_FIELD);
 
     private ComponentFieldOptions() {
     }

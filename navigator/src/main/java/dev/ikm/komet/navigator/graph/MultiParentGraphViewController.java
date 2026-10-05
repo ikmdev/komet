@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.navigator.graph;
 
+import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.komet.framework.Dialogs;
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.LayoutAnimator;
@@ -940,7 +941,7 @@ public class MultiParentGraphViewController implements RefreshListener {
             ArrayList<Edge> linkList = new ArrayList<>();
             taxonomyLinks.put(conceptNid, linkList);
             for (Edge link : navigator.getParentEdges(conceptNid)) {
-                if (link.typeNids().contains(TinkarTerm.IS_A.nid())) {
+                if (link.typeNids().contains(KometTerm.IS_A.nid())) {
                     linkList.add(link);
                 }
                 handleConcept(link.destinationNid(), navigator, conceptNids, taxonomyLinks);

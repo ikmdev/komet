@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package dev.ikm.komet.framework.controls;
+import dev.ikm.tinkar.terms.KernelTerm;
 import network.ike.docs.konceptcore.KonceptKind;
 
 import dev.ikm.tinkar.common.id.IntIdList;
@@ -38,7 +39,7 @@ import org.slf4j.LoggerFactory;
  * <p>The four atoms map directly from the entity type ({@link ConceptEntity}, {@link PatternEntity},
  * {@link StampEntity}); a {@link SemanticEntity} is further split into {@link KonceptKind#DESCRIPTION}
  * when its pattern is one of the view <em>coordinate's</em> description patterns — asked of the
- * {@link ViewCalculator}, never a hardcoded {@code TinkarTerm.DESCRIPTION_PATTERN}, so configured
+ * {@link ViewCalculator}, never a hardcoded {@code KernelTerm.DESCRIPTION_PATTERN}, so configured
  * dialects and description types are respected — and {@link KonceptKind#SEMANTIC} otherwise.
  */
 public final class KonceptKindResolver {

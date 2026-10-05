@@ -1,29 +1,27 @@
 package dev.ikm.komet.kview.klfields;
 
 import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
-import static dev.ikm.tinkar.terms.TinkarTerm.ARRAY_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.BOOLEAN_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.BYTE_ARRAY_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_LIST_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_SET_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.CONCEPT_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.DECIMAL_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.DIGRAPH_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.DITREE_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.DOUBLE_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.FLOAT;
-import static dev.ikm.tinkar.terms.TinkarTerm.FLOAT_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.INSTANT_LITERAL;
-import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.LOGICAL_EXPRESSION_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.LONG_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.POLYMORPHIC_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
-import static dev.ikm.tinkar.terms.TinkarTerm.STRING_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.UUID_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.VERTEX_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.ARRAY_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.BOOLEAN_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.BYTE_ARRAY_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_ID_LIST_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_ID_SET_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.CONCEPT_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.DECIMAL_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.DIGRAPH_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.DITREE_FIELD;
+import static dev.ikm.komet.terms.KometTerm.DOUBLE_FIELD;
+import static dev.ikm.komet.terms.KometTerm.FLOAT;
+import static dev.ikm.tinkar.terms.KernelTerm.FLOAT_FIELD;
+import static dev.ikm.komet.terms.KometTerm.IMAGE_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.INSTANT_LITERAL;
+import static dev.ikm.tinkar.terms.KernelTerm.INTEGER_FIELD;
+import static dev.ikm.komet.terms.KometTerm.LOGICAL_EXPRESSION_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.LONG;
+import static dev.ikm.tinkar.terms.KernelTerm.STRING;
+import static dev.ikm.komet.terms.KometTerm.UUID_FIELD;
+import static dev.ikm.komet.terms.KometTerm.VERTEX_FIELD;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
@@ -95,7 +93,7 @@ public class KlFieldHelper {
      */
     public final static int[] SUPPORTED_FIELD_TYPE_NIDS = new int[]{
             COMPONENT_FIELD.nid(),
-            STRING_FIELD.nid(),
+            STRING.nid(),
             COMPONENT_ID_SET_FIELD.nid(),
             COMPONENT_ID_LIST_FIELD.nid(),
             FLOAT_FIELD.nid(),
@@ -117,10 +115,9 @@ public class KlFieldHelper {
             DECIMAL_FIELD.nid(),
             ARRAY_FIELD.nid(),
             UUID_FIELD.nid(),
-            LONG_FIELD.nid(),
+            LONG.nid(),
             DOUBLE_FIELD.nid(),
             LOGICAL_EXPRESSION_FIELD.nid(),
-            POLYMORPHIC_FIELD.nid(),
             VERTEX_FIELD.nid()
     };
 
@@ -217,7 +214,7 @@ public class KlFieldHelper {
             // TODO: Create validation error message to the user to only allow concepts into this field.
             //       This will be a read-only component field for now (editable = false).
             factory = new KlReadOnlyComponentFieldFactory();
-        } else if (dataTypeNid == STRING_FIELD.nid() || dataTypeNid == STRING.nid()) {
+        } else if (dataTypeNid == STRING.nid()) {
             factory = new KlReadOnlyStringFieldFactory();
         } else if (dataTypeNid == COMPONENT_ID_SET_FIELD.nid()) {
             // TODO: Refactor KlReadOnlyComponentSetFieldFactory remove journalTopic from constructor.
@@ -311,7 +308,7 @@ public class KlFieldHelper {
             //TODO: using IMAGE_FIELD would require more comprehensive changes to our schema (back end)
             //TODO: We can come back later to this when for instance we need BYTE_ARRAY for something else other than Image
             factory = new KlEditableImageFieldFactory();
-        } else if (dataTypeNid == STRING_FIELD.nid() || dataTypeNid == STRING.nid()) {
+        } else if (dataTypeNid == STRING.nid()) {
             factory = new KlEditableStringFieldFactory();
         } else if (dataTypeNid == DITREE_FIELD.nid()) {
             // Axiom editing happens inline in the window body, like the classic axiom control —
@@ -341,8 +338,7 @@ public class KlFieldHelper {
         patternVersion.fieldDefinitions().forEach(f -> {
             if (f.dataTypeNid() == COMPONENT_FIELD.nid()) {
                 fieldsValues.add(BLANK_CONCEPT);
-            } else if (f.dataTypeNid() == STRING_FIELD.nid()
-                    || f.dataTypeNid() == STRING.nid()) {
+            } else if (f.dataTypeNid() == STRING.nid()) {
                 fieldsValues.add("");
             } else if (f.dataTypeNid() == INTEGER_FIELD.nid()) {
                 fieldsValues.add(0);
@@ -383,8 +379,7 @@ public class KlFieldHelper {
 
         if (fieldDefinition.dataTypeNid() == COMPONENT_FIELD.nid()) {
             return BLANK_CONCEPT;
-        } else if (fieldDefinition.dataTypeNid() == STRING_FIELD.nid()
-                || fieldDefinition.dataTypeNid() == STRING.nid()) {
+        } else if (fieldDefinition.dataTypeNid() == STRING.nid()) {
             return "";
         } else if (fieldDefinition.dataTypeNid() == INTEGER_FIELD.nid()) {
             return 0;
@@ -500,8 +495,7 @@ public class KlFieldHelper {
                 control = new KLReadOnlyComponentControl();
             } else if (fieldDefinitionRecord.dataTypeNid() == CONCEPT_FIELD.nid()) {
                 control = new KLReadOnlyComponentControl();
-            } else if (fieldDefinitionRecord.dataTypeNid() == STRING_FIELD.nid()
-                    || fieldDefinitionRecord.dataTypeNid() == STRING.nid()) {
+            } else if (fieldDefinitionRecord.dataTypeNid() == STRING.nid()) {
                 control = new KLReadOnlyDataTypeControl<>(String.class);
             } else if (fieldDefinitionRecord.dataTypeNid() == INTEGER_FIELD.nid()) {
                 control = new KLReadOnlyDataTypeControl<>(Integer.class);

@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.landingpage;
 
+import dev.ikm.komet.terms.KometTerm;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
 import static dev.ikm.komet.layout.controls.FilterOptionsPopup.FILTER_TYPE.LANDING_PAGE;
 import static dev.ikm.komet.kview.events.CreateJournalEvent.CREATE_JOURNAL;
@@ -81,7 +82,7 @@ import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -859,9 +860,9 @@ public class LandingPageController implements BasicController {
     }
 
     private void populateAvailableAuthors(ViewProperties viewProperties, EditCoordinateOptionsPopup editCoordOptionsPopup) {
-        ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
+        ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, KernelTerm.STATED_NAVIGATION_PATTERN.nid());
         // Authors are the leaf descendants of USER — named users only, excluding grouping concepts (ike-issues#754).
-        Set<ConceptEntity> conceptEntitySet = NavigationReads.leafDescendantsOf(viewCalculator, TinkarTerm.USER);
+        Set<ConceptEntity> conceptEntitySet = NavigationReads.leafDescendantsOf(viewCalculator, KernelTerm.USER);
         List<ConceptEntity> authors = conceptEntitySet.stream().toList();
         editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getAuthorForChange().availableOptions().addAll(authors);
         ConceptFacade defaultAuthor = authors
@@ -874,8 +875,8 @@ public class LandingPageController implements BasicController {
     }
 
     private void populateAvailablePaths(ViewProperties viewProperties, EditCoordinateOptionsPopup editCoordOptionsPopup) {
-        ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
-        Set<ConceptEntity> conceptEntitySet = NavigationReads.descendantsOf(viewCalculator, TinkarTerm.PATH);
+        ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, KernelTerm.STATED_NAVIGATION_PATTERN.nid());
+        Set<ConceptEntity> conceptEntitySet = NavigationReads.descendantsOf(viewCalculator, KometTerm.PATH);
         List<ConceptEntity> entities = conceptEntitySet.stream().toList();
         editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getDefaultPath().availableOptions().addAll(entities);
         ConceptFacade defaultPath = entities

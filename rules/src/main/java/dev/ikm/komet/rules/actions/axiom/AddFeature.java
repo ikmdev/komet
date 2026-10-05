@@ -21,7 +21,7 @@ import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpressionBuilder;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.event.ActionEvent;
 
 public class AddFeature extends AbstractAxiomAction {
@@ -35,7 +35,7 @@ public class AddFeature extends AbstractAxiomAction {
         LogicalExpressionBuilder leb = new LogicalExpressionBuilder(axiomSubjectRecord.axiomTree());
         switch (leb.get(axiomSubjectRecord.axiomIndex())) {
             case LogicalAxiom.LogicalSet set -> {
-                LogicalAxiom.Atom.TypedAtom.Feature featureAxiom = leb.FeatureAxiom(TinkarTerm.ANONYMOUS_CONCEPT, TinkarTerm.EQUAL_TO, Integer.valueOf(1));
+                LogicalAxiom.Atom.TypedAtom.Feature featureAxiom = leb.FeatureAxiom(KernelTerm.ANONYMOUS_CONCEPT, KernelTerm.EQUAL_TO, Integer.valueOf(1));
                 leb.addToSet(set, featureAxiom);
             }
             default -> throw new IllegalStateException("Unexpected value: " + leb.get(axiomSubjectRecord.axiomIndex()));

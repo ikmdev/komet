@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.panel.axiom;
 
+import dev.ikm.komet.terms.KometTerm;
 import static dev.ikm.komet.framework.PseudoClasses.INACTIVE_PSEUDO_CLASS;
 import static dev.ikm.komet.framework.panel.axiom.AxiomView.CHILD_BOX_BORDER;
 import static dev.ikm.komet.framework.panel.axiom.AxiomView.INNER_ROOT_BORDER;
@@ -24,7 +25,7 @@ import static dev.ikm.komet.framework.panel.axiom.AxiomView.computeGraphic;
 import static dev.ikm.komet.framework.panel.axiom.LogicalOperatorsForVertex.CONCEPT;
 import static dev.ikm.komet.framework.panel.axiom.LogicalOperatorsForVertex.FEATURE;
 import static dev.ikm.tinkar.coordinate.logic.PremiseType.STATED;
-import static dev.ikm.tinkar.terms.TinkarTerm.CONCEPT_REFERENCE;
+import static dev.ikm.tinkar.terms.KernelTerm.CONCEPT_REFERENCE;
 import dev.ikm.komet.framework.Dialogs;
 import dev.ikm.komet.framework.MenuItemWithText;
 import dev.ikm.komet.framework.StyleClasses;
@@ -62,7 +63,7 @@ import dev.ikm.tinkar.ext.lang.owl.IntervalUtil;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.Event;
 import javafx.geometry.Bounds;
@@ -157,10 +158,10 @@ public class ClauseView {
             case CONCEPT -> setupForConcept();
             case FEATURE -> setupForFeature();
             case ROLE -> {
-                ConceptFacade roleOperator = axiomVertex.propertyFast(TinkarTerm.ROLE_OPERATOR);
-                if (roleOperator.nid() == TinkarTerm.EXISTENTIAL_RESTRICTION.nid()) {
+                ConceptFacade roleOperator = axiomVertex.propertyFast(KernelTerm.ROLE_OPERATOR);
+                if (roleOperator.nid() == KernelTerm.EXISTENTIAL_RESTRICTION.nid()) {
                     setupForRoleSome();
-                } else if (roleOperator.nid() == TinkarTerm.UNIVERSAL_RESTRICTION.nid()) {
+                } else if (roleOperator.nid() == KernelTerm.UNIVERSAL_RESTRICTION.nid()) {
                     setupForRoleAll();
                 }
             }
@@ -224,7 +225,7 @@ public class ClauseView {
         openConceptButton.setOnMouseClicked(this::handleShowFeatureNodeClick);
         StringBuilder builder = new StringBuilder();
         builder.append("πσ: ");
-        Optional<IntIdList> optionalPropertyPattern = this.axiomVertex.property(TinkarTerm.PROPERTY_SEQUENCE);
+        Optional<IntIdList> optionalPropertyPattern = this.axiomVertex.property(KernelTerm.PROPERTY_SEQUENCE);
         optionalPropertyPattern.ifPresent(propertyPattern -> {
             for (int propertyPatternNid : propertyPattern.intStream().toArray()) {
                 builder.append("[" + calculator().getDescriptionTextOrNid(propertyPatternNid) + "] ");
@@ -232,10 +233,10 @@ public class ClauseView {
         });
         builder.append("⇒ ");
 
-        Optional<ConceptFacade> optionalImplication = this.axiomVertex.propertyAsConcept(TinkarTerm.PROPERTY_SEQUENCE_IMPLICATION);
+        Optional<ConceptFacade> optionalImplication = this.axiomVertex.propertyAsConcept(KernelTerm.PROPERTY_SEQUENCE_IMPLICATION);
         if (!optionalImplication.isPresent()) {
             // TODO: Retire property pattern implication when starter set stable.
-            optionalImplication = this.axiomVertex.propertyAsConcept(TinkarTerm.PROPERTY_PATTERN_IMPLICATION);
+            optionalImplication = this.axiomVertex.propertyAsConcept(KometTerm.PROPERTY_PATTERN_IMPLICATION);
         }
 
         optionalImplication.ifPresent(implication -> {
@@ -415,8 +416,8 @@ public class ClauseView {
 
     private void setupForRoleSome() {
         int column = 0;
-        ConceptFacade roleType = axiomVertex.propertyFast(TinkarTerm.ROLE_TYPE);
-        if (PublicId.equals(roleType.publicId(), TinkarTerm.ROLE_GROUP)) {
+        ConceptFacade roleType = axiomVertex.propertyFast(KernelTerm.ROLE_TYPE);
+        if (PublicId.equals(roleType.publicId(), KernelTerm.ROLE_GROUP)) {
             expanded.set(true);
             rootBorderPane.getStyleClass().add(StyleClasses.DEF_ROLE_GROUP.toString());
             titleLabel.setGraphic(Icon.ROLE_GROUP.makeIcon());
@@ -512,8 +513,8 @@ public class ClauseView {
         openConceptButton.setOnMouseClicked(this::handleShowFeatureNodeClick);
         StringBuilder builder = new StringBuilder();
         builder.append("⒡ ");
-        Optional<ConceptFacade> optionalTypeConcept = this.axiomVertex.propertyAsConcept(TinkarTerm.FEATURE_TYPE);
-        Optional<ConceptFacade> optionalConcreteDomainOperator = this.axiomVertex.propertyAsConcept(TinkarTerm.CONCRETE_DOMAIN_OPERATOR);
+        Optional<ConceptFacade> optionalTypeConcept = this.axiomVertex.propertyAsConcept(KernelTerm.FEATURE_TYPE);
+        Optional<ConceptFacade> optionalConcreteDomainOperator = this.axiomVertex.propertyAsConcept(KernelTerm.CONCRETE_DOMAIN_OPERATOR);
         if (optionalTypeConcept.isPresent()  && optionalConcreteDomainOperator.isPresent()) {
             ConceptFacade typeConcept = optionalTypeConcept.get();
             ConceptFacade concreteDomainOperatorConcept = optionalConcreteDomainOperator.get();
@@ -542,7 +543,7 @@ public class ClauseView {
             throw new IllegalStateException("Feature node does not contain type and operator: " + this.axiomVertex);
         }
 
-        Optional<Object> optionalLiteral = this.axiomVertex.property(TinkarTerm.LITERAL_VALUE);
+        Optional<Object> optionalLiteral = this.axiomVertex.property(KernelTerm.LITERAL_VALUE);
         optionalLiteral.ifPresentOrElse(literal -> builder.append(literal.toString()),
                 () -> builder.append("not specified"));
         titleLabel.setText(builder.toString());
@@ -564,7 +565,7 @@ public class ClauseView {
 		openConceptButton.getStyleClass().setAll(StyleClasses.OPEN_CONCEPT_BUTTON.toString());
 		this.axiomView.addToGridPaneNoGrowTopAlign(rootGridPane, openConceptButton, column++);
 		openConceptButton.setOnMouseClicked(this::handleShowFeatureNodeClick);
-		Optional<ConceptFacade> optionalTypeConcept = this.axiomVertex.propertyAsConcept(TinkarTerm.INTERVAL_ROLE_TYPE);
+		Optional<ConceptFacade> optionalTypeConcept = this.axiomVertex.propertyAsConcept(KernelTerm.INTERVAL_ROLE_TYPE);
 		if (optionalTypeConcept.isPresent()) {
 			titleLabel.setText("I " + IntervalUtil.getIntervalRoleString(calculator(), axiomVertex));
 		} else {
@@ -625,7 +626,7 @@ public class ClauseView {
             case DEFINITION_ROOT -> axiomView.getEntityBeingDefinedNid();
 
             case ROLE -> {
-                ConceptFacade roleTypeForVertex = axiomVertex.propertyFast(TinkarTerm.ROLE_TYPE);
+                ConceptFacade roleTypeForVertex = axiomVertex.propertyFast(KernelTerm.ROLE_TYPE);
                 yield roleTypeForVertex.nid();
             }
             case FEATURE -> {
@@ -768,7 +769,7 @@ public class ClauseView {
 
     private void handleShowRoleNodeClick(MouseEvent mouseEvent) {
         if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
-            ConceptFacade typeFacade = axiomVertex.propertyFast(TinkarTerm.ROLE_TYPE);
+            ConceptFacade typeFacade = axiomVertex.propertyFast(KernelTerm.ROLE_TYPE);
             showPopup(typeFacade, mouseEvent);
         }
     }
@@ -803,7 +804,7 @@ public class ClauseView {
 
     private void handleShowFeatureNodeClick(MouseEvent mouseEvent) {
         if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
-            ConceptFacade featureType = axiomVertex.propertyFast(TinkarTerm.FEATURE_TYPE);
+            ConceptFacade featureType = axiomVertex.propertyFast(KernelTerm.FEATURE_TYPE);
             showPopup(featureType.nid(), mouseEvent);
         }
     }
@@ -924,8 +925,8 @@ public class ClauseView {
                     builder.append("\" transform=\"scale(.03) \"/>");
                     break;
                 case ROLE:
-                    ConceptFacade roleTypeForVertex = axiomVertex.propertyFast(TinkarTerm.ROLE_TYPE);
-                    if (roleTypeForVertex.nid() == TinkarTerm.ROLE_GROUP.nid()) {
+                    ConceptFacade roleTypeForVertex = axiomVertex.propertyFast(KernelTerm.ROLE_TYPE);
+                    if (roleTypeForVertex.nid() == KernelTerm.ROLE_GROUP.nid()) {
                         leftStroke = "stroke: #009bff;";
                         nodeText = "Role group";
                         bottomInset = 5;
@@ -1071,7 +1072,7 @@ public class ClauseView {
         if (!conceptExpression.isPresent()) {
             return false;
         }
-        return conceptExpression.get().containsVertexWithMeaning(TinkarTerm.SUFFICIENT_SET);
+        return conceptExpression.get().containsVertexWithMeaning(KernelTerm.SUFFICIENT_SET);
     }
 
     PremiseType premiseType() {

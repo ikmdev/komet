@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
+import dev.ikm.komet.terms.KometTerm;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.ADD_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
@@ -56,7 +57,6 @@ import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.TinkarTermV2;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;
@@ -217,13 +217,13 @@ public class PatternFieldsController {
     private void loadDataTypeComboBox(){
       /*
           ViewCalculator viewCalculator = viewProperties.calculator();
-          IntIdSet dataTypeFields = viewCalculator.descendentsOf(TinkarTerm.DISPLAY_FIELDS);
+          IntIdSet dataTypeFields = viewCalculator.descendentsOf(KometTerm.DISPLAY_FIELDS);
             Set<ConceptEntity> allDataTypes =
                     dataTypeFields.intStream()
                             .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
                             .collect(Collectors.toSet());
 
-            IntIdSet dataTypeDynamic = viewCalculator.descendentsOf(TinkarTerm.DYNAMIC_COLUMN_DATA_TYPES);
+            IntIdSet dataTypeDynamic = viewCalculator.descendentsOf(KometTerm.DYNAMIC_COLUMN_DATA_TYPES);
 
             allDataTypes.addAll(dataTypeDynamic.intStream()
                     .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
@@ -255,7 +255,7 @@ public class PatternFieldsController {
             }
         }));
 
-        dataTypeComboBox.getItems().addAll(NavigationReads.childrenOf(getViewProperties().calculator(), TinkarTermV2.DISPLAY_FIELDS).stream().sorted((entityFacade1, entityFacade2) -> {
+        dataTypeComboBox.getItems().addAll(NavigationReads.childrenOf(getViewProperties().calculator(), KometTerm.DISPLAY_FIELDS).stream().sorted((entityFacade1, entityFacade2) -> {
             ViewCalculator viewCalculator = getViewProperties().calculator();
             return viewCalculator.getRegularDescriptionText(entityFacade1).get()
                             .compareToIgnoreCase(viewCalculator.getRegularDescriptionText(entityFacade2).get());
