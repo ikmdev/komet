@@ -8,7 +8,7 @@ import javafx.scene.layout.Region;
 
 /**
  * Represents a specialized field area in the Knowledge Layout framework specifically for
- * Boolean data types. This interface extends {@link KlFieldArea} and provides type-safe
+ * Boolean data types. This interface extends {@link KlAreaForFeature} and provides type-safe
  * operations for managing observable Boolean fields and their associated JavaFX {@code Region}.
  *
  * It is a non-sealed interface, allowing for further extension and customization.
@@ -18,7 +18,7 @@ import javafx.scene.layout.Region;
  */
 @FullyQualifiedName("Knowledge layout boolean field area")
 @RegularName("Boolean field area")
-@ParentConcept(KlFieldArea.class)
+@ParentConcept(KlAreaForFeature.class)
 public non-sealed interface KlAreaForBoolean<FX extends Region>
         extends KlAreaForFeature<Boolean, Feature<Boolean>, FX> {
 
@@ -27,7 +27,7 @@ public non-sealed interface KlAreaForBoolean<FX extends Region>
      * {@link KlAreaForBoolean}, which are specialized field areas in the
      * Knowledge Layout framework designed for managing observable Boolean fields
      * and their associated JavaFX {@link Region}.
-     * <p>     * This interface extends {@link KlFieldArea.Factory} with Boolean-specific
+     * <p>     * This interface extends {@link KlAreaForFeature.Factory} with Boolean-specific
      * behavior, enabling the creation of field areas that bind observable Boolean
      * fields to JavaFX regions. It defines the contract for building, configuring,
      * and interacting with these field areas in a type-safe manner, ensuring proper

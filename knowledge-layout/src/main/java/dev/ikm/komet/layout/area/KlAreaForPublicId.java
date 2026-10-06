@@ -10,7 +10,7 @@ import javafx.scene.layout.Region;
 /**
  * Represents an interface in the Knowledge Layout framework for managing
  * field areas specifically associated with public identifiers and their corresponding
- * observable fields and JavaFX regions. This interface extends {@code KlFieldArea}
+ * observable fields and JavaFX regions. This interface extends {@code KlAreaForFeature}
  * with a specialized type parameter for handling {@code PublicId} data types.
  *
  * This interface is part of a modular and extensible architecture allowing
@@ -30,11 +30,11 @@ public non-sealed interface KlAreaForPublicId<FX extends Region>
     /**
      * Represents a factory interface for creating and managing instances of field areas
      * specifically associated with public identifiers in the Knowledge Layout framework.
-     * This interface extends {@code KlFieldArea.Factory} with a specialization for JavaFX
+     * This interface extends {@code KlAreaForFeature.Factory} with a specialization for JavaFX
      * {@code Region}-based components and public identifier-specific functionality.
      * <p>     * The factory provides methods and contracts for constructing, configuring, and restoring
      * field areas that integrate observable fields of type {@code PublicId} with JavaFX regions.
-     * It supports consistent creation of {@code KlFieldAreaForPublicId} objects and ensures compatibility
+     * It supports consistent creation of {@code KlAreaForPublicId} objects and ensures compatibility
      * with the system's modular and extensible architecture.
      *
      * @param <FX> The type of JavaFX {@link Region} managed or displayed within the public identifier

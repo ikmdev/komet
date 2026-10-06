@@ -9,7 +9,7 @@ import javafx.scene.layout.Region;
 
 /**
  * Represents a specialized field area in the Knowledge Layout framework specifically for
- * IntIdSet data types. This interface extends {@link KlFieldArea} and provides type-safe
+ * IntIdSet data types. This interface extends {@link KlAreaForFeature} and provides type-safe
  * operations for managing observable IntIdSet fields and their associated JavaFX {@code Region}.
  *
  * It is a non-sealed interface, allowing for further extension and customization.
@@ -19,7 +19,7 @@ import javafx.scene.layout.Region;
  */
 @FullyQualifiedName("Knowledge layout IntIdSet field area")
 @RegularName("IntIdSet field area")
-@ParentConcept(KlFieldArea.class)
+@ParentConcept(KlAreaForFeature.class)
 public non-sealed interface KlAreaForIntIdSet<FX extends Region>
         extends KlAreaForFeature<IntIdSet, Feature<IntIdSet>, FX> {
 
@@ -28,7 +28,7 @@ public non-sealed interface KlAreaForIntIdSet<FX extends Region>
      * {@link KlAreaForIntIdSet}, which are specialized field areas in the
      * Knowledge Layout framework designed for managing observable IntIdSet fields
      * and their associated JavaFX {@link Region}.
-     * <p>     * This interface extends {@link KlFieldArea.Factory} with IntIdSet-specific
+     * <p>     * This interface extends {@link KlAreaForFeature.Factory} with IntIdSet-specific
      * behavior, enabling the creation of field areas that bind observable IntIdSet
      * fields to JavaFX regions. It defines the contract for building, configuring,
      * and interacting with these field areas in a type-safe manner, ensuring proper

@@ -8,7 +8,7 @@ import javafx.scene.layout.Region;
 
 /**
  * Represents a specialized field area in the Knowledge Layout framework specifically for
- * Float data types. This interface extends {@link KlFieldArea} and provides type-safe
+ * Float data types. This interface extends {@link KlAreaForFeature} and provides type-safe
  * operations for managing observable Float fields and their associated JavaFX {@code Region}.
  *
  * It is a non-sealed interface, allowing for further extension and customization.
@@ -18,7 +18,7 @@ import javafx.scene.layout.Region;
  */
 @FullyQualifiedName("Knowledge layout Float field area")
 @RegularName("Float field area")
-@ParentConcept(KlFieldArea.class)
+@ParentConcept(KlAreaForFeature.class)
 public non-sealed interface KlAreaForFloat<FX extends Region>
         extends KlAreaForFeature<Float, Feature<Float>, FX> {
 
@@ -27,7 +27,7 @@ public non-sealed interface KlAreaForFloat<FX extends Region>
      * {@link KlAreaForFloat}, which are specialized field areas in the
      * Knowledge Layout framework designed for managing observable Float fields
      * and their associated JavaFX {@link Region}.
-     * <p>     * This interface extends {@link KlFieldArea.Factory} with Float-specific
+     * <p>     * This interface extends {@link KlAreaForFeature.Factory} with Float-specific
      * behavior, enabling the creation of field areas that bind observable Float
      * fields to JavaFX regions. It defines the contract for building, configuring,
      * and interacting with these field areas in a type-safe manner, ensuring proper

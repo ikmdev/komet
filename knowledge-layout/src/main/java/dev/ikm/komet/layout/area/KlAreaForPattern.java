@@ -10,7 +10,7 @@ import javafx.scene.layout.Region;
 
 /**
  * Represents a specialized interface in the Knowledge Layout framework for managing
- * field areas associated with patterns. This interface extends {@code KlFieldArea}
+ * field areas associated with patterns. This interface extends {@code KlAreaForFeature}
  * and is used to define field areas that specifically interact with {@code PatternFacade}
  * objects and their associated JavaFX {@code Region} components.
  * <p>This interface is annotated with {@code FullyQualifiedName}, {@code RegularName}, and
@@ -27,9 +27,9 @@ public non-sealed interface KlAreaForPattern<FX extends Region>
         extends KlAreaForFeature<PatternFacade, Feature<PatternFacade>, FX> {
 
     /**
-     * Represents a factory interface for creating and managing instances of {@code KlFieldAreaForPattern},
+     * Represents a factory interface for creating and managing instances of {@code KlAreaForPattern},
      * which links {@code PatternFacade} objects to JavaFX {@code Region} elements.
-     * <p>     * This interface extends the {@code KlFieldArea.Factory} by specializing it for patterns, where
+     * <p>     * This interface extends the {@code KlAreaForFeature.Factory} by specializing it for patterns, where
      * the field areas are associated with {@code PatternFacade} data types and their corresponding
      * JavaFX components.
      *
