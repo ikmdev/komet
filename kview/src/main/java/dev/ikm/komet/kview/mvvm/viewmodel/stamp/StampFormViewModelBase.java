@@ -79,7 +79,7 @@ public abstract class StampFormViewModelBase extends FormViewModel {
     public void populateDefaults() {
         setPropertyValue(StampFormViewModelBase.Properties.STATUS, State.ACTIVE);
         // module
-        // @TODO Revisit TinkarTerms bindings file because the defaultModuleProperty is returning a module that isn't part of the list of modules available.
+        // @TODO Revisit the bindings because the defaultModuleProperty is returning a module that isn't part of the list of modules available.
         //       int moduleNid = getViewProperties().nodeView().editCoordinate().defaultModuleProperty().get().nid();
         int moduleNid = KometTerm.DEVELOPMENT_MODULE.nid();
         List<ComponentWithNid> moduleEntities = getObservableList(StampFormViewModelBase.Properties.MODULES);

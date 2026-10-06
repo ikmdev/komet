@@ -456,7 +456,7 @@ public class KlFieldHelper {
      *
      * TODO: This method could move to a framework read helper.
      *  During create (new Semantic) the user can change the reference component.
-     *  the hash is stating any change. By default a reference component during created would be TinkarTerms.ANONOUMOUS_CONCEPT (I can't remember).
+     *  the hash is stating any change. By default a reference component during created would be KernelTerm.ANONYMOUS_CONCEPT (I can't remember).
      */
     public static int calculateHashValue(List<ObservableField.Editable> observableFieldEditablesList, StampCalculator stampCalculator) {
         StringBuilder stringBuilder = new StringBuilder();

@@ -117,16 +117,19 @@
             <artifactId>log4j-slf4j2-impl</artifactId>
             <scope>test</scope>
         </dependency>
-        <!--- Bind To SLF4J Dependencies (Start) -->
+        <!--- Bind To SLF4J Dependencies (Start). Runtime scope: the bridges catch other
+             libraries' log4j and commons-logging calls; nothing here compiles against them. -->
         <!-- Binding log4j to slf4j -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>log4j-over-slf4j</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <!-- Binding tools-logging to slf4j -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <!-- Bind To SLF4J Dependencies (End) -->
         <dependency>

@@ -19,12 +19,14 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -54,19 +56,17 @@ class PublicIdHashKeyGuardTest {
         Path repository = repositoryRoot();
         List<String> found = new ArrayList<>();
         int scanned = 0;
-        try (Stream<Path> files = Files.walk(repository)) {
-            for (Path file : files.filter(PublicIdHashKeyGuardTest::isMainSource).toList()) {
-                scanned++;
-                List<String> lines = Files.readAllLines(file);
-                for (int i = 0; i < lines.size(); i++) {
-                    String line = lines.get(i);
-                    String trimmed = line.strip();
-                    if (trimmed.startsWith("*") || trimmed.startsWith("//") || line.contains(EXCEPTION_MARK)) {
-                        continue;
-                    }
-                    if (HASHED_BY_PUBLIC_ID.matcher(line).find()) {
-                        found.add(repository.relativize(file) + ":" + (i + 1) + ": " + trimmed);
-                    }
+        for (Path file : mainSources(repository)) {
+            scanned++;
+            List<String> lines = Files.readAllLines(file);
+            for (int i = 0; i < lines.size(); i++) {
+                String line = lines.get(i);
+                String trimmed = line.strip();
+                if (trimmed.startsWith("*") || trimmed.startsWith("//") || line.contains(EXCEPTION_MARK)) {
+                    continue;
+                }
+                if (HASHED_BY_PUBLIC_ID.matcher(line).find()) {
+                    found.add(repository.relativize(file) + ":" + (i + 1) + ": " + trimmed);
                 }
             }
         }
@@ -91,23 +91,47 @@ class PublicIdHashKeyGuardTest {
     void noFirstUuidIsTakenAsAnIdentity() throws IOException {
         Path repository = repositoryRoot();
         List<String> found = new ArrayList<>();
-        try (Stream<Path> files = Files.walk(repository)) {
-            for (Path file : files.filter(PublicIdHashKeyGuardTest::isMainSource).toList()) {
-                List<String> lines = Files.readAllLines(file);
-                for (int i = 0; i < lines.size(); i++) {
-                    String line = lines.get(i);
-                    String trimmed = line.strip();
-                    if (trimmed.startsWith("*") || trimmed.startsWith("//") || line.contains(FIRST_UUID_MARK)) {
-                        continue;
-                    }
-                    if (FIRST_UUID.matcher(line).find()) {
-                        found.add(repository.relativize(file) + ":" + (i + 1) + ": " + trimmed);
-                    }
+        for (Path file : mainSources(repository)) {
+            List<String> lines = Files.readAllLines(file);
+            for (int i = 0; i < lines.size(); i++) {
+                String line = lines.get(i);
+                String trimmed = line.strip();
+                if (trimmed.startsWith("*") || trimmed.startsWith("//") || line.contains(FIRST_UUID_MARK)) {
+                    continue;
+                }
+                if (FIRST_UUID.matcher(line).find()) {
+                    found.add(repository.relativize(file) + ":" + (i + 1) + ": " + trimmed);
                 }
             }
         }
         assertEquals(List.of(), found, "first UUIDs taken as an identity; use leastUuid(), PublicId.equals or"
                 + " idString(), or mark a deliberate exception with // " + FIRST_UUID_MARK + " <reason>");
+    }
+
+    /**
+     * The main Java sources under the repository, found without entering build output or
+     * {@code .git}: tests running beside this one write and delete files under
+     * {@code target}, and a walk that entered it could meet a file that has just gone.
+     */
+    static List<Path> mainSources(Path repository) throws IOException {
+        List<Path> sources = new ArrayList<>();
+        Files.walkFileTree(repository, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path directory, BasicFileAttributes attributes) {
+                String name = directory.getFileName() == null ? "" : directory.getFileName().toString();
+                return name.equals("target") || name.equals(".git") ? FileVisitResult.SKIP_SUBTREE
+                        : FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) {
+                if (isMainSource(file)) {
+                    sources.add(file);
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        });
+        return sources;
     }
 
     static boolean isMainSource(Path file) {

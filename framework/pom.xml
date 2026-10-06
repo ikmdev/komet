@@ -56,10 +56,6 @@
             <artifactId>controlsfx</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.github.classgraph</groupId>
-            <artifactId>classgraph</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
         </dependency>
@@ -164,12 +160,22 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>dev.ikm.tinkar</groupId>
             <artifactId>common</artifactId>
         </dependency>
         <dependency>
             <groupId>dev.ikm.tinkar</groupId>
-            <artifactId>collection</artifactId>
+            <artifactId>component</artifactId>
         </dependency>
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
@@ -196,6 +202,27 @@
                         </goals>
                         <configuration>
                             <ignoreUnusedRuntime>true</ignoreUnusedRuntime>
+                            <!-- JavaFX publishes an empty jar under the declared coordinates and the
+                                 classes in a per-platform classified jar, so the analyzer reports every
+                                 JavaFX module as both unused (declared) and undeclared (classified). -->
+                            <ignoredUsedUndeclaredDependencies combine.children="append">
+                                <ignoredUsedUndeclaredDependency>org.openjfx:*</ignoredUsedUndeclaredDependency>
+                            </ignoredUsedUndeclaredDependencies>
+                            <ignoredUnusedDeclaredDependencies combine.children="append">
+                                <ignoredUnusedDeclaredDependency>org.openjfx:*</ignoredUnusedDeclaredDependency>
+                                <!-- Icons are named by string (iconLiteral, -fx-icon-code); ikonli finds
+                                     the pack at runtime through ServiceLoader. The packs stay compile
+                                     scope with requires in module-info so jlink, which follows requires
+                                     and does not bind services, puts them in the image. -->
+                                <ignoredUnusedDeclaredDependency>org.kordamp.ikonli:*</ignoredUnusedDeclaredDependency>
+                                <!-- Annotation processor; its annotations are source-retention, so no
+                                     class reference survives into the bytecode (requires static). -->
+                                <ignoredUnusedDeclaredDependency>dev.ikm.jpms:record-builder-core</ignoredUnusedDeclaredDependency>
+                                <!-- The tests' providers are found through ServiceLoader. -->
+                                <ignoredUnusedDeclaredDependency>dev.ikm.tinkar:data-ephemeral-provider</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>dev.ikm.tinkar:entity-provider</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>dev.ikm.tinkar:executor-provider</ignoredUnusedDeclaredDependency>
+                            </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
                     <execution>
@@ -220,7 +247,10 @@
                             <stripVersion>true</stripVersion>
                             <outputDirectory>${project.build.directory}/data</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <!-- Copy only when the installed starter set is newer than the copy here, rather than
+                                 overwriting it on every build. -->
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
                         </configuration>
                     </execution>
                 </executions>

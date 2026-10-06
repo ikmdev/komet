@@ -75,7 +75,7 @@ public class HierarchyController implements BasicController {
 
         // provide a root tree item
         TreeItem<ConceptTreeItemRecord> rootTreeItem = new TreeItem<>();
-        rootTreeItem.setValue(new ConceptTreeItemRecord(0, "root", "", "", null));
+        rootTreeItem.setValue(new ConceptTreeItemRecord(0, "root", "", "", (String[]) null));
         hiearchyTreeView.setRoot(rootTreeItem);
         hiearchyTreeView.setShowRoot(false);
         rootTreeItem.setExpanded(true);
