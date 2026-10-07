@@ -59,7 +59,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.PATTERN;
@@ -175,17 +174,16 @@ public class ConceptPatternNavController {
                 int patternNid = patternItem.nid();
                 // load the pattern instances into an observable list
                 ObservableList<Object> patternChildren = FXCollections.observableArrayList();
-                AtomicInteger childCount = new AtomicInteger();
-                // populate the collection of instance for each pattern
-                EntityService.get().forEachSemanticOfPattern(patternNid, semantic -> {
-                    if (childCount.incrementAndGet() < maxChildrenInPatternViewer) {
-                        patternChildren.add(semantic.nid());
-                    }
-                });
+                // populate the collection of instance for each pattern: read only the semantics
+                // shown, and count the rest without reading them (on SNOMED CT, millions)
+                int childCount = EntityService.get().countSemanticsOfPattern(patternNid);
+                EntityService.get().semanticsOfPattern(patternNid)
+                        .limit(maxChildrenInPatternViewer - 1)
+                        .forEach(semantic -> patternChildren.add(semantic.nid()));
 
-                if (childCount.get() >= maxChildrenInPatternViewer) {
+                if (childCount >= maxChildrenInPatternViewer) {
                     NumberFormat numberFormat = NumberFormat.getInstance();
-                    patternChildren.add(numberFormat.format(childCount.get() - maxChildrenInPatternViewer) + " additional semantics suppressed...");
+                    patternChildren.add(numberFormat.format(childCount - maxChildrenInPatternViewer) + " additional semantics suppressed...");
                 }
 
                 Platform.runLater(() -> {
