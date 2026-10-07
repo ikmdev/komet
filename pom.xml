@@ -93,6 +93,12 @@
             --add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
         </commonTestFXArgs>
         <java.version>27</java.version>
+        <!-- The nid build check (tinkar-core nid-check, IKE-Network/ike-issues#1244): how it
+             reports (error, or warning for a census), which classes may narrow a nid, and
+             javac's cap on warnings, raised for a census. -->
+        <nid-check.report>error</nid-check.report>
+        <nid-check.allow></nid-check.allow>
+        <javac.maxwarns>100</javac.maxwarns>
     </properties>
 
     <dependencyManagement>
@@ -304,6 +310,19 @@
                         <annotationProcessor>io.soabase.recordbuilder.processor.RecordBuilderProcessor
                         </annotationProcessor>
                     </annotationProcessors>
+                    <!-- The nid build check (tinkar-core nid-check, IKE-Network/ike-issues#1244). -->
+                    <compilerArgs combine.children="append">
+                        <arg>-Xplugin:NidCheck report=${nid-check.report} allow=${nid-check.allow}</arg>
+                        <arg>-Xmaxwarns</arg>
+                        <arg>${javac.maxwarns}</arg>
+                    </compilerArgs>
+                    <annotationProcessorPathsUseDepMgmt>true</annotationProcessorPathsUseDepMgmt>
+                    <annotationProcessorPaths combine.children="append">
+                        <path>
+                            <groupId>dev.ikm.tinkar</groupId>
+                            <artifactId>nid-check</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
         </plugins>
