@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.rules.actions.concept;
 
+import dev.ikm.komet.terms.KometTerm;
 import static dev.ikm.komet.framework.activity.ActivityStreams.BUILDER;
 
 import dev.ikm.komet.framework.activity.ActivityStreams;
@@ -32,7 +33,7 @@ import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.event.ActionEvent;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
@@ -59,7 +60,7 @@ public class NewConceptFromTextAction extends AbstractActionImmediate implements
             Transaction transaction = Transaction.make("New concept for: " + newConceptText);
             StampEntity stampEntity = transaction.getStamp(State.ACTIVE, editCoordinate.getAuthorNidForChanges(),
                     editCoordinate.getDefaultModuleNid(), editCoordinate.getDefaultPathNid());
-            Entity.provider().putStamp(stampEntity);
+            Entity.provider().putEntity(stampEntity);
 
             ConceptEntityBuilder newConceptBuilder = ConceptEntityBuilder.builder(stampEntity);
             // TODO automate UK dialect at some point.
@@ -67,24 +68,22 @@ public class NewConceptFromTextAction extends AbstractActionImmediate implements
 
             AxiomBuilderRecord ab = newConceptBuilder.axiomBuilder();
             ab.withNecessarySet(
-//                    ab.makeConceptReference(TinkarTerm.LANGUAGE),
-//                    ab.makeConceptReference(TinkarTerm.DESCRIPTION_ASSEMBLAGE),
+//                    ab.makeConceptReference(KernelTerm.LANGUAGE),
                     ab.makeRoleGroup(
-                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.ANONYMOUS_CONCEPT)
-//                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.UNMODELED_ROLE_CONCEPT),
-//                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.LANGUAGE)
+                            ab.makeSome(KometTerm.PART_OF, KernelTerm.ANONYMOUS_CONCEPT)
+//                            ab.makeSome(KometTerm.PART_OF, KometTerm.UNMODELED_ROLE_CONCEPT),
+//                            ab.makeSome(KometTerm.PART_OF, KernelTerm.LANGUAGE)
                     )
             );
 
 
             ab.withSufficientSet(
-//                    ab.makeConceptReference(TinkarTerm.LANGUAGE),
-//                    ab.makeConceptReference(TinkarTerm.DESCRIPTION_ASSEMBLAGE),
-//                    ab.makeSome(TinkarTerm.ROLE_TYPE, TinkarTerm.GB_ENGLISH_DIALECT),
+//                    ab.makeConceptReference(KernelTerm.LANGUAGE),
+//                    ab.makeSome(KernelTerm.ROLE_TYPE, KometTerm.GB_ENGLISH_DIALECT),
                     ab.makeRoleGroup(
-                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.ANONYMOUS_CONCEPT)
-//                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.DYNAMIC_REFERENCED_COMPONENT_RESTRICTION),
-//                            ab.makeSome(TinkarTerm.PART_OF, TinkarTerm.INTRINSIC_ROLE)
+                            ab.makeSome(KometTerm.PART_OF, KernelTerm.ANONYMOUS_CONCEPT)
+//                            ab.makeSome(KometTerm.PART_OF, KometTerm.DYNAMIC_REFERENCED_COMPONENT_RESTRICTION),
+//                            ab.makeSome(KometTerm.PART_OF, KometTerm.INTRINSIC_ROLE)
                     ));
 
             // Build turns into EntityRecords, which get written, added to transaction, but not committed.

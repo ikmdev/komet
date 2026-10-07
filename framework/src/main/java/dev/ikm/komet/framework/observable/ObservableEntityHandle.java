@@ -3,7 +3,9 @@ package dev.ikm.komet.framework.observable;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.EntityProxy;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -404,7 +406,7 @@ import java.util.function.Supplier;
  *
  * <h2>Thread Safety Requirements</h2>
  * <p><b>IMPORTANT:</b> All operations must execute on the JavaFX application thread. The underlying
- * {@link ObservableEntity#get(int)} method enforces this requirement. If you need to access
+ * lookup behind {@link #get(int)} enforces this requirement. If you need to access
  * observable entities from a background thread, use {@code Platform.runLater()}:
  *
  * <pre>{@code
@@ -666,6 +668,32 @@ public interface ObservableEntityHandle {
      */
     static ObservableEntityHandle get(EntityFacade entityFacade) {
         return get(entityFacade.nid());
+    }
+
+    /**
+     * Retrieves an observable entity by an {@link EntityProxy}. A proxy is both an
+     * {@link EntityFacade} and a {@link PublicId}, so without this overload a call with one is
+     * ambiguous; it resolves as {@link #get(EntityFacade)} does.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     *
+     * @param proxy the entity proxy
+     * @return an ObservableEntityHandle representing the entity, or an empty handle if absent
+     */
+    static ObservableEntityHandle get(EntityProxy proxy) {
+        return get((EntityFacade) proxy);
+    }
+
+    /**
+     * Retrieves the observable entity for an {@link Entity}, by its nid. An entity is both an
+     * {@link EntityFacade} and a {@link PublicId}, so without this overload a call with one is
+     * ambiguous; it resolves as {@link #get(EntityFacade)} does.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     *
+     * @param entity the entity
+     * @return an ObservableEntityHandle representing the entity, or an empty handle if absent
+     */
+    static ObservableEntityHandle get(Entity<?> entity) {
+        return get((EntityFacade) entity);
     }
 
     /**

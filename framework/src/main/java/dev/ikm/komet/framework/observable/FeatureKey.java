@@ -15,9 +15,9 @@ public sealed interface FeatureKey extends Encodable {
         }
         return switch (this) {
             case ChronologyFeature chronologyFeature ->
-                    ObservableEntity.get(chronologyFeature.nid()).getFeature(chronologyFeature);
+                    ObservableEntityHandle.get(chronologyFeature.nid()).expectEntity().getFeature(chronologyFeature);
             case VersionFeature versionFeature ->
-                    ObservableEntity.get(versionFeature.nid()).getFeature(versionFeature);
+                    ObservableEntityHandle.get(versionFeature.nid()).expectEntity().getFeature(versionFeature);
         };
     }
     static FeatureKey anyVersion() {

@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genpurpose.test;
 
+import dev.ikm.tinkar.terms.KernelTerm;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.PatternRequirementUtils;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.StatedDefinitionSeeds;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
@@ -35,7 +36,6 @@ import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpressionBuilder;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.primitive.LongLists;
 import org.junit.jupiter.api.AfterAll;
@@ -76,12 +76,12 @@ class PatternRequirementUtilsTest {
                 Files.createTempDirectory("pattern-requirements-test").toFile());
         PrimitiveData.selectControllerByName("Load Ephemeral Store");
         PrimitiveData.start();
-        DESCRIPTION_PATTERN = TinkarTerm.DESCRIPTION_PATTERN.nid();
-        STATED_PATTERN = TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
-        FQN = TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid();
-        REGULAR = TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE.nid();
-        STAMP = TinkarTerm.ACTIVE_STATE.nid();
-        COMPONENT = TinkarTerm.ANONYMOUS_CONCEPT.nid();
+        DESCRIPTION_PATTERN = KernelTerm.DESCRIPTION_PATTERN.nid();
+        STATED_PATTERN = KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
+        FQN = KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid();
+        REGULAR = KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE.nid();
+        STAMP = KernelTerm.ACTIVE_STATE.nid();
+        COMPONENT = KernelTerm.ANONYMOUS_CONCEPT.nid();
     }
 
     @AfterAll

@@ -24,6 +24,7 @@ import dev.ikm.komet.kview.mvvm.view.timeline.TimelineController;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.flow.FlowSubscriber;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
@@ -220,7 +221,7 @@ public class ConceptNode extends ExplorationNodeAbstract {
             if (entityFocusProperty.get() != null && entityFocusProperty.get().nid() == nid) {
                 // component has changed, need to update.
                 Platform.runLater(() -> entityFocusProperty.set(null));
-                Platform.runLater(() -> entityFocusProperty.set(Entity.provider().getEntityFast(nid)));
+                Platform.runLater(() -> entityFocusProperty.set(EntityHandle.get(nid).orNull()));
             }
         });
 

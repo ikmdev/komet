@@ -1,9 +1,9 @@
 package dev.ikm.komet.kleditorapp.view.control;
 
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.kleditorapp.view.PatternBrowserItem;
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
@@ -112,7 +112,7 @@ public class PatternBrowserCell extends ListCell<PatternBrowserItem> {
                 // Last updated
                 long stampTime = stamp.time();
                 lastUpdatedLabel.setText("Last updated: ");
-                lastUpdatedTextLabel.setText(TimeUtils.toShortDateString(stampTime));
+                lastUpdatedTextLabel.setText(DateTimeUtil.format(stampTime, DateTimeUtil.DAY_FORMATTER));
             }, () -> {
                 clearCellsContent();
             });

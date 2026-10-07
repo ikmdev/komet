@@ -1,5 +1,6 @@
 package dev.ikm.komet.layout;
 
+import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.framework.observable.ObservableComposer.EntityComposer;
 import dev.ikm.komet.framework.observable.ObservablePattern;
@@ -19,7 +20,7 @@ import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.primitive.IntLists;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -74,7 +75,7 @@ public final class PatternDefinitionSeeder {
      */
     public static void ensureSeeded(ViewCalculator viewCalculator) {
         ObservableComposer composer = ObservableComposer.create(viewCalculator, State.ACTIVE,
-                TinkarTerm.USER, TinkarTerm.DEVELOPMENT_MODULE, TinkarTerm.DEVELOPMENT_PATH,
+                KernelTerm.USER, KometTerm.DEVELOPMENT_MODULE, KernelTerm.DEVELOPMENT_PATH,
                 "Seed pattern-definition patterns");
 
         ensureConcept(composer, PatternDefinitionTerms.PATTERN_DEFINITION);
@@ -90,8 +91,8 @@ public final class PatternDefinitionSeeder {
         ensurePattern(composer, PatternDefinitionTerms.MEANING_AND_PURPOSE_PATTERN,
                 PatternDefinitionTerms.MEANING_AND_PURPOSE, PatternDefinitionTerms.PATTERN_DEFINITION,
                 "Meaning and Purpose Pattern",
-                List.of(new FieldSpec(TinkarTerm.MEANING, KlTerms.PATTERN_MEANING_ATTRIBUTE),
-                        new FieldSpec(TinkarTerm.PURPOSE, KlTerms.PATTERN_PURPOSE_ATTRIBUTE)));
+                List.of(new FieldSpec(KometTerm.MEANING, KlTerms.PATTERN_MEANING_ATTRIBUTE),
+                        new FieldSpec(KometTerm.PURPOSE, KlTerms.PATTERN_PURPOSE_ATTRIBUTE)));
 
         ensurePattern(composer, PatternDefinitionTerms.FIELDS_PATTERN,
                 PatternDefinitionTerms.FIELD_DEFINITION, PatternDefinitionTerms.PATTERN_DEFINITION,
@@ -117,7 +118,7 @@ public final class PatternDefinitionSeeder {
     private static void projectStoredPatternDefinitions(ObservableComposer composer,
                                                         ViewCalculator viewCalculator) {
         MutableIntList patternNids = IntLists.mutable.empty();
-        PrimitiveData.get().forEachPatternNid(patternNids::add);
+        EntityService.get().forEachPatternEntity(pattern -> patternNids.add(pattern.nid()));
         patternNids.forEach(patternNid -> viewCalculator.latest(patternNid).ifPresent(version -> {
             if (version instanceof PatternEntityVersion patternVersion) {
                 projectPatternDefinition(composer, patternNid, patternVersion);
@@ -165,13 +166,13 @@ public final class PatternDefinitionSeeder {
     private static boolean isDefinedBySemantics(int patternNid) {
         PublicId patternId = PrimitiveData.publicId(patternNid);
         List<PublicId> semanticIds = new ArrayList<>();
-        PrimitiveData.get().forEachSemanticNidForComponentOfPattern(patternNid,
+        EntityService.get().forEachSemanticForComponentOfPattern(patternNid,
                 PatternDefinitionTerms.MEANING_AND_PURPOSE_PATTERN.nid(),
-                semanticNid -> semanticIds.add(PrimitiveData.publicId(semanticNid)));
+                semantic -> semanticIds.add(semantic.publicId()));
         int meaningAndPurposeCount = semanticIds.size();
-        PrimitiveData.get().forEachSemanticNidForComponentOfPattern(patternNid,
+        EntityService.get().forEachSemanticForComponentOfPattern(patternNid,
                 PatternDefinitionTerms.FIELDS_PATTERN.nid(),
-                semanticNid -> semanticIds.add(PrimitiveData.publicId(semanticNid)));
+                semantic -> semanticIds.add(semantic.publicId()));
         int fieldSemanticCount = semanticIds.size() - meaningAndPurposeCount;
         return semanticIds.stream()
                 .anyMatch(semanticId -> !isProjectedSemanticId(patternId, semanticId, fieldSemanticCount));
@@ -221,9 +222,9 @@ public final class PatternDefinitionSeeder {
 
         // Absent a meaning-and-purpose semantic the pattern keeps what it has (a new pattern's
         // composer placeholders otherwise).
-        int meaningNid = currentVersion.ifAbsentOrFunction(TinkarTerm.MEANING::nid,
+        int meaningNid = currentVersion.ifAbsentOrFunction(KometTerm.MEANING::nid,
                 PatternEntityVersion::semanticMeaningNid);
-        int purposeNid = currentVersion.ifAbsentOrFunction(TinkarTerm.PURPOSE::nid,
+        int purposeNid = currentVersion.ifAbsentOrFunction(KometTerm.PURPOSE::nid,
                 PatternEntityVersion::semanticPurposeNid);
         PatternEntityVersion meaningAndPurposePattern = viewCalculator
                 .latestPatternEntityVersion(PatternDefinitionTerms.MEANING_AND_PURPOSE_PATTERN).get();
@@ -231,8 +232,8 @@ public final class PatternDefinitionSeeder {
                 PatternDefinitionTerms.MEANING_AND_PURPOSE_PATTERN, viewCalculator);
         if (!meaningAndPurposeSemantics.isEmpty()) {
             SemanticEntityVersion meaningAndPurpose = meaningAndPurposeSemantics.getFirst();
-            meaningNid = conceptNid(meaningAndPurpose, meaningAndPurposePattern.indexForMeaning(TinkarTerm.MEANING));
-            purposeNid = conceptNid(meaningAndPurpose, meaningAndPurposePattern.indexForMeaning(TinkarTerm.PURPOSE));
+            meaningNid = conceptNid(meaningAndPurpose, meaningAndPurposePattern.indexForMeaning(KometTerm.MEANING));
+            purposeNid = conceptNid(meaningAndPurpose, meaningAndPurposePattern.indexForMeaning(KometTerm.PURPOSE));
         }
 
         PatternEntityVersion fieldsPattern = viewCalculator
@@ -349,7 +350,7 @@ public final class PatternDefinitionSeeder {
         var conceptComposer = composer.composeConcept(concept.publicId());
         conceptComposer.save();
         writeDescription(composer, conceptComposer.getEntity(), concept.description(),
-                TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE, "fqn");
+                KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE, "fqn");
     }
 
     private static void ensurePattern(ObservableComposer composer, EntityProxy.Pattern pattern,
@@ -368,16 +369,16 @@ public final class PatternDefinitionSeeder {
         MutableList<FieldDefinitionRecord> fieldDefinitions = Lists.mutable.ofInitialCapacity(fields.size());
         for (int i = 0; i < fields.size(); i++) {
             FieldSpec field = fields.get(i);
-            fieldDefinitions.add(new FieldDefinitionRecord(TinkarTerm.COMPONENT_FIELD.nid(),
+            fieldDefinitions.add(new FieldDefinitionRecord(KernelTerm.COMPONENT_FIELD.nid(),
                     field.purpose().nid(), field.meaning().nid(), stampNid, patternNid, i));
         }
         patternEditable.setFieldDefinitions(fieldDefinitions.toImmutable());
         patternComposer.save();
 
         writeDescription(composer, patternComposer.getEntity(), pattern.description(),
-                TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE, "fqn");
+                KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE, "fqn");
         writeDescription(composer, patternComposer.getEntity(), synonym,
-                TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE, "synonym");
+                KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE, "synonym");
     }
 
     private static void writeDescription(ObservableComposer composer, EntityFacade referenced,
@@ -385,22 +386,27 @@ public final class PatternDefinitionSeeder {
                                          String discriminator) {
         PublicId descriptionId = semanticId(referenced.publicId(), discriminator);
         var descriptionComposer = composer.composeSemantic(descriptionId, referenced,
-                TinkarTerm.DESCRIPTION_PATTERN);
+                KernelTerm.DESCRIPTION_PATTERN);
         var description = descriptionComposer.getEditableVersion();
-        description.getEditableField(0).setObjectValue(TinkarTerm.ENGLISH_LANGUAGE);
+        description.getEditableField(0).setObjectValue(KernelTerm.ENGLISH_LANGUAGE);
         description.getEditableField(1).setObjectValue(text);
-        description.getEditableField(2).setObjectValue(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
+        description.getEditableField(2).setObjectValue(KernelTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
         description.getEditableField(3).setObjectValue(descriptionType);
         descriptionComposer.save();
 
         var dialectComposer = composer.composeSemantic(semanticId(descriptionId, "us-dialect"),
-                descriptionComposer.getEntity(), TinkarTerm.US_DIALECT_PATTERN);
-        dialectComposer.getEditableVersion().getEditableField(0).setObjectValue(TinkarTerm.ACCEPTABLE);
+                descriptionComposer.getEntity(), KernelTerm.US_DIALECT_PATTERN);
+        dialectComposer.getEditableVersion().getEditableField(0).setObjectValue(KometTerm.ACCEPTABLE);
         dialectComposer.save();
     }
 
+    /**
+     * A semantic identity T5-derived from the referenced component's {@linkplain
+     * PublicId#leastUuid() least UUID}, so the derivation does not depend on the order the
+     * referenced component's UUIDs are listed in.
+     */
     private static PublicId semanticId(PublicId referencedId, String discriminator) {
-        UUID namespace = referencedId.asUuidArray()[0];
+        UUID namespace = referencedId.leastUuid();
         return PublicIds.of(UuidT5Generator.get(namespace, discriminator));
     }
 

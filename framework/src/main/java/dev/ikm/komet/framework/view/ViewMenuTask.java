@@ -17,13 +17,11 @@ package dev.ikm.komet.framework.view;
 
 import dev.ikm.komet.framework.concurrent.TaskWrapper;
 import dev.ikm.komet.framework.temp.FxGet;
-import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
-import dev.ikm.tinkar.coordinate.PathService;
 import dev.ikm.tinkar.coordinate.edit.Activity;
 import dev.ikm.tinkar.coordinate.stamp.StampPathImmutable;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
@@ -31,7 +29,7 @@ import dev.ikm.tinkar.coordinate.view.VertexSort;
 import dev.ikm.tinkar.coordinate.view.VertexSortNaturalOrder;
 import dev.ikm.tinkar.coordinate.view.VertexSortNone;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.StampService;
 import dev.ikm.tinkar.terms.*;
 import javafx.application.Platform;
@@ -115,7 +113,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             item.setUserData(FxGet.pathCoordinates(viewCalculator).get(key));
             item.setOnAction(event -> {
                 StampPathImmutable path = (StampPathImmutable) item.getUserData();
-                Platform.runLater(() -> observableCoordinate.pathConceptProperty().setValue(Entity.getFast(path.pathConceptNid())));
+                Platform.runLater(() -> observableCoordinate.pathConceptProperty().setValue(EntityHandle.get(path.pathConceptNid()).expectConcept()));
                 event.consume();
             });
             changePathMenu.getItems().add(item);
@@ -244,17 +242,16 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
     private static final String DEFAULT_DESCRIPTION_STRING = Integer.toString(Integer.MAX_VALUE);
     
     /**
-     * This method is deprecated because the viewCalculator method that it calls is deprecated.
+     * The calculator's text, or the default when it throws.
      * @param viewCalculator
      * @param entityFacade
      * @return a non-null value for the String or nid
      */
-    @Deprecated
-    private static String getPreferredDescriptionStringOrNid(ViewCalculator viewCalculator, EntityFacade entityFacade) {
+    private static String getPreferredDescriptionTextOrNid(ViewCalculator viewCalculator, EntityFacade entityFacade) {
         String descStringOrNid;
 
         try {
-            descStringOrNid = viewCalculator.getPreferredDescriptionStringOrNid(entityFacade);
+            descStringOrNid = viewCalculator.getPreferredDescriptionTextOrNid(entityFacade);
         } catch (Exception e) {
             LOG.error("Exception occurred", e);
             descStringOrNid = DEFAULT_DESCRIPTION_STRING;
@@ -264,17 +261,16 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
     }
 
     /**
-     * This method is deprecated because the viewCalculator method that it calls is deprecated.
+     * The calculator's text, or the default when it throws.
      * @param viewCalculator
      * @param nid
      * @return a non-null value for the String or nid
      */
-    @Deprecated
-    private static String getPreferredDescriptionStringOrNid(ViewCalculator viewCalculator, int nid) {
+    private static String getPreferredDescriptionTextOrNid(ViewCalculator viewCalculator, int nid) {
         String descStringOrNid;
 
         try {
-            descStringOrNid = viewCalculator.getPreferredDescriptionStringOrNid(nid);
+            descStringOrNid = viewCalculator.getPreferredDescriptionTextOrNid(nid);
         } catch (Exception e) {
             LOG.error("Exception occurred", e);
             descStringOrNid = DEFAULT_DESCRIPTION_STRING;
@@ -329,7 +325,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         });
 
         StampService.get().getModulesInUse().forEach(moduleConcept -> {
-            CheckMenuItem item = new CheckMenuItem(getPreferredDescriptionStringOrNid(viewCalculator, moduleConcept));
+            CheckMenuItem item = new CheckMenuItem(getPreferredDescriptionTextOrNid(viewCalculator, moduleConcept));
             item.setSelected(observableCoordinate.moduleSpecificationsProperty().get().contains(moduleConcept));
             if (item.isSelected()) {
                 item.setOnAction(event -> {
@@ -391,7 +387,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
             });
         }
         StampService.get().getModulesInUse().forEach(moduleConcept -> {
-            CheckMenuItem item = new CheckMenuItem(getPreferredDescriptionStringOrNid(viewCalculator, moduleConcept));
+            CheckMenuItem item = new CheckMenuItem(getPreferredDescriptionTextOrNid(viewCalculator, moduleConcept));
             item.setSelected(observableCoordinate.excludedModuleSpecificationsProperty().get().contains(moduleConcept));
             if (item.isSelected()) {
                 item.setOnAction(event -> {
@@ -412,67 +408,6 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         });
     }
 
-    private static void addChangeItemsForEdit(ViewCalculator viewCalculator, List<MenuItem> menuItems, ObservableEditCoordinate observableCoordinate) {
-        Menu changeAuthorMenu = new Menu("Change author");
-        menuItems.add(changeAuthorMenu);
-
-        IntIdSet authors = viewCalculator.kindOf(TinkarTerm.USER.nid());
-
-        // Create author assemblage
-        for (int author : authors.toArray()) {
-            CheckMenuItem item = new CheckMenuItem(getPreferredDescriptionStringOrNid(viewCalculator, author));
-            item.setSelected(observableCoordinate.getAuthorNidForChanges() == author);
-            changeAuthorMenu.getItems().add(item);
-            item.setOnAction(event -> {
-                observableCoordinate.authorForChangesProperty().setValue(EntityProxy.Concept.make(author));
-                event.consume();
-            });
-        }
-        changeAuthorMenu.getItems().sort((o1, o2) -> NaturalOrder.compareStrings(o1.getText(), o2.getText()));
-
-        Menu changeDefaultModuleMenu = new Menu("Change default module");
-        menuItems.add(changeDefaultModuleMenu);
-        // Create module assemblage
-        for (ConceptFacade module : new ConceptFacade[]{TinkarTerm.SOLOR_OVERLAY_MODULE, TinkarTerm.SOLOR_MODULE,
-                TinkarTerm.KOMET_MODULE, TinkarTerm.TEST_MODULE, TinkarTerm.TEST_PROMOTION_MODULE}) {
-            CheckMenuItem item = new CheckMenuItem(getPreferredDescriptionStringOrNid(viewCalculator, module));
-            item.setSelected(observableCoordinate.getDefaultModuleNid() == module.nid());
-            changeDefaultModuleMenu.getItems().add(item);
-            item.setOnAction(event -> {
-                Platform.runLater(() -> observableCoordinate.defaultModuleProperty().setValue(module));
-                event.consume();
-            });
-        }
-
-        Menu changeDestinationModuleMenu = new Menu("Change destination module");
-        menuItems.add(changeDestinationModuleMenu);
-        // Create module assemblage
-        for (ConceptFacade module : new ConceptFacade[]{TinkarTerm.SOLOR_OVERLAY_MODULE, TinkarTerm.SOLOR_MODULE,
-                TinkarTerm.KOMET_MODULE}) {
-            CheckMenuItem item = new CheckMenuItem(getPreferredDescriptionStringOrNid(viewCalculator, module));
-            item.setSelected(observableCoordinate.getDestinationModuleNid() == module.nid());
-            changeDestinationModuleMenu.getItems().add(item);
-            item.setOnAction(event -> {
-                Platform.runLater(() -> observableCoordinate.destinationModuleProperty().setValue(module));
-                event.consume();
-            });
-        }
-
-
-        Menu changePromotionPathMenu = new Menu("Change promotion path");
-        menuItems.add(changePromotionPathMenu);
-
-        for (StampPathImmutable path : PathService.get().getPaths()) {
-            CheckMenuItem item = new CheckMenuItem(getPreferredDescriptionStringOrNid(viewCalculator, path.pathConceptNid()));
-            item.setSelected(observableCoordinate.getPromotionPathNid() == path.pathConceptNid());
-            changePromotionPathMenu.getItems().add(item);
-            item.setOnAction(event -> {
-                Platform.runLater(() -> observableCoordinate.promotionPathProperty().setValue(EntityProxy.Concept.make(path.pathConceptNid())));
-                event.consume();
-            });
-        }
-    }
-
     private static void addChangeItemsForNavigation(ViewCalculator viewCalculator,
                                                     List<MenuItem> menuItems,
                                                     ObservableNavigationCoordinate observableCoordinate) {
@@ -484,7 +419,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
                 if (menuText.length() > 0) {
                     menuText.append(", ");
                 }
-                menuText.append(getPreferredDescriptionStringOrNid(viewCalculator, navConcept));
+                menuText.append(getPreferredDescriptionTextOrNid(viewCalculator, navConcept));
             }
             CheckMenuItem item = new CheckMenuItem(menuText.toString());
             if (navOption.size() == observableCoordinate.navigationPatternNids().size()) {
@@ -522,7 +457,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         Menu changeLanguageMenu = new Menu("Change language");
         menuItems.add(changeLanguageMenu);
         for (ConceptFacade language : FxGet.allowedLanguages()) {
-            CheckMenuItem languageItem = new CheckMenuItem(getPreferredDescriptionStringOrNid(viewCalculator, language));
+            CheckMenuItem languageItem = new CheckMenuItem(getPreferredDescriptionTextOrNid(viewCalculator, language));
             changeLanguageMenu.getItems().add(languageItem);
             languageItem.setSelected(language.nid() == observableCoordinate.languageConceptProperty().get().nid());
             languageItem.setOnAction(event -> {
@@ -710,7 +645,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
                             collectionBuilder);
                     sb.append(" (*)\n").append(collectionBuilder);
                 } else {
-                    viewCalculator.toEntityString(value, entityFacade -> getPreferredDescriptionStringOrNid(viewCalculator, entityFacade), sb);
+                    viewCalculator.toEntityString(value, entityFacade -> getPreferredDescriptionTextOrNid(viewCalculator, entityFacade), sb);
                 }
             } else {
                 Object obj = collection.iterator().next();
@@ -736,7 +671,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         } else if (value instanceof StateSet) {
             sb.append(((StateSet) value).toUserString());
         } else {
-            viewCalculator.toEntityString(value, entityFacade -> getPreferredDescriptionStringOrNid(viewCalculator, entityFacade), sb);
+            viewCalculator.toEntityString(value, entityFacade -> getPreferredDescriptionTextOrNid(viewCalculator, entityFacade), sb);
         }
         return sb.toString();
     }

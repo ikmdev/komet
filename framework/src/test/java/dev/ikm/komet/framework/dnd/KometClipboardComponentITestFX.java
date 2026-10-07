@@ -15,17 +15,20 @@
  */
 package dev.ikm.komet.framework.dnd;
 
+import dev.ikm.tinkar.terms.KernelTerm;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.scene.input.DataFormat;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.io.File;
+import java.util.Optional;
 import java.util.OptionalInt;
 
 import static dev.ikm.komet.framework.dnd.KometClipboard.KOMET_CONCEPT_PROXY;
@@ -36,8 +39,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Integration tests for the eager {@link KometClipboard#forComponent(int)} builder against the Tinkar
- * starter data (ike-issues#638). Verifies the centralized base-type matrix: every component advertises
+ * Integration tests for the eager {@link KometClipboard#forComponent(int)} builder against the IKE
+ * starter set (ike-issues#638). Verifies the centralized base-type matrix: every component advertises
  * its <em>actual</em> base type, and any concept-referencing component <em>also</em> advertises the
  * resolved concept proxy — so a concept drop target always finds a concept and a description-aware
  * target still sees the description, with no per-target conversion.
@@ -46,7 +49,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class KometClipboardComponentITestFX {
 
     private static final File TEST_DATA_DIR = new File("target/data");
-    private static final File PB_STARTER_DATA = new File(TEST_DATA_DIR, "tinkar-starter-data-reasoned-pb.zip");
+    private static final File PB_STARTER_DATA = new File(TEST_DATA_DIR, "ike-starter-set-reasoned-pb.zip");
 
     @BeforeAll
     void setupDatabase() {
@@ -68,7 +71,7 @@ class KometClipboardComponentITestFX {
 
     @Test
     void aConceptAdvertisesItsConceptProxyAndNoSemantic() {
-        int conceptNid = TinkarTerm.ENGLISH_LANGUAGE.nid();
+        int conceptNid = KernelTerm.ENGLISH_LANGUAGE.nid();
         KometClipboard content = KometClipboard.forComponent(conceptNid);
 
         assertEquals(OptionalInt.of(conceptNid), nidOf(content, KOMET_CONCEPT_PROXY),
@@ -79,11 +82,11 @@ class KometClipboardComponentITestFX {
 
     @Test
     void aDescriptionAdvertisesBothItsSemanticProxyAndTheResolvedConcept() {
-        int conceptNid = TinkarTerm.ENGLISH_LANGUAGE.nid();
-        int[] descriptionNids = EntityService.get().semanticNidsForComponentOfPattern(
-                conceptNid, TinkarTerm.DESCRIPTION_PATTERN.nid());
-        assertTrue(descriptionNids.length > 0, "English Language must carry description semantics");
-        int descriptionNid = descriptionNids[0];
+        int conceptNid = KernelTerm.ENGLISH_LANGUAGE.nid();
+        Optional<SemanticEntity<SemanticEntityVersion>> description = EntityService.get()
+                .semanticsForComponentOfPattern(conceptNid, KernelTerm.DESCRIPTION_PATTERN.nid()).findFirst();
+        assertTrue(description.isPresent(), "English Language must carry description semantics");
+        int descriptionNid = description.get().nid();
 
         KometClipboard content = KometClipboard.forComponent(descriptionNid);
 
@@ -95,7 +98,7 @@ class KometClipboardComponentITestFX {
 
     @Test
     void aPatternAdvertisesItsPatternProxyButNoConcept() {
-        int patternNid = TinkarTerm.DESCRIPTION_PATTERN.nid();
+        int patternNid = KernelTerm.DESCRIPTION_PATTERN.nid();
         KometClipboard content = KometClipboard.forComponent(patternNid);
 
         assertEquals(OptionalInt.of(patternNid), nidOf(content, KOMET_PATTERN_PROXY),

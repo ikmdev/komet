@@ -158,6 +158,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.ProxyFactory;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -1472,7 +1473,7 @@ public class JournalController {
             NidTextEnum nidTextEnum = null;
             if (treeItemValue instanceof SearchPanelController.NidTextRecord nidTextRecord) {
                 nidTextEnum = NID_TEXT;
-                Entity entity = Entity.getFast(nidTextRecord.nid());
+                Entity entity = EntityHandle.get(nidTextRecord.nid()).orNull();
                 if (entity instanceof ConceptFacade conceptFacade) {
                     createConceptWindow(conceptFacade, nidTextEnum, null);
                 } else if (entity instanceof PatternFacade patternFacade) {
@@ -1518,7 +1519,7 @@ public class JournalController {
                 ConceptFacade conceptFacade = null;
                 Object treeItemValue = treeItem.getValue();
                 if (treeItemValue instanceof SearchPanelController.NidTextRecord nidTextRecord) {
-                    conceptFacade = Entity.getFast(nidTextRecord.nid());
+                    conceptFacade = EntityHandle.get(nidTextRecord.nid()).expectConcept();
                 } else if (treeItemValue instanceof SemanticEntityVersion semanticEntityVersion) {
                     conceptFacade = Entity.getConceptForSemantic(semanticEntityVersion.nid()).get();
                 } else {

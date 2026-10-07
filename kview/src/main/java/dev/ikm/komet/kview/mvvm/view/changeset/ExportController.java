@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.mvvm.view.changeset;
 
 import com.jpro.webapi.WebAPI;
+import dev.ikm.komet.framework.observable.read.MembershipReads;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.events.EvtBus;
@@ -74,7 +75,6 @@ import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 import static dev.ikm.komet.kview.events.ExportDateTimePopOverEvent.*;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.getMembershipPatterns;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 
 public class ExportController {
@@ -379,7 +379,7 @@ public class ExportController {
             List<PublicId> membershipPublicIds = tagsData.stream().filter(t -> t.tagSelected).map(
                     tagsDataModel ->
                         // map TagsDataModel to a publicId
-                        EntityService.get().getEntityFast(Integer.parseInt(tagsDataModel.tagNid)).publicId()
+                        EntityHandle.get(Integer.parseInt(tagsDataModel.tagNid)).expectEntity().publicId()
                     ).toList();
             ExportEntitiesToProtobufFile exportEntities = new ExportEntitiesToProtobufFile(exportFile, membershipPublicIds);
             CompletableFuture<dev.ikm.tinkar.common.service.EntityCountSummary> exportFuture = ProgressHelper.progress(exportEntities, "Cancel Export");
@@ -417,7 +417,7 @@ public class ExportController {
     }
 
     public void loadMembershipPatternTags() {
-        List<PatternEntityVersion> membershipPatterns = getMembershipPatterns();
+        List<PatternEntityVersion> membershipPatterns = MembershipReads.membershipPatterns(getViewProperties().calculator());
         for (PatternEntityVersion patternEntityVersion : membershipPatterns) {
             TagsDataModel tag = new TagsDataModel();
             Optional<String> descriptionOpt = getViewProperties().calculator().languageCalculator()

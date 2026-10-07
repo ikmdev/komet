@@ -15,11 +15,12 @@
  */
 package dev.ikm.komet.framework.panel.axiom;
 
+import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 
 import java.util.Optional;
 
@@ -28,60 +29,60 @@ public enum LogicalOperatorsForVertex {
     /**
      * The necessary set.
      */
-    NECESSARY_SET(TinkarTerm.NECESSARY_SET),
+    NECESSARY_SET(KernelTerm.NECESSARY_SET),
 
     /**
      * The sufficient set.
      */
-    SUFFICIENT_SET(TinkarTerm.SUFFICIENT_SET),
+    SUFFICIENT_SET(KernelTerm.SUFFICIENT_SET),
 
     /**
      * The and.
      */
-    AND(TinkarTerm.AND),
+    AND(KernelTerm.AND),
 
     /**
      * The or.
      */
-    OR(TinkarTerm.OR),
+    OR(KernelTerm.OR),
 
     /**
      * The disjoint with.
      */
-    DISJOINT_WITH(TinkarTerm.DISJOINT_WITH),
+    DISJOINT_WITH(KernelTerm.DISJOINT_WITH),
 
     /**
      * The definition root.
      */
-    DEFINITION_ROOT(TinkarTerm.DEFINITION_ROOT),
+    DEFINITION_ROOT(KernelTerm.DEFINITION_ROOT),
 
     /**
      * A role
      */
-	ROLE(TinkarTerm.ROLE),
+	ROLE(KernelTerm.ROLE),
 
-	INTERVAL_ROLE(TinkarTerm.INTERVAL_ROLE),
+	INTERVAL_ROLE(KernelTerm.INTERVAL_ROLE),
 
     /**
      * The concept.
      */
-    CONCEPT(TinkarTerm.CONCEPT_REFERENCE),
+    CONCEPT(KernelTerm.CONCEPT_REFERENCE),
 
     /**
      * The feature.
      */
-    FEATURE(TinkarTerm.FEATURE),
+    FEATURE(KernelTerm.FEATURE),
 
-    PROPERTY_SET(TinkarTerm.PROPERTY_SET),
-    DATA_PROPERTY_SET(TinkarTerm.DATA_PROPERTY_SET),
-    INTERVAL_PROPERTY_SET(TinkarTerm.INTERVAL_PROPERTY_SET),
+    PROPERTY_SET(KernelTerm.PROPERTY_SET),
+    DATA_PROPERTY_SET(KernelTerm.DATA_PROPERTY_SET),
+    INTERVAL_PROPERTY_SET(KernelTerm.INTERVAL_PROPERTY_SET),
 
     // TODO: Retire property pattern implication when starter set stable.
-    PROPERTY_PATTERN_IMPLICATION(TinkarTerm.PROPERTY_PATTERN_IMPLICATION),
+    PROPERTY_PATTERN_IMPLICATION(KometTerm.PROPERTY_PATTERN_IMPLICATION),
 
-    PROPERTY_SEQUENCE_IMPLICATION(TinkarTerm.PROPERTY_SEQUENCE_IMPLICATION),
+    PROPERTY_SEQUENCE_IMPLICATION(KernelTerm.PROPERTY_SEQUENCE_IMPLICATION),
 
-    INCLUSION_SET(TinkarTerm.INCLUSION_SET);
+    INCLUSION_SET(KernelTerm.INCLUSION_SET);
 
     final ConceptFacade logicalMeaning;
 

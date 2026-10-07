@@ -16,6 +16,7 @@
 package dev.ikm.komet.framework.propsheet;
 
 import dev.ikm.komet.framework.controls.EntityLabelWithDragAndDrop;
+import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.panel.axiom.AxiomView;
@@ -31,7 +32,7 @@ import dev.ikm.tinkar.component.graph.DiTree;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.beans.value.ObservableValue;
@@ -196,14 +197,14 @@ public class KometPropertyEditorFactory implements Callback<PropertySheet.Item, 
                         try {
                             if (property.observableField.field()
                                     .fieldDefinition(viewProperties.calculator()).meaningNid()
-                                    == TinkarTerm.EL_PLUS_PLUS_INFERRED_TERMINOLOGICAL_AXIOMS.nid()) {
+                                    == KernelTerm.EL_PLUS_PLUS_INFERRED_TERMINOLOGICAL_AXIOMS.nid()) {
                                 premiseType = PremiseType.INFERRED;
                             }
                         } catch (Exception e) {
                             LOG.debug("Could not determine axiom premise type from field definition, defaulting to STATED: {}", e.getMessage());
                         }
                         int semanticNid = property.observableField.field().nid();
-                        ObservableSemantic axiomSemantic = ObservableSemantic.get(semanticNid);
+                        ObservableSemantic axiomSemantic = ObservableEntityHandle.get(semanticNid).asSemantic().orElse(null);
                         if (axiomSemantic == null) {
                             LOG.warn("Axiom semantic not available for NID {} — returning no editor (gRPC mode)", semanticNid);
                             return Optional.empty();

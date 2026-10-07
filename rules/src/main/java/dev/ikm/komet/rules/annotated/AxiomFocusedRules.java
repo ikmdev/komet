@@ -50,7 +50,7 @@ import dev.ikm.komet.rules.actions.axiom.ChooseConcreteOperatorMenu;
 import dev.ikm.komet.rules.actions.axiom.RemoveAxiomAction;
 import dev.ikm.komet.rules.actions.axiom.SetValueMenu;
 import dev.ikm.tinkar.ext.lang.owl.IntervalUtil;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.scene.control.MenuItem;
 
 /**
@@ -86,7 +86,7 @@ public class AxiomFocusedRules extends RulesBase {
 			@MethodPredicate(method = "isDefinitionRoot", args = { "$observation" }) })
 	public void axiomIsDefinitionRoot(ObservationRecord $observation) {
 		if ($observation.subject() instanceof AxiomSubjectRecord axiomSubjectRecord) {
-			if (!axiomSubjectRecord.axiomTree().containsVertexWithMeaning(TinkarTerm.NECESSARY_SET)) {
+			if (!axiomSubjectRecord.axiomTree().containsVertexWithMeaning(KernelTerm.NECESSARY_SET)) {
 				// allow addition of necessary set
 				AddNecessarySet addNecessarySet = new AddNecessarySet("Add necessary set", axiomSubjectRecord,
 						calculator(), editCoordinate());
@@ -117,12 +117,12 @@ public class AxiomFocusedRules extends RulesBase {
 			@MethodPredicate(method = "isAxiomSet", args = { "$observation" }) })
 	public void axiomIsSet(ObservationRecord $observation) {
 		if ($observation.subject() instanceof AxiomSubjectRecord axiomSubject) {
-			if (axiomSubject.axiomMeaning().equals(TinkarTerm.NECESSARY_SET)) {
-				ChangeSetType changeToSufficientSet = new ChangeSetType(TinkarTerm.SUFFICIENT_SET,
+			if (axiomSubject.axiomMeaning().equals(KernelTerm.NECESSARY_SET)) {
+				ChangeSetType changeToSufficientSet = new ChangeSetType(KernelTerm.SUFFICIENT_SET,
 						"Change to sufficient set", axiomSubject, calculator(), editCoordinate());
 				addGeneratedActions(changeToSufficientSet);
-			} else if (axiomSubject.axiomMeaning().equals(TinkarTerm.SUFFICIENT_SET)) {
-				ChangeSetType changeToNecessarySet = new ChangeSetType(TinkarTerm.NECESSARY_SET,
+			} else if (axiomSubject.axiomMeaning().equals(KernelTerm.SUFFICIENT_SET)) {
+				ChangeSetType changeToNecessarySet = new ChangeSetType(KernelTerm.NECESSARY_SET,
 						"Change to necessary set", axiomSubject, calculator(), editCoordinate());
 				addGeneratedActions(changeToNecessarySet);
 			}

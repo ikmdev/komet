@@ -80,8 +80,8 @@ import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatest
 import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
 import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
 import static dev.ikm.tinkar.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_FIELD;
+import static dev.ikm.komet.terms.KometTerm.IMAGE_FIELD;
 
 public class GenPurposeFieldsController {
 

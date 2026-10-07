@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.observable.read;
 
+import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.tinkar.common.id.PublicId;
@@ -25,7 +26,7 @@ import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import org.eclipse.collections.api.list.ImmutableList;
 
 import java.util.ArrayList;
@@ -98,20 +99,20 @@ public interface SnapshotReads {
         List<String> identifiers = new ArrayList<>();
         ViewCalculator calculator = viewCalculator();
         Latest<PatternEntityVersion> latestIdPattern =
-                calculator.latestPatternEntityVersion(TinkarTerm.IDENTIFIER_PATTERN);
+                calculator.latestPatternEntityVersion(KernelTerm.IDENTIFIER_PATTERN);
         if (latestIdPattern.isAbsent()) {
             return identifiers;
         }
         for (ObservableSemantic semantic :
-                observableEntity().getObservableSemanticListOfPattern(TinkarTerm.IDENTIFIER_PATTERN.nid())) {
+                observableEntity().getObservableSemanticListOfPattern(KernelTerm.IDENTIFIER_PATTERN.nid())) {
             calculator.latest(semantic).ifPresent(latestSemanticVersion -> {
                 EntityProxy identifierSource =
-                        latestIdPattern.get().getFieldWithMeaning(TinkarTerm.IDENTIFIER_SOURCE, latestSemanticVersion);
-                if (!PublicId.equals(identifierSource, TinkarTerm.UNIVERSALLY_UNIQUE_IDENTIFIER)) {
+                        latestIdPattern.get().getFieldWithMeaning(KernelTerm.IDENTIFIER_SOURCE, latestSemanticVersion);
+                if (!PublicId.equals(identifierSource, KometTerm.UNIVERSALLY_UNIQUE_IDENTIFIER)) {
                     try {
                         String idSourceName = calculator.getPreferredDescriptionTextWithFallbackOrNid(identifierSource);
                         String idValue =
-                                latestIdPattern.get().getFieldWithMeaning(TinkarTerm.IDENTIFIER_VALUE, latestSemanticVersion);
+                                latestIdPattern.get().getFieldWithMeaning(KernelTerm.IDENTIFIER_VALUE, latestSemanticVersion);
                         identifiers.add("%s: %s".formatted(idSourceName, idValue));
                     } catch (IndexOutOfBoundsException ignored) {
                         // A field meaning may be absent in some starter data; skip that identifier.

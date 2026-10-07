@@ -34,12 +34,11 @@ import dev.ikm.komet.framework.propsheet.editor.PasswordEditor;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.IntIdList;
 import dev.ikm.tinkar.common.id.IntIdSet;
-import dev.ikm.tinkar.component.FieldDefinition;
+import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.component.graph.DiTree;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
 
 import java.util.Optional;
 
@@ -314,7 +313,7 @@ public class SheetItem<T> implements PropertySheet.Item {
 
         // Get field definition from the underlying observable field
         ObservableField<?> observableField = editableField.getObservableFeature();
-        FieldDefinition fieldDef = observableField.fieldDefinition(viewProperties.calculator());
+        FeatureDefinition fieldDef = observableField.fieldDefinition(viewProperties.calculator());
 
         // Get field metadata
         String name = viewProperties.calculator().getDescriptionTextOrNid(fieldDef.meaningNid());
@@ -372,7 +371,7 @@ public class SheetItem<T> implements PropertySheet.Item {
     /**
      * Creates a SheetItem for an editable field with custom property and field definition.
      * <p>     * This is a lower-level method that allows binding to any SimpleObjectProperty
-     * with metadata from a FieldDefinition.
+     * with metadata from a FeatureDefinition.
      *
      * @param editableProperty the editable property to bind to
      * @param fieldDefinition the field definition for metadata (meaning, purpose, data type)
@@ -382,7 +381,7 @@ public class SheetItem<T> implements PropertySheet.Item {
      */
     public static <T> SheetItem<T> makeEditableWithDefinition(
             SimpleObjectProperty<Object> editableProperty,
-            FieldDefinition fieldDefinition,
+            FeatureDefinition fieldDefinition,
             String category,
             ViewProperties viewProperties) {
 

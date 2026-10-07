@@ -18,7 +18,7 @@ public class PatternBrowserItem {
 
     private final ViewCalculator viewCalculator;
 
-    public PatternBrowserItem(Entity<EntityVersion> entity, ViewCalculator viewCalculator) {
+    public PatternBrowserItem(Entity<? extends EntityVersion> entity, ViewCalculator viewCalculator) {
         this.viewCalculator = viewCalculator;
 
         this.title = retrieveDisplayName(entity.toProxy());

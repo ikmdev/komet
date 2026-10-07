@@ -15,11 +15,11 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import dev.ikm.tinkar.terms.KernelTerm;
 import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.fixtures.NewEphemeralKeyValueProvider;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension.RunOnJavaFXThread;
 import org.junit.jupiter.api.Test;
@@ -167,9 +167,9 @@ class ObservableComposerTransactionTestFX {
             ObservableComposer composer = ObservableComposer.create(
                     Calculators.View.Default(),
                     State.ACTIVE,
-                    TinkarTerm.USER,
-                    TinkarTerm.PRIMORDIAL_MODULE,
-                    TinkarTerm.DEVELOPMENT_PATH,
+                    KernelTerm.USER,
+                    KernelTerm.PRIMORDIAL_MODULE,
+                    KernelTerm.DEVELOPMENT_PATH,
                     comment
             );
 
@@ -185,9 +185,9 @@ class ObservableComposerTransactionTestFX {
             String comment = "Builder transaction comment";
             ObservableComposer composer = ObservableComposer.builder()
                     .viewCalculator(Calculators.View.Default())
-                    .author(TinkarTerm.USER)
-                    .module(TinkarTerm.PRIMORDIAL_MODULE)
-                    .path(TinkarTerm.DEVELOPMENT_PATH)
+                    .author(KernelTerm.USER)
+                    .module(KernelTerm.PRIMORDIAL_MODULE)
+                    .path(KernelTerm.DEVELOPMENT_PATH)
                     .transactionComment(comment)
                     .build();
 
@@ -201,9 +201,9 @@ class ObservableComposerTransactionTestFX {
     void testEmptyTransactionComment() {
             ObservableComposer composer = ObservableComposer.builder()
                     .viewCalculator(Calculators.View.Default())
-                    .author(TinkarTerm.USER)
-                    .module(TinkarTerm.PRIMORDIAL_MODULE)
-                    .path(TinkarTerm.DEVELOPMENT_PATH)
+                    .author(KernelTerm.USER)
+                    .module(KernelTerm.PRIMORDIAL_MODULE)
+                    .path(KernelTerm.DEVELOPMENT_PATH)
                     .transactionComment("")
                     .build();
 
@@ -306,9 +306,9 @@ class ObservableComposerTransactionTestFX {
         return ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                TinkarTerm.USER,
-                TinkarTerm.PRIMORDIAL_MODULE,
-                TinkarTerm.DEVELOPMENT_PATH
+                KernelTerm.USER,
+                KernelTerm.PRIMORDIAL_MODULE,
+                KernelTerm.DEVELOPMENT_PATH
         );
     }
 }

@@ -26,7 +26,15 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static dev.ikm.tinkar.terms.TinkarTermV2.*;
+import static dev.ikm.tinkar.terms.KernelTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN;
+import static dev.ikm.tinkar.terms.KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN;
+import static dev.ikm.tinkar.terms.KernelTerm.GB_DIALECT_PATTERN;
+import static dev.ikm.tinkar.terms.KernelTerm.IDENTIFIER_PATTERN;
+import static dev.ikm.tinkar.terms.KernelTerm.INFERRED_NAVIGATION_PATTERN;
+import static dev.ikm.tinkar.terms.KernelTerm.PATHS_PATTERN;
+import static dev.ikm.tinkar.terms.KernelTerm.PATH_ORIGINS_PATTERN;
+import static dev.ikm.tinkar.terms.KernelTerm.STATED_NAVIGATION_PATTERN;
+import static dev.ikm.tinkar.terms.KernelTerm.US_DIALECT_PATTERN;
 
 public class InstancesCell<T> extends ListCell<T> {
 
@@ -111,7 +119,7 @@ public class InstancesCell<T> extends ListCell<T> {
                             entityDescriptionText.set("Inferred definition for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()));
                         } else if (semanticEntity.patternNid() == Entity.nidForPattern(INFERRED_NAVIGATION_PATTERN.publicId())) {
                             entityDescriptionText.set("Inferred is-a relationships for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()));
-                        } else if (semanticEntity.patternNid() == Entity.nidForPattern(VERSION_CONTROL_PATH_PATTERN.publicId())) {
+                        } else if (semanticEntity.patternNid() == Entity.nidForPattern(PATHS_PATTERN.publicId())) {
                             entityDescriptionText.set(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()));
                         } else if (semanticEntity.patternNid() == Entity.nidForPattern(EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.publicId())) {
                             entityDescriptionText.set("Stated definition for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()));
@@ -127,7 +135,7 @@ public class InstancesCell<T> extends ListCell<T> {
                             ImmutableList fields = latestAcceptability.get().fieldValues();
                             entityDescriptionText.set("US dialect " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
                                             ": " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()));
-                        } else if (semanticEntity.patternNid() == Entity.nidForPattern(PATH_ORIGINS.publicId())) {
+                        } else if (semanticEntity.patternNid() == Entity.nidForPattern(PATH_ORIGINS_PATTERN.publicId())) {
                             Latest<? extends SemanticEntityVersion> latestPathOrigins = viewProperties.calculator().latest(semanticEntity);
                             ImmutableList fields = latestPathOrigins.get().fieldValues();
                             entityDescriptionText.set(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()) +

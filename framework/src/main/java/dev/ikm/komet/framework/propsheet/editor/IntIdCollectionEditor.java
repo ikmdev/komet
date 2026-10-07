@@ -40,6 +40,7 @@ import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.VersionProxy;
 import dev.ikm.tinkar.entity.VersionProxyFactory;
@@ -96,7 +97,7 @@ public abstract class IntIdCollectionEditor<T extends IntIdCollection> implement
             int nid = listView.getSelectionModel().getSelectedIndices().get(0);
             Dragboard db = listView.startDragAndDrop(TransferMode.COPY);
             KonceptDragSource.setDragView(db, listView);
-            KometClipboard content = new KometClipboard((Entity) Entity.getFast(nid));
+            KometClipboard content = new KometClipboard((Entity) EntityHandle.get(nid).orNull());
             db.setContent(content);
         }
         event.consume();
@@ -229,7 +230,7 @@ public abstract class IntIdCollectionEditor<T extends IntIdCollection> implement
             Dragboard db = startDragAndDrop(TransferMode.COPY);
             KonceptDragSource.setDragView(db, this);
 
-            KometClipboard content = new KometClipboard((Entity) Entity.getFast(entityNid));
+            KometClipboard content = new KometClipboard((Entity) EntityHandle.get(entityNid).expectEntity());
             db.setContent(content);
             event.consume();
         }

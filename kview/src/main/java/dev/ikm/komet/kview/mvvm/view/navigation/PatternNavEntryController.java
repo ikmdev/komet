@@ -8,7 +8,7 @@ import dev.ikm.komet.kview.events.MakeKLWindowEvent;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.layout.editor.StandardEditorWindows;
-import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
@@ -209,7 +209,7 @@ public class PatternNavEntryController {
                         ViewProperties viewProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
                         var newViewProperties = viewProperties.parentView().makeOverridableViewProperties("PatternNavEntryController.initialize.patternInstancesListViewOnMouseClicked");
 
-                        EntityFacade semanticChronology = EntityService.get().getEntity(nid).get();
+                        EntityFacade semanticChronology = EntityHandle.get(nid).expectEntity();
                         EvtBusFactory.getDefaultEvtBus().publish(instancesViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                                 new MakeGenEditingWindowEvent(this,
                                         MakeGenEditingWindowEvent.OPEN_GEN_EDIT, semanticChronology, newViewProperties));

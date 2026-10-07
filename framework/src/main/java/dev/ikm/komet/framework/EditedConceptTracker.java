@@ -16,6 +16,7 @@
 package dev.ikm.komet.framework;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -27,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import dev.ikm.tinkar.common.util.broadcast.Subscriber;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
@@ -48,7 +51,7 @@ public class EditedConceptTracker {
 		}
 		changedEntityNids.add(nid);
 		if (LOG.isDebugEnabled()) {
-			Entity entity = Entity.getFast(nid);
+			Entity entity = EntityHandle.get(nid).orNull();
 			if (entity != null) {
 				LOG.debug("Entity changed: nid={}, type={}", nid, entity.getClass().getSimpleName());
 			} else {
@@ -106,7 +109,7 @@ public class EditedConceptTracker {
 		
 		for (Integer nid : changedEntityNids.toArray(new Integer[0])) {
 			try {
-				Entity entity = Entity.getFast(nid);
+				Entity entity = EntityHandle.get(nid).orNull();
 				if (entity == null) {
 					LOG.info("  -> Skipped nid={}: entity not found in data store", nid);
 					skippedCount++;
@@ -137,22 +140,21 @@ public class EditedConceptTracker {
 				else if (entity instanceof ConceptEntity<?>) {
 					LOG.info("  -> Found CONCEPT: nid={}, searching for stated axiom semantics", nid);
 
-					int[] semanticNids = PrimitiveData.get().semanticNidsForComponentOfPattern(nid, statedPatternNid);
-					LOG.info("     Found {} semantic(s) with stated pattern for concept", semanticNids.length);
+					List<SemanticEntity<SemanticEntityVersion>> statedSemantics = EntityService.get()
+							.semanticsForComponentOfPattern(nid, statedPatternNid).toList();
+					LOG.info("     Found {} semantic(s) with stated pattern for concept", statedSemantics.size());
 
-					for (int semanticNid : semanticNids) {
-						Entity semanticEntity = Entity.getFast(semanticNid);
-						if (semanticEntity instanceof SemanticEntity<?> semantic) {
-							Latest<SemanticEntityVersion> latestSemantic = viewCalculator.latest(semantic.nid());
-							if (latestSemantic.isPresent()) {
-								latestSemantic.ifPresent(version -> {
-									addEdit(version);
-									LOG.info("     Added edit for concept's semantic nid={}", semanticNid);
-								});
-								processedConceptCount++;
-							} else {
-								LOG.warn("     No latest version for semantic nid={}", semanticNid);
-							}
+					for (SemanticEntity<SemanticEntityVersion> semantic : statedSemantics) {
+						int semanticNid = semantic.nid();
+						Latest<SemanticEntityVersion> latestSemantic = viewCalculator.latest(semanticNid);
+						if (latestSemantic.isPresent()) {
+							latestSemantic.ifPresent(version -> {
+								addEdit(version);
+								LOG.info("     Added edit for concept's semantic nid={}", semanticNid);
+							});
+							processedConceptCount++;
+						} else {
+							LOG.warn("     No latest version for semantic nid={}", semanticNid);
 						}
 					}
 				} else {

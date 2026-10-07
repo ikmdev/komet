@@ -15,15 +15,17 @@
  */
 package dev.ikm.komet.framework.preferences;
 
+import dev.ikm.komet.terms.KometSettingTerm;
+import dev.ikm.komet.terms.KometTerm;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.ProxyFactory;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,14 +37,14 @@ import static dev.ikm.komet.framework.preferences.PreferenceGroup.Keys.GROUP_NAM
  * 
  */
 public final class UserPreferencesPanel extends AbstractPreferences implements UserPreferenceItems {
-    final SimpleObjectProperty<ConceptFacade> userConceptProperty = new SimpleObjectProperty<>(this, TinkarTerm.KOMET_USER.toXmlFragment(), TinkarTerm.KOMET_USER);
-    final SimpleListProperty<ConceptFacade> userConceptOptions = new SimpleListProperty(this, TinkarTerm.KOMET_USER_LIST.toXmlFragment(), FXCollections.observableArrayList());
+    final SimpleObjectProperty<ConceptFacade> userConceptProperty = new SimpleObjectProperty<>(this, KernelTerm.KOMET_USER.toXmlFragment(), KernelTerm.KOMET_USER);
+    final SimpleListProperty<ConceptFacade> userConceptOptions = new SimpleListProperty(this, KometSettingTerm.KOMET_USER_LIST.toXmlFragment(), FXCollections.observableArrayList());
     final PropertySheetItemConceptWrapper userConceptWrapper;
-    final SimpleObjectProperty<ConceptFacade> moduleConceptProperty = new SimpleObjectProperty<>(this, TinkarTerm.MODULE_FOR_USER.toXmlFragment(), TinkarTerm.SOLOR_MODULE);
-    final SimpleListProperty<ConceptFacade> moduleConceptOptions = new SimpleListProperty(this, TinkarTerm.MODULE_OPTIONS_FOR_EDIT_COORDINATE.toXmlFragment(), FXCollections.observableArrayList());
+    final SimpleObjectProperty<ConceptFacade> moduleConceptProperty = new SimpleObjectProperty<>(this, KometSettingTerm.MODULE_FOR_USER.toXmlFragment(), KernelTerm.SOLOR_MODULE);
+    final SimpleListProperty<ConceptFacade> moduleConceptOptions = new SimpleListProperty(this, KometTerm.MODULE_OPTIONS_FOR_EDIT_COORDINATE.toXmlFragment(), FXCollections.observableArrayList());
     final PropertySheetItemConceptWrapper moduleConceptWrapper;
-    final SimpleObjectProperty<ConceptFacade> pathConceptProperty = new SimpleObjectProperty<>(this, TinkarTerm.PATH_FOR_USER.toXmlFragment(), TinkarTerm.DEVELOPMENT_PATH);
-    final SimpleListProperty<ConceptFacade> pathConceptOptions = new SimpleListProperty(this, TinkarTerm.PATH_OPTIONS_FOR_EDIT_CORDINATE.toXmlFragment(), FXCollections.observableArrayList());
+    final SimpleObjectProperty<ConceptFacade> pathConceptProperty = new SimpleObjectProperty<>(this, KometSettingTerm.PATH_FOR_USER.toXmlFragment(), KernelTerm.DEVELOPMENT_PATH);
+    final SimpleListProperty<ConceptFacade> pathConceptOptions = new SimpleListProperty(this, KometTerm.PATH_OPTIONS_FOR_EDIT_COORDINATE.toXmlFragment(), FXCollections.observableArrayList());
     final PropertySheetItemConceptWrapper pathConceptWrapper;
 
     public UserPreferencesPanel(KometPreferences preferencesNode, ViewProperties viewProperties,
@@ -77,21 +79,21 @@ public final class UserPreferencesPanel extends AbstractPreferences implements U
     @Override
     protected void saveFields() throws BackingStoreException {
 
-        preferencesNode.put(Keys.USER_CONCEPT, Entity.getFast(userConceptProperty.get()).toXmlFragment());
+        preferencesNode.put(Keys.USER_CONCEPT, EntityHandle.get(userConceptProperty.get()).expectConcept().toXmlFragment());
         List<String> userConceptOptionExternalStrings = new ArrayList<>();
         for (ConceptFacade spec : userConceptOptions) {
             userConceptOptionExternalStrings.add(spec.toXmlFragment());
         }
         preferencesNode.putList(Keys.USER_CONCEPT_OPTIONS, userConceptOptionExternalStrings);
 
-        preferencesNode.put(Keys.PATH_CONCEPT, Entity.getFast(pathConceptProperty.get()).toXmlFragment());
+        preferencesNode.put(Keys.PATH_CONCEPT, EntityHandle.get(pathConceptProperty.get()).expectConcept().toXmlFragment());
         List<String> pathConceptOptionExternalStrings = new ArrayList<>();
         for (ConceptFacade spec : pathConceptOptions) {
             pathConceptOptionExternalStrings.add(spec.toXmlFragment());
         }
         preferencesNode.putList(Keys.PATH_CONCEPT_OPTIONS, pathConceptOptionExternalStrings);
 
-        preferencesNode.put(Keys.MODULE_CONCEPT, Entity.getFast(moduleConceptProperty.get()).toXmlFragment());
+        preferencesNode.put(Keys.MODULE_CONCEPT, EntityHandle.get(moduleConceptProperty.get()).expectConcept().toXmlFragment());
         List<String> moduleConceptOptionExternalStrings = new ArrayList<>();
         for (ConceptFacade spec : moduleConceptOptions) {
             moduleConceptOptionExternalStrings.add(spec.toXmlFragment());
@@ -104,38 +106,38 @@ public final class UserPreferencesPanel extends AbstractPreferences implements U
 
         List<String> userConceptOptionExternalStrings = preferencesNode.getList(Keys.USER_CONCEPT_OPTIONS);
         if (userConceptOptionExternalStrings.isEmpty()) {
-            userConceptOptionExternalStrings.add(TinkarTerm.USER.toXmlFragment());
+            userConceptOptionExternalStrings.add(KernelTerm.USER.toXmlFragment());
         }
         userConceptOptions.clear();
         for (String externalString : userConceptOptionExternalStrings) {
             userConceptOptions.add(ProxyFactory.fromXmlFragment(externalString));
         }
-        String userConceptSpec = preferencesNode.get(Keys.USER_CONCEPT, TinkarTerm.USER.toXmlFragment());
+        String userConceptSpec = preferencesNode.get(Keys.USER_CONCEPT, KernelTerm.USER.toXmlFragment());
         userConceptProperty.set(ProxyFactory.fromXmlFragment(userConceptSpec));
 
 
         List<String> pathConceptOptionExternalStrings = preferencesNode.getList(Keys.PATH_CONCEPT_OPTIONS);
         if (pathConceptOptionExternalStrings.isEmpty()) {
-            pathConceptOptionExternalStrings.add(TinkarTerm.MASTER_PATH.toXmlFragment());
-            pathConceptOptionExternalStrings.add(TinkarTerm.DEVELOPMENT_PATH.toXmlFragment());
+            pathConceptOptionExternalStrings.add(KernelTerm.MASTER_PATH.toXmlFragment());
+            pathConceptOptionExternalStrings.add(KernelTerm.DEVELOPMENT_PATH.toXmlFragment());
         }
         pathConceptOptions.clear();
         for (String externalString : pathConceptOptionExternalStrings) {
             pathConceptOptions.add(ProxyFactory.fromXmlFragment(externalString));
         }
-        String pathConceptSpec = preferencesNode.get(Keys.PATH_CONCEPT, TinkarTerm.DEVELOPMENT_PATH.toXmlFragment());
+        String pathConceptSpec = preferencesNode.get(Keys.PATH_CONCEPT, KernelTerm.DEVELOPMENT_PATH.toXmlFragment());
         pathConceptProperty.set(ProxyFactory.fromXmlFragment(pathConceptSpec));
 
         List<String> moduleConceptOptionExternalStrings = preferencesNode.getList(Keys.MODULE_CONCEPT_OPTIONS);
         if (moduleConceptOptionExternalStrings.isEmpty()) {
-            moduleConceptOptionExternalStrings.add(TinkarTerm.SOLOR_MODULE.toXmlFragment());
-            moduleConceptOptionExternalStrings.add(TinkarTerm.SOLOR_OVERLAY_MODULE.toXmlFragment());
+            moduleConceptOptionExternalStrings.add(KernelTerm.SOLOR_MODULE.toXmlFragment());
+            moduleConceptOptionExternalStrings.add(KernelTerm.SOLOR_OVERLAY_MODULE.toXmlFragment());
         }
         moduleConceptOptions.clear();
         for (String externalString : moduleConceptOptionExternalStrings) {
             moduleConceptOptions.add(ProxyFactory.fromXmlFragment(externalString));
         }
-        String moduleConceptSpec = preferencesNode.get(Keys.MODULE_CONCEPT, TinkarTerm.SOLOR_MODULE.toXmlFragment());
+        String moduleConceptSpec = preferencesNode.get(Keys.MODULE_CONCEPT, KernelTerm.SOLOR_MODULE.toXmlFragment());
         moduleConceptProperty.set(ProxyFactory.fromXmlFragment(moduleConceptSpec));
 
     }

@@ -9,7 +9,7 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -141,7 +141,7 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
                 treeContainer.getChildren().add(rootNode(rootConceptNid, tree));
             } else if (tree != null) {
                 EntityVertex root = tree.root();
-                if (root.getMeaningNid() == TinkarTerm.DEFINITION_ROOT.nid()) {
+                if (root.getMeaningNid() == KernelTerm.DEFINITION_ROOT.nid()) {
                     appendChildren(treeContainer, root, tree);
                 } else {
                     treeContainer.getChildren().add(buildVertex(root, tree));
@@ -161,7 +161,7 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
         childrenBox.getStyleClass().add("ditree-children");
         if (tree != null) {
             EntityVertex root = tree.root();
-            if (root.getMeaningNid() == TinkarTerm.DEFINITION_ROOT.nid()) {
+            if (root.getMeaningNid() == KernelTerm.DEFINITION_ROOT.nid()) {
                 appendChildren(childrenBox, root, tree);
             } else {
                 childrenBox.getChildren().add(buildVertex(root, tree));
@@ -209,7 +209,7 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
 
     private void appendChildren(VBox container, EntityVertex vertex, DiTreeEntity tree) {
         for (EntityVertex child : tree.successors(vertex)) {
-            if (child.getMeaningNid() == TinkarTerm.AND.nid()) {
+            if (child.getMeaningNid() == KernelTerm.AND.nid()) {
                 appendChildren(container, child, tree);
             } else {
                 container.getChildren().add(buildVertex(child, tree));
@@ -219,30 +219,30 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
 
     private Node buildVertex(EntityVertex vertex, DiTreeEntity tree) {
         int meaning = vertex.getMeaningNid();
-        if (meaning == TinkarTerm.NECESSARY_SET.nid()) {
+        if (meaning == KernelTerm.NECESSARY_SET.nid()) {
             return createClauseNode(vertex, tree, "necessary-set", "Necessary set");
         }
-        if (meaning == TinkarTerm.SUFFICIENT_SET.nid()) {
+        if (meaning == KernelTerm.SUFFICIENT_SET.nid()) {
             return createClauseNode(vertex, tree, "sufficient-set", "Sufficient set");
         }
-        if (meaning == TinkarTerm.INCLUSION_SET.nid()) {
+        if (meaning == KernelTerm.INCLUSION_SET.nid()) {
             return createClauseNode(vertex, tree, "inclusion-set", "Inclusion set");
         }
-        if (meaning == TinkarTerm.CONCEPT_REFERENCE.nid()) {
-            ConceptFacade concept = vertex.propertyFast(TinkarTerm.CONCEPT_REFERENCE);
+        if (meaning == KernelTerm.CONCEPT_REFERENCE.nid()) {
+            ConceptFacade concept = vertex.propertyFast(KernelTerm.CONCEPT_REFERENCE);
             return conceptRow(vertex, concept.nid());
         }
-        if (meaning == TinkarTerm.ROLE.nid()) {
-            ConceptFacade roleType = vertex.propertyFast(TinkarTerm.ROLE_TYPE);
-            if (roleType != null && PublicId.equals(roleType.publicId(), TinkarTerm.ROLE_GROUP)) {
+        if (meaning == KernelTerm.ROLE.nid()) {
+            ConceptFacade roleType = vertex.propertyFast(KernelTerm.ROLE_TYPE);
+            if (roleType != null && PublicId.equals(roleType.publicId(), KernelTerm.ROLE_GROUP)) {
                 return createClauseNode(vertex, tree, "role-group", "Role group");
             }
             return roleRow(vertex, tree, roleType);
         }
-        if (meaning == TinkarTerm.INTERVAL_ROLE.nid()) {
+        if (meaning == KernelTerm.INTERVAL_ROLE.nid()) {
             return intervalRow(vertex);
         }
-        if (meaning == TinkarTerm.FEATURE.nid()) {
+        if (meaning == KernelTerm.FEATURE.nid()) {
             return featureRow(vertex);
         }
         // Property sets, … — fall back to a plain clause header for v1.
@@ -335,8 +335,8 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
         }
         row.getChildren().add(operator(") → ["));
         for (EntityVertex child : tree.successors(vertex)) {
-            if (child.getMeaningNid() == TinkarTerm.CONCEPT_REFERENCE.nid()) {
-                ConceptFacade restriction = child.propertyFast(TinkarTerm.CONCEPT_REFERENCE);
+            if (child.getMeaningNid() == KernelTerm.CONCEPT_REFERENCE.nid()) {
+                ConceptFacade restriction = child.propertyFast(KernelTerm.CONCEPT_REFERENCE);
                 row.getChildren().add(createChipNode(child, restriction.nid(), ChipKind.ROLE_RESTRICTION));
             }
         }
@@ -397,11 +397,11 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
         row.setAlignment(Pos.CENTER_LEFT);
         row.getChildren().add(clauseBar("interval-role"));
         row.getChildren().add(operator("I ("));
-        ConceptFacade roleType = vertex.propertyFast(TinkarTerm.INTERVAL_ROLE_TYPE);
+        ConceptFacade roleType = vertex.propertyFast(KernelTerm.INTERVAL_ROLE_TYPE);
         row.getChildren().add(createChipNode(vertex, roleType.nid(), ChipKind.INTERVAL_ROLE_TYPE));
         row.getChildren().add(operator(") →"));
         row.getChildren().add(createIntervalBoundsNode(vertex));
-        ConceptFacade unit = vertex.propertyFast(TinkarTerm.UNIT_OF_MEASURE);
+        ConceptFacade unit = vertex.propertyFast(KernelTerm.UNIT_OF_MEASURE);
         row.getChildren().add(createChipNode(vertex, unit.nid(), ChipKind.INTERVAL_UNIT));
         decorateIntervalRow(row, vertex);
         return row;
@@ -415,10 +415,10 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
      * @param vertex the interval role vertex
      */
     protected Node createIntervalBoundsNode(EntityVertex vertex) {
-        BigDecimal lowerBound = vertex.propertyFast(TinkarTerm.INTERVAL_LOWER_BOUND);
-        boolean lowerOpen = vertex.propertyFast(TinkarTerm.LOWER_BOUND_OPEN);
-        BigDecimal upperBound = vertex.propertyFast(TinkarTerm.INTERVAL_UPPER_BOUND);
-        boolean upperOpen = vertex.propertyFast(TinkarTerm.UPPER_BOUND_OPEN);
+        BigDecimal lowerBound = vertex.propertyFast(KernelTerm.INTERVAL_LOWER_BOUND);
+        boolean lowerOpen = vertex.propertyFast(KernelTerm.LOWER_BOUND_OPEN);
+        BigDecimal upperBound = vertex.propertyFast(KernelTerm.INTERVAL_UPPER_BOUND);
+        boolean upperOpen = vertex.propertyFast(KernelTerm.UPPER_BOUND_OPEN);
         return operator((lowerOpen ? "(" : "[") + lowerBound.toPlainString() + ","
                 + upperBound.toPlainString() + (upperOpen ? ")" : "]"));
     }
@@ -444,7 +444,7 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
         row.setAlignment(Pos.CENTER_LEFT);
         row.getChildren().add(clauseBar("feature"));
         row.getChildren().add(operator("⒡ ("));
-        ConceptFacade featureType = vertex.propertyFast(TinkarTerm.FEATURE_TYPE);
+        ConceptFacade featureType = vertex.propertyFast(KernelTerm.FEATURE_TYPE);
         row.getChildren().add(createChipNode(vertex, featureType.nid(), ChipKind.FEATURE_TYPE));
         row.getChildren().add(operator(")"));
         row.getChildren().add(createFeatureValueNode(vertex));
@@ -460,8 +460,8 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
      * @param vertex the feature vertex
      */
     protected Node createFeatureValueNode(EntityVertex vertex) {
-        ConceptFacade operatorConcept = vertex.propertyFast(TinkarTerm.CONCRETE_DOMAIN_OPERATOR);
-        Object literal = vertex.propertyFast(TinkarTerm.LITERAL_VALUE);
+        ConceptFacade operatorConcept = vertex.propertyFast(KernelTerm.CONCRETE_DOMAIN_OPERATOR);
+        Object literal = vertex.propertyFast(KernelTerm.LITERAL_VALUE);
         HBox valueNode = new HBox(comparisonLabel(operatorConcept), literalLabel(String.valueOf(literal)));
         valueNode.getStyleClass().add("ditree-feature-value");
         valueNode.setAlignment(Pos.CENTER_LEFT);

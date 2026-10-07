@@ -35,7 +35,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -263,7 +263,7 @@ public class SortResultConceptEntryController extends AbstractBasicController {
                         .getRunningService(RemoteConceptSearchService.class)
                         .orElseThrow(() -> new IllegalStateException("RemoteConceptSearchService not available"));
                 int nid = remote.loadConceptWithSemantics(ids);
-                Entity<?> loaded = Entity.getFast(nid);
+                Entity<?> loaded = EntityHandle.get(nid).orNull();
                 if (loaded instanceof ConceptEntity loadedConcept) {
                     Platform.runLater(() ->
                         eventBus.publish(journalTopic,
@@ -333,7 +333,7 @@ public class SortResultConceptEntryController extends AbstractBasicController {
 
                 if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                     if (mouseEvent.getClickCount() == 2) {
-                        EntityFacade semanticChronology = EntityService.get().getEntity(currentNid).get();
+                        EntityFacade semanticChronology = EntityHandle.get(currentNid).expectEntity();
                         EvtBusFactory.getDefaultEvtBus().publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                                 new MakeGenEditingWindowEvent(this,
                                         MakeGenEditingWindowEvent.OPEN_GEN_EDIT, semanticChronology, searchEntryViewModel.getPropertyValue(VIEW_PROPERTIES)));

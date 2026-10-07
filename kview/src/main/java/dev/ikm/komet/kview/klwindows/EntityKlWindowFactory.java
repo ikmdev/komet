@@ -18,13 +18,12 @@ package dev.ikm.komet.kview.klwindows;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
-import dev.ikm.komet.layout.KlFactory;
 import dev.ikm.komet.layout.window.KlJournalWindow;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -69,7 +68,7 @@ import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.PATTERN;
  * @see EntityKlWindowType
  * @see KlJournalWindow
  */
-public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKlWindow> {
+public interface EntityKlWindowFactory {
 
     /**
      * Creates a new chapter window for the specified entity under the given journal topic.
@@ -155,7 +154,7 @@ public interface EntityKlWindowFactory extends KlFactory<AbstractEntityChapterKl
             }
 
             try {
-                Entity<?> entity = EntityService.get().getEntityFast(uuids);
+                Entity<?> entity = EntityHandle.get(uuids).orNull();
                 if (entity == null) {
                     LOG.warn("No entity found for UUID array: {}", ArrayIterate.makeString(uuids));
                     return null;

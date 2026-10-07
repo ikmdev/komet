@@ -2,7 +2,7 @@ package dev.ikm.komet.framework.observable;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import dev.ikm.tinkar.component.FieldDefinition;
+import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.Transaction;
@@ -115,8 +115,8 @@ public sealed class ObservableSemanticField<DT> implements Feature<DT>, Field<DT
     }
 
     @Override
-    public FieldDefinition fieldDefinition(StampCalculator stampCalculator) {
-        PatternEntity<PatternEntityVersion> pattern = Entity.getFast(field().patternNid());
+    public FeatureDefinition fieldDefinition(StampCalculator stampCalculator) {
+        PatternEntity<PatternEntityVersion> pattern = EntityHandle.get(field().patternNid()).expectPattern();
         return stampCalculator.latestPatternEntityVersion(pattern).get().fieldDefinitions().get(field().indexInPattern());
     }
 
@@ -131,7 +131,7 @@ public sealed class ObservableSemanticField<DT> implements Feature<DT>, Field<DT
         StampRecord stamp = Entity.getStamp(field().versionStampNid());
         // Get current version
         SemanticVersionRecord version = Entity.getVersionFast(field().nid(), field().versionStampNid());
-        SemanticRecord semantic = Entity.getFast(field().nid());
+        SemanticRecord semantic = EntityHandle.get(field().nid()).expectSemanticRecord();
         MutableList fieldsForNewVersion = Lists.mutable.of(version.fieldValues().toArray());
         fieldsForNewVersion.set(indexInPattern(), newValue);
 
@@ -275,7 +275,7 @@ public sealed class ObservableSemanticField<DT> implements Feature<DT>, Field<DT
         /**
          * Returns the field definition for this feature.
          */
-        public FieldDefinition fieldDefinition(StampCalculator calculator) {
+        public FeatureDefinition fieldDefinition(StampCalculator calculator) {
             return observableSemanticField.fieldDefinition(calculator);
         }
 

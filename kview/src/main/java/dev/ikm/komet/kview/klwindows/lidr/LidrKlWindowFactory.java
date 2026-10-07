@@ -18,16 +18,15 @@ package dev.ikm.komet.kview.klwindows.lidr;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.klwindows.*;
-import dev.ikm.komet.layout.context.KlContextFactory;
-import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
@@ -49,11 +48,6 @@ public class LidrKlWindowFactory implements EntityKlWindowFactory {
         return new LidrKlWindow(journalTopic, deviceConcept, viewProperties, preferences);
     }
 
-    @Override
-    public LidrKlWindow create(KlPreferencesFactory preferencesFactory) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
     public LidrKlWindow restore(WindowSettings windowSettings, KometPreferences preferences,
                                 ViewProperties journalViewProperties) {
         Objects.requireNonNull(preferences, "Preferences cannot be null");
@@ -70,10 +64,10 @@ public class LidrKlWindowFactory implements EntityKlWindowFactory {
                 final ViewProperties viewProperties = journalViewProperties;
 
                 // Try to extract entity facade from saved state
-                final int entityNid = windowState.getEntityNid();
+                final OptionalInt entityNid = windowState.resolveEntityNid();
                 EntityFacade entityFacade = null;
-                if (entityNid != 0) {
-                    entityFacade = Entity.getFast(entityNid);
+                if (entityNid.isPresent()) {
+                    entityFacade = EntityHandle.get(entityNid.getAsInt()).orNull();
                 }
 
                 // Create the window with the extracted parameters
@@ -97,8 +91,4 @@ public class LidrKlWindowFactory implements EntityKlWindowFactory {
         return EntityKlWindowTypes.LIDR;
     }
 
-    @Override
-    public AbstractEntityChapterKlWindow restore(KometPreferences preferences) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
 }

@@ -21,7 +21,7 @@ import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
-import dev.ikm.tinkar.component.FieldDefinition;
+import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.coordinate.stamp.change.FieldChangeRecord;
 import dev.ikm.tinkar.coordinate.stamp.change.VersionChangeRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -47,7 +47,8 @@ import java.util.function.Function;
 
 import static dev.ikm.komet.kview.fxutils.CssHelper.toWebColor;
 import static dev.ikm.tinkar.common.util.Symbols.HEAVY_TRIANGLE_HEADED_RIGHTWARDS_ARROW;
-import static dev.ikm.tinkar.terms.TinkarTerm.*;
+import static dev.ikm.tinkar.terms.KernelTerm.*;
+import static dev.ikm.komet.terms.KometTerm.MODULE_FOR_VERSION;
 
 /**
  * Displays change chronology based on an entity's versions. For example A concept was created and updated over time.
@@ -164,7 +165,7 @@ public class ChangeListItemController {
 
         boolean showPriorValue = false;
         StringBuilder sb = new StringBuilder();
-        Entity referencedEntity = EntityService.get().getEntityFast(getEntityNid());
+        Entity referencedEntity = EntityHandle.get(getEntityNid()).expectEntity();
         // Identicon
         Image identicon = Identicon.generateIdenticonImage(referencedEntity.publicId());
         identiconImageView.setImage(identicon);
@@ -194,7 +195,7 @@ public class ChangeListItemController {
             isItAnAxiom = isItAnAxiom || currentFieldRecord.value() instanceof DiTreeEntity;
 
             // Current Field definition
-            FieldDefinition currentFieldDefinition = currentFieldRecord.fieldDefinition(viewCalculator);
+            FeatureDefinition currentFieldDefinition = currentFieldRecord.fieldDefinition(viewCalculator);
             // Current value's field definition's datatype nid
             int dataTypeNid = currentFieldDefinition.dataTypeNid();
             // Current value's field definition's meaning nid
@@ -207,14 +208,14 @@ public class ChangeListItemController {
             if (isDataTypeConceptField.apply(dataTypeNid)) {
                 // preferred description of concept or component.
                 formatFunction = value -> switch (value) {
-                    case ConceptFacade conceptFacade -> viewCalculator.getPreferredDescriptionStringOrNid(conceptFacade);
+                    case ConceptFacade conceptFacade -> viewCalculator.getPreferredDescriptionTextOrNid(conceptFacade);
                     default -> value.toString();
                 };
             }
 
             // Output Type Field label. eg Text:
             if (includeFieldDefinition) {
-                sb.append(viewCalculator.getPreferredDescriptionStringOrNid(meaningNid)).append(": ");
+                sb.append(viewCalculator.getPreferredDescriptionTextOrNid(meaningNid)).append(": ");
             }
 
             // Output the prior value

@@ -22,7 +22,7 @@ import dev.ikm.tinkar.common.id.IntIds;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import org.eclipse.collections.api.collection.ImmutableCollection;
@@ -55,7 +55,7 @@ public class ExpandTask extends TrackingCallable<Void> {
         MutableList<MutableList<MultiParentVertexImpl>> siblingLists = Lists.mutable.ofInitialCapacity(expansionPath.size());
         MutableList<MultiParentVertexImpl> pathParentList = Lists.mutable.ofInitialCapacity(expansionPath.size());
         final MultiParentVertexImpl newTreeTop = new MultiParentVertexImpl(
-                Entity.getFast(conceptNid),
+                EntityHandle.get(conceptNid).expectConcept(),
                 multiParentGraphViewController,
                 IntIds.set.empty(),
                 null
@@ -75,7 +75,7 @@ public class ExpandTask extends TrackingCallable<Void> {
 
             AtomicReference<MultiParentVertexImpl> newPathParent = new AtomicReference<>();
             for (Edge edge : childrenEdges) {
-                ConceptEntity conceptEntity = Entity.getFast(edge.destinationNid());
+                ConceptEntity conceptEntity = EntityHandle.get(edge.destinationNid()).expectConcept();
                 MultiParentVertexImpl childVertex = new MultiParentVertexImpl(conceptEntity,
                         multiParentGraphViewController, edge.typeNids(), vertexGraphic);
                 childVertex.updateDescription();

@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.navigator.graph;
 
+import dev.ikm.komet.terms.KometTerm;
 import javafx.scene.Node;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
@@ -24,7 +25,7 @@ import dev.ikm.tinkar.common.id.IntIdSet;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,7 @@ public class DefaultNavigatorDisplayPolicies implements NavigatorDisplayPolicies
         IntIdSet navigationConceptNids = viewCalculator.navigationCalculator().navigationCoordinate().navigationPatternNids();
 
         Node navigationGraphic = getNavigationGraphic(item);
-        if (navigationConceptNids.size() > 1 && item.getTypeNids().contains(TinkarTerm.IS_A.nid()) && item.getOptionalParentNid().isPresent()) {
+        if (navigationConceptNids.size() > 1 && item.getTypeNids().contains(KometTerm.IS_A.nid()) && item.getOptionalParentNid().isPresent()) {
             // could be stated and inferred...
             if (navigationConceptNids.contains(viewCalculator.logicCoordinateRecord().inferredNavigationPatternNid()) &&
                     navigationConceptNids.contains(viewCalculator.logicCoordinateRecord().statedNavigationPatternNid())) {
@@ -86,21 +87,19 @@ public class DefaultNavigatorDisplayPolicies implements NavigatorDisplayPolicies
     private Node getNavigationGraphic(MultiParentVertex item) {
         if (item.isRoot()) {
             // TODO get dynamic icons from Assemblages.
-            if (item.getConceptNid() == TinkarTerm.PRIMORDIAL_PATH.nid()) {
+            if (item.getConceptNid() == KernelTerm.PRIMORDIAL_PATH.nid()) {
                 return Icon.SOURCE_BRANCH_1.makeIcon();
-            } else if (item.getConceptNid() == TinkarTerm.PRIMORDIAL_MODULE.nid()) {
+            } else if (item.getConceptNid() == KernelTerm.PRIMORDIAL_MODULE.nid()) {
                 return Icon.LINK_EXTERNAL.makeIcon();
             }
             return Icon.TAXONOMY_ROOT_ICON.makeIcon();
         }
 
         //TODO consider cases with more than one type nid...
-        if (!item.getTypeNids().contains(TinkarTerm.IS_A.nid())) {
+        if (!item.getTypeNids().contains(KometTerm.IS_A.nid())) {
             // TODO get dynamic icons from Assemblages.
-            if (item.getTypeNids().contains(TinkarTerm.PATH_ORIGINS_PATTERN.nid())) {
+            if (item.getTypeNids().contains(KernelTerm.PATH_ORIGINS_PATTERN.nid())) {
                 return Icon.SOURCE_BRANCH_1.makeIcon();
-            } else if (item.getTypeNids().contains(TinkarTerm.DEPENDENCY_MANAGEMENT_ASSEMBLAGE.nid())) {
-                return Icon.LINK_EXTERNAL.makeIcon();
             }
             return Icon.ALERT_CONFIRM.makeIcon();
         }

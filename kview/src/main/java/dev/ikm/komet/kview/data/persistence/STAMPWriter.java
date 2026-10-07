@@ -18,11 +18,8 @@ package dev.ikm.komet.kview.data.persistence;
 import dev.ikm.komet.kview.data.schema.STAMPDetail;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.*;
-import org.eclipse.collections.impl.factory.primitive.LongLists;
 
-import java.util.UUID;
-
-public class STAMPWriter implements Writer {
+public class STAMPWriter {
 
     public final PublicId stamp;
 
@@ -34,14 +31,11 @@ public class STAMPWriter implements Writer {
         //Create empty version list
         RecordListBuilder<StampVersionRecord> versions = RecordListBuilder.make();
 
-        //Pull out primordial UUID from PublicId
-        UUID primordialUUID = stamp.asUuidArray()[0];
-
-        //Process additional UUID longs from PublicId
-        long[] additionalLongs = createAdditionalLongs(stamp);
+        //Every UUID of the PublicId goes into the record header
+        PublicIdentifierRecord identifier = PublicIdentifierRecord.make(stamp);
 
         //Assign nids for STAMP component Concepts
-        int stampNid = EntityService.get().nidForUuids(primordialUUID);
+        int stampNid = EntityService.get().nidForPublicId(stamp);
         int statusNid = EntityService.get().nidForPublicId(stampDetail.status());
         int authorNid = EntityService.get().nidForPublicId(stampDetail.author());
         int moduleNid = EntityService.get().nidForPublicId(stampDetail.module());
@@ -50,9 +44,9 @@ public class STAMPWriter implements Writer {
         //Create STAMP Chronology
         StampRecord stampRecord = StampRecordBuilder.builder()
                 .nid(stampNid)
-                .leastSignificantBits(primordialUUID.getLeastSignificantBits())
-                .mostSignificantBits(primordialUUID.getMostSignificantBits())
-                .additionalUuidLongs(LongLists.immutable.of(additionalLongs))
+                .leastSignificantBits(identifier.leastSignificantBits())
+                .mostSignificantBits(identifier.mostSignificantBits())
+                .additionalUuidLongs(identifier.additionalUuidLongs())
                 .versions(versions)
                 .build();
 

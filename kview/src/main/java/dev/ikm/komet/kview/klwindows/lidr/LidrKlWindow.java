@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.kview.klwindows.lidr;
 
+import dev.ikm.komet.terms.KometTerm;
+import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
@@ -24,7 +26,6 @@ import dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.StampViewModel;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.scene.layout.Pane;
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
@@ -35,7 +36,6 @@ import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.lidr.mvvm.viewmodel.LidrViewModel.DEVICE_ENTITY;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULES_PROPERTY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.*;
@@ -67,8 +67,8 @@ public class LidrKlWindow extends AbstractEntityChapterKlWindow {
         // Prefetch modules and paths for the view
         StampViewModel stampViewModel = new StampViewModel();
         stampViewModel
-                .setPropertyValue(PATHS_PROPERTY, fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()), true)
-                .setPropertyValue(MODULES_PROPERTY, fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId()), true);
+                .setPropertyValue(PATHS_PROPERTY, NavigationReads.descendantsOf(viewProperties.calculator(), KometTerm.PATH), true)
+                .setPropertyValue(MODULES_PROPERTY, NavigationReads.descendantsOf(viewProperties.calculator(), KometTerm.MODULE), true);
 
         // In create mode, set up LIDR view model for injection
         ValidationViewModel lidrViewModel = new LidrViewModel()

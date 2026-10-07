@@ -10,12 +10,12 @@ import javafx.scene.layout.Region;
 /**
  * Represents a non-sealed interface in the Knowledge Layout framework for managing
  * field areas specifically associated with an entity facade and JavaFX regional components.
- * This interface extends {@link KlFieldArea} and provides a specialized contract for
+ * This interface extends {@link KlAreaForFeature} and provides a specialized contract for
  * defining and interacting with field areas tailored to entities.
  *
  * This interface is generic and allows for type-safe interactions with JavaFX regions
  * by parameterizing the region type. It supports extensibility for customized field areas
- * while maintaining core functionality defined by the parent {@link KlFieldArea}.
+ * while maintaining core functionality defined by the parent {@link KlAreaForFeature}.
  * @param <FX> The type of JavaFX {@link Region} associated with this field area
  *             for managing and displaying fields bound to entity data.
  */
@@ -29,7 +29,7 @@ public non-sealed interface KlAreaForComponent<FX extends Region>
     /**
      * Represents a factory interface within the Knowledge Layout framework for creating and managing
      * field areas specifically intended for entities and their corresponding JavaFX {@code Region} components.
-     * This interface extends {@code KlFieldArea.Factory} to provide tailored support for creating
+     * This interface extends {@code KlAreaForFeature.Factory} to provide tailored support for creating
      * field areas associated with entities.
      *
      * This interface defines the contract for building and initializing components that bind

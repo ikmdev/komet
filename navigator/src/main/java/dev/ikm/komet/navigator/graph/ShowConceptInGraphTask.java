@@ -24,12 +24,12 @@ package dev.ikm.komet.navigator.graph;
  import org.eclipse.collections.api.list.ImmutableList;
  import org.eclipse.collections.api.list.MutableList;
  import org.eclipse.collections.api.list.primitive.MutableIntList;
+import dev.ikm.tinkar.terms.KernelTerm;
 import org.eclipse.collections.impl.factory.primitive.IntLists;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,10 +78,10 @@ public class ShowConceptInGraphTask extends TrackingCallable<Void> {
         // There are other options in the list that include SOLOR_CONCEPT, so we will find the lowest score that ends with
         // Solor concept
         IntIdList bestPath = sortedListsForReturn.first().pathToRoot;
-        if (bestPath.get(bestPath.size()-1) != TinkarTerm.SOLOR_CONCEPT.nid()) {
+        if (bestPath.get(bestPath.size()-1) != KernelTerm.ROOT_VERTEX.nid()) {
             for (PathToRootWithScore pathToRootWithScore: sortedListsForReturn) {
                 if (pathToRootWithScore.pathToRoot.get(pathToRootWithScore.pathToRoot.size()-1)
-                        == TinkarTerm.SOLOR_CONCEPT.nid()) {
+                        == KernelTerm.ROOT_VERTEX.nid()) {
                     bestPath = pathToRootWithScore.pathToRoot;
                     break;
                 }

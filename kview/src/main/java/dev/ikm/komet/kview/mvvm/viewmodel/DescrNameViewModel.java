@@ -16,13 +16,14 @@
 package dev.ikm.komet.kview.mvvm.viewmodel;
 
 import static dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper.CASE_SIGNIFICANCE_OPTIONS;
+import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.RecordListBuilder;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticRecord;
@@ -32,7 +33,7 @@ import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import org.carlfx.cognitive.validator.ValidationResult;
@@ -120,7 +121,7 @@ public class DescrNameViewModel extends FormViewModel {
     }
 
     public Set<ConceptEntity> findAllCaseSignificants(ViewProperties viewProperties) {
-        //FIXME after connect-a-thon put this query back or call fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.publicId())
+        //FIXME after connect-a-thon put this query back or call NavigationReads.descendantsOf(getViewProperties().calculator(), KernelTerm.DESCRIPTION_CASE_SIGNIFICANCE)
         return CASE_SIGNIFICANCE_OPTIONS;
     }
 
@@ -137,13 +138,13 @@ public class DescrNameViewModel extends FormViewModel {
 
 
         // existing semantic
-        SemanticEntity theSemantic = EntityService.get().getEntityFast(publicId.asUuidList());
+        SemanticEntity theSemantic = EntityHandle.get(publicId.asUuidArray()).expectSemantic();
 
 
         // the versions that we will first populate with the existing versions of the semantic
         RecordListBuilder versions = RecordListBuilder.make();
 
-        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(publicId, TinkarTerm.DESCRIPTION_PATTERN.nid(),
+        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(publicId, KernelTerm.DESCRIPTION_PATTERN.nid(),
                 theSemantic.referencedComponentNid(), versions);
 
         // we are grabbing the form data
@@ -152,7 +153,7 @@ public class DescrNameViewModel extends FormViewModel {
         descriptionFields.add(getValue(LANGUAGE));
         descriptionFields.add(getValue(NAME_TEXT));
         descriptionFields.add(getValue(CASE_SIGNIFICANCE));
-        descriptionFields.add(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+        descriptionFields.add(KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
 
         // iterating over the existing versions and adding them to a new record list builder
         theSemantic.versions().forEach(version -> versions.add(version));
@@ -212,13 +213,13 @@ public class DescrNameViewModel extends FormViewModel {
                 viewProperties.nodeView().editCoordinate().getDefaultPath().nid()); // path from the edit coordinate (ike-issues#752)
 
         // existing semantic
-        SemanticEntity theSemantic = EntityService.get().getEntityFast(publicId.asUuidList());
+        SemanticEntity theSemantic = EntityHandle.get(publicId.asUuidArray()).expectSemantic();
 
 
         // the versions that we will first populate with the existing versions of the semantic
         RecordListBuilder versions = RecordListBuilder.make();
 
-        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(publicId, TinkarTerm.DESCRIPTION_PATTERN.nid(),
+        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(publicId, KernelTerm.DESCRIPTION_PATTERN.nid(),
                 theSemantic.referencedComponentNid(), versions);
 
         // we grabbing the form data
@@ -227,7 +228,7 @@ public class DescrNameViewModel extends FormViewModel {
         descriptionFields.add(getValue(LANGUAGE));
         descriptionFields.add(getValue(NAME_TEXT));
         descriptionFields.add(getValue(CASE_SIGNIFICANCE));
-        descriptionFields.add(TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE);
+        descriptionFields.add(KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE);
 
         // iterating over the existing versions and adding them to a new record list builder
         theSemantic.versions().forEach(version -> versions.add(version));

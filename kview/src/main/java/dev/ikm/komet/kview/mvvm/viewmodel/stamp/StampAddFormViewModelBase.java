@@ -1,6 +1,5 @@
 package dev.ikm.komet.kview.mvvm.viewmodel.stamp;
 
-import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -65,7 +64,7 @@ public abstract class StampAddFormViewModelBase extends StampFormViewModelBase {
     }
 
     protected void loadStamp() {
-        ObservableEntity observableEntity = ObservableEntity.get(entityFacade.nid());
+        ObservableEntity observableEntity = dev.ikm.komet.framework.observable.ObservableEntityHandle.get(entityFacade.nid()).expectEntity();
         ObservableEntitySnapshot observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
         Latest<EntityVersion> latestEntityVersion = retrieveCommittedLatestVersion(observableEntitySnapshot);
         latestEntityVersion
@@ -106,7 +105,7 @@ public abstract class StampAddFormViewModelBase extends StampFormViewModelBase {
 
         if (same) {
             setPropertyValue(FORM_TITLE, "Latest " + type.getTextDescription() + " Version");
-            setPropertyValue(FORM_TIME_TEXT, TimeUtils.toDateString(getPropertyValue(TIME)));
+            setPropertyValue(FORM_TIME_TEXT, DateTimeUtil.format((Long) getPropertyValue(TIME)));
             setPropertyValue(AUTHOR, stampEntity.author());
         } else {
             setPropertyValue(FORM_TITLE, "New " + type.getTextDescription() + " Version");

@@ -18,11 +18,10 @@ package dev.ikm.komet.kview.klwindows.concept;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.klwindows.*;
-import dev.ikm.komet.layout.context.KlContextFactory;
-import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.NidTextEnum;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import org.slf4j.Logger;
@@ -30,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
@@ -54,11 +54,6 @@ public class ConceptKlWindowFactory implements EntityKlWindowFactory {
     }
 
     @Override
-    public ConceptKlWindow create(KlPreferencesFactory preferencesFactory) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    @Override
     public ConceptKlWindow restore(WindowSettings windowSettings, KometPreferences preferences,
                                    ViewProperties journalViewProperties) {
         Objects.requireNonNull(preferences, "Preferences cannot be null");
@@ -76,12 +71,12 @@ public class ConceptKlWindowFactory implements EntityKlWindowFactory {
                 final ViewProperties viewProperties = journalViewProperties;
 
                 // Try to extract entity facade from saved state
-                final int entityNid = windowState.getEntityNid();
+                final OptionalInt entityNid = windowState.resolveEntityNid();
                 final NidTextEnum nidTextEnum = NidTextEnum.fromString(windowState.getEntityNidType())
                         .orElse(NidTextEnum.NID_TEXT);
                 ConceptFacade conceptFacade = null;
-                if (entityNid != 0) {
-                    conceptFacade = createConceptEntity(entityNid, nidTextEnum);
+                if (entityNid.isPresent()) {
+                    conceptFacade = createConceptEntity(entityNid.getAsInt(), nidTextEnum);
                 }
 
                 // Create the window with the extracted parameters
@@ -119,16 +114,12 @@ public class ConceptKlWindowFactory implements EntityKlWindowFactory {
             return Entity.getConceptForSemantic(entityNid)
                     .orElseGet(() -> {
                         LOG.warn("Referenced semantic entity with NID {} no longer exists, falling back to direct access", entityNid);
-                        return Entity.getFast(entityNid);
+                        return EntityHandle.get(entityNid).asConcept().orElse(null);
                     });
         } else {
             // For other types, just return the entity directly
-            return Entity.getFast(entityNid);
+            return EntityHandle.get(entityNid).asConcept().orElse(null);
         }
     }
 
-    @Override
-    public AbstractEntityChapterKlWindow restore(KometPreferences preferences) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
 }

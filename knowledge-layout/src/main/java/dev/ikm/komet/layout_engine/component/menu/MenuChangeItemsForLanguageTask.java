@@ -59,7 +59,7 @@ public class MenuChangeItemsForLanguageTask implements Callable<MenuItem>, Scope
         Menu changeLanguageMenu = new Menu("Change language");
         changeMenu.getItems().add(changeLanguageMenu);
         for (ConceptFacade language : FxGet.allowedLanguages()) {
-            CheckMenuItem languageItem = new CheckMenuItem(viewCalculator.getPreferredDescriptionStringOrNid(language));
+            CheckMenuItem languageItem = new CheckMenuItem(viewCalculator.getPreferredDescriptionTextOrNid(language));
             changeLanguageMenu.getItems().add(languageItem);
             languageItem.setSelected(language.nid() == observableCoordinate.languageConceptProperty().get().nid());
             languageItem.setDisable(languageItem.isSelected());

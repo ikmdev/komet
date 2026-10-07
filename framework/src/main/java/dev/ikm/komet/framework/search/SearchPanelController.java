@@ -24,11 +24,8 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
-import dev.ikm.tinkar.common.id.PublicIds;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
-import dev.ikm.tinkar.common.util.uuid.UuidUtil;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.EntityVersion;
@@ -55,7 +52,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.util.List;
-import java.util.OptionalInt;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -123,19 +120,13 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
         }
         // TODO: add to activity.
         LOG.info("start search...");
-        String queryText = queryString.getText().strip();
-        if (queryText.startsWith("-") && parseInt(queryText).isPresent()) {
-            addComponentFromNid(queryText);
-        } else if (queryText.startsWith("[") && queryText.endsWith("]")) {
-            queryText = queryText.replace("[", "").replace("]", "");
-            String[] nidStrings = queryText.split(",");
-            for (String nidString : nidStrings) {
-                addComponentFromNid(nidString.strip());
+        // A query that names components by identifier — a nid, a UUID, or a bracketed list of
+        // either — is answered with those components. Anything else is a text search.
+        Optional<IdentifierQuery> identifierQuery = IdentifierQuery.parse(queryString.getText());
+        if (identifierQuery.isPresent()) {
+            for (int nid : identifierQuery.get().nids()) {
+                addComponentFromNid(nid);
             }
-        } else if (queryText.length() == 36 && UuidUtil.isUUID(queryText)) {
-            UuidUtil.getUUID(queryText).ifPresent(uuid -> {
-                addComponentFromNid(PrimitiveData.nid(PublicIds.of(uuid)));
-            });
         } else {
             TinkExecutor.threadPool().execute(() -> {
                 try {
@@ -215,19 +206,6 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
         resultsLayoutCombo.fireEvent(mouseEvent);
     }
 
-
-    private OptionalInt parseInt(String possibleInt) {
-        try {
-            return OptionalInt.of(Integer.parseInt(possibleInt));
-        } catch (NumberFormatException e) {
-            return OptionalInt.empty();
-        }
-    }
-
-    private void addComponentFromNid(String queryText) {
-        int nid = parseInt(queryText).getAsInt();
-        addComponentFromNid(nid);
-    }
 
     private void addComponentFromNid(int nid) {
         String topText = viewProperties.nodeView().calculator().getDescriptionTextOrNid(nid);

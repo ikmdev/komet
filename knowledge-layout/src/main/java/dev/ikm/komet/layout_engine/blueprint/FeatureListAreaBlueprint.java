@@ -3,7 +3,7 @@ package dev.ikm.komet.layout_engine.blueprint;
 import dev.ikm.komet.framework.observable.Feature;
 import dev.ikm.komet.framework.observable.FeatureKey;
 import dev.ikm.komet.framework.observable.FeatureList;
-import dev.ikm.komet.framework.observable.ObservableEntity;
+import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.layout.KlArea;
 import dev.ikm.komet.layout.KlViewLayoutLifecycle;
 import dev.ikm.komet.layout.area.KlAreaForFeature;
@@ -81,7 +81,7 @@ public non-sealed abstract class FeatureListAreaBlueprint<F extends Feature<?>, 
         Optional<Object> selectedFeatures = preferences().getObject(KlAreaForListOfFeatures.PreferenceKeys.SELECTED_FEATURES_KEY);
         preferences().getObject(KlAreaForFeature.PreferenceKeys.AREA_FEATURE_KEY).ifPresent(object -> {
             if (object instanceof FeatureKey featureKey) {
-                Feature<?> feature = ObservableEntity.get(featureKey.nid()).getFeature(featureKey);
+                Feature<?> feature = ObservableEntityHandle.get(featureKey.nid()).expectEntity().getFeature(featureKey);
                 setFeatureProperty((ReadOnlyProperty<FL>) feature.featureProperty());
             }
         });

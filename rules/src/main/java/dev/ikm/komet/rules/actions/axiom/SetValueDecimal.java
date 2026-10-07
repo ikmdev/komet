@@ -4,7 +4,7 @@ import dev.ikm.komet.framework.panel.axiom.AxiomSubjectRecord;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.event.ActionEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +36,7 @@ public class SetValueDecimal extends SetValue {
      */
     @Override
     protected String currentValue(AxiomSubjectRecord axiomSubjectRecord) {
-        Optional optionalValue = axiomSubjectRecord.getAxiomVertex().property(TinkarTerm.LITERAL_VALUE);
+        Optional optionalValue = axiomSubjectRecord.getAxiomVertex().property(KernelTerm.LITERAL_VALUE);
         return switch (optionalValue.get()) {
             case BigDecimal decimal -> decimal.toString();
             default -> BigDecimal.ZERO.toString();

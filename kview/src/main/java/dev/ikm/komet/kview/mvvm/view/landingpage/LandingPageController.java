@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.landingpage;
 
-import static dev.ikm.komet.framework.controls.TimeUtils.calculateTimeAgoWithPeriodAndDuration;
+import dev.ikm.komet.terms.KometTerm;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
 import static dev.ikm.komet.layout.controls.FilterOptionsPopup.FILTER_TYPE.LANDING_PAGE;
 import static dev.ikm.komet.kview.events.CreateJournalEvent.CREATE_JOURNAL;
@@ -24,8 +24,6 @@ import static dev.ikm.komet.kview.events.JournalTileEvent.CREATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalDirName;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchLeafDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SET;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SHOWING;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ProgressViewModel.CANCEL_BUTTON_TEXT_PROP;
@@ -49,6 +47,7 @@ import static dev.ikm.tinkar.events.FrameworkTopics.IMPORT_TOPIC;
 import static dev.ikm.tinkar.events.FrameworkTopics.LANDING_PAGE_TOPIC;
 import static javafx.stage.PopupWindow.AnchorLocation.WINDOW_BOTTOM_LEFT;
 import dev.ikm.komet.framework.events.appevents.ProgressEvent;
+import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.view.ObservableEditCoordinate;
@@ -74,6 +73,7 @@ import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
@@ -82,7 +82,7 @@ import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -112,8 +112,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.*;
 import java.util.prefs.*;
@@ -257,10 +256,10 @@ public class LandingPageController implements BasicController {
             PrefX journalWindowSettingsObjectMap = evt.getJournalWindowSettingsMap();
             if (null != journalWindowSettingsObjectMap) {
                 journalTopic = journalWindowSettingsObjectMap.getValue(JOURNAL_TOPIC);
-                LocalDateTime nowDateTime = LocalDateTime.now();
-                ZoneId nowZoneId = ZoneId.systemDefault();
-                String calculatedTimeAgo = calculateTimeAgoWithPeriodAndDuration(nowDateTime, nowZoneId);
-                journalCardController.setJournalTimestampValue(calculatedTimeAgo);
+                // JournalController records the last edit in epoch seconds.
+                Long lastEditSeconds = journalWindowSettingsObjectMap.getValue(JOURNAL_LAST_EDIT);
+                journalCardController.setJournalTimestampValue(lastEditSeconds == null ? "Edited Now"
+                        : "Edited " + DateTimeUtil.elapsedSince(Instant.ofEpochSecond(lastEditSeconds)));
                 List<String> journalWindowNames = journalWindowSettingsObjectMap.getValue(WINDOW_NAMES);
                 journalCardController.setJournalCardWindowCount(journalWindowNames != null ?
                         "Windows: " + journalWindowNames.size() : "Windows: 0");
@@ -861,9 +860,9 @@ public class LandingPageController implements BasicController {
     }
 
     private void populateAvailableAuthors(ViewProperties viewProperties, EditCoordinateOptionsPopup editCoordOptionsPopup) {
-        ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
+        ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, KernelTerm.STATED_NAVIGATION_PATTERN.nid());
         // Authors are the leaf descendants of USER — named users only, excluding grouping concepts (ike-issues#754).
-        Set<ConceptEntity> conceptEntitySet = fetchLeafDescendentsOfConcept(viewCalculator, TinkarTerm.USER.publicId());
+        Set<ConceptEntity> conceptEntitySet = NavigationReads.leafDescendantsOf(viewCalculator, KernelTerm.USER);
         List<ConceptEntity> authors = conceptEntitySet.stream().toList();
         editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getAuthorForChange().availableOptions().addAll(authors);
         ConceptFacade defaultAuthor = authors
@@ -876,8 +875,8 @@ public class LandingPageController implements BasicController {
     }
 
     private void populateAvailablePaths(ViewProperties viewProperties, EditCoordinateOptionsPopup editCoordOptionsPopup) {
-        ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
-        Set<ConceptEntity> conceptEntitySet = fetchDescendentsOfConcept(viewCalculator, TinkarTerm.PATH.publicId());
+        ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, KernelTerm.STATED_NAVIGATION_PATTERN.nid());
+        Set<ConceptEntity> conceptEntitySet = NavigationReads.descendantsOf(viewCalculator, KometTerm.PATH);
         List<ConceptEntity> entities = conceptEntitySet.stream().toList();
         editCoordOptionsPopup.getFilterOptions().getMainCoordinates().getDefaultPath().availableOptions().addAll(entities);
         ConceptFacade defaultPath = entities

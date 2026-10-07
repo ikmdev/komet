@@ -25,9 +25,9 @@ import javafx.util.Subscription;
 
 import java.util.List;
 
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_LIST_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_SET_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_ID_LIST_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_ID_SET_FIELD;
 
 public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsTableControl> {
     public static final PseudoClass EDIT_MODE_PSEUDO_CLASS = PseudoClass.getPseudoClass("edit-mode");

@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * See also AddToContextMenu TODO should they merge? Note LOG.warn("Port method from old project");
@@ -144,11 +145,14 @@ public class MenuSupplierForFocusedEntity implements AddToContextMenu {
 
                 Clipboard clipboard = Clipboard.getSystemClipboard();
                 final ClipboardContent content = new ClipboardContent();
+                // Every UUID: any of them identifies the concept, so none is dropped.
                 content.putString("new ConceptProxy(\"" +
                         viewProperties.calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(conceptSpec) +
-                        "\", UUID.fromString(\"" +
-                        conceptSpec.publicId().asUuidList().get(0).toString() +
-                        "\"))");
+                        "\", " +
+                        conceptSpec.publicId().asUuidList().stream()
+                                .map(uuid -> "UUID.fromString(\"" + uuid + "\")")
+                                .collect(Collectors.joining(", ")) +
+                        ")");
                 clipboard.setContent(content);
             }
         });

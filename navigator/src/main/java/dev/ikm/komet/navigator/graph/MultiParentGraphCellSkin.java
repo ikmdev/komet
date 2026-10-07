@@ -277,8 +277,8 @@ public class MultiParentGraphCellSkin extends CellSkinBase<TreeCell<ConceptFacad
         final double prefHeight = (d == null) ? pref : Math.max(d.prefHeight(-1), pref);
 
         // RT-30212: TreeCell does not honor minSize of cells.
-        // snapSize for RT-36460
-        return snapSize(Math.max(cell.getMinHeight(), prefHeight));
+        // snapSizeY for RT-36460
+        return snapSizeY(Math.max(cell.getMinHeight(), prefHeight));
     }
 
     @Override

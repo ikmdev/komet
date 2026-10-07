@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 module dev.ikm.komet.sync {
-    requires org.eclipse.jgit;
+    requires dev.ikm.jpms.jgit;
     requires org.slf4j;
     requires dev.ikm.tinkar.common;
     requires dev.ikm.komet.preferences;

@@ -24,7 +24,19 @@ class PatternDefinitionSeederTest {
             UUID.fromString("2f236377-2da7-49bf-8802-fd0fd2dfcdb5"));
 
     private static PublicId projectedId(PublicId pattern, String discriminator) {
-        return PublicIds.of(UuidT5Generator.get(pattern.asUuidArray()[0], discriminator));
+        return PublicIds.of(UuidT5Generator.get(pattern.leastUuid(), discriminator));
+    }
+
+    @Test
+    void theProjectionDoesNotDependOnTheOrderThePatternsUuidsAreListedIn() {
+        UUID least = UUID.fromString("2f236377-2da7-49bf-8802-fd0fd2dfcdb5");
+        UUID greater = UUID.fromString("a4de0039-2bb2-5f4e-b1b3-8f9c0e1e0d33");
+        PublicId leastListedFirst = PublicIds.of(least, greater);
+        PublicId leastListedLast = PublicIds.of(greater, least);
+        assertTrue(PatternDefinitionSeeder.isProjectedSemanticId(leastListedLast,
+                projectedId(leastListedFirst, "meaning-and-purpose"), 0), "meaning and purpose");
+        assertTrue(PatternDefinitionSeeder.isProjectedSemanticId(leastListedFirst,
+                projectedId(leastListedLast, "field-0"), 1), "a field");
     }
 
     @Test

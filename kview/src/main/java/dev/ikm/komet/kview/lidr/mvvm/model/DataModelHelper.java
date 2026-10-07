@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.lidr.mvvm.model;
 
+import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.komet.framework.builder.AxiomBuilderRecord;
 import dev.ikm.komet.framework.panel.axiom.LogicalOperatorsForVertex;
 import dev.ikm.komet.framework.view.ObservableView;
@@ -46,7 +47,7 @@ import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -92,10 +93,10 @@ public class DataModelHelper {
 
     //FIXME this is just a work around for the May 2024 Connect-A-Thon
     public static final Set<ConceptEntity> CASE_SIGNIFICANCE_OPTIONS = Set.of(
-            Entity.getFast(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE.nid()),
-            Entity.getFast(TinkarTerm.NOT_APPLICABLE.nid()),
-            Entity.getFast(TinkarTerm.DESCRIPTION_CASE_SENSITIVE.nid()),
-            Entity.getFast(TinkarTerm.DESCRIPTION_INITIAL_CHARACTER_CASE_SENSITIVE.nid())
+            EntityHandle.get(KernelTerm.DESCRIPTION_NOT_CASE_SENSITIVE.nid()).expectConcept(),
+            EntityHandle.get(KometTerm.NOT_APPLICABLE.nid()).expectConcept(),
+            EntityHandle.get(KernelTerm.DESCRIPTION_CASE_SENSITIVE.nid()).expectConcept(),
+            EntityHandle.get(KernelTerm.DESCRIPTION_INITIAL_CHARACTER_CASE_SENSITIVE.nid()).expectConcept()
     );
 
 
@@ -116,7 +117,7 @@ public class DataModelHelper {
 
     @SuppressWarnings("removal")
     public static SpecimenRecord makeSpecimenRecord(PublicId specimenId) {
-        Optional<Entity> specimenEntity = EntityService.get().getEntity(specimenId.asUuidArray());
+        Optional<Entity<? extends EntityVersion>> specimenEntity = EntityHandle.get(specimenId.asUuidArray()).entity().filter(e -> !e.canceled());
         if (specimenEntity.isEmpty()) {
             throw new IllegalArgumentException("PublicId " + specimenId + " is not in database.");
         }
@@ -132,7 +133,7 @@ public class DataModelHelper {
     }
     @SuppressWarnings("removal")
     public static TargetRecord makeTargetRecord(PublicId targetId) {
-        Optional<Entity> targetEntity = EntityService.get().getEntity(targetId.asUuidArray());
+        Optional<Entity<? extends EntityVersion>> targetEntity = EntityHandle.get(targetId.asUuidArray()).entity().filter(e -> !e.canceled());
         if (targetEntity.isEmpty()) {
             throw new IllegalArgumentException("PublicId " + targetId + " is not in database.");
         }
@@ -147,7 +148,7 @@ public class DataModelHelper {
     }
     @SuppressWarnings("removal")
     public static ResultConformanceRecord makeResultConformanceRecord(PublicId resultConformanceId) {
-        Optional<Entity> resultConformanceEntity = EntityService.get().getEntity(resultConformanceId.asUuidArray());
+        Optional<Entity<? extends EntityVersion>> resultConformanceEntity = EntityHandle.get(resultConformanceId.asUuidArray()).entity().filter(e -> !e.canceled());
         if (resultConformanceEntity.isEmpty()) {
             throw new IllegalArgumentException("PublicId " + resultConformanceId + " is not in database.");
         }
@@ -171,7 +172,7 @@ public class DataModelHelper {
     }
     @SuppressWarnings("removal")
     public static LidrRecord makeLidrRecord(PublicId lidrRecordId) {
-        Optional<Entity> lidrRecordEntity = EntityService.get().getEntity(lidrRecordId.asUuidArray());
+        Optional<Entity<? extends EntityVersion>> lidrRecordEntity = EntityHandle.get(lidrRecordId.asUuidArray()).entity().filter(e -> !e.canceled());
         if (lidrRecordEntity.isEmpty()) {
             throw new IllegalArgumentException("PublicId " + lidrRecordId + " is not in database.");
         }
@@ -188,9 +189,10 @@ public class DataModelHelper {
         PublicId testPerformedId = (PublicId) vals.get(LidrRecord.IDX_TEST_PERFORMED);
         PublicId dataResultsTypeId = (PublicId) vals.get(LidrRecord.IDX_DATA_RESULTS_TYPE);
         PublicId analyteId = (PublicId) vals.get(LidrRecord.IDX_ANALYTES);
-        Set<PublicId> targetIds = ((IntIdSet) vals.get(LidrRecord.IDX_TARGETS)).mapToSet(PrimitiveData::publicId);
-        Set<PublicId> specimenIds = ((IntIdSet) vals.get(LidrRecord.IDX_SPECIMENS)).mapToSet(PrimitiveData::publicId);
-        Set<PublicId> resultConformanceIds = ((IntIdSet) vals.get(LidrRecord.IDX_RESULT_CONFORMANCES)).mapToSet(PrimitiveData::publicId);
+        // Lists, not sets: a public id is never a hash key. The nid sets already hold each component once.
+        List<PublicId> targetIds = ((IntIdSet) vals.get(LidrRecord.IDX_TARGETS)).mapToList(PrimitiveData::publicId);
+        List<PublicId> specimenIds = ((IntIdSet) vals.get(LidrRecord.IDX_SPECIMENS)).mapToList(PrimitiveData::publicId);
+        List<PublicId> resultConformanceIds = ((IntIdSet) vals.get(LidrRecord.IDX_RESULT_CONFORMANCES)).mapToList(PrimitiveData::publicId);
 
         AnalyteRecord analyte = makeAnalyteRecord(analyteId);
         Set<TargetRecord> targets = targetIds.stream().map(DataModelHelper::makeTargetRecord).collect(Collectors.toSet());
@@ -203,7 +205,7 @@ public class DataModelHelper {
 
     @SuppressWarnings("removal")
     public static AnalyteRecord makeAnalyteRecord(PublicId analyteId) {
-        Optional<Entity> analyteEntity = EntityService.get().getEntity(analyteId.asUuidArray());
+        Optional<Entity<? extends EntityVersion>> analyteEntity = EntityHandle.get(analyteId.asUuidArray()).entity().filter(e -> !e.canceled());
         if (analyteEntity.isEmpty()) {
             throw new IllegalArgumentException("PublicId " + analyteId + " is not in database.");
         }
@@ -269,8 +271,8 @@ public class DataModelHelper {
 
         for (int navigationPatternNid : navCalc.navigationCoordinate().navigationPatternNids().toArray()) {
             int logicalDefintionPatternNid =
-                    navigationPatternNid != TinkarTerm.STATED_NAVIGATION_PATTERN.nid() ?
-                            TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid() : TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
+                    navigationPatternNid != KernelTerm.STATED_NAVIGATION_PATTERN.nid() ?
+                            KernelTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid() : KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
 
             EntityService.get().forEachSemanticForComponentOfPattern(componentNid, logicalDefintionPatternNid, (semanticEntity) -> {
                 stampCalculator.latest(semanticEntity)
@@ -294,10 +296,10 @@ public class DataModelHelper {
         ImmutableList<EntityVertex> vertexList = logicalDefinition.vertexMap();
         for (EntityVertex vertex : vertexList) {
             if (LogicalOperatorsForVertex.ROLE.semanticallyEqual((EntityFacade) vertex.meaning())) {
-                ConceptFacade roleTypeProperty = vertex.propertyAsConcept(TinkarTerm.ROLE_TYPE).get();
+                ConceptFacade roleTypeProperty = vertex.propertyAsConcept(KernelTerm.ROLE_TYPE).get();
                 if (roleTypeProperty.equals(roleTypeToFind)) {
                     EntityVertex manufacturerVertex = logicalDefinition.successors(vertex).get(0);
-                    return manufacturerVertex.propertyAsConcept(TinkarTerm.CONCEPT_REFERENCE);
+                    return manufacturerVertex.propertyAsConcept(KernelTerm.CONCEPT_REFERENCE);
                 }
             }
         }
@@ -317,8 +319,8 @@ public class DataModelHelper {
 
         for (int navigationPatternNid : navCalc.navigationCoordinate().navigationPatternNids().toArray()) {
             int logicalDefintionPatternNid =
-                    navigationPatternNid != TinkarTerm.STATED_NAVIGATION.nid() ?
-                            TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid() : TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
+                    navigationPatternNid != KometTerm.STATED_NAVIGATION.nid() ?
+                            KernelTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid() : KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
 
             EntityService.get().forEachSemanticForComponentOfPattern(componentNid, logicalDefintionPatternNid, (semanticEntity) -> {
                 stampCalculator.latest(semanticEntity)
@@ -339,7 +341,7 @@ public class DataModelHelper {
         ImmutableList<Vertex> vertexList = logicalDefinition.vertexMap();
         for (Vertex vertex : vertexList) {
             if (LogicalOperatorsForVertex.CONCEPT.semanticallyEqual((EntityFacade) vertex.meaning())) {
-                EntityFacade refConcept = (EntityFacade) vertex.propertyAsConcept(TinkarTerm.CONCEPT_REFERENCE).get();
+                EntityFacade refConcept = (EntityFacade) vertex.propertyAsConcept(KernelTerm.CONCEPT_REFERENCE).get();
                 if (refConcept.nid() == deviceComponentNid) {
                     //Vertex manufacturerVertex = logicalDefinition.successors(vertex).get(0);
                     return true;
@@ -361,7 +363,7 @@ public class DataModelHelper {
         ImmutableList<EntityVertex> vertexList = logicalDefinition.get().vertexMap();
         for (EntityVertex vertex : vertexList) {
             if (LogicalOperatorsForVertex.CONCEPT.semanticallyEqual((EntityFacade) vertex.meaning())) {
-                EntityFacade refConcept = (EntityFacade) vertex.propertyAsConcept(TinkarTerm.CONCEPT_REFERENCE).get();
+                EntityFacade refConcept = (EntityFacade) vertex.propertyAsConcept(KernelTerm.CONCEPT_REFERENCE).get();
                 if (refConcept.nid() == deviceComponentNid) {
                     return true;
                 }
@@ -380,7 +382,7 @@ public class DataModelHelper {
         //               > Instrument Equipment Semantic
         //               > LIDR Record Semantic
         //
-        Optional<Entity> referenceComponent = EntityService.get().getEntity(referencedComponentPublicId.asUuidList());
+        Optional<Entity<? extends EntityVersion>> referenceComponent = EntityHandle.get(referencedComponentPublicId.asUuidArray()).entity().filter(e -> !e.canceled());
         if (!referenceComponent.isPresent()) {
             throw new RuntimeException("Error reference component does not exist in database: " + referencedComponentPublicId);
         }
@@ -508,7 +510,7 @@ public class DataModelHelper {
 
         ImmutableList<Object> axiomField = Lists.immutable.of(axiomTreeEntityBuilder.build());
         SemanticRecord statedAxioms = SemanticRecord.build(UUID.randomUUID(),
-                TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid(),
+                KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid(),
                 conceptRecord.nid(),
                 stampEntity.lastVersion(),
                 axiomField);

@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.viewmodel.stamp;
 
+import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.komet.framework.observable.ObservableConcept;
 import dev.ikm.komet.framework.property.TypedProperty;
 import dev.ikm.tinkar.component.Stamp;
@@ -180,7 +181,7 @@ public final class StampProperties {
     /**
      * The module component of the STAMP - organizational context.
      * <p>     * Represents the module or organizational unit responsible for this change.
-     * A {@link ConceptEntity} that is a descendant of TinkarTerm.MODULE; accepts
+     * A {@link ConceptEntity} that is a descendant of KometTerm.MODULE; accepts
      * both plain {@code ConceptRecord} (e.g. a combo-box selection) and
      * {@link ObservableConcept} (e.g. resolved from the database).
      */
@@ -190,7 +191,7 @@ public final class StampProperties {
     /**
      * The path component of the STAMP - development/classification context.
      * <p>     * Represents the development path or classification branch for this change.
-     * A {@link ConceptEntity} that is a descendant of TinkarTerm.PATH; accepts
+     * A {@link ConceptEntity} that is a descendant of KometTerm.PATH; accepts
      * both plain {@code ConceptRecord} (e.g. a combo-box selection) and
      * {@link ObservableConcept} (e.g. resolved from the database).
      */
@@ -228,14 +229,14 @@ public final class StampProperties {
 
     /**
      * Observable list of available modules for selection.
-     * <p>     * Contains all concepts that are descendants of TinkarTerm.MODULE.
+     * <p>     * Contains all concepts that are descendants of KometTerm.MODULE.
      */
     public static final TypedProperty<List> MODULES =
             (TypedProperty<List>) Keys.MODULES.property();
 
     /**
      * Observable list of available paths for selection.
-     * <p>     * Contains all concepts that are descendants of TinkarTerm.PATH.
+     * <p>     * Contains all concepts that are descendants of KometTerm.PATH.
      */
     public static final TypedProperty<List> PATHS =
             (TypedProperty<List>) Keys.PATHS.property();

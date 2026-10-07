@@ -26,7 +26,7 @@ import dev.ikm.tinkar.coordinate.stamp.StampPathImmutable;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,25 +41,25 @@ public class FxGet {
 
     static {
         NAVIGATION_OPTIONS.addAll(
-                Lists.immutable.of(TinkarTerm.INFERRED_NAVIGATION_PATTERN),
-                Lists.immutable.of(TinkarTerm.STATED_NAVIGATION_PATTERN));
+                Lists.immutable.of(KernelTerm.INFERRED_NAVIGATION_PATTERN),
+                Lists.immutable.of(KernelTerm.STATED_NAVIGATION_PATTERN));
     }
 
     public static Collection<? extends ConceptFacade> allowedLanguages() {
-        return Lists.immutable.of(TinkarTerm.ENGLISH_LANGUAGE, TinkarTerm.SPANISH_LANGUAGE).castToList();
+        return Lists.immutable.of(KernelTerm.ENGLISH_LANGUAGE, KernelTerm.SPANISH_LANGUAGE).castToList();
     }
 
     public static ImmutableList<ImmutableList<? extends ConceptFacade>> allowedDescriptionTypeOrder() {
 
         return Lists.immutable.of(
-                Lists.immutable.of(TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE, TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE),
-                Lists.immutable.of(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE, TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE));
+                Lists.immutable.of(KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE, KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE),
+                Lists.immutable.of(KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE, KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE));
     }
 
     public static ImmutableList<ImmutableList<? extends PatternFacade>> allowedDialectTypeOrder() {
         return Lists.immutable.of(
-                Lists.immutable.of(TinkarTerm.US_DIALECT_PATTERN, TinkarTerm.GB_DIALECT_PATTERN),
-                Lists.immutable.of(TinkarTerm.GB_DIALECT_PATTERN, TinkarTerm.US_DIALECT_PATTERN));
+                Lists.immutable.of(KernelTerm.US_DIALECT_PATTERN, KernelTerm.GB_DIALECT_PATTERN),
+                Lists.immutable.of(KernelTerm.GB_DIALECT_PATTERN, KernelTerm.US_DIALECT_PATTERN));
     }
 
     public static ObservableList<ImmutableList<PatternFacade>> navigationOptions() {
@@ -77,7 +77,7 @@ public class FxGet {
     private static void addPaths(ViewCalculator viewCalculator) {
 
         PathService.get().getPaths().forEach(stampPathImmutable -> {
-            String pathDescription = viewCalculator.getPreferredDescriptionStringOrNid(stampPathImmutable.pathConceptNid());
+            String pathDescription = viewCalculator.getPreferredDescriptionTextOrNid(stampPathImmutable.pathConceptNid());
             PublicIdStringKey pathKey = new PublicIdStringKey(stampPathImmutable.pathConcept().publicId(), pathDescription);
             PATHS.put(pathKey, stampPathImmutable);
         });

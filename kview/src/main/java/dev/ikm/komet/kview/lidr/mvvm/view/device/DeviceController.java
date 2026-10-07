@@ -28,6 +28,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.navigator.graph.MultiParentGraphCell;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.property.BooleanProperty;
@@ -114,7 +115,7 @@ public class DeviceController {
             // to the view model
             if (deviceViewModel.getPropertyValue(DEVICE_ENTITY) == null) {
                 // query public Id to get entity.
-                Entity entity = EntityService.get().getEntityFast(EntityService.get().nidForPublicId(publicId));
+                Entity entity = EntityHandle.get(EntityService.get().nidForPublicId(publicId)).expectEntity();
                 deviceViewModel.setPropertyValue(DEVICE_ENTITY, entity);
                 addDeviceToForm(entity);
 

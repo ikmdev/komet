@@ -3,7 +3,6 @@ package dev.ikm.komet.kview.common;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.ComponentWithNid;
@@ -98,7 +97,7 @@ public class ViewCalculatorUtils {
      */
     public static String getStampToolTipText(int stampNid, ViewCalculator viewCalculator) {
         StringBuilder tooltipText = new StringBuilder();
-        Entity.get(stampNid).ifPresent(entity -> {
+        EntityHandle.get(stampNid).entity().filter(e -> !e.canceled()).ifPresent(entity -> {
             if (entity instanceof StampEntity<?> stampEntity) {
                 tooltipText.append(getStampToolTipText(stampEntity, viewCalculator));
             }

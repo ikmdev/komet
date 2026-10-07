@@ -66,8 +66,7 @@ public class ConceptPanel extends ComponentIsFinalPanel<
     private void recursiveVersionChronology(int versionNid, ViewProperties viewProperties) {
         ChangeChronology changeChronology = this.viewProperties.calculator().changeChronology(versionNid);
         System.out.println(changeChronology.toString(viewProperties.calculator(), true));
-        for (int semanticNid: EntityService.get().semanticNidsForComponent(versionNid)) {
-            recursiveVersionChronology(semanticNid, viewProperties);
-        }
+        EntityService.get().forEachSemanticForComponent(versionNid,
+                semantic -> recursiveVersionChronology(semantic.nid(), viewProperties));
     }
 }

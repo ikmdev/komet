@@ -23,17 +23,16 @@ import javafx.scene.layout.VBox;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import static dev.ikm.tinkar.terms.TinkarTerm.BOOLEAN_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_LIST_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_SET_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.CONCEPT_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.FLOAT;
-import static dev.ikm.tinkar.terms.TinkarTerm.FLOAT_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.IMAGE_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.INTEGER_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.STRING;
-import static dev.ikm.tinkar.terms.TinkarTerm.STRING_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.BOOLEAN_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_ID_LIST_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_ID_SET_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.CONCEPT_FIELD;
+import static dev.ikm.komet.terms.KometTerm.FLOAT;
+import static dev.ikm.tinkar.terms.KernelTerm.FLOAT_FIELD;
+import static dev.ikm.komet.terms.KometTerm.IMAGE_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.INTEGER_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.STRING;
 
 public class FieldPropertiesPane extends GridNodePropertiesPane<EditorFieldModel> {
     public static final String DEFAULT_STYLE_CLASS = "field-properties";
@@ -122,7 +121,7 @@ public class FieldPropertiesPane extends GridNodePropertiesPane<EditorFieldModel
             loader = ServiceLoader.load(KlAreaForComponent.Factory.class);
         } else if (dataTypeNid == CONCEPT_FIELD.nid()) {
             loader = ServiceLoader.load(KlAreaForComponent.Factory.class);
-        } else if (dataTypeNid == STRING_FIELD.nid() || dataTypeNid == STRING.nid()) {
+        } else if (dataTypeNid == STRING.nid()) {
             loader = ServiceLoader.load(KlAreaForString.Factory.class);
         } else if (dataTypeNid == COMPONENT_ID_SET_FIELD.nid()) {
             ServiceLoader.load(KlAreaForIntIdSet.Factory.class);

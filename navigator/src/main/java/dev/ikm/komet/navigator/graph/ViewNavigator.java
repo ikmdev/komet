@@ -20,7 +20,7 @@ import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinate;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 
 public class ViewNavigator implements Navigator {
 
@@ -67,7 +67,7 @@ public class ViewNavigator implements Navigator {
 
     @Override
     public int[] getRootNids() {
-        return new int[]{TinkarTerm.ROOT_VERTEX.nid()};
+        return new int[]{KernelTerm.ROOT_VERTEX.nid()};
     }
 
     @Override

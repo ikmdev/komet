@@ -7,7 +7,7 @@ import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.stamp.StampPathImmutable;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.StampService;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.application.Platform;
@@ -49,7 +49,7 @@ public class MenuChangeItemsForStampTask implements Callable<MenuItem>, ScopedVa
             item.setUserData(FxGet.pathCoordinates(viewCalculator).get(key));
             item.setOnAction(event -> {
                 StampPathImmutable path = (StampPathImmutable) item.getUserData();
-                Platform.runLater(() -> observableCoordinate.pathConceptProperty().setValue(Entity.getFast(path.pathConceptNid())));
+                Platform.runLater(() -> observableCoordinate.pathConceptProperty().setValue(EntityHandle.get(path.pathConceptNid()).expectConcept()));
                 event.consume();
             });
             changePathMenu.getItems().add(item);
@@ -164,7 +164,7 @@ public class MenuChangeItemsForStampTask implements Callable<MenuItem>, ScopedVa
         });
 
         StampService.get().getModulesInUse().forEach(moduleConcept -> {
-            CheckMenuItem item = new CheckMenuItem(viewCalculator.getPreferredDescriptionStringOrNid(moduleConcept));
+            CheckMenuItem item = new CheckMenuItem(viewCalculator.getPreferredDescriptionTextOrNid(moduleConcept));
             item.setSelected(observableCoordinate.moduleSpecificationsProperty().get().contains(moduleConcept));
             if (item.isSelected()) {
                 item.setOnAction(event -> {
@@ -225,7 +225,7 @@ public class MenuChangeItemsForStampTask implements Callable<MenuItem>, ScopedVa
             });
         }
         StampService.get().getModulesInUse().forEach(moduleConcept -> {
-            CheckMenuItem item = new CheckMenuItem(viewCalculator.getPreferredDescriptionStringOrNid(moduleConcept));
+            CheckMenuItem item = new CheckMenuItem(viewCalculator.getPreferredDescriptionTextOrNid(moduleConcept));
             item.setSelected(observableCoordinate.excludedModuleSpecificationsProperty().get().contains(moduleConcept));
             if (item.isSelected()) {
                 item.setOnAction(event -> {

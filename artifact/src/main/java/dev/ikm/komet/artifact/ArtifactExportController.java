@@ -15,14 +15,14 @@
  */
 package dev.ikm.komet.artifact;
 
+import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -311,36 +311,34 @@ public class ArtifactExportController {
         //List of Concepts that represent available Paths in the data
         List<ConceptEntity<ConceptEntityVersion>> paths = new ArrayList<>();
         //Get all Path semantics from the Paths Pattern
-        int[] pathSemanticNids = EntityService.get().semanticNidsOfPattern(TinkarTerm.PATHS_PATTERN.nid());
         //For each Path semantic get the concept that the semantic is referencing
-        for (int pathSemanticNid : pathSemanticNids) {
-            SemanticEntity<SemanticEntityVersion> semanticEntity = Entity.getFast(pathSemanticNid);
+        EntityService.get().forEachSemanticOfPattern(KernelTerm.PATHS_PATTERN.nid(), semanticEntity -> {
             int pathConceptNid = semanticEntity.referencedComponentNid();
-            paths.add(EntityService.get().getEntityFast(pathConceptNid));
-        }
+            paths.add(EntityHandle.get(pathConceptNid).expectConcept());
+        });
         return paths;
     }
 
     @SuppressWarnings("removal")
     private List<PatternEntity<PatternEntityVersion>> findAllMembershipPatterns(int pathConceptNid) {
         List<PatternEntity<PatternEntityVersion>> membershipPatterns = new ArrayList<>();
-        PrimitiveData.get()
-                .forEachPatternNid(patternNid -> {
+        EntityService.get()
+                .forEachPatternEntity(patternEntity -> {
                     /*
                      *  Use the STAMP calculator to get the latest version of the pattern based on the pattern's
                      *  Status == Active, and it's Time relative to the provided path (pathConceptNid)
                      */
                     StampCoordinateRecord stampCoordinateRecord = StampCoordinateRecord.make(StateSet.ACTIVE, pathConceptNid);
-                    Latest<PatternEntityVersion> patternEntityVersionLatest = stampCoordinateRecord.stampCalculator().latest(patternNid);
+                    Latest<PatternEntityVersion> patternEntityVersionLatest = stampCoordinateRecord.stampCalculator().latest(patternEntity);
 
                     /*
                      * Using the latest version of the current pattern, check to see if the purpose of the pattern
-                     * is equal to TinkarTerm.MEMBERSHIP_SEMANTIC.
+                     * is equal to KometTerm.MEMBERSHIP_SEMANTIC.
                      */
                     if (patternEntityVersionLatest.isPresent() && patternEntityVersionLatest.get().active()) {
                         PatternEntityVersion patternEntityVersion = patternEntityVersionLatest.get();
-                        if (patternEntityVersion.semanticPurposeNid() == TinkarTerm.MEMBERSHIP_SEMANTIC.nid()) {
-                            membershipPatterns.add(Entity.getFast(patternNid));
+                        if (patternEntityVersion.semanticPurposeNid() == KometTerm.MEMBERSHIP_SEMANTIC.nid()) {
+                            membershipPatterns.add(patternEntity);
                         }
                     }
                 });

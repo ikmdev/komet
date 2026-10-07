@@ -21,6 +21,7 @@ import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.EntityBinding;
 import org.eclipse.collections.api.list.MutableList;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -66,7 +67,7 @@ public final class ObservableSemantic
     }
 
     public static ObservableSemanticSnapshot getSemanticSnapshot(int semanticNid, ViewCalculator calculator) {
-        ObservableSemantic observableSemantic = get(semanticNid);
+        ObservableSemantic observableSemantic = ObservableEntityHandle.get(semanticNid).expectSemantic();
         return observableSemantic.getSnapshot(calculator);
     }
 
@@ -91,15 +92,16 @@ public final class ObservableSemantic
     public static Optional<ObservableSemanticSnapshot> getAxiomSnapshot(int conceptNid, int axiomPatterNid, ViewCalculator calculator) {
 
 
-        int[] axiomSemanticNids = EntityService.get().semanticNidsForComponentOfPattern(conceptNid, axiomPatterNid);
-        if (axiomSemanticNids.length == 0) {
+        List<SemanticEntity<SemanticEntityVersion>> axiomSemantics = EntityService.get()
+                .semanticsForComponentOfPattern(conceptNid, axiomPatterNid).limit(2).toList();
+        if (axiomSemantics.isEmpty()) {
             return Optional.empty();
-        } else if (axiomSemanticNids.length > 1) {
+        } else if (axiomSemantics.size() > 1) {
             throw new IllegalStateException("To many axiom semantics in " +
                     calculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(axiomPatterNid) +
                     " for " + calculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(conceptNid));
         }
-        ObservableSemanticSnapshot axiomSemanticSnapshot = getSemanticSnapshot(axiomSemanticNids[0], calculator);
+        ObservableSemanticSnapshot axiomSemanticSnapshot = getSemanticSnapshot(axiomSemantics.getFirst().nid(), calculator);
         return Optional.of(axiomSemanticSnapshot);
     }
 

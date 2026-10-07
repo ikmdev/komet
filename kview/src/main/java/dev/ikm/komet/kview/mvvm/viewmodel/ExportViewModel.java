@@ -22,8 +22,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
-import static dev.ikm.tinkar.terms.TinkarTerm.PRIMORDIAL_PATH;
-import static dev.ikm.tinkar.terms.TinkarTerm.SANDBOX_PATH;
+import static dev.ikm.tinkar.terms.KernelTerm.PRIMORDIAL_PATH;
+import static dev.ikm.tinkar.terms.KernelTerm.SANDBOX_PATH;
 
 /**
  * The {@code ExportViewModel} class is responsible for handling the export functionality

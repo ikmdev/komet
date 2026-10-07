@@ -37,7 +37,7 @@ public class MenuChangeItemsForNavigationTask implements Callable<MenuItem>, Sco
                 if (menuText.length() > 0) {
                     menuText.append(", ");
                 }
-                menuText.append(viewCalculator.getPreferredDescriptionStringOrNid(navConcept));
+                menuText.append(viewCalculator.getPreferredDescriptionTextOrNid(navConcept));
             }
             CheckMenuItem item = new CheckMenuItem(menuText.toString());
             if (navOption.size() == observableCoordinate.navigationPatternNids().size()) {
