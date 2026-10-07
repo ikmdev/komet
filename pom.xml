@@ -95,10 +95,10 @@
         <java.version>27</java.version>
         <!-- The nid build check (tinkar-core nid-check, IKE-Network/ike-issues#1244): how it
              reports (error, or warning for a census), which classes may narrow a nid, and
-             javac's cap on warnings, raised for a census. -->
+             javac's cap on warnings, high enough that no warning is dropped. -->
         <nid-check.report>error</nid-check.report>
         <nid-check.allow></nid-check.allow>
-        <javac.maxwarns>100</javac.maxwarns>
+        <javac.maxwarns>10000</javac.maxwarns>
     </properties>
 
     <dependencyManagement>
