@@ -116,8 +116,8 @@ import java.util.concurrent.atomic.AtomicReference;
  *     .asConcept()
  *     .ifPresent(concept -> displayLabel.setText(concept.description()));
  *
- * // ❌ WRONG: Direct static method (deprecated, will be removed)
- * ObservableConcept concept = ObservableEntity.get(conceptNid); // DON'T DO THIS
+ * // ❌ WRONG: Unchecked cast (bypasses type checking)
+ * ObservableConcept concept = (ObservableConcept) ObservableEntityHandle.get(conceptNid).orNull(); // DON'T DO THIS
  * }</pre>
  *
  * <h2>When to Use ObservableEntity vs Entity</h2>
@@ -177,7 +177,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * // Background thread
  * CompletableFuture.supplyAsync(() -> {
  *     // Use immutable Entity for calculations
- *     Entity<?> entity = Entity.getFast(nid);
+ *     Entity<?> entity = EntityHandle.get(nid).expectEntity();
  *     return computeResult(entity);
  * }).thenAccept(result -> {
  *     // Switch to JavaFX thread for UI updates

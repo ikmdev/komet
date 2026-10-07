@@ -118,7 +118,7 @@ public abstract class ObservableStampCoordinateBase
                                     ConceptFacade oldPathConcept,
                                     ConceptFacade newPathConcept) {
         if (newPathConcept == null) {
-            // Can occur when Entity.getFast() returns null in gRPC/ephemeral-store mode
+            // Can occur when the entity lookup finds nothing in gRPC/ephemeral-store mode
             // (path entity not yet loaded). Retain the existing coordinate value.
             return;
         }

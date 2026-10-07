@@ -88,7 +88,7 @@ import java.util.function.Predicate;
  *     ObservableEntityHandle.get(nid).asConceptSnapshot(viewCalc);
  *
  * // ❌ WRONG: Direct construction (fragile, no type safety)
- * ObservableConcept concept = ObservableEntity.get(nid); // deprecated anyway
+ * ObservableConcept concept = ObservableEntityHandle.getConceptOrThrow(nid);
  * ObservableConceptSnapshot snapshot = new ObservableConceptSnapshot(viewCalc, concept); // DON'T DO THIS
  * }</pre>
  *

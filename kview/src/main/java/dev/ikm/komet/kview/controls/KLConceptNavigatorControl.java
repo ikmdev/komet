@@ -52,7 +52,7 @@ import java.util.function.Function;
  * }
  *
  * public void createNavigator(int rootNid) {
- *     ConceptNavigatorTreeItem root = getConceptNavigatorTreeItem(Entity.getFast(rootNid), -1);
+ *     ConceptNavigatorTreeItem root = getConceptNavigatorTreeItem(EntityHandle.get(rootNid).expectConcept(), -1);
  *     root.setExpanded(true);
  *
  *     KLConceptNavigatorControl conceptNavigator = new KLConceptNavigatorControl();
@@ -84,7 +84,7 @@ import java.util.function.Function;
  * }
  *
  * public void createNavigator(int rootNid) {
- *     ConceptNavigatorTreeItem root = getConceptNavigatorTreeItem(Entity.getFast(rootNid), -1);
+ *     ConceptNavigatorTreeItem root = getConceptNavigatorTreeItem(EntityHandle.get(rootNid).expectConcept(), -1);
  *     root.setExpanded(true);
  *
  *     KLConceptNavigatorControl conceptNavigator = new KLConceptNavigatorControl();

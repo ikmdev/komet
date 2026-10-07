@@ -274,8 +274,8 @@ public class PatternViewModel extends FormViewModel {
      * One-shot diagnostic for the intermittent "empty shell" pattern window on restore: a window whose
      * chrome appears but whose fields/descriptions are blank because content was populated exactly once,
      * synchronously, at restore — before the datastore was warm. Two empty-shell signatures are possible:
-     * (1) the persisted nid did not resolve to an entity yet (the restore factory's {@code Entity.getFast}
-     * returned {@code null}, so {@code PATTERN} is {@code null} and the EDIT-mode load block above is
+     * (1) the persisted nid did not resolve to an entity yet (the restore factory's entity lookup
+     * found nothing, so {@code PATTERN} is {@code null} and the EDIT-mode load block above is
      * skipped entirely); or (2) the entity resolved but no latest version is resolvable under this
      * window's coordinate. Unlike the concept window, the pattern window registers no data-ready re-render
      * hook, so either case persists until a coordinate change or a commit. This emits one definitive line.

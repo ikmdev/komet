@@ -156,7 +156,7 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
      * concept associated to this concept TreeItem.
      * <p>For the nid of this concept, this value is set based on the following:
      * <pre><code>
-     * getNavigator().getViewCalculator().hasSufficientSet(Entity.getFast(nid))
+     * getNavigator().getViewCalculator().hasSufficientSet(EntityHandle.get(nid).expectConcept())
      * </code></pre>
      */
     private final BooleanProperty definedProperty = new SimpleBooleanProperty(this, "defined");

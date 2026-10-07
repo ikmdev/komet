@@ -40,7 +40,7 @@ import java.util.function.Consumer;
  *          List&lt;ConceptFacade&gt; results = navigator.getViewCalculator().search(searchControl.getText(), 100);
  *          List&lt;KLSearchControl.SearchResult&gt; searchResults = results.stream()
  *              .map(entity -&gt;
- *                  new KLSearchControl.SearchResult(Entity.getFast(navigator.getParentNids(entity.nid())[0]),
+ *                  new KLSearchControl.SearchResult(EntityHandle.get(navigator.getParentNids(entity.nid())[0]).expectConcept(),
  *                      entity))
  *               .toList());
  *          searchControl.setResultsPlaceholder(null);

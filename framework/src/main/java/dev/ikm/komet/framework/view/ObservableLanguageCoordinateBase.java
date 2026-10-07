@@ -149,7 +149,7 @@ public abstract class ObservableLanguageCoordinateBase extends ObservableCoordin
                                         ConceptFacade oldLanguageConcept,
                                         ConceptFacade newLanguageConcept) {
         if (newLanguageConcept == null) {
-            // Can occur when Entity.getFast() returns null in gRPC/ephemeral-store mode
+            // Can occur when the entity lookup finds nothing in gRPC/ephemeral-store mode
             // (language entity not yet loaded). Retain the existing coordinate value.
             return;
         }

@@ -191,7 +191,7 @@ public class KometPropertyEditorFactory implements Callback<PropertySheet.Item, 
                     try {
                         DiTree<EntityVertex> axiomTree = (DiTree<EntityVertex>) property.getValue();
                         // Determine STATED vs INFERRED via fieldDefinition() which goes directly to
-                        // Entity.getFast() rather than the Observable layer (avoids thread-check
+                        // EntityHandle rather than the Observable layer (avoids thread-check
                         // and absent-entity exceptions). Fall back to STATED on any failure.
                         PremiseType premiseType = PremiseType.STATED;
                         try {
