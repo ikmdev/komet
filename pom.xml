@@ -11,7 +11,7 @@
     <groupId>dev.ikm.komet</groupId>
     <artifactId>komet-parent</artifactId>
     <name>KOMET</name>
-    <version>1.59.5-64bit-SNAPSHOT</version>
+    <version>1.59.5-SNAPSHOT</version>
     <packaging>pom</packaging>
     <inceptionYear>2015</inceptionYear>
     <licenses>
@@ -78,7 +78,7 @@
         <maven.github-flow.version>1.21.1-r11</maven.github-flow.version>
         <javafx-maven-plugin.version>0.0.8</javafx-maven-plugin.version>
         <!-- The IKE starter set the tests load, from starter-data-ws, which builds after this repository. -->
-        <ike-starter-set.version>1-64bit-SNAPSHOT</ike-starter-set.version>
+        <ike-starter-set.version>1-SNAPSHOT</ike-starter-set.version>
 
         <!-- TestFX / Monocle -->
         <commonTestFXArgs>
@@ -106,7 +106,7 @@
             <dependency>
                 <groupId>dev.ikm.komet</groupId>
                 <artifactId>komet-bom</artifactId>
-                <version>3.0.12-64bit-SNAPSHOT</version>
+                <version>3.0.12-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
