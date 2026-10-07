@@ -28,7 +28,7 @@ public class CountConcepts extends TrackingCallable<Void> {
     protected Void compute() throws Exception {
         LongAdder count = new LongAdder();
         try {
-            EntityService.get().forEachConceptEntity(concept -> count.increment());
+            count.add(EntityService.get().countConcepts());
             PluggableService.first(StatusReportService.class).reportStatus("Total concept count: " + NumberFormat.getInstance().format(count.sum()));
             return null;
         } finally {

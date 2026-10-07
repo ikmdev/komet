@@ -29,7 +29,7 @@ public class CountSemantics extends TrackingCallable<Void> {
     protected Void compute() throws Exception {
         LongAdder count = new LongAdder();
         try {
-            EntityService.get().forEachSemanticEntity(semantic -> count.increment());
+            count.add(EntityService.get().countSemantics());
             PluggableService.first(StatusReportService.class).reportStatus("Total semantic count: " + NumberFormat.getInstance().format(count.sum()));
             return null;
         } finally {

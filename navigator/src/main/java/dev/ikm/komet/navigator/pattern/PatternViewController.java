@@ -55,7 +55,6 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.OptionalInt;
 import java.util.ResourceBundle;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class PatternViewController {
     private static final Logger LOG = LoggerFactory.getLogger(PatternViewController.class);
@@ -173,15 +172,15 @@ public class PatternViewController {
             for (TreeItem<Object> patternItem : patternItems) {
                 ArrayList<TreeItem<Object>> patternChildren = new ArrayList<>();
                 int patternNid = (Integer) patternItem.getValue();
-                AtomicInteger childCount = new AtomicInteger();
-                EntityService.get().forEachSemanticOfPattern(patternNid, semantic -> {
-                    if (childCount.incrementAndGet() < maxChildrenInPatternViewer) {
-                        patternChildren.add(new TreeItem<>(semantic.nid()));
-                    }
-                });
-                if (childCount.get() >= maxChildrenInPatternViewer) {
+                // read only the semantics shown, and count the rest without reading them
+                // (IKE-Network/ike-issues#1249)
+                int childCount = EntityService.get().countSemanticsOfPattern(patternNid);
+                EntityService.get().semanticsOfPattern(patternNid)
+                        .limit(maxChildrenInPatternViewer - 1)
+                        .forEach(semantic -> patternChildren.add(new TreeItem<>(semantic.nid())));
+                if (childCount >= maxChildrenInPatternViewer) {
                     NumberFormat numberFormat = NumberFormat.getInstance();
-                    patternChildren.add(new TreeItem<>(numberFormat.format(childCount.get() - maxChildrenInPatternViewer) + " additional semantics suppressed..."));
+                    patternChildren.add(new TreeItem<>(numberFormat.format(childCount - maxChildrenInPatternViewer) + " additional semantics suppressed..."));
                 }
                 Platform.runLater(() -> patternItem.getChildren().setAll(patternChildren));
             }
