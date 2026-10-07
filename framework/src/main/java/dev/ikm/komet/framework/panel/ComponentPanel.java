@@ -41,7 +41,7 @@ public class ComponentPanel
     private final ScrollPane scrollPane = new ScrollPane(componentPanelBox);
     private final SimpleObjectProperty<EntityFacade> componentProperty;
     private final WeakChangeListener<EntityFacade> weakComponentChangedListener = new WeakChangeListener(this);
-    private final Subscriber<Integer> invalidationSubscriber;
+    private final Subscriber<Long> invalidationSubscriber;
 
     {
         this.scrollPane.setFitToWidth(true);

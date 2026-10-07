@@ -73,7 +73,7 @@ public final class KonceptAxiomTree {
         if (axiomTree == null) {
             return new Label("No logical definition for this concept.");
         }
-        int subjectNid = axiomVersion.referencedComponentNid();
+        long subjectNid = axiomVersion.referencedComponentNid();
         VBox container = new VBox(buildVertex(axiomTree.root(), axiomTree, axiomVersion, viewProperties, premiseType, subjectNid));
         ScrollPane scroll = new ScrollPane(container);
         scroll.setFitToWidth(true);
@@ -92,8 +92,8 @@ public final class KonceptAxiomTree {
     }
 
     private static BorderPane buildVertex(EntityVertex vertex, DiTreeEntity tree, ObservableSemanticVersion axiomVersion,
-                                          ViewProperties viewProperties, PremiseType premiseType, int subjectNid) {
-        int meaning = vertex.getMeaningNid();
+                                          ViewProperties viewProperties, PremiseType premiseType, long subjectNid) {
+        long meaning = vertex.getMeaningNid();
         BorderPane node = new BorderPane();
         Node content;
         boolean renderChildren = true;
@@ -234,7 +234,7 @@ public final class KonceptAxiomTree {
         return row;
     }
 
-    private static KonceptBadge conceptBadge(int nid, ViewProperties viewProperties, PremiseType premiseType,
+    private static KonceptBadge conceptBadge(long nid, ViewProperties viewProperties, PremiseType premiseType,
                                              boolean showStatus) {
         KonceptBadge badge = new KonceptBadge(nid, viewProperties, showStatus);
         badge.setPremiseType(premiseType);

@@ -58,7 +58,7 @@ public sealed class ObservableSemanticField<DT> implements Feature<DT>, Field<DT
     }
 
     @Override
-    public int patternNid() {
+    public long patternNid() {
         return field().patternNid();
     }
 
@@ -190,7 +190,7 @@ public sealed class ObservableSemanticField<DT> implements Feature<DT>, Field<DT
         /**
          * Composite key for caching editable features.
          */
-        record EditableFeatureKey(int editableVersionNid, int stampNid, int featureIndex) {}
+        record EditableFeatureKey(long editableVersionNid, long stampNid, int featureIndex) {}
 
         /**
          * Caffeine cache with weak values for canonical editable feature instances.

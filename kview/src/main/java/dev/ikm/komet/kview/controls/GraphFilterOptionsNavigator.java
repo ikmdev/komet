@@ -32,12 +32,12 @@ import org.eclipse.collections.api.list.ImmutableList;
 public record GraphFilterOptionsNavigator(Navigator navigator) implements FilterOptionsNavigator {
 
     @Override
-    public int[] getRootNids() {
+    public long[] getRootNids() {
         return navigator.getRootNids();
     }
 
     @Override
-    public ImmutableList<Edge> getChildEdges(int parentNid) {
+    public ImmutableList<Edge> getChildEdges(long parentNid) {
         return navigator.getChildEdges(parentNid);
     }
 

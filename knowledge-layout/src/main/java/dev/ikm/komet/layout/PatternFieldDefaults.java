@@ -68,7 +68,7 @@ public final class PatternFieldDefaults {
     }
 
     private static boolean isInDefaultsModule(SemanticEntity<?> semantic) {
-        int defaultsModuleNid = KlTerms.FIELD_DEFAULTS_MODULE.nid();
+        long defaultsModuleNid = KlTerms.FIELD_DEFAULTS_MODULE.nid();
         return !semantic.versions().isEmpty()
                 && semantic.versions().stream().allMatch(version -> version.stamp().moduleNid() == defaultsModuleNid);
     }
@@ -77,7 +77,7 @@ public final class PatternFieldDefaults {
      * The pattern's defaults semantic, when one has been written (see {@link #isDefaultsSemantic}).
      */
     @SuppressWarnings("unchecked")
-    public static Optional<SemanticEntity<SemanticEntityVersion>> defaultsSemantic(int patternNid) {
+    public static Optional<SemanticEntity<SemanticEntityVersion>> defaultsSemantic(long patternNid) {
         PublicId defaultsSemanticId = defaultsSemanticId(PrimitiveData.publicId(patternNid));
         // hasPublicId first: EntityHandle.get would mint a nid for a never-seen public id.
         if (!PrimitiveData.get().hasPublicId(defaultsSemanticId)) {
@@ -95,7 +95,7 @@ public final class PatternFieldDefaults {
      * opened its DEFAULTS tab and closed without publishing — is never the source of defaults,
      * even though the view's own "latest" would rank it first.
      */
-    public static Optional<ObservableSemanticVersion> defaultsSemanticVersion(int patternNid, ViewCalculator viewCalculator) {
+    public static Optional<ObservableSemanticVersion> defaultsSemanticVersion(long patternNid, ViewCalculator viewCalculator) {
         return defaultsSemantic(patternNid).flatMap(defaultsSemantic -> {
             ObservableSemanticSnapshot snapshot = ObservableEntityHandle.get(defaultsSemantic.nid())
                     .expectSemantic()
@@ -115,7 +115,7 @@ public final class PatternFieldDefaults {
      * The pattern's defaults, one value per field in pattern order — a {@linkplain #isBlank blank}
      * value where the field has no default. Empty when the pattern has no defaults semantic.
      */
-    public static ImmutableList<Object> defaultValues(int patternNid, ViewCalculator viewCalculator) {
+    public static ImmutableList<Object> defaultValues(long patternNid, ViewCalculator viewCalculator) {
         return defaultsSemanticVersion(patternNid, viewCalculator)
                 .map(ObservableSemanticVersion::fieldValues)
                 .orElse(Lists.immutable.empty());

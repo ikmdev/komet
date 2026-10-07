@@ -18,7 +18,7 @@ package dev.ikm.komet.framework.observable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
-import dev.ikm.tinkar.common.id.IntIdCollection;
+import dev.ikm.tinkar.common.id.LongIdCollection;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.VersionCategory;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -319,8 +319,8 @@ public abstract sealed class ObservableEntitySnapshot<OE extends ObservableEntit
         implements dev.ikm.komet.framework.observable.read.SnapshotReads
         permits ObservableConceptSnapshot, ObservablePatternSnapshot, ObservableSemanticSnapshot, ObservableStampSnapshot {
     protected final Latest<OV> latestVersion;
-    protected final IntIdCollection latestStampIds;
-    protected final IntIdCollection allStampIds;
+    protected final LongIdCollection latestStampIds;
+    protected final LongIdCollection allStampIds;
     protected final OE observableEntity;
     protected final ImmutableList<OV> uncommittedVersions;
     protected final ImmutableList<OV> historicVersions;
@@ -383,7 +383,7 @@ public abstract sealed class ObservableEntitySnapshot<OE extends ObservableEntit
         processedVersions = processedVersions.asUnmodifiable();
     }
 
-    public int nid() {
+    public long nid() {
         return this.observableEntity.nid();
     }
 
@@ -418,7 +418,7 @@ public abstract sealed class ObservableEntitySnapshot<OE extends ObservableEntit
             return VersionCategory.Uncommitted;
         }
 
-        int stampNid = version.stampNid();
+        long stampNid = version.stampNid();
 
         if (latestStampIds.contains(stampNid)) {
             if (latestVersion.contradictions().isEmpty()) {

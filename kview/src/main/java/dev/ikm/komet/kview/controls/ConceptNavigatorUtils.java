@@ -106,7 +106,7 @@ public class ConceptNavigatorUtils {
     }
 
     private static int levelCounter = 0;
-    private static int deepestNid;
+    private static long deepestNid;
 
     /**
      * <p>Recursive method that for a given nid, finds all of its parents, and for
@@ -116,7 +116,7 @@ public class ConceptNavigatorUtils {
      * @param tree the {@link InvertedTree}
      * @param navigator the {@link Navigator} that holds the dataset
      */
-    private static void addAllAncestors(int nid, InvertedTree tree, Navigator navigator) {
+    private static void addAllAncestors(long nid, InvertedTree tree, Navigator navigator) {
         getAllParents(nid, navigator).forEach(i -> addAllAncestors(i.nid(), tree.addChild(i), navigator));
     }
 
@@ -127,7 +127,7 @@ public class ConceptNavigatorUtils {
      * @param navigator the {@link Navigator} that holds the dataset
      * @return a list of {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem}
      */
-    static List<InvertedTree.ConceptItem> getAllParents(int childNid, Navigator navigator) {
+    static List<InvertedTree.ConceptItem> getAllParents(long childNid, Navigator navigator) {
         return getSecondaryParents(childNid, -1, navigator);
     }
 
@@ -139,7 +139,7 @@ public class ConceptNavigatorUtils {
      * @param navigator the {@link Navigator} that holds the dataset
      * @return a list of {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem}
      */
-    static List<InvertedTree.ConceptItem> getSecondaryParents(int childNid, int primaryNid, Navigator navigator) {
+    static List<InvertedTree.ConceptItem> getSecondaryParents(long childNid, long primaryNid, Navigator navigator) {
         return new ArrayList<>(Arrays.stream(getParentNids(navigator, childNid)).boxed()
                 .filter(nid -> nid != primaryNid)
                 .map(nid -> new InvertedTree.ConceptItem(nid, childNid, EntityHandle.get(nid).expectConcept().description()))
@@ -153,7 +153,7 @@ public class ConceptNavigatorUtils {
      * @param navigator the {@link Navigator} that holds the dataset
      * @return the depth of the {@link InvertedTree}
      */
-    static int getFartherLevel(int nid, Navigator navigator) {
+    static int getFartherLevel(long nid, Navigator navigator) {
         InvertedTree tree = buildInvertedTree(nid, navigator);
         return tree.getTreeDepth();
     }
@@ -165,7 +165,7 @@ public class ConceptNavigatorUtils {
      * @param navigator the {@link Navigator} that holds the dataset
      * @return an {@link InvertedTree}
      */
-    public static InvertedTree buildInvertedTree(int nid, Navigator navigator) {
+    public static InvertedTree buildInvertedTree(long nid, Navigator navigator) {
         ConceptFacade facade = EntityHandle.get(nid).expectConcept();
         InvertedTree.ConceptItem item = new InvertedTree.ConceptItem(facade.nid(), facade.nid(), facade.description());
         InvertedTree tree = new InvertedTree(item);
@@ -207,7 +207,7 @@ public class ConceptNavigatorUtils {
      * @param rootNid the nid of the root
      * @param navigator the {@link Navigator} that holds the dataset
      */
-    public static void getConceptNavigatorDepth(int rootNid, Navigator navigator) {
+    public static void getConceptNavigatorDepth(long rootNid, Navigator navigator) {
         levelCounter = 0;
         deepestNid = 0;
         getChildrenNid(rootNid, 0, navigator);
@@ -225,7 +225,7 @@ public class ConceptNavigatorUtils {
      * @param level The level of the concept
      * @param navigator The {@link Navigator} that holds the dataset
      */
-    private static void getChildrenNid(int nid, int level, Navigator navigator) {
+    private static void getChildrenNid(long nid, int level, Navigator navigator) {
         if (level > levelCounter) {
             deepestNid = nid;
         }
@@ -240,7 +240,7 @@ public class ConceptNavigatorUtils {
      * @param nid the nid of the concept
      * @param navigator the {@link Navigator} that holds the dataset
      */
-    private static void printInvertedTree(int nid, Navigator navigator) {
+    private static void printInvertedTree(long nid, Navigator navigator) {
         InvertedTree tree = buildInvertedTree(nid, navigator);
         tree.printTree();
     }
@@ -311,7 +311,7 @@ public class ConceptNavigatorUtils {
      * @param navigator the {@link Navigator} that backs the control
      * @return a {@link ConceptDisplayDiagnosis} with a user-facing summary and a log-oriented detail
      */
-    public static ConceptDisplayDiagnosis investigateUndisplayableConcept(int nid, Navigator navigator) {
+    public static ConceptDisplayDiagnosis investigateUndisplayableConcept(long nid, Navigator navigator) {
         try {
             ViewCalculator viewCalculator = navigator.getViewCalculator();
             String name = viewCalculator.getDescriptionTextOrNid(nid);
@@ -327,7 +327,7 @@ public class ConceptNavigatorUtils {
             // The navigation coordinate is the source of truth for which vertex (concept) states this navigator
             // includes; the navigation/view calculator derives allowedVertexStates() from it. Read it directly.
             StateSet vertexStates = viewCalculator.navigationCalculator().navigationCoordinate().vertexStates();
-            int[] parentNids = getParentNids(navigator, nid);
+            long[] parentNids = getParentNids(navigator, nid);
             boolean isRoot = isRoot(navigator, nid);
 
             String summary;
@@ -372,7 +372,7 @@ public class ConceptNavigatorUtils {
      * @param nid the nid of the concept
      * @return true if the nid is one of the navigator's root nids
      */
-    private static boolean isRoot(Navigator navigator, int nid) {
+    private static boolean isRoot(Navigator navigator, long nid) {
         try {
             return Arrays.stream(navigator.getRootNids()).anyMatch(rootNid -> rootNid == nid);
         } catch (Exception e) {
@@ -387,7 +387,7 @@ public class ConceptNavigatorUtils {
      * @param viewCalculator the {@link ViewCalculator} used to resolve descriptions
      * @return a bracketed, comma-separated description of the nids
      */
-    private static String describeNids(int[] nids, ViewCalculator viewCalculator) {
+    private static String describeNids(long[] nids, ViewCalculator viewCalculator) {
         return Arrays.stream(nids)
                 .mapToObj(parentNid -> viewCalculator.getDescriptionTextOrNid(parentNid) + " (" + parentNid + ")")
                 .collect(Collectors.joining(", ", "[", "]"));
@@ -438,7 +438,7 @@ public class ConceptNavigatorUtils {
         return false;
     }
 
-    public static boolean isLeaf(Navigator navigator, int nid) {
+    public static boolean isLeaf(Navigator navigator, long nid) {
         try {
             return navigator.isLeaf(nid);
         } catch (Exception e) {
@@ -447,12 +447,12 @@ public class ConceptNavigatorUtils {
         return false;
     }
 
-    public static int[] getParentNids(Navigator navigator, int nid) {
+    public static long[] getParentNids(Navigator navigator, long nid) {
         try {
             return navigator.getParentNids(nid);
         } catch (Exception e) {
             LOG.error("Exception occurred", e);
-            return new int[0];
+            return new long[0];
         }
     }
 

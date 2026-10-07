@@ -10,7 +10,7 @@ import dev.ikm.komet.kview.controls.KLReadOnlyComponentListControl;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.layout.version.field.KlComponentListField;
-import dev.ikm.tinkar.common.id.IntIdList;
+import dev.ikm.tinkar.common.id.LongIdList;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import javafx.scene.image.Image;
@@ -27,7 +27,7 @@ import java.util.function.*;
  * and do not persist to the database until the parent {@link dev.ikm.komet.framework.observable.ObservableSemanticVersion.Editable}
  * is saved and committed via {@link dev.ikm.komet.framework.observable.ObservableComposer}.
  */
-public class KlReadOnlyComponentListField extends BaseDefaultKlField<IntIdList> implements KlComponentListField {
+public class KlReadOnlyComponentListField extends BaseDefaultKlField<LongIdList> implements KlComponentListField {
     /**
      * Constructor using the legacy pattern (for backward compatibility).
      * <p>     * Changes write through immediately to the ObservableField.
@@ -39,7 +39,7 @@ public class KlReadOnlyComponentListField extends BaseDefaultKlField<IntIdList> 
      * @param journalTopic used for summoning the concept window in the specific workspace
      */
     public KlReadOnlyComponentListField(
-            ObservableField<IntIdList> observableComponentListField,
+            ObservableField<LongIdList> observableComponentListField,
             ObservableView observableView,
             ObservableStamp stamp4field,
             UUID journalTopic) {
@@ -54,7 +54,7 @@ public class KlReadOnlyComponentListField extends BaseDefaultKlField<IntIdList> 
      * Sets up one-way binding for read-only controls.
      */
     private void setupReadOnlyBinding(
-            ObservableField<IntIdList> observableField,
+            ObservableField<LongIdList> observableField,
             KLReadOnlyComponentListControl control,
             ObservableView observableView,
             UUID journalTopic) {

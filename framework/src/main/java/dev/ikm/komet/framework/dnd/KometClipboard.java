@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.dnd;
 
+import java.util.OptionalLong;
 //~--- JDK imports ------------------------------------------------------------
 
 import dev.ikm.tinkar.common.id.PublicId;
@@ -171,7 +172,7 @@ public class KometClipboard extends ClipboardContent {
      * @param nid the concept nid
      * @return clipboard content carrying the concept proxy
      */
-    public static KometClipboard forConcept(int nid) {
+    public static KometClipboard forConcept(long nid) {
         return forConcept(nid, null);
     }
 
@@ -186,12 +187,12 @@ public class KometClipboard extends ClipboardContent {
      * @param description the concept's display label, or {@code null} to resolve from the store
      * @return clipboard content carrying the concept proxy
      */
-    public static KometClipboard forConcept(int nid, String description) {
+    public static KometClipboard forConcept(long nid, String description) {
         String resolved = (description != null && !description.isBlank())
                 ? description
                 : PrimitiveData.text(nid);
         if (resolved == null || resolved.isBlank()) {
-            resolved = Integer.toString(nid);
+            resolved = Long.toString(nid);
         }
         return forProxy(EntityProxy.Concept.make(resolved, PrimitiveData.publicId(nid)));
     }
@@ -209,7 +210,7 @@ public class KometClipboard extends ClipboardContent {
      * @param nid the component nid — a concept, a description/semantic, a pattern, or a stamp
      * @return the eager clipboard content for {@code nid}
      */
-    public static KometClipboard forComponent(int nid) {
+    public static KometClipboard forComponent(long nid) {
         KometClipboard content = new KometClipboard();
         Entity<?> entity = loadedEntity(nid);
         if (entity != null) {
@@ -219,7 +220,7 @@ public class KometClipboard extends ClipboardContent {
         // for an unloaded nid fall back to treating it as a concept (the prior unconditional-payload
         // guarantee). A loaded pattern or stamp is genuinely not a concept, so carries no concept proxy.
         if (!content.containsKey(KOMET_CONCEPT_PROXY)) {
-            OptionalInt conceptNid = (entity == null) ? OptionalInt.of(nid) : resolvedConceptNid(nid);
+            OptionalLong conceptNid = (entity == null) ? OptionalLong.of(nid) : resolvedConceptNid(nid);
             conceptNid.ifPresent(cn -> content.put(KOMET_CONCEPT_PROXY, conceptProxyXml(cn)));
         }
         content.put(DataFormat.PLAIN_TEXT, PrimitiveData.publicId(nid).toString());
@@ -227,7 +228,7 @@ public class KometClipboard extends ClipboardContent {
     }
 
     /** The loaded entity for a nid, or {@code null} when it is not currently loadable. */
-    private static Entity<?> loadedEntity(int nid) {
+    private static Entity<?> loadedEntity(long nid) {
         try {
             return EntityHandle.get(nid).entity().orElse(null);
         } catch (RuntimeException notLoadable) {
@@ -241,29 +242,29 @@ public class KometClipboard extends ClipboardContent {
      * a concept is reached); a pattern, stamp, or unresolvable component yields empty (it is not a concept).
      *
      * @param nid the dragged component nid
-     * @return the referenced concept nid, or {@link OptionalInt#empty()} when none
+     * @return the referenced concept nid, or {@link OptionalLong#empty()} when none
      */
-    private static OptionalInt resolvedConceptNid(int nid) {
-        int current = nid;
+    private static OptionalLong resolvedConceptNid(long nid) {
+        long current = nid;
         for (int hop = 0; hop < 8; hop++) {
             Entity<?> entity = loadedEntity(current);
             if (entity instanceof ConceptEntity<?>) {
-                return OptionalInt.of(current);
+                return OptionalLong.of(current);
             }
             if (entity instanceof SemanticEntity<?> semantic) {
                 current = semantic.referencedComponentNid();
             } else {
-                return OptionalInt.empty();
+                return OptionalLong.empty();
             }
         }
-        return OptionalInt.empty();
+        return OptionalLong.empty();
     }
 
     /** A well-formed {@link #KOMET_CONCEPT_PROXY} XML fragment for a concept nid (description required). */
-    private static String conceptProxyXml(int conceptNid) {
+    private static String conceptProxyXml(long conceptNid) {
         String description = PrimitiveData.text(conceptNid);
         if (description == null || description.isBlank()) {
-            description = Integer.toString(conceptNid);
+            description = Long.toString(conceptNid);
         }
         return EntityProxy.Concept.make(description, PrimitiveData.publicId(conceptNid)).toXmlFragment();
     }
@@ -316,13 +317,13 @@ public class KometClipboard extends ClipboardContent {
      * {@link #forConcept(int)} on the drop side.
      *
      * @param dragboard the drag-and-drop content; may be {@code null}
-     * @return the dropped concept nid, or {@link OptionalInt#empty()}
+     * @return the dropped concept nid, or {@link OptionalLong#empty()}
      */
-    public static OptionalInt conceptNid(Dragboard dragboard) {
+    public static OptionalLong conceptNid(Dragboard dragboard) {
         if (dragboard != null && dragboard.hasContent(KOMET_CONCEPT_PROXY)) {
             return nidFromProxyXml((String) dragboard.getContent(KOMET_CONCEPT_PROXY));
         }
-        return OptionalInt.empty();
+        return OptionalLong.empty();
     }
 
     /**
@@ -331,13 +332,13 @@ public class KometClipboard extends ClipboardContent {
      * alongside {@link #conceptNid(Dragboard)} for the concept a description describes.
      *
      * @param dragboard the drag-and-drop content; may be {@code null}
-     * @return the dropped semantic nid, or {@link OptionalInt#empty()}
+     * @return the dropped semantic nid, or {@link OptionalLong#empty()}
      */
-    public static OptionalInt semanticNidFrom(Dragboard dragboard) {
+    public static OptionalLong semanticNidFrom(Dragboard dragboard) {
         if (dragboard != null && dragboard.hasContent(KOMET_SEMANTIC_PROXY)) {
             return nidFromProxyXml((String) dragboard.getContent(KOMET_SEMANTIC_PROXY));
         }
-        return OptionalInt.empty();
+        return OptionalLong.empty();
     }
 
     /** The base-type proxy formats {@link #entityNidFrom(Dragboard)} reads, in precedence order. */
@@ -349,9 +350,9 @@ public class KometClipboard extends ClipboardContent {
      * in that precedence — the drop-side request for "the component as dragged", with no conversion.
      *
      * @param dragboard the drag-and-drop content; may be {@code null}
-     * @return the dropped component nid, or {@link OptionalInt#empty()}
+     * @return the dropped component nid, or {@link OptionalLong#empty()}
      */
-    public static OptionalInt entityNidFrom(Dragboard dragboard) {
+    public static OptionalLong entityNidFrom(Dragboard dragboard) {
         if (dragboard != null) {
             for (DataFormat format : ATOM_PROXY_FORMATS) {
                 if (dragboard.hasContent(format)) {
@@ -359,7 +360,7 @@ public class KometClipboard extends ClipboardContent {
                 }
             }
         }
-        return OptionalInt.empty();
+        return OptionalLong.empty();
     }
 
     /**
@@ -369,9 +370,9 @@ public class KometClipboard extends ClipboardContent {
      * @param content the clipboard content being assembled
      * @param nids    the concept nids to carry, in the order the drop should see them
      */
-    public static void putConcepts(ClipboardContent content, int[] nids) {
+    public static void putConcepts(ClipboardContent content, long[] nids) {
         List<UUID[]> ids = new ArrayList<>(nids.length);
-        for (int nid : nids) {
+        for (long nid : nids) {
             ids.add(PrimitiveData.publicId(nid).asUuidArray());
         }
         content.put(KOMET_CONCEPT_LIST, ids);
@@ -385,15 +386,15 @@ public class KometClipboard extends ClipboardContent {
      * @param dragboard the drag-and-drop content; may be {@code null}
      * @return the dropped concept nids in order, possibly empty
      */
-    public static int[] conceptNidsFrom(Dragboard dragboard) {
+    public static long[] conceptNidsFrom(Dragboard dragboard) {
         if (dragboard == null || !dragboard.hasContent(KOMET_CONCEPT_LIST)) {
-            return new int[0];
+            return new long[0];
         }
         @SuppressWarnings("unchecked")
         List<UUID[]> ids = (List<UUID[]>) dragboard.getContent(KOMET_CONCEPT_LIST);
         return ids.stream()
                 .filter(uuids -> uuids != null && uuids.length > 0)
-                .mapToInt(uuids -> PrimitiveData.nid(PublicIds.of(uuids)))
+                .mapToLong(uuids -> PrimitiveData.nid(PublicIds.of(uuids)))
                 .toArray();
     }
 
@@ -403,16 +404,16 @@ public class KometClipboard extends ClipboardContent {
      * Returns empty for a {@code null}, blank, or unparseable fragment rather than throwing.
      *
      * @param proxyXmlFragment the serialized component proxy
-     * @return the component nid, or {@link OptionalInt#empty()}
+     * @return the component nid, or {@link OptionalLong#empty()}
      */
-    static OptionalInt nidFromProxyXml(String proxyXmlFragment) {
+    static OptionalLong nidFromProxyXml(String proxyXmlFragment) {
         if (proxyXmlFragment == null || proxyXmlFragment.isBlank()) {
-            return OptionalInt.empty();
+            return OptionalLong.empty();
         }
         try {
-            return OptionalInt.of(ProxyFactory.fromXmlFragment(proxyXmlFragment).nid());
+            return OptionalLong.of(ProxyFactory.fromXmlFragment(proxyXmlFragment).nid());
         } catch (RuntimeException malformed) {
-            return OptionalInt.empty();
+            return OptionalLong.empty();
         }
     }
 

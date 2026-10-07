@@ -35,11 +35,11 @@ public class STAMPWriter {
         PublicIdentifierRecord identifier = PublicIdentifierRecord.make(stamp);
 
         //Assign nids for STAMP component Concepts
-        int stampNid = EntityService.get().nidForPublicId(stamp);
-        int statusNid = EntityService.get().nidForPublicId(stampDetail.status());
-        int authorNid = EntityService.get().nidForPublicId(stampDetail.author());
-        int moduleNid = EntityService.get().nidForPublicId(stampDetail.module());
-        int pathNid = EntityService.get().nidForPublicId(stampDetail.path());
+        long stampNid = EntityService.get().nidForPublicId(stamp);
+        long statusNid = EntityService.get().nidForPublicId(stampDetail.status());
+        long authorNid = EntityService.get().nidForPublicId(stampDetail.author());
+        long moduleNid = EntityService.get().nidForPublicId(stampDetail.module());
+        long pathNid = EntityService.get().nidForPublicId(stampDetail.path());
 
         //Create STAMP Chronology
         StampRecord stampRecord = StampRecordBuilder.builder()

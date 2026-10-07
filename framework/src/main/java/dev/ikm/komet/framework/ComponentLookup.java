@@ -23,7 +23,7 @@ import dev.ikm.tinkar.common.service.RemoteConceptSearchService;
 import dev.ikm.tinkar.common.service.ServiceLifecycleManager;
 import dev.ikm.tinkar.entity.EntityHandle;
 
-import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.UUID;
 
 /**
@@ -51,18 +51,18 @@ public final class ComponentLookup {
      * @param publicId the public id, from preferences or from text
      * @return the nid, or empty if the public id is unknown to the open knowledge base
      */
-    public static OptionalInt nid(PublicId publicId) {
+    public static OptionalLong nid(PublicId publicId) {
         PrimitiveDataService store = PrimitiveData.get();
         if (store.hasPublicId(publicId)) {
-            return OptionalInt.of(store.nidForPublicId(publicId));
+            return OptionalLong.of(store.nidForPublicId(publicId));
         }
         if (!servedRemotely()) {
-            return OptionalInt.empty();
+            return OptionalLong.empty();
         }
         // Not fetched yet in this session. Assign the session's nid for it and fetch it: the
         // server, not the local identity map, knows whether the knowledge base holds it.
-        int nid = store.nidForPublicId(publicId);
-        return EntityHandle.get(nid).isPresent() ? OptionalInt.of(nid) : OptionalInt.empty();
+        long nid = store.nidForPublicId(publicId);
+        return EntityHandle.get(nid).isPresent() ? OptionalLong.of(nid) : OptionalLong.empty();
     }
 
     /**
@@ -71,7 +71,7 @@ public final class ComponentLookup {
      * @param uuid a UUID of the component's public id, from preferences or from text
      * @return the nid, or empty if the UUID is unknown to the open knowledge base
      */
-    public static OptionalInt nid(UUID uuid) {
+    public static OptionalLong nid(UUID uuid) {
         return nid(PublicIds.of(uuid));
     }
 

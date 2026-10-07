@@ -18,7 +18,7 @@ package dev.ikm.komet.reasoner;
 import javafx.application.Platform;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import org.eclipse.collections.api.list.primitive.ImmutableIntList;
+import org.eclipse.collections.api.list.primitive.ImmutableLongList;
 import org.eclipse.collections.api.set.ImmutableSet;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.service.TrackingCallable;
@@ -27,12 +27,12 @@ import dev.ikm.tinkar.terms.EntityProxy;
 
 public class PrepareClassifierEquivalenciesTask extends TrackingCallable<Void> {
 
-    final ImmutableSet<ImmutableIntList> equivalentSets;
+    final ImmutableSet<ImmutableLongList> equivalentSets;
     final TreeView<StringWithOptionalConceptFacade> equivalenciesTree;
 
     final ViewProperties viewProperties;
 
-    public PrepareClassifierEquivalenciesTask(ImmutableSet<ImmutableIntList> equivalentSets,
+    public PrepareClassifierEquivalenciesTask(ImmutableSet<ImmutableLongList> equivalentSets,
                                               TreeView<StringWithOptionalConceptFacade> equivalenciesTree,
                                               ViewProperties viewProperties) {
         this.equivalentSets = equivalentSets;
@@ -44,7 +44,7 @@ public class PrepareClassifierEquivalenciesTask extends TrackingCallable<Void> {
     protected Void compute() throws Exception {
         TreeItem<StringWithOptionalConceptFacade> root = new TreeItem<>(new StringWithOptionalConceptFacade("Equivalences Root"));
         root.setExpanded(true);
-        for (ImmutableIntList elements : equivalentSets) {
+        for (ImmutableLongList elements : equivalentSets) {
             String conceptDescriptionText = viewProperties.calculator().getDescriptionTextOrNid(elements.getFirst());
             if (conceptDescriptionText.startsWith("Product containing precisely ")) {
                 conceptDescriptionText = conceptDescriptionText.replace("Product containing precisely ", "");

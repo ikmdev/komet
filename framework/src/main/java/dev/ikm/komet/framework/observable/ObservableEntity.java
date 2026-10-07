@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import org.eclipse.collections.impl.map.mutable.primitive.LongObjectHashMap;
+import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
 import static dev.ikm.tinkar.events.EntityVersionChangeEvent.VERSION_UPDATED;
 import static dev.ikm.tinkar.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -346,7 +348,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
      * @see com.github.benmanes.caffeine.cache.Cache
      * @see java.lang.ref.WeakReference
      */
-    protected static final Cache<Integer, ObservableEntity> CANONICAL_INSTANCES =
+    protected static final Cache<Long, ObservableEntity> CANONICAL_INSTANCES =
             Caffeine.newBuilder()
                     .weakValues()
                     .build();
@@ -358,7 +360,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
 
     private final FeatureList<OV> versionSetAsList;
 
-    private MutableIntObjectMap<OV> versionPropertyMap = new IntObjectHashMap<>();
+    private MutableLongObjectMap<OV> versionPropertyMap = new LongObjectHashMap<>();
 
     final private AtomicReference<Entity<?>> entityReference;
 
@@ -413,7 +415,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
      * External code should use {@link ObservableEntityHandle#getSnapshot(int, ViewCalculator)}.
      */
     static <OE extends ObservableEntity<OV>, OV extends ObservableEntityVersion<?,EV>, EV extends EntityVersion>
-    ObservableEntitySnapshot<OE, OV> packagePrivateGetSnapshot(int nid, ViewCalculator calculator) {
+    ObservableEntitySnapshot<OE, OV> packagePrivateGetSnapshot(long nid, ViewCalculator calculator) {
         return packagePrivateGet(EntityHandle.get(nid).orNull()).getSnapshot(calculator);
     }
 
@@ -503,7 +505,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
      * Package-private method for internal use by ObservableEntityHandle.
      * External code should use {@link ObservableEntityHandle#get(int)}.
      */
-    static <OE extends ObservableEntity> OE packagePrivateGet(int nid) {
+    static <OE extends ObservableEntity> OE packagePrivateGet(long nid) {
         return packagePrivateGet(EntityHandle.get(nid).orNull());
     }
 
@@ -520,7 +522,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
         return entityReference.get();
     }
 
-    public MutableIntObjectMap<OV> versionPropertyMap() {
+    public MutableLongObjectMap<OV> versionPropertyMap() {
         return versionPropertyMap;
     }
 
@@ -545,7 +547,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
     }
 
     @Override
-    public int nid() {
+    public long nid() {
         return entityReference.get().nid();
     }
 
@@ -568,7 +570,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
      * Returns the semantics that reference this entity's component, each wrapped as an
      * {@link ObservableSemantic}.
      * <p>The referencing semantics are resolved through
-     * {@link EntityService#forEachSemanticForComponent(int, java.util.function.Consumer)} for this
+     * {@link EntityService#forEachSemanticForComponent(long, java.util.function.Consumer)} for this
      * entity's {@link #nid()}, and each is mapped to its canonical {@link ObservableSemantic} instance from the shared
      * {@link #CANONICAL_INSTANCES} pool (the same resolution path used by the other
      * {@code ObservableEntity} accessors). The returned list is a point-in-time projection of the
@@ -598,7 +600,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
      * @param patternNid the pattern whose semantics referencing this component to return
      * @return the observable semantics of {@code patternNid} referencing this component; empty if none
      */
-    public Iterable<ObservableSemantic> getObservableSemanticListOfPattern(int patternNid) {
+    public Iterable<ObservableSemantic> getObservableSemanticListOfPattern(long patternNid) {
         MutableList<ObservableSemantic> observableSemantics = Lists.mutable.empty();
         EntityService.get().forEachSemanticForComponentOfPattern(nid(), patternNid, semantic -> {
             ObservableSemantic observableSemantic = packagePrivateGetSemantic(semantic);
@@ -652,10 +654,10 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
         };
     }
 
-    private static class EntityChangeSubscriber implements Subscriber<Integer> {
+    private static class EntityChangeSubscriber implements Subscriber<Long> {
 
         @Override
-        public void onNext(Integer nid) {
+        public void onNext(Long nid) {
             // Do nothing with item, but request another...
             if (CANONICAL_INSTANCES.getIfPresent(nid) != null) {
                 if (!Platform.isFxApplicationThread()) {

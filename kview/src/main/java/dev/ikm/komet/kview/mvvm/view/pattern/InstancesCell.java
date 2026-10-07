@@ -92,7 +92,7 @@ public class InstancesCell<T> extends ListCell<T> {
             if (item instanceof String stringItem) {
                 setGraphic(null);
                 setText(stringItem);
-            } else if (item instanceof Integer nid) {
+            } else if (item instanceof Long nid) {
                 StampCalculator stampCalculator = viewProperties.calculator().stampCalculator();
 
                 final AtomicReference<String> entityDescriptionText =

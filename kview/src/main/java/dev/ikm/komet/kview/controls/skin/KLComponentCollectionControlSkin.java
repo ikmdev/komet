@@ -2,10 +2,10 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.KLComponentControl;
 import dev.ikm.komet.kview.controls.KLComponentCollectionControl;
-import dev.ikm.tinkar.common.id.IntIdCollection;
-import dev.ikm.tinkar.common.id.IntIdList;
-import dev.ikm.tinkar.common.id.IntIdSet;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIdCollection;
+import dev.ikm.tinkar.common.id.LongIdList;
+import dev.ikm.tinkar.common.id.LongIdSet;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.css.PseudoClass;
@@ -18,8 +18,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.shape.Line;
 import javafx.util.Subscription;
-import org.eclipse.collections.api.factory.primitive.IntLists;
-import org.eclipse.collections.api.list.primitive.MutableIntList;
+import org.eclipse.collections.api.factory.primitive.LongLists;
+import org.eclipse.collections.api.list.primitive.MutableLongList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * Default skin implementation for the {@link KLComponentCollectionControl} control
  */
-public class KLComponentCollectionControlSkin<T extends IntIdCollection> extends SkinBase<KLComponentCollectionControl<T>> {
+public class KLComponentCollectionControlSkin<T extends LongIdCollection> extends SkinBase<KLComponentCollectionControl<T>> {
 
     private static final Logger LOG = LoggerFactory.getLogger(KLComponentCollectionControlSkin.class);
 
@@ -190,7 +190,7 @@ public class KLComponentCollectionControlSkin<T extends IntIdCollection> extends
 
         KLComponentControl componentControl = (KLComponentControl) dragEvent.getGestureSource();
         KLComponentCollectionControl<T> control = getSkinnable();
-        int componentNid = componentControl.getEntity().nid();
+        long componentNid = componentControl.getEntity().nid();
         int indexOfSourceComponent = componentControls.indexOf(componentControl);
 
         if (currentDropLine != null) {
@@ -201,7 +201,7 @@ public class KLComponentCollectionControlSkin<T extends IntIdCollection> extends
             currentDropIndex = currentDropIndex - 1;
         }
 
-        MutableIntList mutableList = createMutableIntListCopy(control.getValue());
+        MutableLongList mutableList = createMutableIntListCopy(control.getValue());
         mutableList.remove(componentNid);
         mutableList.addAtIndex(currentDropIndex, componentNid);
         setValueFromIntList(mutableList);
@@ -210,13 +210,13 @@ public class KLComponentCollectionControlSkin<T extends IntIdCollection> extends
         dragEvent.consume();
     }
 
-    private void setValueFromIntList(MutableIntList mutableList) {
+    private void setValueFromIntList(MutableLongList mutableList) {
         KLComponentCollectionControl<T> control = getSkinnable();
 
-        if (control.getValue() instanceof IntIdList) {
-            ((KLComponentCollectionControl<IntIdList>)control).setValue(IntIds.list.of(mutableList.toArray()));
-        } else if(control.getValue() instanceof IntIdSet) {
-            ((KLComponentCollectionControl<IntIdSet>)control).setValue(IntIds.set.of(mutableList.toArray()));
+        if (control.getValue() instanceof LongIdList) {
+            ((KLComponentCollectionControl<LongIdList>)control).setValue(LongIds.list.of(mutableList.toArray()));
+        } else if(control.getValue() instanceof LongIdSet) {
+            ((KLComponentCollectionControl<LongIdSet>)control).setValue(LongIds.set.of(mutableList.toArray()));
         }
     }
 
@@ -226,7 +226,7 @@ public class KLComponentCollectionControlSkin<T extends IntIdCollection> extends
      *
      * @param nid the nid that is going to be associated with the component
      */
-    private void createComponentUI(int nid) {
+    private void createComponentUI(long nid) {
         KLComponentCollectionControl<T> control = getSkinnable();
 
         KLComponentControl componentControl = new KLComponentControl();
@@ -252,14 +252,14 @@ public class KLComponentCollectionControlSkin<T extends IntIdCollection> extends
         Subscription subscription = componentControl.entityProperty().subscribe(() -> {
             if (!componentControl.isEmpty()) {
                 int oldNidIndex = componentControls.indexOf(componentControl);
-                int newNid = componentControl.getEntity().nid();
+                long newNid = componentControl.getEntity().nid();
 
                 if (oldNidIndex >= getSkinnable().getValue().size()) { // we're adding a new nid
-                    MutableIntList mutableList = createMutableIntListCopy(control.getValue());
+                    MutableLongList mutableList = createMutableIntListCopy(control.getValue());
                     mutableList.add(newNid);
                     setValueFromIntList(mutableList);
                 } else { // we're setting the control's valid nid to another nid
-                    MutableIntList mutableList = createMutableIntListCopy(control.getValue());
+                    MutableLongList mutableList = createMutableIntListCopy(control.getValue());
                     mutableList.set(oldNidIndex, newNid);
                     setValueFromIntList(mutableList);
                 }
@@ -270,7 +270,7 @@ public class KLComponentCollectionControlSkin<T extends IntIdCollection> extends
 
         componentControl.setOnRemoveAction(ev -> removeNid(nid));
 
-        if (control.getValue() instanceof IntIdSet) {
+        if (control.getValue() instanceof LongIdSet) {
             componentControl.setComponentAllowedFilter(componentPublicId
                     -> !control.getValue().contains(EntityService.get().nidForPublicId(componentPublicId)));
         }
@@ -295,8 +295,8 @@ public class KLComponentCollectionControlSkin<T extends IntIdCollection> extends
         getChildren().add(numberLabel);
     }
 
-    private static MutableIntList createMutableIntListCopy(IntIdCollection intIdCollection) {
-        return IntLists.mutable.wrapCopy(intIdCollection.toArray());
+    private static MutableLongList createMutableIntListCopy(LongIdCollection intIdCollection) {
+        return LongLists.mutable.wrapCopy(intIdCollection.toArray());
     }
 
     private Line createDropLine(KLComponentControl componentControl) {
@@ -317,11 +317,11 @@ public class KLComponentCollectionControlSkin<T extends IntIdCollection> extends
         return numberLabel;
     }
 
-    private void removeNid(int nidToRemove) {
+    private void removeNid(long nidToRemove) {
         KLComponentCollectionControl<T> control = getSkinnable();
 
-        IntIdCollection intIdList = control.getValue();
-        MutableIntList mutableList = createMutableIntListCopy(intIdList);
+        LongIdCollection intIdList = control.getValue();
+        MutableLongList mutableList = createMutableIntListCopy(intIdList);
         mutableList.remove(nidToRemove);
         setValueFromIntList(mutableList);
     }

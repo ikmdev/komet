@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.navigator.pattern;
 
+import dev.ikm.tinkar.common.id.Nid;
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.activity.ActivityStream;
 import dev.ikm.komet.framework.graphics.Icon;
@@ -161,7 +162,7 @@ public class PatternViewController {
                 });
             });
             patternItems.sort((o1, o2) -> {
-                if (o1.getValue() instanceof Integer nid1 && o2.getValue() instanceof Integer nid2) {
+                if (o1.getValue() instanceof Long nid1 && o2.getValue() instanceof Long nid2) {
                     return NaturalOrder.compareStrings(viewProperties.calculator().getDescriptionTextOrNid(nid1),
                             viewProperties.calculator().getDescriptionTextOrNid(nid2));
                 } else {
@@ -171,7 +172,7 @@ public class PatternViewController {
             Platform.runLater(() -> this.rootTreeItem.getChildren().setAll(patternItems));
             for (TreeItem<Object> patternItem : patternItems) {
                 ArrayList<TreeItem<Object>> patternChildren = new ArrayList<>();
-                int patternNid = (Integer) patternItem.getValue();
+                long patternNid = Nid.nidOf(patternItem.getValue());
                 // read only the semantics shown, and count the rest without reading them
                 // (IKE-Network/ike-issues#1249)
                 int childCount = EntityService.get().countSemanticsOfPattern(patternNid);

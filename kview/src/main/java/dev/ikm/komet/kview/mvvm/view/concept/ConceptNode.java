@@ -53,7 +53,7 @@ public class ConceptNode extends ExplorationNodeAbstract {
     private static final Logger LOG = LoggerFactory.getLogger(ConceptNode.class);
 
     protected final SimpleObjectProperty<EntityFacade> entityFocusProperty = new SimpleObjectProperty<>();
-    protected FlowSubscriber<Integer> invalidationSubscriber;
+    protected FlowSubscriber<Long> invalidationSubscriber;
     protected ChangeListener<EntityFacade> entityFocusChangeListener;
     protected static final String CONCEPT_DETAILS_VIEW_FXML_FILE = "concept-details.fxml";
 

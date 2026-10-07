@@ -70,7 +70,7 @@ public class SearchCellNid extends SearchCellBase {
         if (item == null || empty) {
             setGraphic(null);
         } else {
-            if (item instanceof Integer nid) {
+            if (item instanceof Long nid) {
                 String topText = viewProperties.nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(nid);
                 Latest<EntityVersion> latestTopVersion = viewProperties.nodeView().calculator().latest(nid);
 

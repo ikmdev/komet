@@ -225,8 +225,8 @@ class ObservableViewSetOverridesITestFX {
         ObservableViewWithOverride child = new ObservableViewWithOverride(parent);
         child.addListener((obs, oldValue, newValue) -> { });    // keep child listening, as the journal's view is
 
-        int defaultAuthor = defaultView.editCoordinate().getAuthorNidForChanges();
-        int namedUser = KernelTerm.KOMET_USER.nid();
+        long defaultAuthor = defaultView.editCoordinate().getAuthorNidForChanges();
+        long namedUser = KernelTerm.KOMET_USER.nid();
         assertNotEquals(defaultAuthor, namedUser, "precondition: KOMET user is not the default author");
 
         // Set the commit author on the PARENT, as login/landing does for the logged-in user.

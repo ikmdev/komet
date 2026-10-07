@@ -313,14 +313,14 @@ public class ArtifactExportController {
         //Get all Path semantics from the Paths Pattern
         //For each Path semantic get the concept that the semantic is referencing
         EntityService.get().forEachSemanticOfPattern(KernelTerm.PATHS_PATTERN.nid(), semanticEntity -> {
-            int pathConceptNid = semanticEntity.referencedComponentNid();
+            long pathConceptNid = semanticEntity.referencedComponentNid();
             paths.add(EntityHandle.get(pathConceptNid).expectConcept());
         });
         return paths;
     }
 
     @SuppressWarnings("removal")
-    private List<PatternEntity<PatternEntityVersion>> findAllMembershipPatterns(int pathConceptNid) {
+    private List<PatternEntity<PatternEntityVersion>> findAllMembershipPatterns(long pathConceptNid) {
         List<PatternEntity<PatternEntityVersion>> membershipPatterns = new ArrayList<>();
         EntityService.get()
                 .forEachPatternEntity(patternEntity -> {

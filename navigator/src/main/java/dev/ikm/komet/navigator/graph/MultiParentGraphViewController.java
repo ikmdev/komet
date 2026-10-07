@@ -15,6 +15,9 @@
  */
 package dev.ikm.komet.navigator.graph;
 
+import org.eclipse.collections.api.list.primitive.MutableLongList;
+import org.eclipse.collections.api.set.primitive.MutableLongSet;
+
 import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.komet.framework.Dialogs;
 import dev.ikm.komet.framework.KometNode;
@@ -39,8 +42,8 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.alert.AlertCategory;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertType;
-import dev.ikm.tinkar.common.id.IntIdList;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIdList;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.broadcast.Subscriber;
@@ -81,10 +84,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.transform.Scale;
 import javafx.stage.Window;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.primitive.MutableIntList;
-import org.eclipse.collections.api.set.primitive.MutableIntSet;
-import org.eclipse.collections.impl.factory.primitive.IntLists;
-import org.eclipse.collections.impl.factory.primitive.IntSets;
+import org.eclipse.collections.api.list.primitive.MutableLongList;
+import org.eclipse.collections.api.set.primitive.MutableLongSet;
+import org.eclipse.collections.impl.factory.primitive.LongLists;
+import org.eclipse.collections.impl.factory.primitive.LongSets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,7 +107,7 @@ public class MultiParentGraphViewController implements RefreshListener {
     }
 
     private final Label navigationLabel = new Label();
-    private final MutableIntList expandedNids = IntLists.mutable.empty();
+    private final MutableLongList expandedNids = LongLists.mutable.empty();
     private final ObservableList<AlertObject> alertList = FXCollections.observableArrayList();
     /**
      * added to prevent garbage collection of listener while this node is still
@@ -144,7 +147,7 @@ public class MultiParentGraphViewController implements RefreshListener {
     private MenuButton navigationMenuButton;
     //~--- fieldValues --------------------------------------------------------------
     private NavigatorDisplayPolicies displayPolicies;
-    private OptionalInt selectedItemNidOptional = OptionalInt.empty();
+    private OptionalLong selectedItemNidOptional = OptionalLong.empty();
     private KometPreferences nodePreferences;
 
     private MultiParentVertexImpl rootTreeItem;
@@ -313,8 +316,8 @@ public class MultiParentGraphViewController implements RefreshListener {
             clipboardContent.put(MULTI_PARENT_GRAPH_DRAG_FORMAT, draggedItemIds);
             // Also advertise the standard multi-concept format (ike-issues#854) so any target — the
             // assistant compose box, another list — can read all dragged concepts.
-            int[] nids = draggedItemIds.stream()
-                    .mapToInt(uuids -> PrimitiveData.nid(PublicIds.of(uuids)))
+            long[] nids = draggedItemIds.stream()
+                    .mapToLong(uuids -> PrimitiveData.nid(PublicIds.of(uuids)))
                     .toArray();
             KometClipboard.putConcepts(clipboardContent, nids);
             dragboard.setContent(clipboardContent);
@@ -332,7 +335,7 @@ public class MultiParentGraphViewController implements RefreshListener {
      */
     private void attachCanonicalGlyph(Dragboard dragboard, List<UUID[]> draggedItemIds) {
         try {
-            int leadNid = PrimitiveData.nid(PublicIds.of(draggedItemIds.get(0)));
+            long leadNid = PrimitiveData.nid(PublicIds.of(draggedItemIds.get(0)));
             KonceptDragGlyph.setMultiDragView(dragboard, leadNid,
                     this.viewProperties.calculator(), draggedItemIds.size());
         } catch (RuntimeException e) {
@@ -673,7 +676,7 @@ public class MultiParentGraphViewController implements RefreshListener {
         });
     }
 
-    public void showConcept(final int conceptNid) {
+    public void showConcept(final long conceptNid) {
         // Do work in background.
         ShowConceptInGraphTask task
                 = new ShowConceptInGraphTask(this, conceptNid);
@@ -696,7 +699,7 @@ public class MultiParentGraphViewController implements RefreshListener {
      * @throws InterruptedException
      */
     protected MultiParentVertexImpl findChild(final MultiParentVertexImpl item,
-                                              final int targetChildNid)
+                                              final long targetChildNid)
             throws InterruptedException {
         LOG.debug("Looking for " + targetChildNid);
 
@@ -755,7 +758,7 @@ public class MultiParentGraphViewController implements RefreshListener {
 
                                     restoreExpanded(rootTreeItem, scrollTo);
                                     expandedNids.clear();
-                                    selectedItemNidOptional = OptionalInt.empty();
+                                    selectedItemNidOptional = OptionalLong.empty();
 
                                     if (scrollTo.get() != null) {
                                         Platform.runLater(
@@ -793,7 +796,7 @@ public class MultiParentGraphViewController implements RefreshListener {
         });
     }
 
-    public void expandAndSelect(IntIdList expansionPath) {
+    public void expandAndSelect(LongIdList expansionPath) {
         boolean foundRoot = false;
         for (TreeItem<ConceptFacade> rootConcept : rootTreeItem.getChildren()) {
             MultiParentVertexImpl viewRoot = (MultiParentVertexImpl) rootConcept;
@@ -825,9 +828,9 @@ public class MultiParentGraphViewController implements RefreshListener {
         TreeItem<ConceptFacade> selected = treeView.getSelectionModel().getSelectedItem();
 
         if (selected == null) {
-            selectedItemNidOptional = OptionalInt.empty();
+            selectedItemNidOptional = OptionalLong.empty();
         } else {
-            selectedItemNidOptional = OptionalInt.of(selected.getValue().nid());
+            selectedItemNidOptional = OptionalLong.of(selected.getValue().nid());
         }
         expandedNids.clear();
         saveExpanded(rootTreeItem);
@@ -879,8 +882,8 @@ public class MultiParentGraphViewController implements RefreshListener {
         TreeItem<ConceptFacade> item = this.treeView.getSelectionModel().getSelectedItem();
         ConceptFacade concept = item.getValue();
         Navigator navigator = navigatorProperty.get();
-        MutableIntSet conceptNids = IntSets.mutable.empty();
-        HashMap<Integer, ArrayList<Edge>> taxonomyLinks = new HashMap<>();
+        MutableLongSet conceptNids = LongSets.mutable.empty();
+        HashMap<Long, ArrayList<Edge>> taxonomyLinks = new HashMap<>();
         handleConcept(concept.nid(), navigator, conceptNids, taxonomyLinks);
         String conceptName = this.viewProperties.calculator().getDescriptionTextOrNid(concept.nid());
         conceptName = conceptName.replaceAll("\\s+", "_");
@@ -893,7 +896,7 @@ public class MultiParentGraphViewController implements RefreshListener {
         });
         buff.append("\n");
         int edgeCount = 1;
-        for (Map.Entry<Integer, ArrayList<Edge>> entry : taxonomyLinks.entrySet()) {
+        for (Map.Entry<Long, ArrayList<Edge>> entry : taxonomyLinks.entrySet()) {
             for (Edge link : entry.getValue()) {
                 buff.append("   g.insertEdge(\"").append(this.viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(entry.getKey())).append("\", \"")
                         .append(this.viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(link.destinationNid())).append("\", \"").append(edgeCount++).append("\");\n");
@@ -908,8 +911,8 @@ public class MultiParentGraphViewController implements RefreshListener {
         TreeItem<ConceptFacade> item = this.treeView.getSelectionModel().getSelectedItem();
         ConceptFacade concept = item.getValue();
         Navigator navigator = navigatorProperty.get();
-        MutableIntSet conceptNids = IntSets.mutable.empty();
-        HashMap<Integer, ArrayList<Edge>> taxonomyLinks = new HashMap<>();
+        MutableLongSet conceptNids = LongSets.mutable.empty();
+        HashMap<Long, ArrayList<Edge>> taxonomyLinks = new HashMap<>();
         handleConcept(concept.nid(), navigator, conceptNids, taxonomyLinks);
         String conceptName = this.viewProperties.calculator().getDescriptionTextOrNid(concept.nid());
         conceptName = conceptName.replaceAll("\\s+", "_");
@@ -924,7 +927,7 @@ public class MultiParentGraphViewController implements RefreshListener {
         });
         buff.append("\n");
         int edgeCount = 1;
-        for (Map.Entry<Integer, ArrayList<Edge>> entry : taxonomyLinks.entrySet()) {
+        for (Map.Entry<Long, ArrayList<Edge>> entry : taxonomyLinks.entrySet()) {
             for (Edge link : entry.getValue()) {
                 buff.append("   g.addEdge(\"\\\"").append(this.viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(entry.getKey())).append("\\\"\", \"\\\"")
                         .append(this.viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(link.destinationNid())).append("\\\"\");\n");
@@ -935,7 +938,7 @@ public class MultiParentGraphViewController implements RefreshListener {
         LOG.info(event.toString());
     }
 
-    private void handleConcept(int conceptNid, Navigator navigator, MutableIntSet conceptNids, HashMap<Integer, ArrayList<Edge>> taxonomyLinks) {
+    private void handleConcept(long conceptNid, Navigator navigator, MutableLongSet conceptNids, HashMap<Long, ArrayList<Edge>> taxonomyLinks) {
         if (!conceptNids.contains(conceptNid)) {
             conceptNids.add(conceptNid);
             ArrayList<Edge> linkList = new ArrayList<>();
@@ -967,11 +970,11 @@ public class MultiParentGraphViewController implements RefreshListener {
         if (this.navigatorProperty.get().getRootNids().length > 1) {
             LOG.error("To many roots: " + this.navigatorProperty.get().getRootNids());
         }
-        for (int rootNid : this.navigatorProperty.get().getRootNids()) {
+        for (long rootNid : this.navigatorProperty.get().getRootNids()) {
             MultiParentVertexImpl graphRoot = new MultiParentVertexImpl(
                     EntityHandle.get(rootNid).expectConcept(),
                     MultiParentGraphViewController.this,
-                    IntIds.set.empty(),
+                    LongIds.set.empty(),
                     Icon.TAXONOMY_ROOT_ICON.makeIcon());
             this.rootTreeItem.getChildren().add(graphRoot);
         }
@@ -1023,14 +1026,14 @@ public class MultiParentGraphViewController implements RefreshListener {
 
     //~--- get methods ---------------------------------------------------------
 
-    private class EntityChangeSubscriber implements Subscriber<Integer> {
+    private class EntityChangeSubscriber implements Subscriber<Long> {
 
         @Override
-        public void onNext(Integer nid) {
+        public void onNext(Long nid) {
             Platform.runLater(() -> this.handleChange(nid, MultiParentGraphViewController.this.rootTreeItem));
         }
 
-        private void handleChange(int nid, MultiParentVertexImpl treeItem) {
+        private void handleChange(long nid, MultiParentVertexImpl treeItem) {
             // TODO: Change could be a semantic, concept, pattern, or stamp...
             // Need to decide how (or if) to handle STAMP. Do we look at the versions and see if the stamp matches?
             if (treeItem.getConceptNid() == nid) {

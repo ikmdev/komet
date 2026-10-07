@@ -1,5 +1,8 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import java.util.function.LongFunction;
+import dev.ikm.tinkar.common.id.Nid;
+
 import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.komet.framework.panel.axiom.ConcreteDomainOperators;
 import dev.ikm.komet.framework.search.SearchPanelController;
@@ -130,7 +133,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
     private static final String CHIP_KIND = "ditree-chip-kind";
 
     @Override
-    protected Node createChipNode(EntityVertex vertex, int conceptNid, ChipKind kind) {
+    protected Node createChipNode(EntityVertex vertex, long conceptNid, ChipKind kind) {
         Node chip = super.createChipNode(vertex, conceptNid, kind);
         if (!isEditable()) {
             return chip;
@@ -193,8 +196,8 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
             event.consume();
         });
         chip.setOnDragDropped(event -> {
-            int nid = extractDroppedNid(event);
-            if (nid != Integer.MIN_VALUE) {
+            long nid = extractDroppedNid(event);
+            if (!Nid.isNone(nid)) {
                 applyChipEdit(vertex, kind, nid);
                 event.setDropCompleted(true);
             }
@@ -217,7 +220,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
      * classic navigator and search cells. Returns {@link Integer#MIN_VALUE} when the drag carries
      * no usable component.
      */
-    private int extractDroppedNid(DragEvent event) {
+    private long extractDroppedNid(DragEvent event) {
         Dragboard dragboard = event.getDragboard();
         if (dragboard.hasContent(COMPONENT_DRAG_FORMAT)) {
             PublicId publicId = decodePublicId((String) dragboard.getContent(COMPONENT_DRAG_FORMAT));
@@ -296,7 +299,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
         if (!isEditable()) {
             return;
         }
-        int meaning = vertex.getMeaningNid();
+        long meaning = vertex.getMeaningNid();
         boolean isSet = meaning == KernelTerm.NECESSARY_SET.nid()
                 || meaning == KernelTerm.SUFFICIENT_SET.nid()
                 || meaning == KernelTerm.INCLUSION_SET.nid();
@@ -788,7 +791,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
      * rebuild the choice triggers never discards an uncommitted literal edit.
      */
     private List<MenuItem> comparisonItems(EntityVertex vertex, Node literalNode) {
-        IntFunction<String> descriptionResolver = getSkinnable().getDescriptionResolver();
+        LongFunction<String> descriptionResolver = getSkinnable().getDescriptionResolver();
         return Arrays.stream(ConcreteDomainOperators.values())
                 .map(op -> {
                     String name = descriptionResolver != null
@@ -1099,7 +1102,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
         focusSlot(slot);
     }
 
-    private void applyChipEdit(EntityVertex vertex, ChipKind kind, int newConceptNid) {
+    private void applyChipEdit(EntityVertex vertex, ChipKind kind, long newConceptNid) {
         transform(builder -> {
             LogicalAxiom axiom = builder.get(vertex.vertexIndex());
             switch (kind) {
@@ -1142,7 +1145,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
             return ruleMenu;
         }
         ContextMenu menu = newMenu();
-        int meaning = vertex.getMeaningNid();
+        long meaning = vertex.getMeaningNid();
         if (meaning == KernelTerm.ROLE.nid()) {
             // role group: mirrors AxiomFocusedRules.axiomIsRoleGroup
             menu.getItems().add(createMenuItem("Add role", KometIcon.IconValue.PLUS,

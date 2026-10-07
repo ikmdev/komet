@@ -96,15 +96,15 @@ public class DocBook {
         return builder.toString();
     }
 
-    public static boolean isDefined(int conceptNid, ViewProperties viewProperties) {
+    public static boolean isDefined(long conceptNid, ViewProperties viewProperties) {
         return viewProperties.calculator().isDefined(conceptNid);
     }
 
-    public static boolean isMultiparent(int conceptNid, ViewProperties viewProperties) {
+    public static boolean isMultiparent(long conceptNid, ViewProperties viewProperties) {
         return viewProperties.calculator().isMultiparent(conceptNid);
     }
 
-    public static String getGlossentry(int entityNid,
+    public static String getGlossentry(long entityNid,
                                        ViewProperties viewProperties, String svgString) {
         return getGlossentry(EntityHandle.get(entityNid).expectEntity(), viewProperties, svgString);
     }
@@ -157,7 +157,7 @@ public class DocBook {
 
     private static void addDescriptions(StringBuilder builder, EntityFacade entity, ViewProperties viewProperties) {
         ImmutableList<SemanticEntity> descriptions = viewProperties.calculator().getDescriptionsForComponent(entity);
-        HashMap<Integer, SemanticEntityVersion> nidDescriptionVersionMap = new HashMap<>();
+        HashMap<Long, SemanticEntityVersion> nidDescriptionVersionMap = new HashMap<>();
         for (SemanticEntity descriptionChronology : descriptions) {
             Latest<SemanticEntityVersion> latestDescriptionVersion = viewProperties.calculator().latest(descriptionChronology);
             if (latestDescriptionVersion.isPresent()) {

@@ -171,7 +171,7 @@ public class ConceptPatternNavController {
         // callback when all patterns are loaded. For each build up children instances.
         patternNavViewModel.setOnReload(stream -> {
             stream.forEach(patternItem -> {
-                int patternNid = patternItem.nid();
+                long patternNid = patternItem.nid();
                 // load the pattern instances into an observable list
                 ObservableList<Object> patternChildren = FXCollections.observableArrayList();
                 // populate the collection of instance for each pattern: read only the semantics
@@ -232,14 +232,14 @@ public class ConceptPatternNavController {
                 try {
                     List<LatestVersionSearchResult> results = calculator.search(searchControl.getText(), 1000).toList();
                     results.sort((o1, o2) -> Float.compare(o2.score(), o1.score()));
-                    Map<Integer, List<LatestVersionSearchResult>> topNidMatchMap = new LinkedHashMap<>();
+                    Map<Long, List<LatestVersionSearchResult>> topNidMatchMap = new LinkedHashMap<>();
                     results.forEach(result -> topNidMatchMap.computeIfAbsent(result.latestVersion().get()
                             .chronology().topEnclosingComponentNid(), _ -> new ArrayList<>()).add(result));
                     Map<KLSearchControl.SearchResult, List<LatestVersionSearchResult>> searchResultsMap = new LinkedHashMap<>();
                     topNidMatchMap.keySet().forEach(key ->
                             navigator.getViewCalculator().latest(key).ifPresent(_ -> {
                                 // Add one search result per parent, ignoring concepts or patterns that don't have a parent
-                                for (int parentNid : navigator.getParentNids(key)) {
+                                for (long parentNid : navigator.getParentNids(key)) {
                                     searchResultsMap.put(new KLSearchControl.SearchResult(ConceptFacade.make(parentNid),
                                             ConceptFacade.make(key)), topNidMatchMap.get(key));
                                 }
@@ -385,7 +385,7 @@ public class ConceptPatternNavController {
         conceptsToggleButton.setSelected(true);
     }
 
-    public void showConcept(final int conceptNid) {
+    public void showConcept(final long conceptNid) {
         if (conceptNavigatorControl == null) {
             LOG.error("Concept navigator control is null");
             return;

@@ -262,7 +262,7 @@ public class SortResultConceptEntryController extends AbstractBasicController {
                 RemoteConceptSearchService remote = ServiceLifecycleManager.get()
                         .getRunningService(RemoteConceptSearchService.class)
                         .orElseThrow(() -> new IllegalStateException("RemoteConceptSearchService not available"));
-                int nid = remote.loadConceptWithSemantics(ids);
+                long nid = remote.loadConceptWithSemantics(ids);
                 Entity<?> loaded = EntityHandle.get(nid).orNull();
                 if (loaded instanceof ConceptEntity loadedConcept) {
                     Platform.runLater(() ->
@@ -312,7 +312,7 @@ public class SortResultConceptEntryController extends AbstractBasicController {
         private HBox cellContainer = new HBox();
         private TextFlow textFlow = new TextFlow();
         private ImageView identicon = new ImageView();
-        private int currentNid = -1;
+        private long currentNid = -1;
 
         @SuppressWarnings("removal")
         public DescriptionSemanticListCell() {

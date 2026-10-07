@@ -60,9 +60,9 @@ class DiTreeDefinitionPeekUTestFX {
     private static final String CLOSE = ".ditree-peek-close-button";
 
     // Resolved once the store runs: a term nid asks the store.
-    private static int A;
-    private static int B;
-    private static int C;
+    private static long A;
+    private static long B;
+    private static long C;
 
     private final FxRobot robot = new FxRobot();
     private StackPane away;
@@ -88,8 +88,8 @@ class DiTreeDefinitionPeekUTestFX {
     void setup() throws Exception {
         FxToolkit.registerPrimaryStage();
         FxToolkit.setupStage(stage -> {
-            Map<Integer, DiTreeEntity> definitions = Map.of(A, definitionNaming(B), B, definitionNaming(C));
-            Map<Integer, String> names = Map.of(A, "Concept A", B, "Concept B", C, "Concept C");
+            Map<Long, DiTreeEntity> definitions = Map.of(A, definitionNaming(B), B, definitionNaming(C));
+            Map<Long, String> names = Map.of(A, "Concept A", B, "Concept B", C, "Concept C");
 
             KLReadOnlyDiTreeControl control = new KLReadOnlyDiTreeControl();
             control.setTitle("Definition");
@@ -119,7 +119,7 @@ class DiTreeDefinitionPeekUTestFX {
     }
 
     /** {@code NecessarySet(And(ConceptAxiom(nid)))}, the seed shape the concept window writes. */
-    private static DiTreeEntity definitionNaming(int conceptNid) {
+    private static DiTreeEntity definitionNaming(long conceptNid) {
         LogicalExpressionBuilder builder = new LogicalExpressionBuilder();
         builder.NecessarySet(builder.And(builder.ConceptAxiom(conceptNid)));
         return switch (builder.build().sourceGraph()) {

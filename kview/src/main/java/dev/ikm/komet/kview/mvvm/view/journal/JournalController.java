@@ -148,7 +148,7 @@ import dev.ikm.komet.reasoner.ReasonerResultsNodeFactory;
 import dev.ikm.komet.reasoner.StringWithOptionalConceptFacade;
 import dev.ikm.komet.search.SearchNode;
 import dev.ikm.tinkar.common.alert.AlertStreams;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PluggableService;
@@ -974,7 +974,7 @@ public class JournalController {
             event.consume();
         });
         navigatorToggleButton.setOnDragDropped(event -> {
-            Integer nid = conceptNidFromDragboard(event.getDragboard());
+            Long nid = conceptNidFromDragboard(event.getDragboard());
             boolean success = false;
             if (nid != null) {
                 journalEventBus.publish(journalTopic, new ShowNavigationalPanelEvent(navigatorToggleButton,
@@ -989,7 +989,7 @@ public class JournalController {
     }
 
     /** The dropped concept's nid from a Komet concept dragboard, or null if it carries no concept. */
-    private static Integer conceptNidFromDragboard(Dragboard dragboard) {
+    private static Long conceptNidFromDragboard(Dragboard dragboard) {
         if (dragboard.hasContent(KometClipboard.KOMET_CONCEPT_PROXY)) {
             try {
                 EntityProxy.Concept proxy = ProxyFactory.fromXmlFragment(
@@ -1509,9 +1509,9 @@ public class JournalController {
                 TreeItem<Object> treeItem = searchTreeView.getSelectionModel().getSelectedItem();
                 switch (treeItem.getValue()) {
                     case LatestVersionSearchResult latestVersionSearchResult -> {
-                        int conceptNid = latestVersionSearchResult.latestVersion().get().nid();
+                        long conceptNid = latestVersionSearchResult.latestVersion().get().nid();
                         getNavigatorNode().getController().showConcept(conceptNid);
-                        getNavigatorNode().getController().expandAndSelect(IntIds.list.of(conceptNid));
+                        getNavigatorNode().getController().expandAndSelect(LongIds.list.of(conceptNid));
                     }
                     default -> {
                     }

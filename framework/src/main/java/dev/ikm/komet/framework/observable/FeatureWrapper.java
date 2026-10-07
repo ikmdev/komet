@@ -36,14 +36,14 @@ import java.util.Optional;
  */
 public final class FeatureWrapper<DT> implements Feature<DT> {
     private final ObservableComponent containingComponent;
-    private final int patternNid;
+    private final long patternNid;
     private final int patternIndex;
     private final ReadOnlyProperty<DT> valueProperty;
     private final ReadOnlyProperty<Feature<DT>> featureProperty;
     public final FeatureKey locator;
 
 
-    public FeatureWrapper(Property<DT> valueProperty, int patternNid,
+    public FeatureWrapper(Property<DT> valueProperty, long patternNid,
                           int patternIndex, ObservableComponent containingComponent, FeatureKey featureKey) {
         this.featureProperty = new ReadOnlyObjectWrapper(this).getReadOnlyProperty();
         this.containingComponent = containingComponent;
@@ -53,7 +53,7 @@ public final class FeatureWrapper<DT> implements Feature<DT> {
         this.valueProperty = valueProperty;
     }
 
-    public FeatureWrapper(DT value, int patternNid, int patternIndex, ObservableComponent containingComponent,
+    public FeatureWrapper(DT value, long patternNid, int patternIndex, ObservableComponent containingComponent,
                           FeatureKey featureKey) {
         this.containingComponent = containingComponent;
         this.patternNid = patternNid;
@@ -63,7 +63,7 @@ public final class FeatureWrapper<DT> implements Feature<DT> {
         this.featureProperty = new ReadOnlyObjectWrapper(this).getReadOnlyProperty();
     }
 
-    public int patternNid() {
+    public long patternNid() {
         return patternNid;
     }
 

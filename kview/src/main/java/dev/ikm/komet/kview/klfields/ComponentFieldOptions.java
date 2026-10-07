@@ -93,7 +93,7 @@ public final class ComponentFieldOptions {
                 .or(() -> optionsForConcept(viewCalculator, fieldDefinition.purposeNid()));
     }
 
-    private static Optional<List<EntityProxy>> optionsForConcept(ViewCalculator viewCalculator, int conceptNid) {
+    private static Optional<List<EntityProxy>> optionsForConcept(ViewCalculator viewCalculator, long conceptNid) {
         // Description types are deliberately NOT the descendants of DESCRIPTION_TYPE — that subtree
         // also holds unrelated metadata concepts (extended relationship type, inferred navigation, ...).
         // Use a fixed set instead: the classic windows' pair
@@ -118,7 +118,7 @@ public final class ComponentFieldOptions {
      * The concept whose descendants form the allowed choices for a field matched by the given
      * meaning or purpose concept, or empty when no rule matches.
      */
-    private static Optional<ConceptFacade> optionsParentForConcept(int conceptNid) {
+    private static Optional<ConceptFacade> optionsParentForConcept(long conceptNid) {
         if (conceptNid == DESCRIPTION_CASE_SIGNIFICANCE.nid()) {
             return Optional.of(DESCRIPTION_CASE_SIGNIFICANCE);
         }
@@ -141,7 +141,7 @@ public final class ComponentFieldOptions {
     }
 
     private static Stream<EntityProxy> fetchDescendents(ViewCalculator viewCalculator, ConceptFacade parent) {
-        return viewCalculator.descendentsOf(parent.nid()).intStream()
+        return viewCalculator.descendentsOf(parent.nid()).longStream()
                 .mapToObj(nid -> EntityHandle.get(nid).expectConcept().toProxy());
     }
 

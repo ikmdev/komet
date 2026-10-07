@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
@@ -64,10 +65,10 @@ public class LidrKlWindowFactory implements EntityKlWindowFactory {
                 final ViewProperties viewProperties = journalViewProperties;
 
                 // Try to extract entity facade from saved state
-                final OptionalInt entityNid = windowState.resolveEntityNid();
+                final OptionalLong entityNid = windowState.resolveEntityNid();
                 EntityFacade entityFacade = null;
                 if (entityNid.isPresent()) {
-                    entityFacade = EntityHandle.get(entityNid.getAsInt()).orNull();
+                    entityFacade = EntityHandle.get(entityNid.getAsLong()).orNull();
                 }
 
                 // Create the window with the extracted parameters

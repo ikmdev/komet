@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.util.Optional;
-import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.UUID;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -96,21 +96,21 @@ class WindowStateEntityTest {
 
     @Test
     void aRestoredWindowFindsItsEntityThroughTheUuid() {
-        int nid = KernelTerm.ENGLISH_LANGUAGE.nid();
+        long nid = KernelTerm.ENGLISH_LANGUAGE.nid();
         stateFor(uuidOf(KernelTerm.ENGLISH_LANGUAGE)).saveToPreferences(preferences);
 
         EntityKlWindowState restored = EntityKlWindowState.fromPreferences(preferences);
 
-        assertEquals(OptionalInt.of(nid), restored.resolveEntityNid());
+        assertEquals(OptionalLong.of(nid), restored.resolveEntityNid());
     }
 
     @Test
     void anyOfTheEntitysUuidsFindsIt() {
-        int nid = KernelTerm.ENGLISH_LANGUAGE.nid();
+        long nid = KernelTerm.ENGLISH_LANGUAGE.nid();
         for (UUID any : KernelTerm.ENGLISH_LANGUAGE.publicId().asUuidArray()) {
             stateFor(any).saveToPreferences(preferences);
 
-            assertEquals(OptionalInt.of(nid), EntityKlWindowState.fromPreferences(preferences).resolveEntityNid(),
+            assertEquals(OptionalLong.of(nid), EntityKlWindowState.fromPreferences(preferences).resolveEntityNid(),
                     "restored through " + any);
         }
     }
@@ -120,16 +120,16 @@ class WindowStateEntityTest {
         // Preferences as an earlier build left them, read against a knowledge base in which the
         // stored nid belongs to a different component: the UUID is English Language, and the
         // nid is the one this knowledge base gives Language.
-        int english = KernelTerm.ENGLISH_LANGUAGE.nid();
-        int language = KernelTerm.LANGUAGE.nid();
+        long english = KernelTerm.ENGLISH_LANGUAGE.nid();
+        long language = KernelTerm.LANGUAGE.nid();
         preferences.put(EntityKlWindowState.WINDOW_ID, UUID.randomUUID().toString());
         preferences.put(EntityKlWindowState.WINDOW_TYPE, EntityKlWindowTypes.CONCEPT.toString());
         preferences.put(EntityKlWindowState.ENTITY_UUID, uuidOf(KernelTerm.ENGLISH_LANGUAGE).toString());
-        preferences.putInt(ENTITY_NID_KEY_OF_EARLIER_BUILDS, language);
+        preferences.putInt(ENTITY_NID_KEY_OF_EARLIER_BUILDS, Math.toIntExact(language));
 
         EntityKlWindowState restored = EntityKlWindowState.fromPreferences(preferences);
 
-        assertEquals(OptionalInt.of(english), restored.resolveEntityNid(),
+        assertEquals(OptionalLong.of(english), restored.resolveEntityNid(),
                 "the window follows the UUID; the stored nid would have opened it on Language");
 
         assertTrue(restored.saveToPreferences(preferences));

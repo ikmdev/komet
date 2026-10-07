@@ -15,8 +15,8 @@
  */
 package dev.ikm.komet.framework.observable.read;
 
-import dev.ikm.tinkar.common.id.IntIdList;
-import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.LongIdList;
+import dev.ikm.tinkar.common.id.LongIdSet;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityHandle;
@@ -47,7 +47,7 @@ public final class NavigationReads {
     public static Set<ConceptEntity> leafDescendantsOf(ViewCalculator viewCalculator, EntityFacade concept) {
         Objects.requireNonNull(viewCalculator, "View calculator cannot be null");
         Objects.requireNonNull(concept, "Concept cannot be null");
-        return viewCalculator.descendentsOf(concept.nid()).intStream()
+        return viewCalculator.descendentsOf(concept.nid()).longStream()
                 .filter(nid -> viewCalculator.childrenOf(nid).isEmpty())
                 .mapToObj(nid -> EntityHandle.get(nid).expectConcept())
                 .collect(Collectors.toSet());
@@ -57,14 +57,14 @@ public final class NavigationReads {
     public static Set<ConceptEntity> childrenOf(ViewCalculator viewCalculator, EntityFacade concept) {
         Objects.requireNonNull(viewCalculator, "View calculator cannot be null");
         Objects.requireNonNull(concept, "Concept cannot be null");
-        IntIdList children = viewCalculator.navigationCalculator().childrenOf(concept.nid());
-        return children.intStream()
+        LongIdList children = viewCalculator.navigationCalculator().childrenOf(concept.nid());
+        return children.longStream()
                 .mapToObj(nid -> EntityHandle.get(nid).expectConcept())
                 .collect(Collectors.toSet());
     }
 
-    private static Set<ConceptEntity> concepts(IntIdSet nids) {
-        return nids.intStream()
+    private static Set<ConceptEntity> concepts(LongIdSet nids) {
+        return nids.longStream()
                 .mapToObj(nid -> EntityHandle.get(nid).expectConcept())
                 .collect(Collectors.toSet());
     }

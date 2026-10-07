@@ -20,8 +20,8 @@ import dev.ikm.komet.framework.PseudoClasses;
 import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.id.IntIdList;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIdList;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.component.graph.DiTree;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
@@ -95,13 +95,13 @@ public class AxiomView implements PropertyEditor<DiTree<EntityVertex>> {
         }
     }
 
-    public static final Node computeGraphic(int conceptNid, boolean expanded, State state, ViewProperties viewProperties, PremiseType premiseType) {
+    public static final Node computeGraphic(long conceptNid, boolean expanded, State state, ViewProperties viewProperties, PremiseType premiseType) {
 
         if (conceptNid == -1
                 || conceptNid == KernelTerm.UNINITIALIZED_COMPONENT.nid()) {
             return Icon.ALERT_CONFIRM2.makeIcon();
         }
-        IntIdList parents = IntIds.list.empty();
+        LongIdList parents = LongIds.list.empty();
         try {
             parents = viewProperties.calculator().navigationCalculator().parentsOf(conceptNid);
         } catch (RuntimeException ex) {
@@ -243,7 +243,7 @@ public class AxiomView implements PropertyEditor<DiTree<EntityVertex>> {
         throw new UnsupportedOperationException();
     }
 
-    int getEntityBeingDefinedNid() {
+    long getEntityBeingDefinedNid() {
         return this.axiomTreeSemanticVersion.referencedComponentNid();
     }
 

@@ -315,6 +315,8 @@
                         <arg>-Xplugin:NidCheck report=${nid-check.report} allow=${nid-check.allow}</arg>
                         <arg>-Xmaxwarns</arg>
                         <arg>${javac.maxwarns}</arg>
+                        <arg>-Xmaxerrs</arg>
+                        <arg>10000</arg>
                     </compilerArgs>
                     <annotationProcessorPathsUseDepMgmt>true</annotationProcessorPathsUseDepMgmt>
                     <annotationProcessorPaths combine.children="append">

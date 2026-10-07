@@ -29,7 +29,7 @@ import org.junit.jupiter.api.TestInstance;
 
 import java.io.File;
 import java.util.Optional;
-import java.util.OptionalInt;
+import java.util.OptionalLong;
 
 import static dev.ikm.komet.framework.dnd.KometClipboard.KOMET_CONCEPT_PROXY;
 import static dev.ikm.komet.framework.dnd.KometClipboard.KOMET_PATTERN_PROXY;
@@ -63,18 +63,18 @@ class KometClipboardComponentITestFX {
     }
 
     /** The nid the clipboard's {@code format} proxy decodes to, or empty when the format is absent. */
-    private static OptionalInt nidOf(KometClipboard content, DataFormat format) {
+    private static OptionalLong nidOf(KometClipboard content, DataFormat format) {
         return content.containsKey(format)
                 ? KometClipboard.nidFromProxyXml((String) content.get(format))
-                : OptionalInt.empty();
+                : OptionalLong.empty();
     }
 
     @Test
     void aConceptAdvertisesItsConceptProxyAndNoSemantic() {
-        int conceptNid = KernelTerm.ENGLISH_LANGUAGE.nid();
+        long conceptNid = KernelTerm.ENGLISH_LANGUAGE.nid();
         KometClipboard content = KometClipboard.forComponent(conceptNid);
 
-        assertEquals(OptionalInt.of(conceptNid), nidOf(content, KOMET_CONCEPT_PROXY),
+        assertEquals(OptionalLong.of(conceptNid), nidOf(content, KOMET_CONCEPT_PROXY),
                 "a concept advertises its concept proxy");
         assertFalse(content.containsKey(KOMET_SEMANTIC_PROXY), "a concept is not a semantic");
         assertTrue(content.containsKey(DataFormat.PLAIN_TEXT), "and carries a plain-text fallback");
@@ -82,26 +82,26 @@ class KometClipboardComponentITestFX {
 
     @Test
     void aDescriptionAdvertisesBothItsSemanticProxyAndTheResolvedConcept() {
-        int conceptNid = KernelTerm.ENGLISH_LANGUAGE.nid();
+        long conceptNid = KernelTerm.ENGLISH_LANGUAGE.nid();
         Optional<SemanticEntity<SemanticEntityVersion>> description = EntityService.get()
                 .semanticsForComponentOfPattern(conceptNid, KernelTerm.DESCRIPTION_PATTERN.nid()).findFirst();
         assertTrue(description.isPresent(), "English Language must carry description semantics");
-        int descriptionNid = description.get().nid();
+        long descriptionNid = description.get().nid();
 
         KometClipboard content = KometClipboard.forComponent(descriptionNid);
 
-        assertEquals(OptionalInt.of(descriptionNid), nidOf(content, KOMET_SEMANTIC_PROXY),
+        assertEquals(OptionalLong.of(descriptionNid), nidOf(content, KOMET_SEMANTIC_PROXY),
                 "a description advertises itself (the semantic) for a description-aware target");
-        assertEquals(OptionalInt.of(conceptNid), nidOf(content, KOMET_CONCEPT_PROXY),
+        assertEquals(OptionalLong.of(conceptNid), nidOf(content, KOMET_CONCEPT_PROXY),
                 "and the resolved concept it describes, so a concept drop target finds a concept");
     }
 
     @Test
     void aPatternAdvertisesItsPatternProxyButNoConcept() {
-        int patternNid = KernelTerm.DESCRIPTION_PATTERN.nid();
+        long patternNid = KernelTerm.DESCRIPTION_PATTERN.nid();
         KometClipboard content = KometClipboard.forComponent(patternNid);
 
-        assertEquals(OptionalInt.of(patternNid), nidOf(content, KOMET_PATTERN_PROXY),
+        assertEquals(OptionalLong.of(patternNid), nidOf(content, KOMET_PATTERN_PROXY),
                 "a pattern advertises its pattern proxy");
         assertFalse(content.containsKey(KOMET_CONCEPT_PROXY),
                 "a pattern is not a concept and references none, so carries no concept proxy");

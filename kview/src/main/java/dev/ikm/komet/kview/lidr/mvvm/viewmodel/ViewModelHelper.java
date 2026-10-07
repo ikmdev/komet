@@ -23,8 +23,8 @@ import dev.ikm.komet.kview.data.persistence.STAMPWriter;
 import dev.ikm.komet.kview.data.persistence.SemanticWriter;
 import dev.ikm.komet.kview.lidr.mvvm.model.LidrRecord;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
-import dev.ikm.tinkar.common.id.IntIdSet;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIdSet;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.component.Concept;
@@ -173,7 +173,7 @@ public class ViewModelHelper {
 
         Supplier<MutableList<Object>> fieldsSupplier = () -> {
             // Allowable Results. Such as detected or not detected
-            IntIdSet allowableResultsNids = allowableResults.size() == 0 ? IntIds.set.empty() : IntIds.set.of(allowableResults,
+            LongIdSet allowableResultsNids = allowableResults.size() == 0 ? LongIds.set.empty() : LongIds.set.of(allowableResults,
                     (entityFacade) -> entityFacade.nid());
 
             // Create pattern's field definitions

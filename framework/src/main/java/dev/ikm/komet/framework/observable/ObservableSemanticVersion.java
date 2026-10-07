@@ -61,7 +61,7 @@ public final class ObservableSemanticVersion
     }
 
     @Override
-    public int patternNid() {
+    public long patternNid() {
         return version().patternNid();
     }
 
@@ -304,7 +304,7 @@ public final class ObservableSemanticVersion
         }
 
         @Override
-        protected SemanticVersionRecord createVersionWithStamp(SemanticVersionRecord version, int stampNid) {
+        protected SemanticVersionRecord createVersionWithStamp(SemanticVersionRecord version, long stampNid) {
             return version.withStampNid(stampNid);
         }
 

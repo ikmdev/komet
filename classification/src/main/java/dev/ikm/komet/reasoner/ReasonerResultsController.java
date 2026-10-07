@@ -15,16 +15,19 @@
  */
 package dev.ikm.komet.reasoner;
 
+import org.eclipse.collections.api.list.primitive.ImmutableLongList;
+import org.eclipse.collections.api.list.primitive.MutableLongList;
+
 import java.net.URL;
 import java.text.NumberFormat;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.function.Function;
 
-import dev.ikm.komet.framework.observable.collection.ObservableIntList;
+import dev.ikm.komet.framework.observable.collection.ObservableLongList;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.primitive.ImmutableIntObjectMap;
+import org.eclipse.collections.api.map.primitive.ImmutableLongObjectMap;
 
 import dev.ikm.komet.framework.activity.ActivityStream;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -32,11 +35,11 @@ import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.service.RemoteReasonerService;
 import dev.ikm.tinkar.common.id.PublicIds;
-import org.eclipse.collections.api.factory.primitive.IntLists;
-import org.eclipse.collections.api.factory.primitive.IntSets;
+import org.eclipse.collections.api.factory.primitive.LongLists;
+import org.eclipse.collections.api.factory.primitive.LongSets;
 import org.eclipse.collections.api.factory.Sets;
-import org.eclipse.collections.api.list.primitive.ImmutableIntList;
-import org.eclipse.collections.api.list.primitive.MutableIntList;
+import org.eclipse.collections.api.list.primitive.ImmutableLongList;
+import org.eclipse.collections.api.list.primitive.MutableLongList;
 import dev.ikm.tinkar.reasoner.service.ClassifierResults;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -87,10 +90,10 @@ public class ReasonerResultsController {
     private TitledPane inferredChangesPane;
 
     @FXML
-    private ListView<Integer> inferredChangesList;
+    private ListView<Long> inferredChangesList;
 
     @FXML
-    private ListView<Integer> orphanList;
+    private ListView<Long> orphanList;
 
     @FXML
     private TitledPane stampCoordinatePane;
@@ -130,10 +133,10 @@ public class ReasonerResultsController {
         assert editCoordinatePane != null : "fx:id=\"editCoordinatePane\" was not injected: check your FXML file 'ClassifierResultsInterface.fxml'.";
         assert editTextArea != null : "fx:id=\"editTextArea\" was not injected: check your FXML file 'ClassifierResultsInterface.fxml'.";
 
-        inferredChangesList.setItems(new ObservableIntList());
+        inferredChangesList.setItems(new ObservableLongList());
         inferredChangesList.setCellFactory(conceptCellFactory());
         orphanList.setCellFactory(conceptCellFactory());
-        orphanList.setItems(new ObservableIntList());
+        orphanList.setItems(new ObservableLongList());
         orphanList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         inferredChangesList.getSelectionModel().getSelectedItems().addListener(this::onChanged);
         inferredChangesList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -166,23 +169,23 @@ public class ReasonerResultsController {
         equivalenciesTree.setContextMenu(contextMenuConsumer.apply(equivalenciesTree));
     }
 
-    private void onChanged(ListChangeListener.Change<? extends Integer> change) {
+    private void onChanged(ListChangeListener.Change<? extends Long> change) {
         if (!change.getList().isEmpty()) {
             MutableList<EntityFacade> changeList = Lists.mutable.ofInitialCapacity(change.getList().size());
-            for (Integer conceptNid: change.getList()) {
+            for (Long conceptNid: change.getList()) {
                 changeList.add(EntityProxy.Concept.make(conceptNid));
             }
             this.activityStream.dispatch(changeList.toImmutable());
         }
     }
 
-    private Callback<ListView<Integer>, ListCell<Integer>> conceptCellFactory() {
+    private Callback<ListView<Long>, ListCell<Long>> conceptCellFactory() {
         return new Callback<>() {
             @Override
-            public ListCell<Integer> call(ListView<Integer> param) {
+            public ListCell<Long> call(ListView<Long> param) {
                 return new ListCell<>() {
                     @Override
-                    protected void updateItem(final Integer item, boolean empty) {
+                    protected void updateItem(final Long item, boolean empty) {
                         super.updateItem(item, empty);
                         if (item == null || empty) {
                             setText("");
@@ -230,7 +233,7 @@ public class ReasonerResultsController {
         cyclesPane.setText(cyclesPane.getText() + ": not reported remotely");
         cyclesPane.setDisable(true);
 
-        ImmutableIntList orphans = toNids(outcome.orphans());
+        ImmutableLongList orphans = toNids(outcome.orphans());
         if (orphans.isEmpty()) {
             orphansPane.setText(orphansPane.getText() + ": none");
             orphansPane.setDisable(true);
@@ -238,10 +241,10 @@ public class ReasonerResultsController {
             orphansPane.setText(orphansPane.getText() + ": "
                     + NumberFormat.getInstance().format(orphans.size()));
             TinkExecutor.threadPool().submit(new PrepareConceptSetTask("Sorting list of orphans",
-                    IntSets.immutable.ofAll(orphans), orphanList.getItems(), this.viewProperties));
+                    LongSets.immutable.ofAll(orphans), orphanList.getItems(), this.viewProperties));
         }
 
-        Set<ImmutableIntList> equivalentSets = outcome.equivalentSets().stream()
+        Set<ImmutableLongList> equivalentSets = outcome.equivalentSets().stream()
                 .map(this::toNids)
                 .collect(java.util.stream.Collectors.toSet());
         if (equivalentSets.isEmpty()) {
@@ -254,7 +257,7 @@ public class ReasonerResultsController {
                     Sets.immutable.ofAll(equivalentSets), equivalenciesTree, this.viewProperties));
         }
 
-        ImmutableIntList inferredChanges = toNids(outcome.conceptsWithInferredChanges());
+        ImmutableLongList inferredChanges = toNids(outcome.conceptsWithInferredChanges());
         if (inferredChanges.isEmpty()) {
             inferredChangesPane.setText(inferredChangesPane.getText() + ": none");
             inferredChangesPane.setDisable(true);
@@ -262,7 +265,7 @@ public class ReasonerResultsController {
             inferredChangesPane.setText(inferredChangesPane.getText() + ": "
                     + NumberFormat.getInstance().format(inferredChanges.size()));
             TinkExecutor.threadPool().submit(new PrepareConceptSetTask(
-                    "Sorting list of inferred changes", IntSets.immutable.ofAll(inferredChanges),
+                    "Sorting list of inferred changes", LongSets.immutable.ofAll(inferredChanges),
                     inferredChangesList.getItems(), this.viewProperties));
         }
 
@@ -284,8 +287,8 @@ public class ReasonerResultsController {
      * Resolves public IDs to this store's nids. In gRPC mode an unknown concept is fetched on
      * demand, so this can block — callers run it off the UI thread.
      */
-    private ImmutableIntList toNids(java.util.List<java.util.List<java.util.UUID>> publicIds) {
-        MutableIntList nids = IntLists.mutable.empty();
+    private ImmutableLongList toNids(java.util.List<java.util.List<java.util.UUID>> publicIds) {
+        MutableLongList nids = LongLists.mutable.empty();
         for (java.util.List<java.util.UUID> uuids : publicIds) {
             if (uuids.isEmpty()) {
                 continue;
@@ -328,7 +331,7 @@ public class ReasonerResultsController {
             this.conceptSetPane.setDisable(true);
             this.conceptSetPane.setExpanded(false);
             if (classifierResults.getCycles().notEmpty()) {
-                ImmutableIntObjectMap<Set<int[]>> cycles = classifierResults.getCycles();
+                ImmutableLongObjectMap<Set<long[]>> cycles = classifierResults.getCycles();
                 cyclesPane.setText(cyclesPane.getText() + ": " + NumberFormat.getInstance().format(cycles.size()));
                 TreeItem<StringWithOptionalConceptFacade> root = new TreeItem<>(new StringWithOptionalConceptFacade("Cycles Root"));
                 root.setExpanded(true);
@@ -336,12 +339,12 @@ public class ReasonerResultsController {
                     TreeItem<StringWithOptionalConceptFacade> conceptWithCycle = new TreeItem<>(new StringWithOptionalConceptFacade(
                             PrimitiveData.text(key), EntityProxy.Concept.make(key)));
                     root.getChildren().add(conceptWithCycle);
-                    for (int[] cycleSet: cycleSets) {
+                    for (long[] cycleSet: cycleSets) {
                         TreeItem<StringWithOptionalConceptFacade> cycleSetTreeItem = new TreeItem<>(new StringWithOptionalConceptFacade(
                                 "cycle elements"));
                         cycleSetTreeItem.setExpanded(true);
                         conceptWithCycle.getChildren().add(cycleSetTreeItem);
-                        for (int nid: cycleSet) {
+                        for (long nid: cycleSet) {
                             TreeItem<StringWithOptionalConceptFacade> conceptInCycle = new TreeItem<>(new StringWithOptionalConceptFacade(
                                     PrimitiveData.text(nid), EntityProxy.Concept.make(nid)));
                             cycleSetTreeItem.getChildren().add(conceptInCycle);

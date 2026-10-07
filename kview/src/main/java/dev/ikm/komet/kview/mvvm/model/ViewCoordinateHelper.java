@@ -1,7 +1,7 @@
 package dev.ikm.komet.kview.mvvm.model;
 
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.LongIdSet;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
@@ -61,9 +61,9 @@ public class ViewCoordinateHelper {
      * @param viewProperties A given view property
      * @return newViewCalculatorWithCache
      */
-    public static ViewCalculatorWithCache createNavigationCalculatorWithPatternNidsLatest(ViewProperties viewProperties, int... patternNids) {
+    public static ViewCalculatorWithCache createNavigationCalculatorWithPatternNidsLatest(ViewProperties viewProperties, long... patternNids) {
         ViewCalculator existingViewCalculator = viewProperties.calculator();
-        IntIdSet intIdSet = existingViewCalculator.navigationCoordinate().navigationPatternNids().with(patternNids);
+        LongIdSet intIdSet = existingViewCalculator.navigationCoordinate().navigationPatternNids().with(patternNids);
         NavigationCoordinateRecord latestNavigationCoordinate = existingViewCalculator.navigationCoordinate().withNavigationPatternNids(intIdSet);
         ViewCoordinateRecord latestViewCoordinate = existingViewCalculator.viewCoordinateRecord().withNavigationCoordinate(latestNavigationCoordinate);
         return new ViewCalculatorWithCache(latestViewCoordinate);

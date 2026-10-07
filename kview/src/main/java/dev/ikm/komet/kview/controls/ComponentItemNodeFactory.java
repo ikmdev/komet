@@ -89,7 +89,7 @@ public final class ComponentItemNodeFactory {
         }
 
         ViewCalculator calculator = Calculators.View.Default();
-        int nid = PrimitiveData.nid(publicId);
+        long nid = PrimitiveData.nid(publicId);
         KonceptKind kind = KonceptKindResolver.resolve(nid, calculator);
         componentItemNode.setKonceptKind(kind);
         componentItemNode.setKonceptStatus(kind == KonceptKind.CONCEPT

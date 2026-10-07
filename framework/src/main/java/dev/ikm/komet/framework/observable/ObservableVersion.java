@@ -75,7 +75,7 @@ public sealed interface ObservableVersion extends ObservableComponent, Feature<O
     }
 
     @Override
-    default int patternNid() {
+    default long patternNid() {
         return switch (this) {
             case ObservableConceptVersion cv -> cv.patternNid();
             case ObservablePatternVersion pv -> pv.patternNid();

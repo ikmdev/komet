@@ -29,14 +29,15 @@ import static dev.ikm.komet.terms.KometTerm.IMAGE_FIELD;
 import static dev.ikm.tinkar.terms.KernelTerm.INTEGER_FIELD;
 import static dev.ikm.tinkar.terms.KernelTerm.STRING;
 
-import dev.ikm.tinkar.common.id.IntIdCollection;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIdCollection;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.common.id.Nid;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.component.SemanticVersion;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
@@ -334,9 +335,9 @@ public final class ObservableComposer {
     private static final Logger LOG = LoggerFactory.getLogger(ObservableComposer.class);
 
     private final ViewCalculator viewCalculator;
-    private final int authorNid;
-    private final int moduleNid;
-    private final int pathNid;
+    private final long authorNid;
+    private final long moduleNid;
+    private final long pathNid;
     private final State defaultState;
     private final String transactionComment;
 
@@ -373,7 +374,7 @@ public final class ObservableComposer {
      * @param defaultState the default state for entities (typically State.ACTIVE); must not be null
      * @param transactionComment an optional descriptive comment for the transaction
      */
-    private ObservableComposer(ViewCalculator viewCalculator, int authorNid, int moduleNid, int pathNid, State defaultState, String transactionComment) {
+    private ObservableComposer(ViewCalculator viewCalculator, long authorNid, long moduleNid, long pathNid, State defaultState, String transactionComment) {
         requireJavaFXThread();
         this.viewCalculator = Objects.requireNonNull(viewCalculator, "stampCalculator cannot be null");
         this.authorNid = Nid.validate(authorNid);
@@ -462,7 +463,7 @@ public final class ObservableComposer {
      * @param nid the NID of the entity to snapshot
      * @return snapshot of the entity, or empty if entity doesn't exist
      */
-    public Optional<? extends ObservableEntitySnapshot<?, ?>> snapshot(int nid) {
+    public Optional<? extends ObservableEntitySnapshot<?, ?>> snapshot(long nid) {
         ObservableEntityHandle handle = ObservableEntityHandle.get(nid);
         if (handle.isPresent()) {
             return Optional.of(switch (handle.expectEntity()) {
@@ -656,9 +657,9 @@ public final class ObservableComposer {
             } else if (f.dataTypeNid() == BOOLEAN_FIELD.nid()) {
                 fieldsValues.add(false);
             } else if (f.dataTypeNid() == COMPONENT_ID_LIST_FIELD.nid()) {
-                fieldsValues.add(IntIds.list.empty());
+                fieldsValues.add(LongIds.list.empty());
             } else if (f.dataTypeNid() == COMPONENT_ID_SET_FIELD.nid()) {
-                fieldsValues.add(IntIds.set.empty());
+                fieldsValues.add(LongIds.set.empty());
             } else if (f.dataTypeNid() == IMAGE_FIELD.nid()) {
                 // create empty byte array to save in DB implies blank image
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -701,7 +702,7 @@ public final class ObservableComposer {
             case Integer number -> number == 0;
             case Float number -> number == 0.0F;
             case Boolean flag -> !flag;
-            case IntIdCollection ids -> ids.isEmpty();
+            case LongIdCollection ids -> ids.isEmpty();
             case byte[] bytes -> bytes.length == 0;
             case DiTreeEntity tree -> tree.vertexCount() <= 1;
             default -> false;
@@ -886,15 +887,15 @@ public final class ObservableComposer {
         return transaction;
     }
 
-    int getAuthorNid() {
+    long getAuthorNid() {
         return authorNid;
     }
 
-    int getModuleNid() {
+    long getModuleNid() {
         return moduleNid;
     }
 
-    int getPathNid() {
+    long getPathNid() {
         return pathNid;
     }
 
@@ -1296,13 +1297,13 @@ public final class ObservableComposer {
         private SemanticRecord semanticRecord;
         private ObservableStamp stampEntity;
 
-        private ObservableSemanticBuilder(ObservableComposer composer, int referencedComponentNid, int patternNid) {
+        private ObservableSemanticBuilder(ObservableComposer composer, long referencedComponentNid, long patternNid) {
             super(composer);
             this.referencedComponent = ObservableEntityHandle.get(referencedComponentNid).expectEntity();
             this.pattern = EntityHandle.get(patternNid).expectPattern();
         }
 
-        private ObservableSemanticBuilder(ObservableComposer composer, ObservableEntity referencedComponent, int patternNid) {
+        private ObservableSemanticBuilder(ObservableComposer composer, ObservableEntity referencedComponent, long patternNid) {
             super(composer);
             this.referencedComponent = referencedComponent;
             this.pattern = EntityHandle.get(patternNid).expectPattern();
@@ -1594,6 +1595,26 @@ public final class ObservableComposer {
     }
 
     /**
+     * The version an editor starts from: the latest version under this composer's view, as the
+     * stamp calculator finds it. Not {@code versions().getLast()}: the versions are in the hash
+     * order of their stamp nids, which changed when nids widened to {@code long}, so the last of
+     * them is not the latest. When the calculator finds no latest version, as for an entity whose
+     * only versions are outside the view, the last version is used, as before.
+     */
+    <OV extends ObservableEntityVersion<?, ?>> OV versionToEdit(ObservableEntity<OV> entity) {
+        Latest<EntityVersion> latest = viewCalculator.latest(entity.nid());
+        if (latest.isPresent()) {
+            long stampNid = latest.get().stampNid();
+            for (OV version : entity.versions()) {
+                if (version.stampNid() == stampNid) {
+                    return version;
+                }
+            }
+        }
+        return entity.versions().getLast();
+    }
+
+    /**
      * Editor for modifying EXISTING concept entities.
      * <p>     * Use this when you need to edit a concept that already exists in the database.
      * The editor creates a new editable version with the composer's STAMP coordinates,
@@ -1661,7 +1682,7 @@ public final class ObservableComposer {
             if (editableVersion == null) {
                 // Create editable version with composer's stamp
                 ObservableStamp stamp = composer.createStamp(composer.getDefaultState(), concept.entity());
-                ObservableConceptVersion latestVersion = concept.versions().getLast();
+                ObservableConceptVersion latestVersion = composer.versionToEdit(concept);
                 editableVersion = latestVersion.getEditableVersion(stamp, composer.getOrCreateTransaction());
                 composer.trackEditable(editableVersion);
             }
@@ -1787,7 +1808,7 @@ public final class ObservableComposer {
 
                 }
                 LOG.info("### SEMANTIC VERSION LIST: {}", semantic.versions());
-                ObservableSemanticVersion latestVersion = semantic.versions().getLast();
+                ObservableSemanticVersion latestVersion = composer.versionToEdit(semantic);
                 editableVersion = latestVersion.getEditableVersion(stamp, composer.getOrCreateTransaction());
                 composer.trackEditable(editableVersion);
             }
@@ -1855,7 +1876,7 @@ public final class ObservableComposer {
         public ObservablePatternVersion.Editable getEditableVersion() {
             if (editableVersion == null) {
                 ObservableStamp stamp = composer.createStamp(composer.getDefaultState(), pattern.entity());
-                ObservablePatternVersion latestVersion = pattern.versions().getLast();
+                ObservablePatternVersion latestVersion = composer.versionToEdit(pattern);
                 editableVersion = latestVersion.getEditableVersion(stamp, composer.getOrCreateTransaction());
                 composer.trackEditable(editableVersion);
             }

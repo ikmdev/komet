@@ -74,12 +74,12 @@ public class GenPurposeKLWindowFactory implements EntityKlWindowFactory {
                 final ViewProperties viewProperties = journalViewProperties;
 
                 // Try to extract entity facade from saved state
-                final OptionalInt entityNid = windowState.resolveEntityNid();
+                final OptionalLong entityNid = windowState.resolveEntityNid();
                 final NidTextEnum nidTextEnum = NidTextEnum.fromString(windowState.getEntityNidType())
                         .orElse(NidTextEnum.NID_TEXT);
                 EntityFacade entityFacade = null;
                 if (entityNid.isPresent()) {
-                    entityFacade = fetchEntity(entityNid.getAsInt(), nidTextEnum);
+                    entityFacade = fetchEntity(entityNid.getAsLong(), nidTextEnum);
                 }
 
                 // Resolve the KL-editor window definition (title, sections, fields) the window
@@ -134,7 +134,7 @@ public class GenPurposeKLWindowFactory implements EntityKlWindowFactory {
      * @return the concept entity or null if creation failed
      */
     @SuppressWarnings("unchecked")
-    private EntityFacade fetchEntity(int entityNid, NidTextEnum nidTextEnum) {
+    private EntityFacade fetchEntity(long entityNid, NidTextEnum nidTextEnum) {
         // Only SEMANTIC_ENTITY needs special handling
         if (nidTextEnum == NidTextEnum.SEMANTIC_ENTITY) {
             return Entity.getConceptForSemantic(entityNid)

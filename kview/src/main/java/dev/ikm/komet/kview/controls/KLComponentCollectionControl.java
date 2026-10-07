@@ -1,7 +1,7 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLComponentCollectionControlSkin;
-import dev.ikm.tinkar.common.id.IntIdCollection;
+import dev.ikm.tinkar.common.id.LongIdCollection;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -37,7 +37,7 @@ import java.util.function.Function;
  *
  * @see KLComponentControl
  */
-public class KLComponentCollectionControl<T extends IntIdCollection> extends Control {
+public class KLComponentCollectionControl<T extends LongIdCollection> extends Control {
 
     /**
      * Creates a KLComponentListControl
@@ -69,7 +69,7 @@ public class KLComponentCollectionControl<T extends IntIdCollection> extends Con
 
     // -- value
     /**
-     * This property holds a generic type T that extends from {@link IntIdCollection}.
+     * This property holds a generic type T that extends from {@link LongIdCollection}.
      */
     private final ObjectProperty<T> valueProperty = new SimpleObjectProperty<>();
     public final ObjectProperty<T> valueProperty() { return valueProperty; }

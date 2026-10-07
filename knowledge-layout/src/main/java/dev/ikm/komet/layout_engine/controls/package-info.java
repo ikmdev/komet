@@ -141,7 +141,7 @@
  *   <tr><td>{@link KlStringControl}</td><td>String</td><td>TextField</td></tr>
  *   <tr><td>KlIntegerControl</td><td>Integer</td><td>Spinner&lt;Integer&gt;</td></tr>
  *   <tr><td>KlConceptControl</td><td>ConceptFacade</td><td>ComboBox + Search</td></tr>
- *   <tr><td>KlConceptSetControl</td><td>IntIdSet</td><td>ListView + Add/Remove</td></tr>
+ *   <tr><td>KlConceptSetControl</td><td>LongIdSet</td><td>ListView + Add/Remove</td></tr>
  * </table>
  *
  * @see KlBooleanControl

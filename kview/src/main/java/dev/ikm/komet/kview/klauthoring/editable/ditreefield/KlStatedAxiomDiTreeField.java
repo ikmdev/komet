@@ -70,7 +70,7 @@ import java.util.List;
  */
 public class KlStatedAxiomDiTreeField extends BaseDefaultKlField<DiTreeEntity> implements KlDirectedTreeField<DiTreeEntity> {
 
-    private final int semanticNid;
+    private final long semanticNid;
 
     private final int fieldIndex;
 
@@ -78,7 +78,7 @@ public class KlStatedAxiomDiTreeField extends BaseDefaultKlField<DiTreeEntity> i
     private InlineEditSaver inlineEditSaver;
 
     /** Strong reference — the entity provider holds its subscribers weakly. */
-    private Subscriber<Integer> entityChangeSubscriber;
+    private Subscriber<Long> entityChangeSubscriber;
 
     public KlStatedAxiomDiTreeField(ObservableField<DiTreeEntity> observableDiTreeField, ObservableView observableView, ObservableStamp stamp4field) {
         KLDiTreeControl control = KLDiTreeControlFactory.create(observableView.calculator());

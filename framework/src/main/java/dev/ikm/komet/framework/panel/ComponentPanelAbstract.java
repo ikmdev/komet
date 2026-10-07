@@ -40,7 +40,7 @@ import java.util.Optional;
 
 public abstract class ComponentPanelAbstract {
     private static final Logger LOG = LoggerFactory.getLogger(ComponentPanelAbstract.class);
-    protected final ObservableSet<Integer> referencedNids;
+    protected final ObservableSet<Long> referencedNids;
     protected final BorderPane componentDetailPane = new BorderPane();
     protected final VBox componentPanelBox = new VBox(8);
     protected final ViewProperties viewProperties;
@@ -55,12 +55,12 @@ public abstract class ComponentPanelAbstract {
         this(viewProperties, FXCollections.observableSet(new HashSet<>()));
     }
 
-    protected ComponentPanelAbstract(ViewProperties viewProperties, ObservableSet<Integer> referencedNids) {
+    protected ComponentPanelAbstract(ViewProperties viewProperties, ObservableSet<Long> referencedNids) {
         this.viewProperties = viewProperties;
         this.referencedNids = referencedNids;
     }
 
-    public final ObservableSet<Integer> getReferencedNids() {
+    public final ObservableSet<Long> getReferencedNids() {
         return referencedNids;
     }
 

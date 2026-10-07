@@ -86,7 +86,7 @@ public class AddToKometBaseModelAction extends AbstractActionSuggested {
         return newSemantic;
     }
 
-    private void updateSemantic(int semanticNid, EditCoordinateRecord editCoordinateRecord) {
+    private void updateSemantic(long semanticNid, EditCoordinateRecord editCoordinateRecord) {
         SemanticRecord semanticEntity = EntityHandle.get(semanticNid).expectSemanticRecord();
         Transaction transaction = Transaction.make();
         ViewCoordinateRecord viewRecord = viewCalculator.viewCoordinateRecord();

@@ -52,12 +52,12 @@ public final class ObservableSemantic
     }
 
     @Override
-    public int referencedComponentNid() {
+    public long referencedComponentNid() {
         return ((SemanticEntity) entity()).referencedComponentNid();
     }
 
     @Override
-    public int patternNid() {
+    public long patternNid() {
         return ((SemanticEntity) entity()).patternNid();
     }
 
@@ -66,21 +66,21 @@ public final class ObservableSemantic
         return ((SemanticEntity) entity()).pattern();
     }
 
-    public static ObservableSemanticSnapshot getSemanticSnapshot(int semanticNid, ViewCalculator calculator) {
+    public static ObservableSemanticSnapshot getSemanticSnapshot(long semanticNid, ViewCalculator calculator) {
         ObservableSemantic observableSemantic = ObservableEntityHandle.get(semanticNid).expectSemantic();
         return observableSemantic.getSnapshot(calculator);
     }
 
-    public static Optional<ObservableSemanticSnapshot> getStatedAxiomSnapshot(int conceptNid, ViewCalculator calculator) {
+    public static Optional<ObservableSemanticSnapshot> getStatedAxiomSnapshot(long conceptNid, ViewCalculator calculator) {
         return getAxiomSnapshot(conceptNid, calculator.viewCoordinateRecord().logicCoordinate().statedAxiomsPatternNid(),
                 calculator);
     }
 
-    public static Optional<ObservableSemanticSnapshot> getInferredAxiomSnapshot(int conceptNid, ViewCalculator calculator) {
+    public static Optional<ObservableSemanticSnapshot> getInferredAxiomSnapshot(long conceptNid, ViewCalculator calculator) {
         return getAxiomSnapshot(conceptNid, calculator.viewCoordinateRecord().logicCoordinate().inferredAxiomsPatternNid(),
                 calculator);
     }
-    public static Optional<ObservableSemanticSnapshot> getAxiomSnapshot(int conceptNid, PremiseType premiseType, ViewCalculator calculator) {
+    public static Optional<ObservableSemanticSnapshot> getAxiomSnapshot(long conceptNid, PremiseType premiseType, ViewCalculator calculator) {
         return switch (premiseType) {
             case STATED -> getAxiomSnapshot(conceptNid, calculator.viewCoordinateRecord().logicCoordinate().statedAxiomsPatternNid(),
                     calculator);
@@ -89,7 +89,7 @@ public final class ObservableSemantic
         };
     }
 
-    public static Optional<ObservableSemanticSnapshot> getAxiomSnapshot(int conceptNid, int axiomPatterNid, ViewCalculator calculator) {
+    public static Optional<ObservableSemanticSnapshot> getAxiomSnapshot(long conceptNid, long axiomPatterNid, ViewCalculator calculator) {
 
 
         List<SemanticEntity<SemanticEntityVersion>> axiomSemantics = EntityService.get()

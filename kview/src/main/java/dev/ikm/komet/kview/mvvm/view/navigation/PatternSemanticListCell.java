@@ -32,7 +32,7 @@ public class PatternSemanticListCell extends ListCell<Object> {
 
     private static final Logger LOG = LoggerFactory.getLogger(PatternSemanticListCell.class);
 
-    private Function<Integer, String> fetchDescriptionByNid;
+    private Function<Long, String> fetchDescriptionByNid;
     private Function<EntityFacade, String> fetchDescriptionByFacade;
     private ViewProperties viewProperties;
 
@@ -43,7 +43,7 @@ public class PatternSemanticListCell extends ListCell<Object> {
     private EntityHandle currentEntityHandle;
     private String currentSemanticTitle;
 
-    public PatternSemanticListCell(Function<Integer, String> fetchDescriptionByNid,
+    public PatternSemanticListCell(Function<Long, String> fetchDescriptionByNid,
                                    ViewProperties viewProperties) {
 
         this.fetchDescriptionByNid = fetchDescriptionByNid;
@@ -79,7 +79,7 @@ public class PatternSemanticListCell extends ListCell<Object> {
             if (item instanceof String stringItem) {
                 setContentDisplay(ContentDisplay.TEXT_ONLY);
                 setText(stringItem);
-            } else if (item instanceof Integer nid) {
+            } else if (item instanceof Long nid) {
                 String entityDescriptionText = fetchDescriptionByNid.apply(nid);
                 currentEntityHandle = EntityHandle.get(nid);
                 setContentDisplay(ContentDisplay.GRAPHIC_ONLY);

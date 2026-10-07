@@ -28,7 +28,7 @@ public class ObservableCompoundVersion {
         setField(pattern.nid(), fieldMeaning.nid(), fieldValue);
     }
 
-    public void setField(int patternNid, int fieldMeaningNid, Object fieldValue) {
+    public void setField(long patternNid, long fieldMeaningNid, Object fieldValue) {
         throw new UnsupportedOperationException();
     }
 

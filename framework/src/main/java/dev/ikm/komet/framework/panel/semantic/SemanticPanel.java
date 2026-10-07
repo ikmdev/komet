@@ -40,7 +40,7 @@ public class SemanticPanel extends ComponentIsFinalPanel<
         ObservableSemanticVersion,
         SemanticVersionRecord> {
 
-    public SemanticPanel(ObservableSemanticSnapshot semanticSnapshot, ViewProperties viewProperties, SimpleObjectProperty<EntityFacade> topEnclosingComponentProperty, ObservableSet<Integer> referencedNids) {
+    public SemanticPanel(ObservableSemanticSnapshot semanticSnapshot, ViewProperties viewProperties, SimpleObjectProperty<EntityFacade> topEnclosingComponentProperty, ObservableSet<Long> referencedNids) {
         super(semanticSnapshot, viewProperties, topEnclosingComponentProperty, referencedNids);
         Latest<PatternEntityVersion> latestPatternVersion = viewProperties.calculator().latestPatternEntityVersion(semanticSnapshot.patternNid());
 

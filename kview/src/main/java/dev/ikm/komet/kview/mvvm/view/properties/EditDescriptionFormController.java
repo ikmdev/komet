@@ -33,7 +33,7 @@ import dev.ikm.komet.kview.events.CreateConceptEvent;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.view.BasicController;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
-import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.LongIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -297,7 +297,7 @@ public class EditDescriptionFormController implements BasicController {
         comboBox.getItems().addAll(conceptEntities);
     }
 
-    private Optional<ConceptEntity> findByNid(List<ConceptEntity> items, int nid) {
+    private Optional<ConceptEntity> findByNid(List<ConceptEntity> items, long nid) {
 
         Optional<ConceptEntity> conceptOption = items.stream().parallel()
                 .filter(item -> (item.nid() == nid)).findAny();
@@ -310,7 +310,7 @@ public class EditDescriptionFormController implements BasicController {
         editDescrName = null;
         this.publicId = publicId;
         ViewCalculator viewCalculator = viewProperties.calculator();
-        int nid = EntityService.get().nidForPublicId(publicId);
+        long nid = EntityService.get().nidForPublicId(publicId);
 
         // this is the Other Name
         Latest<SemanticEntityVersion> latestEntityVersion = viewCalculator.latest(nid);
@@ -322,11 +322,11 @@ public class EditDescriptionFormController implements BasicController {
             this.otherNameTextField.setText(otherName);
 
             Entity<? extends EntityVersion> moduleEntity = EntityHandle.get(KometTerm.MODULE).expectConcept();
-            IntIdSet moduleDescendents = viewProperties.parentView().calculator().descendentsOf(moduleEntity.nid());
+            LongIdSet moduleDescendents = viewProperties.parentView().calculator().descendentsOf(moduleEntity.nid());
 
             // get all descendant modules
             Set<ConceptEntity> allModules =
-                    moduleDescendents.intStream()
+                    moduleDescendents.longStream()
                             .mapToObj(moduleNid -> EntityHandle.get(moduleNid).expectConcept())
                             .collect(Collectors.toSet());
             setupComboBox(moduleComboBox, allModules);
@@ -336,8 +336,8 @@ public class EditDescriptionFormController implements BasicController {
                     .ifPresent(concept -> otherNameViewModel.setPropertyValue(MODULE, concept));
 
             // get all statuses
-            IntIdSet statusDescendents = viewProperties.parentView().calculator().descendentsOf(KometTerm.STATUS_VALUE.nid());
-            Set<ConceptEntity> allStatuses = statusDescendents.intStream()
+            LongIdSet statusDescendents = viewProperties.parentView().calculator().descendentsOf(KometTerm.STATUS_VALUE.nid());
+            Set<ConceptEntity> allStatuses = statusDescendents.longStream()
                     .mapToObj(statusNid -> EntityHandle.get(statusNid).expectConcept())
                     .collect(Collectors.toSet());
             setupComboBox(statusComboBox, allStatuses);
@@ -347,12 +347,12 @@ public class EditDescriptionFormController implements BasicController {
                     .ifPresent(concept -> otherNameViewModel.setPropertyValue(STATUS, concept));
 
             // populate all case significance choices
-            IntIdSet caseSenseDescendents = viewProperties.parentView().calculator().descendentsOf(KernelTerm.DESCRIPTION_CASE_SIGNIFICANCE.nid());
-            Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
+            LongIdSet caseSenseDescendents = viewProperties.parentView().calculator().descendentsOf(KernelTerm.DESCRIPTION_CASE_SIGNIFICANCE.nid());
+            Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.longStream()
                     .mapToObj(caseNid -> EntityHandle.getConceptOrThrow(caseNid))
                     .collect(Collectors.toSet());
 
-//            Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
+//            Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.longStream()
 //                    .mapToObj(caseNid -> EntityHandle.get(caseNid) (ConceptEntity) Entity.getFast(caseNid))
 //                    .collect(Collectors.toSet());
             setupComboBox(caseSignificanceComboBox, allCaseDescendents);
@@ -368,8 +368,8 @@ public class EditDescriptionFormController implements BasicController {
             }
 
             // get all available languages
-            IntIdSet languageDescendents = viewProperties.parentView().calculator().descendentsOf(KernelTerm.LANGUAGE.nid());
-            Set<ConceptEntity> allLangs = languageDescendents.intStream()
+            LongIdSet languageDescendents = viewProperties.parentView().calculator().descendentsOf(KernelTerm.LANGUAGE.nid());
+            Set<ConceptEntity> allLangs = languageDescendents.longStream()
                     .mapToObj(langNid -> EntityHandle.get(langNid).expectConcept())
                     .collect(Collectors.toSet());
             setupComboBox(languageComboBox, allLangs);
@@ -383,9 +383,9 @@ public class EditDescriptionFormController implements BasicController {
             }
 
             // get all descendant types
-            IntIdSet descriptionTypeDecendants = viewProperties.parentView().calculator().descendentsOf(DESCRIPTION_TYPE.nid());
+            LongIdSet descriptionTypeDecendants = viewProperties.parentView().calculator().descendentsOf(DESCRIPTION_TYPE.nid());
             Set<ConceptEntity> allDescritionTypes =
-                    descriptionTypeDecendants.intStream()
+                    descriptionTypeDecendants.longStream()
                             .mapToObj(typeNid -> EntityHandle.get(typeNid).expectConcept())
                             .collect(Collectors.toSet());
             setupComboBox(typeDisplayComboBox, allDescritionTypes);

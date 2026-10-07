@@ -672,7 +672,7 @@ public class EditCoordinateOptionsUtils {
 //        return sortedSet.stream().toList();
 //    }
 
-//    private static int findNidForDescription(Navigator navigator, int nid, String description) {
+//    private static long findNidForDescription(Navigator navigator, long nid, String description) {
 //        return navigator.getChildEdges(nid).stream()
 //                .filter(edge -> Entity.getFast(edge.destinationNid()).description().equals(description))
 //                .findFirst()
@@ -680,12 +680,12 @@ public class EditCoordinateOptionsUtils {
 //                .orElseThrow();
 //    }
 
-//    public static List<EntityFacade> getDescendentsList(Navigator navigator, int parentNid, String description) {
-//        int nid = parentNid;
+//    public static List<EntityFacade> getDescendentsList(Navigator navigator, long parentNid, String description) {
+//        long nid = parentNid;
 //        for (String s : description.split(", ")) {
 //            nid = findNidForDescription(navigator, nid, s);
 //        }
-//        return navigator.getViewCalculator().descendentsOf(nid).intStream().boxed()
+//        return navigator.getViewCalculator().descendentsOf(nid).longStream().boxed()
 //                .map(i -> (EntityFacade) Entity.getFast(i))
 //                .sorted()
 //                .toList();
@@ -709,7 +709,7 @@ public class EditCoordinateOptionsUtils {
         };
     }
 
-    public static String getDescriptionTextOrNid(ViewCalculator viewCalculator, int nid) {
+    public static String getDescriptionTextOrNid(ViewCalculator viewCalculator, long nid) {
         try {
             return viewCalculator.getDescriptionTextOrNid(nid);
         } catch (Exception e) {

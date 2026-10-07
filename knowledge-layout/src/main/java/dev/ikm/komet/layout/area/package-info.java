@@ -104,7 +104,7 @@
  *   <tr><td>{@link KlAreaForPattern}</td><td>PatternFacade</td><td>-</td><td>⏳ Planned</td></tr>
  *   <tr><td>{@link KlAreaForPublicId}</td><td>PublicId</td><td>PublicIdArea</td><td>✅ Read-only</td></tr>
  *   <tr><td>KlAreaForInteger</td><td>Integer</td><td>-</td><td>❌ Not yet created</td></tr>
- *   <tr><td>KlAreaForConceptSet</td><td>IntIdSet</td><td>-</td><td>❌ Not yet created</td></tr>
+ *   <tr><td>KlAreaForConceptSet</td><td>LongIdSet</td><td>-</td><td>❌ Not yet created</td></tr>
  * </table>
  *
  * <h2>Related Packages</h2>

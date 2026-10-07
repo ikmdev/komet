@@ -66,7 +66,7 @@ public class PropertySheetItemConceptWrapper implements ConceptFacade, PropertyS
         if (allowedValues.length > 0) {
             this.conceptProperty.set(EntityHandle.get(allowedValues[0]).expectConcept());
         }
-        for (int allowedNid : allowedValues) {
+        for (long allowedNid : allowedValues) {
             this.allowedValues.add(EntityHandle.get(allowedNid).expectConcept());
         }
         bindProperties();
@@ -112,7 +112,7 @@ public class PropertySheetItemConceptWrapper implements ConceptFacade, PropertyS
     }
 
     @Override
-    public int nid() {
+    public long nid() {
         return this.conceptProperty.get().nid();
     }
 

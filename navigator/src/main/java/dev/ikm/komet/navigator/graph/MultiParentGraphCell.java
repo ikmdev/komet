@@ -132,7 +132,7 @@ final public class MultiParentGraphCell
 
             item1.setOnAction(
                     (ActionEvent e) -> {
-                        int conceptNid = ((MultiParentVertexImpl) getTreeItem()).getConceptNid();
+                        long conceptNid = ((MultiParentVertexImpl) getTreeItem()).getConceptNid();
                         ObservableView manifold = ((MultiParentVertexImpl) getTreeItem()).getGraphController().getObservableView();
                         graphItem.getValue();
                     });

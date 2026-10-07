@@ -62,12 +62,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class PatternRequirementUtilsTest {
 
     // Resolved once the store runs: a term nid asks the store.
-    private static int DESCRIPTION_PATTERN;
-    private static int STATED_PATTERN;
-    private static int FQN;
-    private static int REGULAR;
-    private static int STAMP;
-    private static int COMPONENT;
+    private static long DESCRIPTION_PATTERN;
+    private static long STATED_PATTERN;
+    private static long FQN;
+    private static long REGULAR;
+    private static long STAMP;
+    private static long COMPONENT;
 
     @BeforeAll
     static void startEphemeralStore() throws Exception {
@@ -237,7 +237,7 @@ class PatternRequirementUtilsTest {
             implements PatternRequirementUtils.SeededEntry {
     }
 
-    private static EditorPatternRequirement requirement(Map<Integer, Integer> constraints, int minCount) {
+    private static EditorPatternRequirement requirement(Map<Integer, Long> constraints, int minCount) {
         EditorPatternRequirement requirement = new EditorPatternRequirement();
         constraints.forEach((fieldIndex, conceptNid) ->
                 requirement.getFieldConstraints().put(fieldIndex, EntityProxy.Concept.make(conceptNid)));
@@ -254,7 +254,7 @@ class PatternRequirementUtilsTest {
         };
     }
 
-    private static int newNid() {
+    private static long newNid() {
         return PrimitiveData.nid(PublicIds.newRandom());
     }
 
@@ -263,11 +263,11 @@ class PatternRequirementUtilsTest {
      * it and nothing else.
      */
     private static final class FakeCalculator implements StampCalculatorDelegate {
-        private final Map<Integer, SemanticEntityVersion> latestByNid = new HashMap<>();
+        private final Map<Long, SemanticEntityVersion> latestByNid = new HashMap<>();
 
         /** Registers a semantic of the pattern whose latest version holds the field values; returns it. */
-        EntityFacade semantic(int patternNid, Object... fieldValues) {
-            int nid = newNid();
+        EntityFacade semantic(long patternNid, Object... fieldValues) {
+            long nid = newNid();
             UUID uuid = UUID.randomUUID();
             SemanticRecord chronology = new SemanticRecord(uuid.getMostSignificantBits(),
                     uuid.getLeastSignificantBits(), LongLists.immutable.empty(), nid, patternNid, COMPONENT,
@@ -283,7 +283,7 @@ class PatternRequirementUtilsTest {
 
         @Override
         @SuppressWarnings("unchecked")
-        public <V extends EntityVersion> Latest<V> latest(int nid) {
+        public <V extends EntityVersion> Latest<V> latest(long nid) {
             SemanticEntityVersion version = latestByNid.get(nid);
             return version == null ? Latest.empty() : (Latest<V>) Latest.of(version);
         }

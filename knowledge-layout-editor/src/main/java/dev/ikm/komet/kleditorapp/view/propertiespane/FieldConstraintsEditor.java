@@ -59,7 +59,7 @@ class FieldConstraintsEditor extends VBox {
     private static Node createFieldValueNode(EditorPatternModel pattern,
                                              ObservableMap<Integer, EntityProxy> constraints,
                                              FieldDefinitionRecord field) {
-        int dataTypeNid = field.dataTypeNid();
+        long dataTypeNid = field.dataTypeNid();
         if (dataTypeNid != COMPONENT_FIELD.nid() && dataTypeNid != CONCEPT_FIELD.nid()) {
             // Only concept-valued fields can be constrained (for now)
             Label anyValueLabel = new Label("Any value");

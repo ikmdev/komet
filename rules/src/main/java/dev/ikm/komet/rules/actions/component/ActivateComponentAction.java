@@ -57,7 +57,7 @@ public class ActivateComponentAction extends AbstractActionSuggested {
         appendActiveVersion(entityVersion.nid(), editCoordinate.toEditCoordinateRecord());
     }
 
-    private void appendActiveVersion(int entityNid, EditCoordinateRecord editCoordinateRecord) {
+    private void appendActiveVersion(long entityNid, EditCoordinateRecord editCoordinateRecord) {
         Entity entity = EntityHandle.get(entityNid).orNull();
 
         Transaction transaction = Transaction.make();

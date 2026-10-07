@@ -62,7 +62,7 @@ public final class PatternRequirementUtils {
      * {@link #isPatternSatisfied(int, List, List, StampCalculator, int)}.
      */
     public static boolean isPatternSatisfied(EditorPatternModel pattern, List<EntityFacade> semantics,
-                                      StampCalculator calculator, int statedAxiomsPatternNid) {
+                                      StampCalculator calculator, long statedAxiomsPatternNid) {
         return isPatternSatisfied(pattern.getNid(), pattern.getRequirements(), semantics, calculator, statedAxiomsPatternNid);
     }
 
@@ -84,9 +84,9 @@ public final class PatternRequirementUtils {
      * @param calculator             resolves each semantic's latest version
      * @param statedAxiomsPatternNid the stated definition pattern per the view's logic coordinate
      */
-    public static boolean isPatternSatisfied(int patternNid, List<EditorPatternRequirement> requirements,
+    public static boolean isPatternSatisfied(long patternNid, List<EditorPatternRequirement> requirements,
                                       List<EntityFacade> semantics, StampCalculator calculator,
-                                      int statedAxiomsPatternNid) {
+                                      long statedAxiomsPatternNid) {
         if (semantics.isEmpty()) {
             return false;
         }
@@ -167,7 +167,7 @@ public final class PatternRequirementUtils {
                                                                         List<E> entries,
                                                                         Function<EditorPatternModel, List<EntityFacade>> semanticsOfPattern,
                                                                         StampCalculator calculator,
-                                                                        int statedAxiomsPatternNid) {
+                                                                        long statedAxiomsPatternNid) {
         if (entries.size() == 1) {
             return Optional.of(entries.getFirst());
         }

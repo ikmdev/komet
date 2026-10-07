@@ -59,7 +59,7 @@ public class ObservableEditCoordinateWithOverride
             this.promotionPathProperty().setValue(newValue.getPromotionPath());
         }
         /*
-int authorNid, int defaultModuleNid, int promotionPathNid, int destinationModuleNid
+long authorNid, long defaultModuleNid, long promotionPathNid, long destinationModuleNid
          */
         return EditCoordinateRecord.make(this.authorForChangesProperty().get().nid(),
                 this.defaultModuleProperty().get().nid(),

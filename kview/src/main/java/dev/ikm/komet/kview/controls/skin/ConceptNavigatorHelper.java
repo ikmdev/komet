@@ -15,14 +15,14 @@ public class ConceptNavigatorHelper {
 
     public interface ConceptNavigatorAccessor {
         Future<Boolean> fetchChildrenTask(KLConceptNavigatorControl treeView, ConceptNavigatorTreeItem item);
-        ConceptNavigatorTreeItem getConceptNavigatorTreeItem(KLConceptNavigatorControl treeView, int nid, int parentNid);
+        ConceptNavigatorTreeItem getConceptNavigatorTreeItem(KLConceptNavigatorControl treeView, long nid, long parentNid);
     }
 
     public static Future<Boolean> fetchChildrenTask(KLConceptNavigatorControl treeView, ConceptNavigatorTreeItem item) {
         return accessor.fetchChildrenTask(treeView, item);
     }
 
-    public static ConceptNavigatorTreeItem getConceptNavigatorTreeItem(KLConceptNavigatorControl treeView, int nid, int parentNid) {
+    public static ConceptNavigatorTreeItem getConceptNavigatorTreeItem(KLConceptNavigatorControl treeView, long nid, long parentNid) {
         return accessor.getConceptNavigatorTreeItem(treeView, nid, parentNid);
     }
 

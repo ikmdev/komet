@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
@@ -63,10 +64,10 @@ public class PatternKlWindowFactory implements EntityKlWindowFactory {
                 final ViewProperties viewProperties = journalViewProperties;
 
                 // Try to extract entity facade from saved state
-                final OptionalInt entityNid = windowState.resolveEntityNid();
+                final OptionalLong entityNid = windowState.resolveEntityNid();
                 PatternFacade patternFacade = null;
                 if (entityNid.isPresent()) {
-                    patternFacade = EntityHandle.get(entityNid.getAsInt()).asPattern().orElse(null);
+                    patternFacade = EntityHandle.get(entityNid.getAsLong()).asPattern().orElse(null);
                 }
 
                 // Create the window with the extracted parameters

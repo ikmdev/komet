@@ -34,10 +34,10 @@ import dev.ikm.komet.framework.PseudoClasses;
 import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.id.IntIdCollection;
-import dev.ikm.tinkar.common.id.IntIdList;
-import dev.ikm.tinkar.common.id.IntIdSet;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIdCollection;
+import dev.ikm.tinkar.common.id.LongIdList;
+import dev.ikm.tinkar.common.id.LongIdSet;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
@@ -49,14 +49,14 @@ import dev.ikm.tinkar.terms.ProxyFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.Set;
 
-public abstract class IntIdCollectionEditor<T extends IntIdCollection> implements PropertyEditor<T> {
+public abstract class IntIdCollectionEditor<T extends LongIdCollection> implements PropertyEditor<T> {
     private static final Logger LOG = LoggerFactory.getLogger(IntIdCollectionEditor.class);
     protected final BorderPane editorPane = new BorderPane();
     protected final ToolBar editorToolbar = new ToolBar();
-    protected final ListView<Integer> listView = new ListView();
+    protected final ListView<Long> listView = new ListView();
     protected final ViewProperties viewProperties;
     SimpleObjectProperty<T> entitiesCollectionProperty;
     TransferMode[] transferMode = null;
@@ -94,7 +94,7 @@ public abstract class IntIdCollectionEditor<T extends IntIdCollection> implement
         LOG.debug("Drag detected: " + event);
 
         if (!listView.getSelectionModel().getSelectedIndices().isEmpty()) {
-            int nid = listView.getSelectionModel().getSelectedIndices().get(0);
+            long nid = listView.getSelectionModel().getSelectedIndices().get(0);
             Dragboard db = listView.startDragAndDrop(TransferMode.COPY);
             KonceptDragSource.setDragView(db, listView);
             KometClipboard content = new KometClipboard((Entity) EntityHandle.get(nid).orNull());
@@ -147,25 +147,25 @@ public abstract class IntIdCollectionEditor<T extends IntIdCollection> implement
 
     private void dragDropped(DragEvent event) {
         Dragboard db = event.getDragboard();
-        OptionalInt optionalNid = OptionalInt.empty();
+        OptionalLong optionalNid = OptionalLong.empty();
         if (db.hasContent(KometClipboard.KOMET_CONCEPT_PROXY)) {
             EntityProxy.Concept conceptProxy = ProxyFactory.fromXmlFragment((String) db.getContent(KometClipboard.KOMET_CONCEPT_PROXY));
-            optionalNid = OptionalInt.of(conceptProxy.nid());
+            optionalNid = OptionalLong.of(conceptProxy.nid());
         } else if (db.hasContent(KometClipboard.KOMET_SEMANTIC_PROXY)) {
             EntityProxy.Semantic semanticProxy = ProxyFactory.fromXmlFragment((String) db.getContent(KometClipboard.KOMET_SEMANTIC_PROXY));
-            optionalNid = OptionalInt.of(semanticProxy.nid());
+            optionalNid = OptionalLong.of(semanticProxy.nid());
         } else if (db.hasContent(KometClipboard.KOMET_PATTERN_PROXY)) {
             EntityProxy.Pattern patternProxy = ProxyFactory.fromXmlFragment((String) db.getContent(KometClipboard.KOMET_PATTERN_PROXY));
-            optionalNid = OptionalInt.of(patternProxy.nid());
+            optionalNid = OptionalLong.of(patternProxy.nid());
         } else if (db.hasContent(KometClipboard.KOMET_CONCEPT_VERSION_PROXY)) {
             VersionProxy.Concept conceptProxy = VersionProxyFactory.fromXmlFragment((String) db.getContent(KometClipboard.KOMET_CONCEPT_VERSION_PROXY));
-            optionalNid = OptionalInt.of(conceptProxy.nid());
+            optionalNid = OptionalLong.of(conceptProxy.nid());
         } else if (db.hasContent(KometClipboard.KOMET_SEMANTIC_VERSION_PROXY)) {
             VersionProxy.Semantic semanticProxy = VersionProxyFactory.fromXmlFragment((String) db.getContent(KometClipboard.KOMET_SEMANTIC_VERSION_PROXY));
-            optionalNid = OptionalInt.of(semanticProxy.nid());
+            optionalNid = OptionalLong.of(semanticProxy.nid());
         } else if (db.hasContent(KometClipboard.KOMET_PATTERN_VERSION_PROXY)) {
             VersionProxy.Pattern patternProxy = VersionProxyFactory.fromXmlFragment((String) db.getContent(KometClipboard.KOMET_PATTERN_VERSION_PROXY));
-            optionalNid = OptionalInt.of(patternProxy.nid());
+            optionalNid = OptionalLong.of(patternProxy.nid());
         }
         /* let the source know if the dropped item was successfully
          * transferred and used */
@@ -173,12 +173,12 @@ public abstract class IntIdCollectionEditor<T extends IntIdCollection> implement
             event.setDropCompleted(true);
             T oldIds = entitiesCollectionProperty.getValue();
             switch (oldIds) {
-                case IntIdList oldList -> {
-                    IntIdList newList = IntIds.list.of(oldList, nid);
+                case LongIdList oldList -> {
+                    LongIdList newList = LongIds.list.of(oldList, nid);
                     setValue((T) newList);
                 }
-                case IntIdSet oldSet -> {
-                    IntIdSet newSet = IntIds.set.of(oldSet, nid);
+                case LongIdSet oldSet -> {
+                    LongIdSet newSet = LongIds.set.of(oldSet, nid);
                     setValue((T) newSet);
                 }
                 default -> throw new IllegalStateException("Unexpected value: " + oldIds);
@@ -188,9 +188,9 @@ public abstract class IntIdCollectionEditor<T extends IntIdCollection> implement
         event.consume();
     }
 
-    abstract void deleteSelectedItems(MultipleSelectionModel<Integer> selectionModel);
+    abstract void deleteSelectedItems(MultipleSelectionModel<Long> selectionModel);
 
-    public MultipleSelectionModel<Integer> getSelectionModel() {
+    public MultipleSelectionModel<Long> getSelectionModel() {
         return this.listView.getSelectionModel();
     }
 
@@ -209,13 +209,13 @@ public abstract class IntIdCollectionEditor<T extends IntIdCollection> implement
         entitiesCollectionProperty.setValue(value);
     }
 
-    public ObservableList<Integer> getItems() {
+    public ObservableList<Long> getItems() {
         return this.listView.getItems();
     }
 
-    class EntityCell extends ListCell<Integer> {
+    class EntityCell extends ListCell<Long> {
 
-        int entityNid = Integer.MIN_VALUE;
+        long entityNid = Integer.MIN_VALUE;
         Latest<EntityVersion> latestEntity;
         String entityText;
 
@@ -240,7 +240,7 @@ public abstract class IntIdCollectionEditor<T extends IntIdCollection> implement
         }
 
         @Override
-        protected void updateItem(Integer item, boolean empty) {
+        protected void updateItem(Long item, boolean empty) {
             super.updateItem(item, empty);
             if (empty) {
                 entityNid = Integer.MIN_VALUE;

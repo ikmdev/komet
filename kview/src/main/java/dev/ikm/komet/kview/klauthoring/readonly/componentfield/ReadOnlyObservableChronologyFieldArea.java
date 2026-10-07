@@ -72,7 +72,7 @@ public final class ReadOnlyObservableChronologyFieldArea extends FeatureAreaBlue
         if (newValue != null && newValue.value() != null) {
             String purpose = calculatorForContext().getDescriptionTextOrNid(newValue.definition(calculatorForContext()).purposeNid());
             getFxPeer().setTitle(purpose);
-            int nid = newValue.value().nid();
+            long nid = newValue.value().nid();
             ObservableEntityHandle.get(nid).entity().ifPresent((observableEntity -> {
                 PublicId pid = observableEntity.publicId();
                 boolean isConcept = EntityHandle.get(nid).isConcept();

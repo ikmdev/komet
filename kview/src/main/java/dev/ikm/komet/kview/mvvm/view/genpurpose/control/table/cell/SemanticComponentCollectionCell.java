@@ -4,18 +4,18 @@ import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.controls.ComponentItemNodeFactory;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.SemanticRow;
-import dev.ikm.tinkar.common.id.IntIdCollection;
+import dev.ikm.tinkar.common.id.LongIdCollection;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.TableCell;
 import javafx.scene.layout.VBox;
 
 import java.util.function.Function;
 
-public class SemanticComponentCollectionCell extends TableCell<SemanticRow, IntIdCollection> {
-    private final Function<Integer, ComponentItem> nidToComponentItem;
+public class SemanticComponentCollectionCell extends TableCell<SemanticRow, LongIdCollection> {
+    private final Function<Long, ComponentItem> nidToComponentItem;
     private final VBox componentContainer = new VBox();
 
-    public SemanticComponentCollectionCell(Function<Integer, ComponentItem> nidToComponentItem) {
+    public SemanticComponentCollectionCell(Function<Long, ComponentItem> nidToComponentItem) {
         this.nidToComponentItem = nidToComponentItem;
 
         componentContainer.getStyleClass().add("component-container");
@@ -25,7 +25,7 @@ public class SemanticComponentCollectionCell extends TableCell<SemanticRow, IntI
     }
 
     @Override
-    protected void updateItem(IntIdCollection intIdCollection, boolean empty) {
+    protected void updateItem(LongIdCollection intIdCollection, boolean empty) {
         super.updateItem(intIdCollection, empty);
 
         if (empty || intIdCollection == null) {

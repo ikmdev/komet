@@ -112,7 +112,7 @@ public final class ObservableConceptVersion
         }
 
         @Override
-        protected ConceptVersionRecord createVersionWithStamp(ConceptVersionRecord version, int stampNid) {
+        protected ConceptVersionRecord createVersionWithStamp(ConceptVersionRecord version, long stampNid) {
             return version.withStampNid(stampNid);
         }
 

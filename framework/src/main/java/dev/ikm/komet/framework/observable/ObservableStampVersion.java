@@ -148,7 +148,7 @@ public final class ObservableStampVersion
     }
 
     @Override
-    public int stateNid() {
+    public long stateNid() {
         return getVersionRecord().stateNid();
     }
 
@@ -158,17 +158,17 @@ public final class ObservableStampVersion
     }
 
     @Override
-    public int authorNid() {
+    public long authorNid() {
         return getVersionRecord().authorNid();
     }
 
     @Override
-    public int moduleNid() {
+    public long moduleNid() {
         return getVersionRecord().moduleNid();
     }
 
     @Override
-    public int pathNid() {
+    public long pathNid() {
         return getVersionRecord().pathNid();
     }
 
@@ -285,7 +285,7 @@ public final class ObservableStampVersion
         }
 
         @Override
-        protected StampVersionRecord createVersionWithStamp(StampVersionRecord version, int stampNid) {
+        protected StampVersionRecord createVersionWithStamp(StampVersionRecord version, long stampNid) {
             // Stamps don't have a separate stamp field - they are self-describing
             // Return the version as-is
             return version;

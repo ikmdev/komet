@@ -18,13 +18,13 @@ public enum KlFieldType {
     C_SET(KernelTerm.COMPONENT_ID_SET_FIELD.nid()),
     C_LIST(KernelTerm.COMPONENT_ID_LIST_FIELD.nid());
 
-    private int nid;
+    private long nid;
 
-    KlFieldType(int nid) {
+    KlFieldType(long nid) {
         this.nid = nid;
     }
 
-    public static Optional<KlFieldType> of(int nid) {
+    public static Optional<KlFieldType> of(long nid) {
         for (KlFieldType klFieldType : values()) {
             if (nid == klFieldType.nid) {
                 return Optional.of(klFieldType);
@@ -33,5 +33,5 @@ public enum KlFieldType {
         return Optional.empty();
     }
 
-    public int getNid() { return nid; }
+    public long getNid() { return nid; }
 }

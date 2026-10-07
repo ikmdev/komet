@@ -46,7 +46,7 @@ public record AxiomSubjectRecord(int axiomIndex, DiTreeEntity axiomTree,
         this(axiomIndex, axiomTree, semanticContainingAxiom, premiseType, nodeForPopover, null);
     }
 
-    public int axiomMeaningNid() {
+    public long axiomMeaningNid() {
         return axiomTree.vertexMap().get(axiomIndex).getMeaningNid();
     }
 
@@ -67,7 +67,7 @@ public record AxiomSubjectRecord(int axiomIndex, DiTreeEntity axiomTree,
         return axiomTree.vertexMap().get(axiomIndex);
     }
 
-    public Optional<Object> getVertexProperty(int propertyKeyNid) {
+    public Optional<Object> getVertexProperty(long propertyKeyNid) {
         return axiomTree.vertexMap().get(axiomIndex).property(propertyKeyNid);
     }
     public Optional<Object> getVertexProperty(ConceptFacade propertyKey) {

@@ -61,7 +61,7 @@ public final class KonceptDragSource {
      * @param badge the badge to drag
      * @param nid   the koncept's nid; a description is resolved to the concept it describes
      */
-    public static void install(KonceptBadge badge, int nid) {
+    public static void install(KonceptBadge badge, long nid) {
         badge.setOnDragDetected(event -> start(badge, badge, nid, event));
     }
 
@@ -72,7 +72,7 @@ public final class KonceptDragSource {
      * @param source the node to drag; its leading identicon positions the drag cursor
      * @param nid    the koncept's nid; a description is resolved to the concept it describes
      */
-    public static void install(Node source, int nid) {
+    public static void install(Node source, long nid) {
         source.setOnDragDetected(event -> start(source, source, nid, event));
     }
 
@@ -88,7 +88,7 @@ public final class KonceptDragSource {
      * @param event         the {@code DRAG_DETECTED} event; consumed on success
      * @return {@code true} if the drag started, {@code false} if a node was detached
      */
-    public static boolean start(Node source, Node dragImageNode, int nid, MouseEvent event) {
+    public static boolean start(Node source, Node dragImageNode, long nid, MouseEvent event) {
         if (source.getScene() == null || dragImageNode.getScene() == null) {
             return false;
         }

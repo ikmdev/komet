@@ -84,7 +84,7 @@ class KonceptKindResolverITestFX {
         Optional<SemanticEntity<SemanticEntityVersion>> description = EntityService.get().semanticsForComponentOfPattern(
                 KernelTerm.ENGLISH_LANGUAGE.nid(), KernelTerm.DESCRIPTION_PATTERN.nid()).findFirst();
         assertTrue(description.isPresent(), "English Language must carry description semantics");
-        int descriptionNid = description.get().nid();
+        long descriptionNid = description.get().nid();
 
         assertEquals(KonceptKind.DESCRIPTION, KonceptKindResolver.resolve(descriptionNid, calculator),
                 "a semantic on the coordinate's description pattern is a Description");
@@ -96,7 +96,7 @@ class KonceptKindResolverITestFX {
 
     @Test
     void aNonDescriptionSemanticResolvesToSemantic() {
-        int otherSemanticNid = Integer.MIN_VALUE;
+        long otherSemanticNid = Integer.MIN_VALUE;
         outer:
         for (ConceptFacade concept : new ConceptFacade[]{
                 KernelTerm.ENGLISH_LANGUAGE, KernelTerm.DEVELOPMENT_PATH, KernelTerm.USER}) {
@@ -117,7 +117,7 @@ class KonceptKindResolverITestFX {
     @Test
     void aStampResolvesToStamp() {
         Entity<?> englishLanguage = EntityHandle.get(KernelTerm.ENGLISH_LANGUAGE.nid()).entity().orElseThrow();
-        int stampNid = englishLanguage.versions().get(0).stampNid();
+        long stampNid = englishLanguage.versions().get(0).stampNid();
         assertEquals(KonceptKind.STAMP, KonceptKindResolver.resolve(stampNid, calculator));
     }
 

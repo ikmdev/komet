@@ -14,7 +14,7 @@ import java.util.Optional;
 public class PatternBrowserItem {
     private final String title;
     private final PublicId publicId;
-    private final int nid;
+    private final long nid;
 
     private final ViewCalculator viewCalculator;
 
@@ -32,5 +32,5 @@ public class PatternBrowserItem {
 
     public String getTitle() { return title; }
     public PublicId getPublicId() { return publicId; }
-    public int getNid() { return nid; }
+    public long getNid() { return nid; }
 }

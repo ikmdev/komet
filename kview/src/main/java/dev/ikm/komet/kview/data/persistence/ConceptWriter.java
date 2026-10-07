@@ -34,8 +34,8 @@ public class ConceptWriter {
         PublicIdentifierRecord identifier = PublicIdentifierRecord.make(concept);
 
         //Assign nid for Concept
-        int conceptNid = EntityService.get().nidForPublicId(concept);
-        int stampNid = EntityService.get().nidForPublicId(stamp);
+        long conceptNid = EntityService.get().nidForPublicId(concept);
+        long stampNid = EntityService.get().nidForPublicId(stamp);
 
         //Create Concept Chronology
         ConceptRecord conceptRecord = ConceptRecordBuilder.builder()

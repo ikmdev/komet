@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework;
 
+import dev.ikm.tinkar.common.id.Nid;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,13 +41,13 @@ public class EditedConceptTracker {
 	private static final Logger LOG = LoggerFactory.getLogger(EditedConceptTracker.class);
 
 	// Use ConcurrentHashMap to store edits keyed by referencedComponentNid
-	private static final ConcurrentHashMap<Integer, SemanticEntityVersion> edits = new ConcurrentHashMap<>();
-	private static final ConcurrentHashSet<Integer> changedEntityNids = new ConcurrentHashSet<>();
+	private static final ConcurrentHashMap<Long, SemanticEntityVersion> edits = new ConcurrentHashMap<>();
+	private static final ConcurrentHashSet<Long> changedEntityNids = new ConcurrentHashSet<>();
 	private static final AtomicBoolean subscribed = new AtomicBoolean(false);
 	
 	// Store subscriber as a strong reference to prevent GC - must be after changedEntityNids
-	private static final Subscriber<Integer> subscriber = nid -> {
-		if (nid == Integer.MIN_VALUE) {
+	private static final Subscriber<Long> subscriber = nid -> {
+		if (Nid.isNone(nid)) {
 			return; // Sentinel from endLoadPhase — not a real entity
 		}
 		changedEntityNids.add(nid);
@@ -90,7 +91,7 @@ public class EditedConceptTracker {
 	}
 
 	public static void addEditsFromChanges(ViewCalculator viewCalculator) {
-		int statedPatternNid = viewCalculator.logicCoordinateRecord().statedAxiomsPatternNid();
+		long statedPatternNid = viewCalculator.logicCoordinateRecord().statedAxiomsPatternNid();
 		int changeCount = changedEntityNids.size();
 		
 		LOG.info("=== PROCESSING CHANGES ===");
@@ -107,7 +108,7 @@ public class EditedConceptTracker {
 		int processedConceptCount = 0;
 		int skippedCount = 0;
 		
-		for (Integer nid : changedEntityNids.toArray(new Integer[0])) {
+		for (Long nid : changedEntityNids.toArray(new Long[0])) {
 			try {
 				Entity entity = EntityHandle.get(nid).orNull();
 				if (entity == null) {
@@ -145,7 +146,7 @@ public class EditedConceptTracker {
 					LOG.info("     Found {} semantic(s) with stated pattern for concept", statedSemantics.size());
 
 					for (SemanticEntity<SemanticEntityVersion> semantic : statedSemantics) {
-						int semanticNid = semantic.nid();
+						long semanticNid = semantic.nid();
 						Latest<SemanticEntityVersion> latestSemantic = viewCalculator.latest(semanticNid);
 						if (latestSemantic.isPresent()) {
 							latestSemantic.ifPresent(version -> {
@@ -178,7 +179,7 @@ public class EditedConceptTracker {
 
 	public static void addEdit(SemanticEntityVersion edit) {
 		// ConcurrentHashMap automatically handles replacement
-		Integer key = edit.referencedComponentNid();
+		Long key = edit.referencedComponentNid();
 		SemanticEntityVersion previous = edits.put(key, edit);
 		if (previous != null) {
 			LOG.debug("Replaced existing edit for referencedComponentNid={} ({})", 

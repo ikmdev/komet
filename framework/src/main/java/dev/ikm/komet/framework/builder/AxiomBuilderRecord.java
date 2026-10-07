@@ -77,7 +77,7 @@ public record AxiomBuilderRecord(ConceptFacade axiomMeaning, MutableList<AxiomPr
             return Optional.empty();
         }
         EntityHandle entityHandle = switch (optionalPropertyValue.get()) {
-            case Integer nid -> EntityHandle.get(nid);
+            case Long nid -> EntityHandle.get(nid);
             case EntityFacade facade -> EntityHandle.get(facade);
             case null -> throw new IllegalStateException("optionalPropertyValue is null");
             default -> throw new IllegalStateException("optionalPropertyValue is not an identifier or facade: " + optionalPropertyValue.get());

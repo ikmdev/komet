@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.framework.view;
 
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StampPositionRecord;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
@@ -47,9 +47,9 @@ class ObservableViewCascadeTest {
         return StampCoordinateRecord.make(
                 StateSet.ACTIVE,
                 StampPositionRecord.make(time, 1),
-                IntIds.set.empty(),
-                IntIds.set.empty(),
-                IntIds.list.empty());
+                LongIds.set.empty(),
+                LongIds.set.empty(),
+                LongIds.list.empty());
     }
 
     @Test

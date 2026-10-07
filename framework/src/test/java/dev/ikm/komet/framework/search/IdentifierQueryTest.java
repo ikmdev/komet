@@ -26,7 +26,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
-import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -48,10 +48,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class IdentifierQueryTest {
 
     /** A nid the store has assigned to no component: it numbers components up from the bottom of the int range. */
-    private static final int UNASSIGNED_NID = -5;
+    private static final long UNASSIGNED_NID = -5;
 
-    private static int englishNid;
-    private static int languageNid;
+    private static long englishNid;
+    private static long languageNid;
     private static UUID english;
     private static UUID language;
 
@@ -85,16 +85,16 @@ class IdentifierQueryTest {
 
     @Test
     void aNegativeIntegerIsANid() {
-        assertArrayEquals(new int[]{-42}, IdentifierQuery.parse("-42").orElseThrow().nids());
-        assertArrayEquals(new int[]{englishNid}, IdentifierQuery.parse("  " + englishNid + " ").orElseThrow().nids(),
+        assertArrayEquals(new long[]{-42}, IdentifierQuery.parse("-42").orElseThrow().nids());
+        assertArrayEquals(new long[]{englishNid}, IdentifierQuery.parse("  " + englishNid + " ").orElseThrow().nids(),
                 "surrounding space is ignored");
     }
 
     @Test
     void aUuidFindsItsComponent() {
-        assertArrayEquals(new int[]{englishNid}, IdentifierQuery.parse(english.toString()).orElseThrow().nids());
+        assertArrayEquals(new long[]{englishNid}, IdentifierQuery.parse(english.toString()).orElseThrow().nids());
         for (UUID any : KernelTerm.ENGLISH_LANGUAGE.publicId().asUuidArray()) {
-            assertArrayEquals(new int[]{englishNid}, IdentifierQuery.parse(any.toString()).orElseThrow().nids(),
+            assertArrayEquals(new long[]{englishNid}, IdentifierQuery.parse(any.toString()).orElseThrow().nids(),
                     "any of a component's UUIDs finds it: " + any);
         }
     }
@@ -104,7 +104,7 @@ class IdentifierQueryTest {
         UUID unknown = UUID.randomUUID();
 
         assertEquals(0, IdentifierQuery.parse(unknown.toString()).orElseThrow().nids().length);
-        assertEquals(OptionalInt.empty(), ComponentLookup.nid(unknown));
+        assertEquals(OptionalLong.empty(), ComponentLookup.nid(unknown));
 
         assertFalse(PrimitiveData.get().hasUuid(unknown),
                 "looking a UUID up must not assign a nid to one the knowledge base does not hold");
@@ -114,15 +114,15 @@ class IdentifierQueryTest {
     void aBracketedListMayHoldNidsAndUuidsInAnyOrder() {
         String query = "[" + languageNid + ", " + english + " ," + UUID.randomUUID() + "]";
 
-        assertArrayEquals(new int[]{languageNid, englishNid}, IdentifierQuery.parse(query).orElseThrow().nids(),
+        assertArrayEquals(new long[]{languageNid, englishNid}, IdentifierQuery.parse(query).orElseThrow().nids(),
                 "in the order written, without the UUID the store does not hold");
-        assertArrayEquals(new int[]{5, -7}, IdentifierQuery.parse("[5, -7]").orElseThrow().nids(),
+        assertArrayEquals(new long[]{5, -7}, IdentifierQuery.parse("[5, -7]").orElseThrow().nids(),
                 "inside brackets an integer of either sign is a nid");
     }
 
     @Test
     void aNidQueryIsStoredByUuid() {
-        assertEquals(english.toString(), IdentifierQuery.storedForm(Integer.toString(englishNid)));
+        assertEquals(english.toString(), IdentifierQuery.storedForm(Long.toString(englishNid)));
         assertEquals("[" + english + ", " + language + "]",
                 IdentifierQuery.storedForm("[" + englishNid + ", " + languageNid + "]"));
         assertEquals("[" + language + ", " + english + "]",
@@ -135,8 +135,8 @@ class IdentifierQueryTest {
         String typed = "[" + englishNid + ", " + languageNid + "]";
         String stored = IdentifierQuery.storedForm(typed);
 
-        assertFalse(stored.contains(Integer.toString(englishNid)), stored);
-        assertFalse(stored.contains(Integer.toString(languageNid)), stored);
+        assertFalse(stored.contains(Long.toString(englishNid)), stored);
+        assertFalse(stored.contains(Long.toString(languageNid)), stored);
         assertArrayEquals(IdentifierQuery.parse(typed).orElseThrow().nids(),
                 IdentifierQuery.parse(stored).orElseThrow().nids(),
                 "run again from preferences, the stored query finds what the typed one found");
@@ -145,7 +145,7 @@ class IdentifierQueryTest {
 
     @Test
     void aNidThatNamesNothingIsNotStored() {
-        assertEquals("", IdentifierQuery.storedForm(Integer.toString(UNASSIGNED_NID)),
+        assertEquals("", IdentifierQuery.storedForm(Long.toString(UNASSIGNED_NID)),
                 "with nothing left, the query is stored as empty");
         assertEquals(english.toString(),
                 IdentifierQuery.storedForm("[" + englishNid + ", " + UNASSIGNED_NID + "]"),
@@ -162,7 +162,7 @@ class IdentifierQueryTest {
 
     @Test
     void aPublicIdTheStoreHoldsIsLookedUpToItsNid() {
-        assertEquals(OptionalInt.of(englishNid), ComponentLookup.nid(english));
-        assertEquals(OptionalInt.of(languageNid), ComponentLookup.nid(KernelTerm.LANGUAGE.publicId()));
+        assertEquals(OptionalLong.of(englishNid), ComponentLookup.nid(english));
+        assertEquals(OptionalLong.of(languageNid), ComponentLookup.nid(KernelTerm.LANGUAGE.publicId()));
     }
 }

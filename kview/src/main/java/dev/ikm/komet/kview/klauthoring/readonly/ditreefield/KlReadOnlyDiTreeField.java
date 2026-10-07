@@ -37,7 +37,7 @@ public class KlReadOnlyDiTreeField extends BaseDefaultKlField<DiTreeEntity> impl
         control.setDefinitionResolver(nid ->
                 observableView.calculator().getAxiomTreeForEntity(nid, PremiseType.STATED).orElse(null));
         control.setTitle(getTitle());
-        int semanticNid = observableDiTreeField.field().nid();
+        long semanticNid = observableDiTreeField.field().nid();
         control.setRootConceptNid(EntityHandle.getSemanticOrThrow(semanticNid).referencedComponentNid());
         control.valueProperty().bind(observableDiTreeField.editableValueProperty());
     }

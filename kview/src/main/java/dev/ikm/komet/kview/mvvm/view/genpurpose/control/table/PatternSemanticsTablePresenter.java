@@ -181,7 +181,7 @@ public class PatternSemanticsTablePresenter extends AbstractPatternSemanticsPres
 
         final FeatureDefinition featureDef = field.fieldDefinition(observableView.calculator());
 
-        int dataType = featureDef.dataTypeNid();
+        long dataType = featureDef.dataTypeNid();
         String fieldTitle = observableView.getDescriptionTextOrNid(featureDef.meaningNid());
         String fieldPurpose = observableView.getDescriptionTextOrNid(featureDef.purposeNid());
         return new SemanticField(observableField, dataType, fieldTitle, fieldPurpose);

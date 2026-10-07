@@ -7,7 +7,7 @@ import dev.ikm.komet.layout.area.KlAreaForIntIdSet;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.layout_engine.blueprint.EditableFieldAreaBlueprint;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.LongIdSet;
 import javafx.beans.property.Property;
 
 /**
@@ -20,7 +20,7 @@ import javafx.beans.property.Property;
  * EditableComponentSetFieldArea componentSetArea = EditableComponentSetFieldArea.create(preferencesFactory);
  *
  * // Get an editable field from ObservableComposer
- * ObservableField.Editable<IntIdSet> editable = ...;
+ * ObservableField.Editable<LongIdSet> editable = ...;
  *
  * // Connect the area to the editable
  * componentSetArea.setEditable(editable);
@@ -29,8 +29,8 @@ import javafx.beans.property.Property;
  * parentPane.getChildren().add(componentSetArea.fxObject());
  * }</pre>
  */
-public final class EditableComponentSetFieldArea extends EditableFieldAreaBlueprint<IntIdSet, KLComponentCollectionControl<IntIdSet>>
-        implements KlAreaForIntIdSet<KLComponentCollectionControl<IntIdSet>> {
+public final class EditableComponentSetFieldArea extends EditableFieldAreaBlueprint<LongIdSet, KLComponentCollectionControl<LongIdSet>>
+        implements KlAreaForIntIdSet<KLComponentCollectionControl<LongIdSet>> {
 
     /**
      * Constructor for restoring from preferences.
@@ -52,12 +52,12 @@ public final class EditableComponentSetFieldArea extends EditableFieldAreaBluepr
     }
 
     @Override
-    protected Property<IntIdSet> getControlValueProperty() {
+    protected Property<LongIdSet> getControlValueProperty() {
         return getFxPeer().valueProperty();
     }
 
     @Override
-    protected void bindControlToEditable(ObservableField.Editable<IntIdSet> editable) {
+    protected void bindControlToEditable(ObservableField.Editable<LongIdSet> editable) {
         getFxPeer()
                 .valueProperty()
                 .bindBidirectional(editable.editableValueProperty());
@@ -101,7 +101,7 @@ public final class EditableComponentSetFieldArea extends EditableFieldAreaBluepr
         return EditableComponentSetFieldArea.factory().create(preferencesFactory);
     }
 
-    public static class Factory implements KlAreaForIntIdSet.Factory<KLComponentCollectionControl<IntIdSet>> {
+    public static class Factory implements KlAreaForIntIdSet.Factory<KLComponentCollectionControl<LongIdSet>> {
 
         public Factory() {}
 

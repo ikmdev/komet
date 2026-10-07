@@ -109,7 +109,7 @@ public class PatternBuilder {
             RecordListBuilder<SemanticVersionRecord> versions = RecordListBuilder.make();
             UUID descriptionSemanticUUID = UUID.randomUUID();
 
-            int semanticNid = Entity.nidForSemantic(KernelTerm.DESCRIPTION_PATTERN.nid(), PublicIds.of(descriptionSemanticUUID));
+            long semanticNid = Entity.nidForSemantic(KernelTerm.DESCRIPTION_PATTERN.nid(), PublicIds.of(descriptionSemanticUUID));
 
             SemanticRecord semanticRecord = SemanticRecordBuilder.builder()
                     .nid(semanticNid)

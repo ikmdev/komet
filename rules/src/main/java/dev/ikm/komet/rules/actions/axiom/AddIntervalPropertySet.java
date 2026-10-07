@@ -38,7 +38,7 @@ public class AddIntervalPropertySet extends AbstractAxiomAction {
 	public void doAction(ActionEvent t, AxiomSubjectRecord axiomSubjectRecord, EditCoordinateRecord editCoordinate) {
 		LogicalExpressionBuilder leb = new LogicalExpressionBuilder(axiomSubjectRecord.axiomTree());
 		UUID uuid = UuidUtil.fromSNOMED("" + SnomedIds.concept_model_data_attribute);
-		int nid = PrimitiveData.nid(uuid);
+		long nid = PrimitiveData.nid(uuid);
 		leb.IntervalPropertySet(leb.And(leb.ConceptAxiom(nid)));
 		putUpdatedLogicalExpression(editCoordinate, leb.build());
 	}

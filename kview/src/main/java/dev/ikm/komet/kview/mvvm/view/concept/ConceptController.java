@@ -1270,7 +1270,7 @@ public class ConceptController {
         // the semanticPublicId is null in CREATE mode, so use the nameText that was entered
         // instead of the semanticPublicId field value
         if (semanticPid != null) {
-            int nid = EntityService.get().nidForPublicId(semanticPid);
+            long nid = EntityService.get().nidForPublicId(semanticPid);
             Latest<SemanticEntityVersion> regularDescriptionTextversion = viewCalculator.latest(nid);
             otherNameLabel = new Text(regularDescriptionTextversion.get().fieldValues().get(1).toString());
         } else {

@@ -42,7 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class FetchChildren extends TrackingCallable<Void> {
     private static final Logger LOG = LoggerFactory.getLogger(FetchChildren.class);
     private static final AtomicInteger FETCHER_SEQUENCE = new AtomicInteger(1);
-    private static final ConcurrentHashMap<Integer, FetchChildren> FETCHER_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Long, FetchChildren> FETCHER_MAP = new ConcurrentHashMap<>();
 
     private final CountDownLatch childrenLoadedLatch;
     private final MultiParentVertexImpl parentGraphItem;

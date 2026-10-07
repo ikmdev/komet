@@ -217,15 +217,15 @@ public class PatternFieldsController {
     private void loadDataTypeComboBox(){
       /*
           ViewCalculator viewCalculator = viewProperties.calculator();
-          IntIdSet dataTypeFields = viewCalculator.descendentsOf(KometTerm.DISPLAY_FIELDS);
+          LongIdSet dataTypeFields = viewCalculator.descendentsOf(KometTerm.DISPLAY_FIELDS);
             Set<ConceptEntity> allDataTypes =
-                    dataTypeFields.intStream()
+                    dataTypeFields.longStream()
                             .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
                             .collect(Collectors.toSet());
 
-            IntIdSet dataTypeDynamic = viewCalculator.descendentsOf(KometTerm.DYNAMIC_COLUMN_DATA_TYPES);
+            LongIdSet dataTypeDynamic = viewCalculator.descendentsOf(KometTerm.DYNAMIC_COLUMN_DATA_TYPES);
 
-            allDataTypes.addAll(dataTypeDynamic.intStream()
+            allDataTypes.addAll(dataTypeDynamic.longStream()
                     .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
                     .collect(Collectors.toSet()));
 

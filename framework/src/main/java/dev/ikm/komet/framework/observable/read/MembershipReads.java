@@ -49,7 +49,7 @@ public final class MembershipReads {
     }
 
     /** Whether the concept's membership semantic for the pattern exists and is active under the calculator. */
-    public static boolean isMember(ViewCalculator viewCalculator, int conceptNid, int patternNid) {
+    public static boolean isMember(ViewCalculator viewCalculator, long conceptNid, long patternNid) {
         Objects.requireNonNull(viewCalculator, "View calculator cannot be null");
         return EntityService.get().semanticsForComponentOfPattern(conceptNid, patternNid).findFirst()
                 .map(semantic -> viewCalculator.stampCalculator().isLatestActive(semantic.nid()))

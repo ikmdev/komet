@@ -7,9 +7,9 @@ import dev.ikm.komet.kview.controls.KLComponentCollectionControl;
 import dev.ikm.komet.kview.controls.KLComponentControlFactory;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.layout.version.field.KlComponentSetField;
-import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.LongIdSet;
 
-public class KlEditableComponentSetField extends BaseDefaultKlField<IntIdSet> implements KlComponentSetField {
+public class KlEditableComponentSetField extends BaseDefaultKlField<LongIdSet> implements KlComponentSetField {
 
     /**
      * Creates an editable component set field.
@@ -17,7 +17,7 @@ public class KlEditableComponentSetField extends BaseDefaultKlField<IntIdSet> im
      * @param observableView the view context
      * @param stamp4field the stamp for UI state determination
      */
-    public KlEditableComponentSetField(ObservableField.Editable<IntIdSet> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
+    public KlEditableComponentSetField(ObservableField.Editable<LongIdSet> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
         final KLComponentCollectionControl node = KLComponentControlFactory.createComponentListControl(observableView.calculator());
         super(observableFieldEditable, observableView, stamp4field, node);
 
@@ -35,7 +35,7 @@ public class KlEditableComponentSetField extends BaseDefaultKlField<IntIdSet> im
      * @param newFieldEditable A new ObservableField.Editable instance.
      */
     @Override
-    public void rebind(ObservableField.Editable<IntIdSet> newFieldEditable) {
+    public void rebind(ObservableField.Editable<LongIdSet> newFieldEditable) {
         // Obtain UI control
         KLComponentCollectionControl uiControl = (KLComponentCollectionControl) fxObject();
 

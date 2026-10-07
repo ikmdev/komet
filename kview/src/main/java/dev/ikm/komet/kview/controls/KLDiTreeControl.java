@@ -1,5 +1,7 @@
 package dev.ikm.komet.kview.controls;
 
+import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.LongProperty;
 import dev.ikm.komet.kview.controls.skin.KLDiTreeControlSkin;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
@@ -69,20 +71,20 @@ public class KLDiTreeControl extends KLReadOnlyDiTreeControl {
      * control seeds SNOMED's "Concept model object attribute"). Resolved by the owning factory;
      * while unset (zero) the add-property-set items are disabled.
      */
-    private final IntegerProperty propertySetSeedNid = new SimpleIntegerProperty(this, "propertySetSeedNid");
-    public final int getPropertySetSeedNid() { return propertySetSeedNid.get(); }
-    public final IntegerProperty propertySetSeedNidProperty() { return propertySetSeedNid; }
-    public final void setPropertySetSeedNid(int nid) { propertySetSeedNid.set(nid); }
+    private final LongProperty propertySetSeedNid = new SimpleLongProperty(this, "propertySetSeedNid");
+    public final long getPropertySetSeedNid() { return propertySetSeedNid.get(); }
+    public final LongProperty propertySetSeedNidProperty() { return propertySetSeedNid; }
+    public final void setPropertySetSeedNid(long nid) { propertySetSeedNid.set(nid); }
 
     /**
      * The initial property concept a newly added data or interval property set is seeded with
      * (the classic axiom control seeds SNOMED's "Concept model data attribute"). Resolved by the
      * owning factory; while unset (zero) the corresponding add items are disabled.
      */
-    private final IntegerProperty dataPropertySetSeedNid = new SimpleIntegerProperty(this, "dataPropertySetSeedNid");
-    public final int getDataPropertySetSeedNid() { return dataPropertySetSeedNid.get(); }
-    public final IntegerProperty dataPropertySetSeedNidProperty() { return dataPropertySetSeedNid; }
-    public final void setDataPropertySetSeedNid(int nid) { dataPropertySetSeedNid.set(nid); }
+    private final LongProperty dataPropertySetSeedNid = new SimpleLongProperty(this, "dataPropertySetSeedNid");
+    public final long getDataPropertySetSeedNid() { return dataPropertySetSeedNid.get(); }
+    public final LongProperty dataPropertySetSeedNidProperty() { return dataPropertySetSeedNid; }
+    public final void setDataPropertySetSeedNid(long nid) { dataPropertySetSeedNid.set(nid); }
 
     // -- component slot factory
     /**

@@ -251,7 +251,7 @@ public interface EntityKlWindowFactory {
             Objects.requireNonNull(dragInfo.publicId(), "dragInfo.publicId() cannot be null");
 
             try {
-                int nid = PrimitiveData.nid(dragInfo.publicId());
+                long nid = PrimitiveData.nid(dragInfo.publicId());
                 return switch (dragInfo.type()) {
                     case CONCEPT -> ConceptFacade.make(nid);
                     case PATTERN -> PatternFacade.make(nid);

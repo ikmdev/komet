@@ -46,7 +46,7 @@ public class KometLabel extends Region {
                 return;
             }
             if (entity.get() != null && entity.get() instanceof SemanticEntity<?> semanticEntity) {
-                Function<Integer, String> fetchDescriptionFunction = ViewCalculatorUtils.getFetchSemanticDescriptionFunction(viewProperties);
+                Function<Long, String> fetchDescriptionFunction = ViewCalculatorUtils.getFetchSemanticDescriptionFunction(viewProperties);
                 tooltip.update(semanticEntity, fetchDescriptionFunction.apply(entity.get().nid()));
             }
         });
@@ -82,7 +82,7 @@ public class KometLabel extends Region {
         imageView.fitHeightProperty().bind(identiconSize);
         label.setGraphic(imageView);
 
-        Function<Integer, String> fetchDescriptionFunction = ViewCalculatorUtils.getFetchSemanticDescriptionFunction(viewProperties);
+        Function<Long, String> fetchDescriptionFunction = ViewCalculatorUtils.getFetchSemanticDescriptionFunction(viewProperties);
         String description = fetchDescriptionFunction.apply(entity.nid());
         label.setText(description);
     }

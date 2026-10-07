@@ -410,8 +410,8 @@ public class PatternViewModel extends FormViewModel {
 
         // Build field definitions from the UI collection
         ObservableList<PatternField> fieldsProperty = getObservableList(ViewModelKey.FIELDS_COLLECTION);
-        int patternNid = PrimitiveData.nid(patternPublicId);
-        int stampNid = patternEditable.getEditStamp().nid();
+        long patternNid = PrimitiveData.nid(patternPublicId);
+        long stampNid = patternEditable.getEditStamp().nid();
         org.eclipse.collections.api.list.MutableList<FieldDefinitionRecord> fieldDefs =
                 org.eclipse.collections.api.factory.Lists.mutable.ofInitialCapacity(fieldsProperty.size());
         for (int i = 0; i < fieldsProperty.size(); i++) {

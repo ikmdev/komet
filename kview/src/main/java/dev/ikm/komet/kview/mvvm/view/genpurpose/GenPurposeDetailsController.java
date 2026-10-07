@@ -173,7 +173,7 @@ public class GenPurposeDetailsController {
      * {@link #semanticEntityToPatternSemanticsPresenter}. Kept in step by {@link #doAddSemanticViews}
      * and {@link #clearSemanticViews}; read by {@link #unpublishedSemantics}.
      */
-    private final Map<Integer, SemanticEntity<SemanticEntityVersion>> displayedSemantics = new LinkedHashMap<>();
+    private final Map<Long, SemanticEntity<SemanticEntityVersion>> displayedSemantics = new LinkedHashMap<>();
 
     /**
      * Given a SemanticEntity what's its associated Semantic Control.
@@ -233,7 +233,7 @@ public class GenPurposeDetailsController {
      * removing the definition's last set, un-satisfy — the stated pattern's requirement.
      * Strong reference: the entity provider holds its subscribers weakly.
      */
-    private dev.ikm.tinkar.common.util.broadcast.Subscriber<Integer> statedDefinitionChangeSubscriber;
+    private dev.ikm.tinkar.common.util.broadcast.Subscriber<Long> statedDefinitionChangeSubscriber;
 
     /**
      * Wires the window's behavior onto its view for the KL-editor window definition held at
@@ -565,7 +565,7 @@ public class GenPurposeDetailsController {
      * The stated axioms pattern per the view's logic coordinate — the pattern whose semantics
      * edit inline as an axiom tree (see {@code KlFieldHelper.createReadOnlyKlField}).
      */
-    private int statedAxiomsPatternNid() {
+    private long statedAxiomsPatternNid() {
         return getViewProperties().calculator().viewCoordinateRecord().logicCoordinate().statedAxiomsPatternNid();
     }
 
@@ -665,7 +665,7 @@ public class GenPurposeDetailsController {
      * The axiom tree already shows the edit, so nothing re-renders here; the required chips and
      * the Publish button follow through the stated-definition change subscriber.
      */
-    private void saveUncommittedInlineEdit(int semanticNid, int fieldIndex, Object newValue) {
+    private void saveUncommittedInlineEdit(long semanticNid, int fieldIndex, Object newValue) {
         session.saveUncommittedFieldEdit(semanticNid, fieldIndex, newValue);
     }
 
@@ -1351,7 +1351,7 @@ public class GenPurposeDetailsController {
         }
 
         // Pattern Entity
-        int patternNid = editorPatternModel.getNid();
+        long patternNid = editorPatternModel.getNid();
         EntityHandle handle = EntityHandle.get(patternNid);
         PatternEntity patternEntity;
         if (handle.asPattern().isEmpty()) {
@@ -1599,7 +1599,7 @@ public class GenPurposeDetailsController {
                 });
             }
         }
-        int currentAuthorNid = getViewProperties().nodeView().editCoordinate().getAuthorNidForChanges();
+        long currentAuthorNid = getViewProperties().nodeView().editCoordinate().getAuthorNidForChanges();
         sectionModelToTitledPane.forEach((section, titledPane) -> {
             List<SemanticEntity<SemanticEntityVersion>> unpublished = unpublishedBySection.get(section);
             if (unpublished == null) {

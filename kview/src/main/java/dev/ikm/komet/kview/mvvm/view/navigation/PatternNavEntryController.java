@@ -205,7 +205,7 @@ public class PatternNavEntryController {
             // double click creates the concept window
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                 if (mouseEvent.getClickCount() == 2) {
-                    if (patternInstancesListView.getSelectionModel().getSelectedItem() instanceof Integer nid) {
+                    if (patternInstancesListView.getSelectionModel().getSelectedItem() instanceof Long nid) {
                         ViewProperties viewProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
                         var newViewProperties = viewProperties.parentView().makeOverridableViewProperties("PatternNavEntryController.initialize.patternInstancesListViewOnMouseClicked");
 
@@ -222,7 +222,7 @@ public class PatternNavEntryController {
 
         // generate the display name in the format of "Reference Component in Pattern"
         // TODO: This is a candidate for a general purpose description function, rather than a one-off in this class.
-        Function<Integer, String> fetchDescriptionFunction = ViewCalculatorUtils.getFetchSemanticDescriptionFunction(viewProperties);
+        Function<Long, String> fetchDescriptionFunction = ViewCalculatorUtils.getFetchSemanticDescriptionFunction(viewProperties);
 
         // set the cell factory for each pattern's instance list
         patternInstancesListView.setCellFactory(_ -> new PatternSemanticListCell(fetchDescriptionFunction, viewProperties));

@@ -80,7 +80,7 @@ public class RunReasonerIncrementalTask extends RunReasonerTaskBase {
 	private void logParents() {
 		LOG.info(">>>>>");
 		for (SemanticEntityVersion edit : EditedConceptTracker.getEdits()) {
-			int editNid = edit.referencedComponentNid();
+			long editNid = edit.referencedComponentNid();
 			LOG.info("Con: " + editNid + " " + PrimitiveData.text(editNid));
 			reasonerService.getParents(editNid).forEach(parent -> {
 				LOG.info("Parent: " + parent + " " + PrimitiveData.text(parent));

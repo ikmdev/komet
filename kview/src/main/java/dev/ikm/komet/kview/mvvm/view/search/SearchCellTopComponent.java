@@ -101,7 +101,7 @@ public class SearchCellTopComponent extends SearchCellBase {
                 Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> mapEntry = (Map.Entry<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>>) item;
                 SearchPanelController.NidTextRecord nidTextRecord = mapEntry.getKey();
 
-                int topNid = nidTextRecord.nid();
+                long topNid = nidTextRecord.nid();
                 String topText = viewProperties.nodeView().calculator().getDescriptionTextOrNid(topNid);
                 Latest<EntityVersion> latestTopVersion = viewProperties.nodeView().calculator().latest(topNid);
                 if (latestTopVersion.isPresent()) {

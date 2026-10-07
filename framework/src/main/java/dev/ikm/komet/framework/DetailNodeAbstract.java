@@ -31,7 +31,7 @@ import static dev.ikm.komet.framework.DetailNodeAbstract.DetailNodeKey.REQUEST_F
 public abstract class DetailNodeAbstract extends ExplorationNodeAbstract {
 
     protected final SimpleObjectProperty<EntityFacade> entityFocusProperty = new SimpleObjectProperty<>();
-    protected final FlowSubscriber<Integer> invalidationSubscriber;
+    protected final FlowSubscriber<Long> invalidationSubscriber;
 
     {
         entityFocusProperty.addListener((observable, oldValue, newValue) -> {

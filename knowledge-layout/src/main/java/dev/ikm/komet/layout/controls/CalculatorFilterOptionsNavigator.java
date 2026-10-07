@@ -32,12 +32,12 @@ import org.eclipse.collections.api.list.ImmutableList;
 public record CalculatorFilterOptionsNavigator(ViewCalculator viewCalculator) implements FilterOptionsNavigator {
 
     @Override
-    public int[] getRootNids() {
-        return new int[]{KernelTerm.ROOT_VERTEX.nid()};
+    public long[] getRootNids() {
+        return new long[]{KernelTerm.ROOT_VERTEX.nid()};
     }
 
     @Override
-    public ImmutableList<Edge> getChildEdges(int parentNid) {
+    public ImmutableList<Edge> getChildEdges(long parentNid) {
         return viewCalculator.childEdges(parentNid);
     }
 

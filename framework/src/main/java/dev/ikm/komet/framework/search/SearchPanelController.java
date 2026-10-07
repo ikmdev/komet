@@ -45,8 +45,8 @@ import javafx.scene.layout.Region;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
-import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
+import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
+import org.eclipse.collections.impl.factory.primitive.LongObjectMaps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,7 +124,7 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
         // either — is answered with those components. Anything else is a text search.
         Optional<IdentifierQuery> identifierQuery = IdentifierQuery.parse(queryString.getText());
         if (identifierQuery.isPresent()) {
-            for (int nid : identifierQuery.get().nids()) {
+            for (long nid : identifierQuery.get().nids()) {
                 addComponentFromNid(nid);
             }
         } else {
@@ -207,7 +207,7 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
     }
 
 
-    private void addComponentFromNid(int nid) {
+    private void addComponentFromNid(long nid) {
         String topText = viewProperties.nodeView().calculator().getDescriptionTextOrNid(nid);
         Latest<EntityVersion> latestTopVersion = viewProperties.nodeView().calculator().latest(nid);
         TreeItem<Object> topItem = new TreeItem<>();
@@ -219,12 +219,12 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
     }
 
     private void populateTempRoot(TreeItem<Object> tempRoot, ImmutableList<LatestVersionSearchResult> results) {
-        MutableIntObjectMap<MutableList<LatestVersionSearchResult>> topNidMatchMap = IntObjectMaps.mutable.empty();
+        MutableLongObjectMap<MutableList<LatestVersionSearchResult>> topNidMatchMap = LongObjectMaps.mutable.empty();
         for (LatestVersionSearchResult result : results) {
             topNidMatchMap.getIfAbsentPut(result.latestVersion().get().chronology().topEnclosingComponentNid(),
                     () -> Lists.mutable.empty()).add(result);
         }
-        for (int topNid : topNidMatchMap.keySet().toArray()) {
+        for (long topNid : topNidMatchMap.keySet().toArray()) {
             String topText = viewProperties.nodeView().calculator().getDescriptionTextOrNid(topNid);
             Latest<EntityVersion> latestTopVersion = viewProperties.nodeView().calculator().latest(topNid);
             latestTopVersion.ifPresent(entityVersion -> {
@@ -367,13 +367,13 @@ public class SearchPanelController implements ListChangeListener<TreeItem<Object
      * @param semanticPublicIds UUIDs of each matched semantic, positionally aligned with
      *                          the row's description list, for remote rows
      */
-    public record NidTextRecord(int nid, String text, boolean active, List<UUID> publicIds,
+    public record NidTextRecord(long nid, String text, boolean active, List<UUID> publicIds,
                                 List<List<UUID>> semanticPublicIds) {
-        public NidTextRecord(int nid, String text, boolean active) {
+        public NidTextRecord(long nid, String text, boolean active) {
             this(nid, text, active, List.of(), List.of());
         }
 
-        public NidTextRecord(int nid, String text, boolean active, List<UUID> publicIds) {
+        public NidTextRecord(long nid, String text, boolean active, List<UUID> publicIds) {
             this(nid, text, active, publicIds, List.of());
         }
     }

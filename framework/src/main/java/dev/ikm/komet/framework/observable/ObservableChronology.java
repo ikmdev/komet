@@ -60,7 +60,7 @@ public sealed interface ObservableChronology extends ObservableComponent, Featur
     }
 
     @Override
-    default int patternNid() {
+    default long patternNid() {
        return switch (this) {
            case ObservableConcept concept -> concept.patternNid();
            case ObservablePattern pattern -> pattern.patternNid();

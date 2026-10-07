@@ -35,48 +35,48 @@ public class ObservableLogicCoordinateWithOverride extends ObservableLogicCoordi
 
     @Override
     public void setExceptOverrides(LogicCoordinateRecord updatedCoordinate) {
-        int rootNid = updatedCoordinate.rootNid();
+        long rootNid = updatedCoordinate.rootNid();
         if (rootConceptProperty().isOverridden()) {
             rootNid = rootConceptProperty().get().nid();
         }
 
-        int classifierNid = updatedCoordinate.classifierNid();
+        long classifierNid = updatedCoordinate.classifierNid();
         if (classifierProperty().isOverridden()) {
             classifierNid = classifierProperty().get().nid();
         }
-        int conceptMemberPatternNid = updatedCoordinate.conceptMemberPatternNid();
+        long conceptMemberPatternNid = updatedCoordinate.conceptMemberPatternNid();
         if (conceptMemberPatternProperty().isOverridden()) {
             conceptMemberPatternNid = conceptMemberPatternProperty().get().nid();
         }
-        int descriptionLogicProfileNid = updatedCoordinate.descriptionLogicProfileNid();
+        long descriptionLogicProfileNid = updatedCoordinate.descriptionLogicProfileNid();
         if (descriptionLogicProfileProperty().isOverridden()) {
             descriptionLogicProfileNid = descriptionLogicProfileProperty().get().nid();
         }
-        int inferredAxiomsPatternNid = updatedCoordinate.inferredAxiomsPatternNid();
+        long inferredAxiomsPatternNid = updatedCoordinate.inferredAxiomsPatternNid();
         if (inferredAxiomsPatternProperty().isOverridden()) {
             inferredAxiomsPatternNid = inferredAxiomsPatternProperty().get().nid();
         }
-        int statedAxiomsPatternNid = updatedCoordinate.statedAxiomsPatternNid();
+        long statedAxiomsPatternNid = updatedCoordinate.statedAxiomsPatternNid();
         if (statedAxiomsPatternProperty().isOverridden()) {
             statedAxiomsPatternNid = statedAxiomsPatternProperty().get().nid();
         }
-        int inferredNavigationPatternNid = updatedCoordinate.inferredNavigationPatternNid();
+        long inferredNavigationPatternNid = updatedCoordinate.inferredNavigationPatternNid();
         if (inferredNavigationPatternProperty().isOverridden()) {
             inferredNavigationPatternNid = inferredNavigationPatternProperty().get().nid();
         }
-        int statedNavigationPatternNid = updatedCoordinate.statedNavigationPatternNid();
+        long statedNavigationPatternNid = updatedCoordinate.statedNavigationPatternNid();
         if (statedNavigationPatternProperty().isOverridden()) {
             statedNavigationPatternNid = statedNavigationPatternProperty().get().nid();
         }
         /*
-                                             int classifierNid,
-                                             int descriptionLogicProfileNid,
-                                             int inferredAxiomsPatternNid,
-                                             int statedAxiomsPatternNid,
-                                             int conceptAssemblageNid,
-                                             int statedNavigationPatternNid,
-                                             int inferredNavigationPatternNid,
-                                             int rootNid
+                                             long classifierNid,
+                                             long descriptionLogicProfileNid,
+                                             long inferredAxiomsPatternNid,
+                                             long statedAxiomsPatternNid,
+                                             long conceptAssemblageNid,
+                                             long statedNavigationPatternNid,
+                                             long inferredNavigationPatternNid,
+                                             long rootNid
                                              */
         setValue(LogicCoordinateRecord.make(classifierNid, descriptionLogicProfileNid, inferredAxiomsPatternNid,
                 statedAxiomsPatternNid, conceptMemberPatternNid, statedNavigationPatternNid, inferredNavigationPatternNid, rootNid));

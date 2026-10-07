@@ -272,7 +272,7 @@ public class EditFullyQualifiedNameController implements BasicController {
 
         ViewCalculator viewCalculator = viewProperties.calculator();
 
-        int nid = EntityService.get().nidForPublicId(publicId);
+        long nid = EntityService.get().nidForPublicId(publicId);
 
         // this is the Other Name
         Latest<SemanticEntityVersion> latestEntityVersion = viewCalculator.latest(nid);
@@ -386,7 +386,7 @@ public class EditFullyQualifiedNameController implements BasicController {
     @Override
     public void cleanup() { }
 
-    private Optional<ConceptEntity> findByNid(List<ConceptEntity> items, int nid) {
+    private Optional<ConceptEntity> findByNid(List<ConceptEntity> items, long nid) {
 
         Optional<ConceptEntity> conceptOption = items.stream().parallel()
                 .filter(item -> (item.nid() == nid)).findAny();

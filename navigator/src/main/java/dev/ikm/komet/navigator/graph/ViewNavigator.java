@@ -31,43 +31,43 @@ public class ViewNavigator implements Navigator {
     }
 
     @Override
-    public int[] getParentNids(int childNid) {
+    public long[] getParentNids(long childNid) {
         return viewCalculator.sortedParentsOf(childNid).toArray();
     }
 
     @Override
-    public int[] getChildNids(int parentNid) {
+    public long[] getChildNids(long parentNid) {
         return viewCalculator.sortedChildrenOf(parentNid).toArray();
     }
 
     @Override
-    public ImmutableList<Edge> getParentEdges(int childNid) {
+    public ImmutableList<Edge> getParentEdges(long childNid) {
         return viewCalculator.parentEdges(childNid);
     }
 
     @Override
-    public ImmutableList<Edge> getChildEdges(int parentNid) {
+    public ImmutableList<Edge> getChildEdges(long parentNid) {
         return viewCalculator.childEdges(parentNid);
     }
 
     @Override
-    public boolean isLeaf(int conceptNid) {
+    public boolean isLeaf(long conceptNid) {
         return viewCalculator.unsortedChildrenOf(conceptNid).isEmpty();
     }
 
     @Override
-    public boolean isChildOf(int childNid, int parentNid) {
+    public boolean isChildOf(long childNid, long parentNid) {
         return viewCalculator.unsortedChildrenOf(parentNid).contains(childNid);
     }
 
     @Override
-    public boolean isDescendentOf(int descendantNid, int ancestorNid) {
+    public boolean isDescendentOf(long descendantNid, long ancestorNid) {
         return viewCalculator.descendentsOf(ancestorNid).contains(descendantNid);
     }
 
     @Override
-    public int[] getRootNids() {
-        return new int[]{KernelTerm.ROOT_VERTEX.nid()};
+    public long[] getRootNids() {
+        return new long[]{KernelTerm.ROOT_VERTEX.nid()};
     }
 
     @Override

@@ -51,7 +51,7 @@ public interface SnapshotReads {
     ViewCalculator viewCalculator();
 
     /** This entity's nid. */
-    int nid();
+    long nid();
 
     /** The observable entity this is a snapshot of. */
     ObservableEntity<?> observableEntity();

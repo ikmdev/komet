@@ -32,7 +32,7 @@ public class InvertedTree {
      * @param childNid The nid of a parent of a given {@link dev.ikm.tinkar.terms.ConceptFacade}
      * @param description The description of a given {@link dev.ikm.tinkar.terms.ConceptFacade}
      */
-    public record ConceptItem(int nid, int childNid, String description) {}
+    public record ConceptItem(long nid, long childNid, String description) {}
 
     ConceptItem item;
     InvertedTree parent;

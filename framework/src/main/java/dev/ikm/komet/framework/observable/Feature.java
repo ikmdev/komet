@@ -48,7 +48,7 @@ Field<LocatableField>
 
     ObservableComponent containingComponent();
 
-    int patternNid();
+    long patternNid();
 
     default PatternFacade pattern() {
         return EntityProxy.Pattern.make(patternNid());

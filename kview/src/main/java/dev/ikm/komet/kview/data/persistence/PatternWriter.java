@@ -43,10 +43,10 @@ public class PatternWriter {
         PublicIdentifierRecord identifier = PublicIdentifierRecord.make(pattern);
 
         //Assign nids for Pattern component Concepts
-        int patternNid = EntityService.get().nidForPublicId(pattern);
-        int meaningConceptNid = EntityService.get().nidForPublicId(patternDetail.meaning());
-        int purposeConceptNid = EntityService.get().nidForPublicId(patternDetail.purpose());
-        int stampNid = EntityService.get().nidForPublicId(stamp);
+        long patternNid = EntityService.get().nidForPublicId(pattern);
+        long meaningConceptNid = EntityService.get().nidForPublicId(patternDetail.meaning());
+        long purposeConceptNid = EntityService.get().nidForPublicId(patternDetail.purpose());
+        long stampNid = EntityService.get().nidForPublicId(stamp);
 
         //Create Pattern Chronology
         PatternRecord patternRecord = PatternRecordBuilder.builder()
@@ -61,9 +61,9 @@ public class PatternWriter {
         final AtomicInteger patternIndex = new AtomicInteger(0);
         MutableList<FieldDefinitionRecord> fieldDefinitions = Lists.mutable.empty();
         patternFieldDetails.forEach(patternFieldDetail -> {
-            int meaningNid = EntityService.get().nidForPublicId(patternFieldDetail.meaning());
-            int purposeNid = EntityService.get().nidForPublicId(patternFieldDetail.purpose());
-            int dataTypeNid = EntityService.get().nidForPublicId(patternFieldDetail.dataType());
+            long meaningNid = EntityService.get().nidForPublicId(patternFieldDetail.meaning());
+            long purposeNid = EntityService.get().nidForPublicId(patternFieldDetail.purpose());
+            long dataTypeNid = EntityService.get().nidForPublicId(patternFieldDetail.dataType());
 
             FieldDefinitionRecord fieldDefinitionRecord = FieldDefinitionRecordBuilder.builder()
                     .patternNid(patternNid)

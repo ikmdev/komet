@@ -428,7 +428,7 @@ public class FilterOptionsUtils {
         return sortedSet.stream().toList();
     }
 
-    private static int findNidForDescription(FilterOptionsNavigator navigator, int nid, String description) {
+    private static long findNidForDescription(FilterOptionsNavigator navigator, long nid, String description) {
         return navigator.getChildEdges(nid).stream()
                 .filter(edge -> EntityHandle.get(edge.destinationNid()).expectEntity().description().equals(description))
                 .findFirst()
@@ -436,12 +436,12 @@ public class FilterOptionsUtils {
                 .orElseThrow();
     }
 
-    public static List<EntityFacade> getDescendentsList(FilterOptionsNavigator navigator, int parentNid, String description) {
-        int nid = parentNid;
+    public static List<EntityFacade> getDescendentsList(FilterOptionsNavigator navigator, long parentNid, String description) {
+        long nid = parentNid;
         for (String s : description.split(", ")) {
             nid = findNidForDescription(navigator, nid, s);
         }
-        return navigator.getViewCalculator().descendentsOf(nid).intStream().boxed()
+        return navigator.getViewCalculator().descendentsOf(nid).longStream().boxed()
                 .map(i -> (EntityFacade) EntityHandle.get(i).expectEntity())
                 .sorted()
                 .toList();
@@ -465,7 +465,7 @@ public class FilterOptionsUtils {
         };
     }
 
-    public static String getDescriptionTextOrNid(ViewCalculator viewCalculator, int nid) {
+    public static String getDescriptionTextOrNid(ViewCalculator viewCalculator, long nid) {
         try {
             return viewCalculator.getDescriptionTextOrNid(nid);
         } catch (Exception e) {

@@ -15,8 +15,8 @@
  */
 package dev.ikm.komet.framework.view;
 
-import dev.ikm.tinkar.common.id.IntIdList;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIdList;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.coordinate.language.LanguageCoordinate;
 import dev.ikm.tinkar.coordinate.language.LanguageCoordinateRecord;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -43,27 +43,27 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
     @Override
     public void setExceptOverrides(LanguageCoordinateRecord updatedCoordinate) {
         if (hasOverrides()) {
-            int languageConceptNid = updatedCoordinate.languageConceptNid();
+            long languageConceptNid = updatedCoordinate.languageConceptNid();
             if (languageConceptProperty().isOverridden()) {
                 languageConceptNid = languageConceptProperty().get().nid();
             }
-            IntIdList descriptionPatternPreferenceNidList = updatedCoordinate.descriptionPatternPreferenceNidList();
+            LongIdList descriptionPatternPreferenceNidList = updatedCoordinate.descriptionPatternPreferenceNidList();
             if (modulePreferenceListForLanguageProperty().isOverridden()) {
                 descriptionPatternPreferenceNidList = descriptionPatternPreferenceNidList();
             }
 
 
-            IntIdList modulePreferenceList = updatedCoordinate.modulePreferenceNidListForLanguage();
+            LongIdList modulePreferenceList = updatedCoordinate.modulePreferenceNidListForLanguage();
             if (modulePreferenceListForLanguageProperty().isOverridden()) {
                 modulePreferenceList = modulePreferenceNidListForLanguage();
             }
 
-            IntIdList descriptionTypePreferenceList = updatedCoordinate.descriptionTypePreferenceNidList();
+            LongIdList descriptionTypePreferenceList = updatedCoordinate.descriptionTypePreferenceNidList();
             if (descriptionTypePreferenceListProperty().isOverridden()) {
                 descriptionTypePreferenceList = descriptionTypePreferenceNidList();
             }
 
-            IntIdList dialectAssemblagePreferenceList = updatedCoordinate.dialectPatternPreferenceNidList();
+            LongIdList dialectAssemblagePreferenceList = updatedCoordinate.dialectPatternPreferenceNidList();
             if (dialectPatternPreferenceListProperty().isOverridden()) {
                 dialectAssemblagePreferenceList = dialectPatternPreferenceNidList();
             }
@@ -179,10 +179,10 @@ public class ObservableLanguageCoordinateWithOverride extends ObservableLanguage
     @Override
     public LanguageCoordinateRecord getOriginalValue() {
         return LanguageCoordinateRecord.make(languageConceptProperty().getOriginalValue().nid(),
-                IntIds.list.of(descriptionPatternPreferenceListProperty().getOriginalValue().castToList(), EntityFacade::toNid),
-                IntIds.list.of(descriptionTypePreferenceListProperty().getOriginalValue().castToList(), EntityFacade::toNid),
-                IntIds.list.of(dialectPatternPreferenceListProperty().getOriginalValue().castToList(), EntityFacade::toNid),
-                IntIds.list.of(modulePreferenceListForLanguageProperty().getOriginalValue().castToList(), EntityFacade::toNid));
+                LongIds.list.of(descriptionPatternPreferenceListProperty().getOriginalValue().castToList(), EntityFacade::toNid),
+                LongIds.list.of(descriptionTypePreferenceListProperty().getOriginalValue().castToList(), EntityFacade::toNid),
+                LongIds.list.of(dialectPatternPreferenceListProperty().getOriginalValue().castToList(), EntityFacade::toNid),
+                LongIds.list.of(modulePreferenceListForLanguageProperty().getOriginalValue().castToList(), EntityFacade::toNid));
     }
 
     @Override

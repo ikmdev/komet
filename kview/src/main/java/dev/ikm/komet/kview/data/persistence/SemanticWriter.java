@@ -41,7 +41,7 @@ public class SemanticWriter {
 
     public void description(PublicId semantic, PublicId referencedComponent, PublicId descriptionType, String text){
         //Assign nids to description components
-        final int descriptionTypeNid = EntityService.get().nidForPublicId(descriptionType);
+        final long descriptionTypeNid = EntityService.get().nidForPublicId(descriptionType);
         final ConceptFacade descriptionTypeFacade = ConceptFacade.make(descriptionTypeNid);
 
         //Create Semantic Detail
@@ -64,7 +64,7 @@ public class SemanticWriter {
         PublicId identifierPattern = PublicIds.of(UUID.fromString("5d60e14b-c410-5172-9559-3c4253278ae2"));
 
         //Assign nids to description components
-        final int sourceNid = EntityService.get().nidForPublicId(source);
+        final long sourceNid = EntityService.get().nidForPublicId(source);
         final ConceptFacade sourceFacade = ConceptFacade.make(sourceNid);
 
         //Create Semantic Detail
@@ -82,7 +82,7 @@ public class SemanticWriter {
 
     public void usDialect(PublicId semantic, PublicId referencedComponent, PublicId dialectAcceptability){
         //Assign nids to description components
-        final int dialectNid = EntityService.get().nidForPublicId(dialectAcceptability);
+        final long dialectNid = EntityService.get().nidForPublicId(dialectAcceptability);
         final ConceptFacade dialectFacade = ConceptFacade.make(dialectNid);
 
         //Create Semantic Detail
@@ -143,7 +143,7 @@ public class SemanticWriter {
         PublicId versionControlPattern = PublicIds.of(UUID.fromString("70f89dd5-2cdb-59bb-bbaa-98527513547c"));
 
         //Assign nids to description components
-        final int conceptNid = EntityService.get().nidForPublicId(concept);
+        final long conceptNid = EntityService.get().nidForPublicId(concept);
         final ConceptFacade conceptFacade = ConceptFacade.make(conceptNid);
 
         //Create Semantic Detail
@@ -252,10 +252,10 @@ public class SemanticWriter {
         PublicIdentifierRecord identifier = PublicIdentifierRecord.make(semantic);
 
         //Assign nids for PublicIds
-        int semanticNid = EntityService.get().nidForPublicId(semantic);
-        int patternNid = EntityService.get().nidForPublicId(semanticDetail.pattern());
-        int referencedComponentNid = EntityService.get().nidForPublicId(semanticDetail.referencedComponent());
-        int stampNid = EntityService.get().nidForPublicId(stamp);
+        long semanticNid = EntityService.get().nidForPublicId(semantic);
+        long patternNid = EntityService.get().nidForPublicId(semanticDetail.pattern());
+        long referencedComponentNid = EntityService.get().nidForPublicId(semanticDetail.referencedComponent());
+        long stampNid = EntityService.get().nidForPublicId(stamp);
 
         //Create empty version list
         RecordListBuilder<SemanticVersionRecord> versions = RecordListBuilder.make();

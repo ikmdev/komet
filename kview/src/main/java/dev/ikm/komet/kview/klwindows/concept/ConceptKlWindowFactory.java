@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
@@ -71,12 +72,12 @@ public class ConceptKlWindowFactory implements EntityKlWindowFactory {
                 final ViewProperties viewProperties = journalViewProperties;
 
                 // Try to extract entity facade from saved state
-                final OptionalInt entityNid = windowState.resolveEntityNid();
+                final OptionalLong entityNid = windowState.resolveEntityNid();
                 final NidTextEnum nidTextEnum = NidTextEnum.fromString(windowState.getEntityNidType())
                         .orElse(NidTextEnum.NID_TEXT);
                 ConceptFacade conceptFacade = null;
                 if (entityNid.isPresent()) {
-                    conceptFacade = createConceptEntity(entityNid.getAsInt(), nidTextEnum);
+                    conceptFacade = createConceptEntity(entityNid.getAsLong(), nidTextEnum);
                 }
 
                 // Create the window with the extracted parameters
@@ -108,7 +109,7 @@ public class ConceptKlWindowFactory implements EntityKlWindowFactory {
      * @return the concept entity or null if creation failed
      */
     @SuppressWarnings("unchecked")
-    private ConceptFacade createConceptEntity(int entityNid, NidTextEnum nidTextEnum) {
+    private ConceptFacade createConceptEntity(long entityNid, NidTextEnum nidTextEnum) {
         // Only SEMANTIC_ENTITY needs special handling
         if (nidTextEnum == NidTextEnum.SEMANTIC_ENTITY) {
             return Entity.getConceptForSemantic(entityNid)

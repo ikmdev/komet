@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.controls.test;
 
+import dev.ikm.tinkar.common.id.Nid;
 import org.testfx.api.FxService;
 import dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
@@ -78,8 +79,8 @@ class PinnedAncestorsUTestFX {
     private static final int LEAVES = 40;
     private static final int FILLERS = 30;
 
-    private static final Map<Integer, String> NAMES = new HashMap<>();
-    private static final Set<Integer> LEAF_NIDS = new HashSet<>();
+    private static final Map<Long, String> NAMES = new HashMap<>();
+    private static final Set<Long> LEAF_NIDS = new HashSet<>();
 
     private final FxRobot robot = new FxRobot();
     private KLConceptNavigatorControl control;
@@ -164,7 +165,7 @@ class PinnedAncestorsUTestFX {
         ViewCalculator viewCalculator = (ViewCalculator) Proxy.newProxyInstance(
                 PinnedAncestorsUTestFX.class.getClassLoader(), new Class<?>[]{ViewCalculator.class},
                 (proxy, method, args) -> switch (method.getName()) {
-                    case "getDescriptionTextOrNid" -> NAMES.get((Integer) args[0]);
+                    case "getDescriptionTextOrNid" -> NAMES.get(Nid.nidOf(args[0]));
                     case "hashCode" -> System.identityHashCode(proxy);
                     case "equals" -> proxy == args[0];
                     case "toString" -> "ViewCalculator for the pinned ancestors test";
@@ -172,43 +173,43 @@ class PinnedAncestorsUTestFX {
                 });
         return new Navigator() {
             @Override
-            public int[] getParentNids(int childNid) {
-                return new int[0];
+            public long[] getParentNids(long childNid) {
+                return new long[0];
             }
 
             @Override
-            public int[] getChildNids(int parentNid) {
-                return new int[0];
+            public long[] getChildNids(long parentNid) {
+                return new long[0];
             }
 
             @Override
-            public ImmutableList<Edge> getParentEdges(int childNid) {
+            public ImmutableList<Edge> getParentEdges(long childNid) {
                 return Lists.immutable.empty();
             }
 
             @Override
-            public ImmutableList<Edge> getChildEdges(int parentNid) {
+            public ImmutableList<Edge> getChildEdges(long parentNid) {
                 return Lists.immutable.empty();
             }
 
             @Override
-            public boolean isLeaf(int conceptNid) {
+            public boolean isLeaf(long conceptNid) {
                 return LEAF_NIDS.contains(conceptNid);
             }
 
             @Override
-            public boolean isChildOf(int childNid, int parentNid) {
+            public boolean isChildOf(long childNid, long parentNid) {
                 return false;
             }
 
             @Override
-            public boolean isDescendentOf(int descendantNid, int ancestorNid) {
+            public boolean isDescendentOf(long descendantNid, long ancestorNid) {
                 return false;
             }
 
             @Override
-            public int[] getRootNids() {
-                return new int[0];
+            public long[] getRootNids() {
+                return new long[0];
             }
 
             @Override

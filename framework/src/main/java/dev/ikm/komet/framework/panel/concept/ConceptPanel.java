@@ -40,7 +40,7 @@ public class ConceptPanel extends ComponentIsFinalPanel<
     public ConceptPanel(ObservableConceptSnapshot conceptEntity,
                         ViewProperties viewProperties,
                         SimpleObjectProperty<EntityFacade> topEnclosingComponentProperty,
-                        ObservableSet<Integer> referencedNids) {
+                        ObservableSet<Long> referencedNids) {
         super(conceptEntity, viewProperties, topEnclosingComponentProperty, referencedNids);
         this.collapsiblePane.setText("Concept panel");
         this.getComponentPanelBox().pseudoClassStateChanged(PseudoClasses.CONCEPT_PSEUDO_CLASS, true);
@@ -63,7 +63,7 @@ public class ConceptPanel extends ComponentIsFinalPanel<
         contextMenu.getItems().add(versionChronologyRecursiveMenuItem);
     }
 
-    private void recursiveVersionChronology(int versionNid, ViewProperties viewProperties) {
+    private void recursiveVersionChronology(long versionNid, ViewProperties viewProperties) {
         ChangeChronology changeChronology = this.viewProperties.calculator().changeChronology(versionNid);
         System.out.println(changeChronology.toString(viewProperties.calculator(), true));
         EntityService.get().forEachSemanticForComponent(versionNid,

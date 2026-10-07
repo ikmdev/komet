@@ -144,7 +144,7 @@ public abstract class ObservableStampPathBase
     }
 
     @Override
-    public final int pathConceptNid() {
+    public final long pathConceptNid() {
         return this.getValue().pathConceptNid();
     }
 

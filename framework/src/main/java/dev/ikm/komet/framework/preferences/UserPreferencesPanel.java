@@ -61,7 +61,7 @@ public final class UserPreferencesPanel extends AbstractPreferences implements U
         this.pathConceptWrapper.setAllowedValues(pathConceptOptions);
         revertFields();
         save();
-        int[] userConceptOptionNids = new int[userConceptOptions.size()];
+        long[] userConceptOptionNids = new long[userConceptOptions.size()];
         for (int i = 0; i < userConceptOptionNids.length; i++) {
             userConceptOptionNids[i] = userConceptOptions.get(i).nid();
         }

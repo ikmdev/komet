@@ -94,7 +94,7 @@ import java.util.function.Supplier;
  *   <th>Example</th>
  * </tr>
  * <tr>
- *   <td><b>int nid</b></td>
+ *   <td><b>long nid</b></td>
  *   <td>Internal processing, performance-critical paths</td>
  *   <td>{@code ObservableEntityHandle.get(123)}</td>
  * </tr>
@@ -285,7 +285,7 @@ import java.util.function.Supplier;
  *
  * <pre>{@code
  * // Extract and bind if concept
- * public void bindIfConcept(int nid, Label label) {
+ * public void bindIfConcept(long nid, Label label) {
  *     ObservableEntityHandle.get(nid)
  *         .asConcept()
  *         .ifPresent(concept -> label.textProperty().bind(concept.descriptionProperty()));
@@ -312,18 +312,18 @@ import java.util.function.Supplier;
  *
  * <pre>{@code
  * // Field definitions - meaning is ALWAYS a concept per data model
- * public ObservableConcept observableMeaning(int meaningNid) {
+ * public ObservableConcept observableMeaning(long meaningNid) {
  *     return ObservableEntityHandle.get(meaningNid).expectConcept();
  * }
  *
  * // Direct binding with guaranteed type
- * public void bindMeaningDescription(int meaningNid, Label label) {
+ * public void bindMeaningDescription(long meaningNid, Label label) {
  *     ObservableConcept meaning = ObservableEntityHandle.get(meaningNid).expectConcept();
  *     label.textProperty().bind(meaning.descriptionProperty());
  * }
  *
  * // UI controller initialization
- * public void initialize(int conceptNid) {
+ * public void initialize(long conceptNid) {
  *     ObservableConcept concept = ObservableEntityHandle.get(conceptNid)
  *         .expectConcept("Controller requires concept entity");
  *
@@ -632,7 +632,7 @@ public interface ObservableEntityHandle {
      * @return an ObservableEntityHandle representing the entity, or an empty handle if absent
      * @throws RuntimeException if not called on JavaFX application thread
      */
-    static ObservableEntityHandle get(int nid) {
+    static ObservableEntityHandle get(long nid) {
         try {
             ObservableEntity<?> entity = ObservableEntity.packagePrivateGet(nid);
             return entity != null ? of(entity) : absent();
@@ -1039,7 +1039,7 @@ public interface ObservableEntityHandle {
      * @see #asStampSnapshot(ViewCalculator) for safe Optional-based extraction
      * @see #ifStampGetSnapshot(ViewCalculator, Consumer) for side-effect operations
      */
-    static ObservableStampSnapshot getStampSnapshotOrThrow(int nid, ViewCalculator viewCalculator) {
+    static ObservableStampSnapshot getStampSnapshotOrThrow(long nid, ViewCalculator viewCalculator) {
         return get(nid).expectStamp().getSnapshot(viewCalculator);
     }
 
@@ -1132,7 +1132,7 @@ public interface ObservableEntityHandle {
      * @see #getPatternSnapshotOrThrow(int, ViewCalculator)
      * @see #getStampSnapshotOrThrow(int, ViewCalculator)
      */
-    static Optional<ObservableEntitySnapshot<?, ?>> getSnapshot(int nid, ViewCalculator viewCalculator) {
+    static Optional<ObservableEntitySnapshot<?, ?>> getSnapshot(long nid, ViewCalculator viewCalculator) {
         return get(nid).entity().map(e -> e.getSnapshot(viewCalculator));
     }
 
@@ -1200,7 +1200,7 @@ public interface ObservableEntityHandle {
      * @throws IllegalStateException if entity is absent or not a concept
      * @throws RuntimeException if not called on JavaFX application thread
      */
-    static ObservableConceptSnapshot getConceptSnapshotOrThrow(int nid, ViewCalculator viewCalculator) {
+    static ObservableConceptSnapshot getConceptSnapshotOrThrow(long nid, ViewCalculator viewCalculator) {
         return get(nid).expectConcept().getSnapshot(viewCalculator);
     }
 
@@ -1249,7 +1249,7 @@ public interface ObservableEntityHandle {
      * @throws IllegalStateException if entity is absent or not a semantic
      * @throws RuntimeException if not called on JavaFX application thread
      */
-    static ObservableSemanticSnapshot getSemanticSnapshotOrThrow(int nid, ViewCalculator viewCalculator) {
+    static ObservableSemanticSnapshot getSemanticSnapshotOrThrow(long nid, ViewCalculator viewCalculator) {
         return get(nid).expectSemantic().getSnapshot(viewCalculator);
     }
 
@@ -1298,7 +1298,7 @@ public interface ObservableEntityHandle {
      * @throws IllegalStateException if entity is absent or not a pattern
      * @throws RuntimeException if not called on JavaFX application thread
      */
-    static ObservablePatternSnapshot getPatternSnapshotOrThrow(int nid, ViewCalculator viewCalculator) {
+    static ObservablePatternSnapshot getPatternSnapshotOrThrow(long nid, ViewCalculator viewCalculator) {
         return get(nid).expectPattern().getSnapshot(viewCalculator);
     }
 
@@ -1366,7 +1366,7 @@ public interface ObservableEntityHandle {
      * @throws RuntimeException if not called on JavaFX application thread
      * @see #expectConcept()
      */
-    static ObservableConcept getConceptOrThrow(int nid) {
+    static ObservableConcept getConceptOrThrow(long nid) {
         return get(nid).expectConcept();
     }
 
@@ -1404,7 +1404,7 @@ public interface ObservableEntityHandle {
      * @throws IllegalStateException if entity is absent or not a semantic
      * @throws RuntimeException if not called on JavaFX application thread
      */
-    static ObservableSemantic getSemanticOrThrow(int nid) {
+    static ObservableSemantic getSemanticOrThrow(long nid) {
         return get(nid).expectSemantic();
     }
 
@@ -1442,7 +1442,7 @@ public interface ObservableEntityHandle {
      * @throws IllegalStateException if entity is absent or not a pattern
      * @throws RuntimeException if not called on JavaFX application thread
      */
-    static ObservablePattern getPatternOrThrow(int nid) {
+    static ObservablePattern getPatternOrThrow(long nid) {
         return get(nid).expectPattern();
     }
 
@@ -1480,7 +1480,7 @@ public interface ObservableEntityHandle {
      * @throws IllegalStateException if entity is absent or not a stamp
      * @throws RuntimeException if not called on JavaFX application thread
      */
-    static ObservableStamp getStampOrThrow(int nid) {
+    static ObservableStamp getStampOrThrow(long nid) {
         return get(nid).expectStamp();
     }
 
@@ -1640,7 +1640,7 @@ public interface ObservableEntityHandle {
      * <p><b>Usage Examples:</b>
      * <pre>{@code
      * // Field definition - meaning is ALWAYS a concept per data model
-     * public ObservableConcept observableMeaning(int meaningNid) {
+     * public ObservableConcept observableMeaning(long meaningNid) {
      *     return ObservableEntityHandle.get(meaningNid).expectConcept();
      * }
      *
@@ -1690,7 +1690,7 @@ public interface ObservableEntityHandle {
      *
      * <p><b>Usage Example:</b>
      * <pre>{@code
-     * public ObservableSemantic getDefinition(int semanticNid) {
+     * public ObservableSemantic getDefinition(long semanticNid) {
      *     return ObservableEntityHandle.get(semanticNid).expectSemantic();
      * }
      * }</pre>
@@ -1726,7 +1726,7 @@ public interface ObservableEntityHandle {
      *
      * <p><b>Usage Example:</b>
      * <pre>{@code
-     * public ObservablePattern getPatternForSemantic(int patternNid) {
+     * public ObservablePattern getPatternForSemantic(long patternNid) {
      *     return ObservableEntityHandle.get(patternNid).expectPattern();
      * }
      * }</pre>
@@ -1762,7 +1762,7 @@ public interface ObservableEntityHandle {
      *
      * <p><b>Usage Example:</b>
      * <pre>{@code
-     * public ObservableStamp getVersionStamp(int stampNid) {
+     * public ObservableStamp getVersionStamp(long stampNid) {
      *     return ObservableEntityHandle.get(stampNid).expectStamp();
      * }
      * }</pre>

@@ -68,7 +68,7 @@ public final class ObservableFeatureDefinition
     }
 
     @Override
-    public int patternNid() {
+    public long patternNid() {
         return fieldDefinitionReference.get().patternNid();
     }
 
@@ -78,7 +78,7 @@ public final class ObservableFeatureDefinition
     }
 
     @Override
-    public int patternVersionStampNid() {
+    public long patternVersionStampNid() {
         return fieldDefinitionReference.get().patternVersionStampNid();
     }
 
@@ -205,7 +205,7 @@ public final class ObservableFeatureDefinition
     }
 
     @Override
-    public int dataTypeNid() {
+    public long dataTypeNid() {
         return dataTypeProperty.get().nid();
     }
 
@@ -215,12 +215,12 @@ public final class ObservableFeatureDefinition
     }
 
     @Override
-    public int purposeNid() {
+    public long purposeNid() {
         return purposeProperty.get().nid();
     }
 
     @Override
-    public int meaningNid() {
+    public long meaningNid() {
         return meaningProperty.get().nid();
     }
 

@@ -35,7 +35,7 @@ public class SectionSemanticsComboBoxCell extends ListCell<EntityFacade> {
         super.updateItem(item, empty);
 
         if (item != null && !empty) {
-            int nid = item.nid();
+            long nid = item.nid();
             currentEntityHandle = EntityHandle.get(nid);
             currentEntityHandle.ifPresent(entity -> {
                 label.setEntity(entity);

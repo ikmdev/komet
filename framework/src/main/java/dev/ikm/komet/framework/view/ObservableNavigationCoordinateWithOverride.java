@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.framework.view;
 
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinate;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
@@ -132,15 +132,15 @@ public class ObservableNavigationCoordinateWithOverride extends ObservableNaviga
     @Override
     public NavigationCoordinateRecord getOriginalValue() {
         /**
-         IntIdSet navigationConceptNids,
+         LongIdSet navigationConceptNids,
          StateSet vertexStates,
          boolean sortVertices,
-         IntIdList verticesSortPatternNidList
+         LongIdList verticesSortPatternNidList
          */
-        return NavigationCoordinateRecord.make(IntIds.set.of(navigationPatternsProperty().getOriginalValue().castToSet(), EntityFacade::toNid),
+        return NavigationCoordinateRecord.make(LongIds.set.of(navigationPatternsProperty().getOriginalValue().castToSet(), EntityFacade::toNid),
                 vertexStatesProperty().getOriginalValue(),
                 sortVerticesProperty().getOriginalValue(),
-                IntIds.list.of(verticesSortPatternListProperty().get().castToList(), EntityFacade::toNid)
+                LongIds.list.of(verticesSortPatternListProperty().get().castToList(), EntityFacade::toNid)
                 );
     }
 

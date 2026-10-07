@@ -80,21 +80,21 @@ public abstract class StampFormViewModelBase extends FormViewModel {
         setPropertyValue(StampFormViewModelBase.Properties.STATUS, State.ACTIVE);
         // module
         // @TODO Revisit the bindings because the defaultModuleProperty is returning a module that isn't part of the list of modules available.
-        //       int moduleNid = getViewProperties().nodeView().editCoordinate().defaultModuleProperty().get().nid();
-        int moduleNid = KometTerm.DEVELOPMENT_MODULE.nid();
+        //       long moduleNid = getViewProperties().nodeView().editCoordinate().defaultModuleProperty().get().nid();
+        long moduleNid = KometTerm.DEVELOPMENT_MODULE.nid();
         List<ComponentWithNid> moduleEntities = getObservableList(StampFormViewModelBase.Properties.MODULES);
         ComponentWithNid module = lookupByNid(moduleNid, moduleEntities);
         setPropertyValue(StampFormViewModelBase.Properties.MODULE, module);
 
         // Path
-        int pathNid = getViewProperties().nodeView().editCoordinate().defaultPathProperty().get().nid();
+        long pathNid = getViewProperties().nodeView().editCoordinate().defaultPathProperty().get().nid();
         List<ComponentWithNid> pathEntities = getObservableList(StampFormViewModelBase.Properties.PATHS);
         ComponentWithNid path = lookupByNid(pathNid, pathEntities);
         setPropertyValue(StampFormViewModelBase.Properties.PATH, path);
 
     }
 
-    private ComponentWithNid lookupByNid(int nid, List<ComponentWithNid> entities) {
+    private ComponentWithNid lookupByNid(long nid, List<ComponentWithNid> entities) {
         return entities.stream()
                 .filter(entity ->
                         entity.nid() == nid)

@@ -17,5 +17,5 @@ package dev.ikm.komet.kview.mvvm.model;
 
 import dev.ikm.tinkar.coordinate.stamp.change.VersionChangeRecord;
 
-public record ChangeCoordinate(String pathName, int moduleNid, VersionChangeRecord versionChangeRecord) {
+public record ChangeCoordinate(String pathName, long moduleNid, VersionChangeRecord versionChangeRecord) {
 }

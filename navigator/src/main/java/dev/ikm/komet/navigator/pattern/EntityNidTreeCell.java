@@ -101,7 +101,7 @@ public class EntityNidTreeCell extends TreeCell<Object>
             if (item instanceof String stringItem) {
                 setContentDisplay(ContentDisplay.TEXT_ONLY);
                 setText(stringItem);
-            } else if (item instanceof Integer nid) {
+            } else if (item instanceof Long nid) {
                 String entityDescriptionText = viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(nid);
                 Entity entity = EntityHandle.get(nid).orNull();
                 Node icon;

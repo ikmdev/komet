@@ -1,5 +1,6 @@
 package dev.ikm.komet.framework.observable;
 
+import dev.ikm.tinkar.common.id.Nid;
 import dev.ikm.komet.framework.observable.key.*;
 import dev.ikm.tinkar.common.binary.Encodable;
 
@@ -40,7 +41,7 @@ public sealed interface FeatureKey extends Encodable {
             return new ChronologyKey();
         }
 
-        public static ChronologyFeature.Chronology Object(int nid) {
+        public static ChronologyFeature.Chronology Object(long nid) {
             return new ChronologyKey(nid);
         }
 
@@ -48,7 +49,7 @@ public sealed interface FeatureKey extends Encodable {
             return new PublicIdKey();
         }
 
-        public static ChronologyFeature.PublicId PublicId(int nid) {
+        public static ChronologyFeature.PublicId PublicId(long nid) {
             return new PublicIdKey(nid);
         }
 
@@ -56,11 +57,11 @@ public sealed interface FeatureKey extends Encodable {
             return new VersionSetKey();
         }
 
-        public static ChronologyFeature.VersionSet VersionSet(int nid) {
+        public static ChronologyFeature.VersionSet VersionSet(long nid) {
             return new VersionSetKey(nid);
         }
 
-        public static ChronologyFeature.Version Version(int nid, int stampNid) {
+        public static ChronologyFeature.Version Version(long nid, long stampNid) {
             return new VersionKey(nid, stampNid);
         }
 
@@ -68,7 +69,7 @@ public sealed interface FeatureKey extends Encodable {
             return new PatternForSemanticKey();
         }
 
-        public static ChronologyFeature.Semantic.Pattern SemanticPattern(int nid) {
+        public static ChronologyFeature.Semantic.Pattern SemanticPattern(long nid) {
             return new PatternForSemanticKey(nid);
         }
 
@@ -76,13 +77,13 @@ public sealed interface FeatureKey extends Encodable {
             return new ReferencedComponentForSemanticKey();
         }
 
-        public static ChronologyFeature.Semantic.ReferencedComponent SemanticReferencedComponent(int nid) {
+        public static ChronologyFeature.Semantic.ReferencedComponent SemanticReferencedComponent(long nid) {
             return new ReferencedComponentForSemanticKey(nid);
         }
     }
 
     class Version {
-        public static VersionFeature.VersionStamp VersionStamp(int nid, int stampNid) {
+        public static VersionFeature.VersionStamp VersionStamp(long nid, long stampNid) {
             return new VersionStampKey(nid, stampNid);
         }
 
@@ -94,7 +95,7 @@ public sealed interface FeatureKey extends Encodable {
             return new PatternMeaningKey();
         }
 
-        public static VersionFeature.Pattern.PatternMeaning PatternMeaning(int nid, int stampNid) {
+        public static VersionFeature.Pattern.PatternMeaning PatternMeaning(long nid, long stampNid) {
             return new PatternMeaningKey(nid, stampNid);
         }
 
@@ -102,7 +103,7 @@ public sealed interface FeatureKey extends Encodable {
             return new PatternPurposeKey();
         }
 
-        public static VersionFeature.Pattern.PatternPurpose PatternPurpose(int nid, int stampNid) {
+        public static VersionFeature.Pattern.PatternPurpose PatternPurpose(long nid, long stampNid) {
             return new PatternPurposeKey(nid, stampNid);
         }
 
@@ -110,7 +111,7 @@ public sealed interface FeatureKey extends Encodable {
             return new FieldDefinitionListKey();
         }
 
-        public static VersionFeature.Pattern.FieldDefinitionList PatternFieldDefinitionList(int nid, int stampNid) {
+        public static VersionFeature.Pattern.FieldDefinitionList PatternFieldDefinitionList(long nid, long stampNid) {
             return new FieldDefinitionListKey(nid, stampNid);
         }
 
@@ -118,11 +119,11 @@ public sealed interface FeatureKey extends Encodable {
             return new FieldDefinitionListItemKey(index, FeatureKey.WILDCARD);
         }
 
-        public static VersionFeature.Pattern.FieldDefinitionListItem PatternFieldDefinitionListItem(int index, int patternNid) {
+        public static VersionFeature.Pattern.FieldDefinitionListItem PatternFieldDefinitionListItem(int index, long patternNid) {
             return new FieldDefinitionListItemKey(index, patternNid);
         }
 
-        public static VersionFeature.Pattern.FieldDefinitionListItem PatternFieldDefinitionListItem(int nid, int index, int patternNid, int stampNid) {
+        public static VersionFeature.Pattern.FieldDefinitionListItem PatternFieldDefinitionListItem(long nid, int index, long patternNid, long stampNid) {
             return new FieldDefinitionListItemKey(nid, index, patternNid, stampNid);
         }
 
@@ -130,7 +131,7 @@ public sealed interface FeatureKey extends Encodable {
             return new SemanticFieldListKey();
         }
 
-        public static VersionFeature.Semantic.FieldList SemanticFieldList(int nid, int stampNid) {
+        public static VersionFeature.Semantic.FieldList SemanticFieldList(long nid, long stampNid) {
             return new SemanticFieldListKey(nid, stampNid);
         }
 
@@ -138,15 +139,15 @@ public sealed interface FeatureKey extends Encodable {
             return new SemanticFieldListItemKey(index, FeatureKey.WILDCARD);
         }
 
-        public static VersionFeature.Semantic.FieldListItem SemanticFieldListItem(int index, int patternNid) {
+        public static VersionFeature.Semantic.FieldListItem SemanticFieldListItem(int index, long patternNid) {
             return new SemanticFieldListItemKey(index, patternNid);
         }
 
-        public static VersionFeature.Semantic.FieldListItem SemanticFieldListItem(int nid, int index, int patternNid, int stampNid) {
+        public static VersionFeature.Semantic.FieldListItem SemanticFieldListItem(long nid, int index, long patternNid, long stampNid) {
             return new SemanticFieldListItemKey(nid, index, patternNid, stampNid);
         }
 
-        public static VersionFeature.Stamp.Status StampStatus(int nid) {
+        public static VersionFeature.Stamp.Status StampStatus(long nid) {
             return new StatusForStampKey(nid, nid);
         }
 
@@ -158,7 +159,7 @@ public sealed interface FeatureKey extends Encodable {
             return new TimeForStampKey();
         }
 
-        public static VersionFeature.Stamp.Time StampTime(int nid) {
+        public static VersionFeature.Stamp.Time StampTime(long nid) {
             return new TimeForStampKey(nid, nid);
         }
 
@@ -166,7 +167,7 @@ public sealed interface FeatureKey extends Encodable {
             return new AuthorForStampKey();
         }
 
-        public static VersionFeature.Stamp.Author StampAuthor(int nid) {
+        public static VersionFeature.Stamp.Author StampAuthor(long nid) {
             return new AuthorForStampKey(nid, nid);
         }
 
@@ -174,7 +175,7 @@ public sealed interface FeatureKey extends Encodable {
             return new ModuleForStampKey();
         }
 
-        public static VersionFeature.Stamp.Module StampModule(int nid) {
+        public static VersionFeature.Stamp.Module StampModule(long nid) {
             return new ModuleForStampKey(nid, nid);
         }
 
@@ -182,7 +183,7 @@ public sealed interface FeatureKey extends Encodable {
             return new PathForStampKey();
         }
 
-        public static VersionFeature.Stamp.Path StampPath(int nid) {
+        public static VersionFeature.Stamp.Path StampPath(long nid) {
             return new PathForStampKey(nid, nid);
         }
     }
@@ -195,7 +196,7 @@ public sealed interface FeatureKey extends Encodable {
      *
      * @return
      */
-    int nid();
+    long nid();
 
     default boolean match(FeatureKey another) {
         return match(this, another);
@@ -226,25 +227,25 @@ public sealed interface FeatureKey extends Encodable {
 
             case VersionKey firstLocator
                     when second instanceof VersionKey secondLocator ->
-                    (firstLocator.nid() == WILDCARD || firstLocator.nid() == secondLocator.nid())
-                            && (firstLocator.stampNid() == WILDCARD || firstLocator.stampNid() == secondLocator.stampNid());
+                    (Nid.isNotApplicable(firstLocator.nid()) || firstLocator.nid() == secondLocator.nid())
+                            && (Nid.isNotApplicable(firstLocator.stampNid()) || firstLocator.stampNid() == secondLocator.stampNid());
 
             case FieldDefinitionListItemKey firstLocator
                     when second instanceof FieldDefinitionListItemKey secondLocator ->
-                    (firstLocator.nid() == WILDCARD || firstLocator.nid() == secondLocator.nid())
-                            && (firstLocator.patternNid() == WILDCARD || firstLocator.patternNid() == secondLocator.patternNid())
-                            && (firstLocator.stampNid() == WILDCARD || firstLocator.stampNid() == secondLocator.stampNid())
-                            && (firstLocator.index() == WILDCARD || firstLocator.index() == secondLocator.index());
+                    (Nid.isNotApplicable(firstLocator.nid()) || firstLocator.nid() == secondLocator.nid())
+                            && (Nid.isNotApplicable(firstLocator.patternNid()) || firstLocator.patternNid() == secondLocator.patternNid())
+                            && (Nid.isNotApplicable(firstLocator.stampNid()) || firstLocator.stampNid() == secondLocator.stampNid())
+                            && (Nid.isNotApplicable(firstLocator.index()) || firstLocator.index() == secondLocator.index());
 
             case SemanticFieldListItemKey firstLocator
                     when second instanceof SemanticFieldListItemKey secondLocator ->
-                    (firstLocator.nid() == WILDCARD || firstLocator.nid() == secondLocator.nid())
-                            && (firstLocator.patternNid() == WILDCARD || firstLocator.patternNid() == secondLocator.patternNid())
-                            && (firstLocator.stampNid() == WILDCARD || firstLocator.stampNid() == secondLocator.stampNid())
-                            && (firstLocator.index() == WILDCARD || firstLocator.index() == secondLocator.index());
+                    (Nid.isNotApplicable(firstLocator.nid()) || firstLocator.nid() == secondLocator.nid())
+                            && (Nid.isNotApplicable(firstLocator.patternNid()) || firstLocator.patternNid() == secondLocator.patternNid())
+                            && (Nid.isNotApplicable(firstLocator.stampNid()) || firstLocator.stampNid() == secondLocator.stampNid())
+                            && (Nid.isNotApplicable(firstLocator.index()) || firstLocator.index() == secondLocator.index());
 
             // All other classes have only nids: no index, patternNid, or stampNid.
-            default -> first.nid() == WILDCARD;
+            default -> Nid.isNotApplicable(first.nid());
         };
     }
 
@@ -316,7 +317,7 @@ public sealed interface FeatureKey extends Encodable {
          * indices with properties in a versioned chronology data structure.
          */
         sealed interface Version extends ChronologyFeature, EnclosingComponent permits VersionKey {
-            int stampNid();
+            long stampNid();
         }
 
         sealed interface Semantic extends ChronologyFeature {
@@ -329,11 +330,11 @@ public sealed interface FeatureKey extends Encodable {
     }
 
     sealed interface VersionFeature extends FeatureKey {
-        int stampNid();
+        long stampNid();
 
         sealed interface PatternDefinedItem extends VersionFeature {
             //TODO: We are transitioning to all Features being pattern defined items. Need to consider how to update.
-            int patternNid();
+            long patternNid();
         }
 
         sealed interface VersionStamp extends VersionFeature permits VersionStampKey {

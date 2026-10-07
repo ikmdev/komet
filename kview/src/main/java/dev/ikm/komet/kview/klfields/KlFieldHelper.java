@@ -58,7 +58,7 @@ import dev.ikm.komet.kview.klauthoring.readonly.stringfield.KlReadOnlyStringFiel
 import dev.ikm.komet.layout.InlineEditSaver;
 import dev.ikm.komet.layout.version.field.KlField;
 import dev.ikm.komet.layout.version.field.KlFieldFactory;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
@@ -91,7 +91,7 @@ public class KlFieldHelper {
     /**
      * The currently supported field data types when editing a semantic.
      */
-    public final static int[] SUPPORTED_FIELD_TYPE_NIDS = new int[]{
+    public final static long[] SUPPORTED_FIELD_TYPE_NIDS = new long[]{
             COMPONENT_FIELD.nid(),
             STRING.nid(),
             COMPONENT_ID_SET_FIELD.nid(),
@@ -105,7 +105,7 @@ public class KlFieldHelper {
     /**
      * The unsupported field data types that defaults to read-only components.
      */
-    public final static int[] UNSUPPORTED_FIELD_TYPE_NIDS = new int[]{
+    public final static long[] UNSUPPORTED_FIELD_TYPE_NIDS = new long[]{
             CONCEPT_FIELD.nid(), /* for edit mode you can see the field as a readonly component field. */
             INSTANT_LITERAL.nid(),
             DIGRAPH_FIELD.nid(),
@@ -130,12 +130,12 @@ public class KlFieldHelper {
         Optional<Entity<? extends EntityVersion>> patternEntityOpt =  EntityHandle.get(pattern).entity().filter(e -> !e.canceled());
         if (patternEntityOpt.isPresent()) {
             PatternEntityVersion patternEntityVersion = (PatternEntityVersion) patternEntityOpt.get().versions().get(0);
-            List<Integer> nids = patternEntityVersion
+            List<Long> nids = patternEntityVersion
                     .fieldDefinitions()
                     .stream()
                     .map(fieldDefinitionForEntity ->
                             fieldDefinitionForEntity.dataTypeNid()).toList();
-            for (int value : UNSUPPORTED_FIELD_TYPE_NIDS) { // Iterate through each element in the int array
+            for (long value : UNSUPPORTED_FIELD_TYPE_NIDS) { // Iterate through each element in the int array
                 if (nids.contains(value)) { // Check if the current int is present in the List
                     return true; // If found, return true immediately
                 }
@@ -156,14 +156,14 @@ public class KlFieldHelper {
         Optional<Entity<? extends EntityVersion>> patternEntityOpt =  EntityHandle.get(pattern).entity().filter(e -> !e.canceled());
         if (patternEntityOpt.isPresent()) {
             PatternEntityVersion patternEntityVersion = (PatternEntityVersion) patternEntityOpt.get().versions().get(0);
-            List<Integer> nids = patternEntityVersion
+            List<Long> nids = patternEntityVersion
                     .fieldDefinitions()
                     .stream()
                     .map(fieldDefinitionForEntity ->
                             fieldDefinitionForEntity.dataTypeNid()).toList();
             // if any are not in the supported list than return false
-            List<Integer> supportedFieldTypeNids = Arrays.stream(SUPPORTED_FIELD_TYPE_NIDS).boxed().toList();
-            for (int value : nids) { // Iterate through each element in the int array
+            List<Long> supportedFieldTypeNids = Arrays.stream(SUPPORTED_FIELD_TYPE_NIDS).boxed().toList();
+            for (long value : nids) { // Iterate through each element in the int array
                 if (!supportedFieldTypeNids.contains(value)) { // Check if the current int is present in the List
                     return false;
                 }
@@ -205,7 +205,7 @@ public class KlFieldHelper {
                                     InlineEditSaver inlineEditSaver) {
 
         final FeatureDefinition featureDef = fieldRecord.fieldDefinition(viewProperties.calculator());
-        final int dataTypeNid = featureDef.dataTypeNid();
+        final long dataTypeNid = featureDef.dataTypeNid();
         KlFieldFactory<?> factory;
         if (dataTypeNid == COMPONENT_FIELD.nid()) {
             // load a read-only component
@@ -218,14 +218,14 @@ public class KlFieldHelper {
             factory = new KlReadOnlyStringFieldFactory();
         } else if (dataTypeNid == COMPONENT_ID_SET_FIELD.nid()) {
             // TODO: Refactor KlReadOnlyComponentSetFieldFactory remove journalTopic from constructor.
-            //       Factory should implement KlFieldFactory<IntIdSet>. Create callback to allow caller
+            //       Factory should implement KlFieldFactory<LongIdSet>. Create callback to allow caller
             //       to handle concept window summoning. This returns immediately the caller the read-only
             //       component set field.
             KlReadOnlyComponentSetFieldFactory factory2 = new KlReadOnlyComponentSetFieldFactory();
             return factory2.create(observableField, viewProperties.nodeView(), stamp4field, journalTopic).fxObject();
         } else if (dataTypeNid == COMPONENT_ID_LIST_FIELD.nid()) {
             // TODO: Refactor KlReadOnlyComponentListFieldFactory remove journalTopic from constructor.
-            //       Factory should implement KlFieldFactory<IntIdList>. Create callback to allow caller
+            //       Factory should implement KlFieldFactory<LongIdList>. Create callback to allow caller
             //       to handle concept window summoning. This returns immediately the caller the read-only
             //       component list field.
             KlReadOnlyComponentListFieldFactory factory2 = new KlReadOnlyComponentListFieldFactory();
@@ -249,7 +249,7 @@ public class KlFieldHelper {
             // each applied edit commits a new semantic version, the classic axiom editor
             // precedent, or saves one uncommitted when the host publishes (inlineEditSaver) — while the
             // inferred definition (and any other DiTree) stays read-only.
-            int statedAxiomsPatternNid = viewProperties.calculator().viewCoordinateRecord()
+            long statedAxiomsPatternNid = viewProperties.calculator().viewCoordinateRecord()
                     .logicCoordinate().statedAxiomsPatternNid();
             if (fieldRecord.patternNid() == statedAxiomsPatternNid) {
                 // The stated axiom field sources its structure menus from the axiom rules engine,
@@ -282,7 +282,7 @@ public class KlFieldHelper {
                                                 ViewProperties viewProperties,
                                                 ObservableStamp stamp4field) {
         final FeatureDefinition featureDef = fieldRecord.fieldDefinition(viewProperties.calculator());
-        final int dataTypeNid = featureDef.dataTypeNid();
+        final long dataTypeNid = featureDef.dataTypeNid();
         KlFieldFactory factory;
         if (dataTypeNid == BOOLEAN_FIELD.nid()) {
             factory = new KlEditableBooleanFieldFactory();
@@ -347,9 +347,9 @@ public class KlFieldHelper {
             } else if (f.dataTypeNid() == BOOLEAN_FIELD.nid()) {
                 fieldsValues.add(false);
             } else if (f.dataTypeNid() == COMPONENT_ID_LIST_FIELD.nid()) {
-                fieldsValues.add(IntIds.list.empty());
+                fieldsValues.add(LongIds.list.empty());
             } else if (f.dataTypeNid() == COMPONENT_ID_SET_FIELD.nid()) {
-                fieldsValues.add(IntIds.set.empty());
+                fieldsValues.add(LongIds.set.empty());
             } else if (f.dataTypeNid() == IMAGE_FIELD.nid()) {
                 // create empty byte array to save in DB implies blank image
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -388,9 +388,9 @@ public class KlFieldHelper {
         } else if (fieldDefinition.dataTypeNid() == BOOLEAN_FIELD.nid()) {
             return false;
         } else if (fieldDefinition.dataTypeNid() == COMPONENT_ID_LIST_FIELD.nid()) {
-            return IntIds.list.empty();
+            return LongIds.list.empty();
         } else if (fieldDefinition.dataTypeNid() == COMPONENT_ID_SET_FIELD.nid()) {
-            return IntIds.set.empty();
+            return LongIds.set.empty();
         } else if (fieldDefinition.dataTypeNid() == IMAGE_FIELD.nid()) {
             // create empty byte array to save in DB implies blank image
             ByteArrayOutputStream bos = new ByteArrayOutputStream();

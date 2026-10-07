@@ -58,9 +58,9 @@ public class FilterMenuController {
         Map<RadioButton, List<CheckBox>> checkBoxMap = new HashMap<>();
 
 
-        SimpleObjectProperty<Map<String, List<Integer>>> pathModulesMapProp = timelineViewModel.getProperty(TimelineProperties.AVAILABLE_PATH_MOULES_MAP);
+        SimpleObjectProperty<Map<String, List<Long>>> pathModulesMapProp = timelineViewModel.getProperty(TimelineProperties.AVAILABLE_PATH_MOULES_MAP);
         SimpleStringProperty pathName =  timelineViewModel.getProperty(TimelineProperties.SELECTED_PATH);
-        ObservableList<Integer> moduleIDs = timelineViewModel.getObservableList(TimelineProperties.CHECKED_MODULE_IDS);
+        ObservableList<Long> moduleIDs = timelineViewModel.getObservableList(TimelineProperties.CHECKED_MODULE_IDS);
 
         SimpleObjectProperty<ViewProperties> viewPropertiesProperty = timelineViewModel.getProperty(TimelineProperties.VIEW_PROPERTIES);
 
@@ -117,7 +117,7 @@ public class FilterMenuController {
                     Subscription sub = checkBox.selectedProperty().subscribe(() -> {
                         LOG.info("toggled checkBox with number {} with nid {}", checkBox.getText(), checkBox.getUserData());
                         // calculate a new list and provide it to the ViewModel
-                        List<Integer> selectedModules = getSelectedModules(extensionSelectionVBox);
+                        List<Long> selectedModules = getSelectedModules(extensionSelectionVBox);
                         moduleIDs.setAll(selectedModules);
                     });
                     checkBoxSubscriptionsList.add(sub);
@@ -128,19 +128,19 @@ public class FilterMenuController {
 
                 // On path trigger we need to make sure to also update the selectionBox **once** to that path in the ViewModel
                 pathName.setValue(radioButton.getText());
-                List<Integer> selectedModules = getSelectedModules(extensionSelectionVBox);
+                List<Long> selectedModules = getSelectedModules(extensionSelectionVBox);
                 moduleIDs.setAll(selectedModules);
 
             }
         });
     }
 
-    private List<Integer> getSelectedModules(VBox checkBoxesVBox) {
+    private List<Long> getSelectedModules(VBox checkBoxesVBox) {
         return checkBoxesVBox.getChildren().stream()
                 .filter(node -> node instanceof CheckBox)
                 .map(node -> (CheckBox) node)
                 .filter(CheckBox::isSelected)
-                .map(cb -> (Integer) cb.getUserData())
+                .map(cb -> (Long) cb.getUserData())
                 .toList();
     }
 

@@ -114,7 +114,7 @@ public class FieldPropertiesPane extends GridNodePropertiesPane<EditorFieldModel
     private void populateDisplayComboBox(EditorFieldModel modelObject) {
         displayComboBox.getItems().clear();
 
-        int dataTypeNid = modelObject.getDataTypeNid();
+        long dataTypeNid = modelObject.getDataTypeNid();
 
         ServiceLoader<? extends KlRestorable.Factory> loader = null;
         if (dataTypeNid == COMPONENT_FIELD.nid()) {

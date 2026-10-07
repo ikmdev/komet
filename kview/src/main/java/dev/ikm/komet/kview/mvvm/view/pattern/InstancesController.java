@@ -48,7 +48,7 @@ public class InstancesController {
         ObservableList<Object> patternChildren = FXCollections.observableArrayList();
         EntityFacade patternItem = patternViewModel.getPropertyValue(PATTERN);
         setMetaTitle(patternItem.description());
-        int patternNid = patternItem.nid();
+        long patternNid = patternItem.nid();
         // populate the collection of instance for each pattern: read only the semantics shown,
         // and count the rest without reading them (IKE-Network/ike-issues#1249)
         int childCount = EntityService.get().countSemanticsOfPattern(patternNid);

@@ -16,9 +16,9 @@ public class GenEditingEvent extends Evt {
 
     private List<Object> list;
 
-    private int nid;
+    private long nid;
 
-    public GenEditingEvent(Object source,EvtType eventType, List<Object> list, int nid){
+    public GenEditingEvent(Object source,EvtType eventType, List<Object> list, long nid){
         super(source,eventType);
         this.list = list;
         this.nid = nid;
@@ -32,7 +32,7 @@ public class GenEditingEvent extends Evt {
         return list;
     }
 
-    public int getNid() {
+    public long getNid() {
         return nid;
     }
 }

@@ -5,11 +5,11 @@ import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.layout.version.field.KlField;
 import dev.ikm.komet.layout.version.field.KlFieldFactory;
-import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.LongIdSet;
 
 import java.util.*;
 
-public class KlReadOnlyComponentSetFieldFactory implements KlFieldFactory<IntIdSet> {
+public class KlReadOnlyComponentSetFieldFactory implements KlFieldFactory<LongIdSet> {
 
     /**
      * Creates a new instance of {@link KlField} associated with the provided observable data
@@ -22,7 +22,7 @@ public class KlReadOnlyComponentSetFieldFactory implements KlFieldFactory<IntIdS
      * @param stamp4field        flag to determine if the UI control is editable
      * @return a new {@link KlField} instance parameterized with the same type as the provided {@link ObservableField}.
      */
-    public KlField<IntIdSet> create(ObservableField<IntIdSet> observableField, ObservableView observableView, ObservableStamp stamp4field, UUID journalTopic) {
+    public KlField<LongIdSet> create(ObservableField<LongIdSet> observableField, ObservableView observableView, ObservableStamp stamp4field, UUID journalTopic) {
         return new KlReadOnlyComponentSetField(observableField, observableView, stamp4field, journalTopic);
     }
 
@@ -34,7 +34,7 @@ public class KlReadOnlyComponentSetFieldFactory implements KlFieldFactory<IntIdS
      * @return A {@link Class} object representing the class type of the field
      * interface extending {@link KlField}.
      */
-    public Class<? extends KlField<IntIdSet>> getFieldInterface() {
+    public Class<? extends KlField<LongIdSet>> getFieldInterface() {
         return null;
     }
 
@@ -45,7 +45,7 @@ public class KlReadOnlyComponentSetFieldFactory implements KlFieldFactory<IntIdS
      * @return A {@link Class} object representing the class type of the implementation
      * of {@link KlField} associated with this factory.
      */
-    public Class<? extends KlField<IntIdSet>> getFieldImplementation() {
+    public Class<? extends KlField<LongIdSet>> getFieldImplementation() {
         return KlReadOnlyComponentSetField.class;
     }
 

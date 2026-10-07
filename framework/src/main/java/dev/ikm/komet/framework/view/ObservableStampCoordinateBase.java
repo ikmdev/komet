@@ -19,8 +19,8 @@ import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import dev.ikm.tinkar.common.id.IntIdSet;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIdSet;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinate;
 import dev.ikm.tinkar.coordinate.stamp.StampPositionRecord;
@@ -177,7 +177,7 @@ public abstract class ObservableStampCoordinateBase
                                   ImmutableSet<ConceptFacade> newSet) {
         this.setValue(StampCoordinateRecord.make(allowedStates(),
                 stampPosition(),
-                IntIds.set.of(newSet.castToSet(), EntityFacade::toNid),
+                LongIds.set.of(newSet.castToSet(), EntityFacade::toNid),
                 excludedModuleNids(),
                 modulePriorityNidList()));
     }
@@ -188,7 +188,7 @@ public abstract class ObservableStampCoordinateBase
         this.setValue(StampCoordinateRecord.make(allowedStates(),
                 stampPosition(),
                 moduleNids(),
-                IntIds.set.of(newSet.castToSet(), EntityFacade::toNid),
+                LongIds.set.of(newSet.castToSet(), EntityFacade::toNid),
                 modulePriorityNidList()));
     }
 
@@ -199,7 +199,7 @@ public abstract class ObservableStampCoordinateBase
                 stampPosition(),
                 moduleNids(),
                 excludedModuleNids(),
-                IntIds.list.of(newList.castToList(), EntityFacade::toNid)));
+                LongIds.list.of(newList.castToList(), EntityFacade::toNid)));
     }
 
     private void statusSetChanged(ObservableValue<? extends StateSet> observableStatusSet,
@@ -213,7 +213,7 @@ public abstract class ObservableStampCoordinateBase
     }
 
     @Override
-    public IntIdSet excludedModuleNids() {
+    public LongIdSet excludedModuleNids() {
         return getValue().excludedModuleNids();
     }
 

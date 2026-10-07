@@ -18,7 +18,7 @@ package dev.ikm.komet.kview.mvvm.view.properties;
 import dev.ikm.komet.kview.mvvm.view.BasicController;
 import dev.ikm.komet.kview.mvvm.model.ChangeCoordinate;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.id.IntIdList;
+import dev.ikm.tinkar.common.id.LongIdList;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
@@ -158,7 +158,7 @@ public class HierarchyController implements BasicController {
         TreeSet<Long> times = new TreeSet<>();
         if (timelineRangeChangeCoordinateSet != null) {
             timelineRangeChangeCoordinateSet.forEach(changeCoordinate -> {
-                int stampNid = changeCoordinate.versionChangeRecord().stampNid();
+                long stampNid = changeCoordinate.versionChangeRecord().stampNid();
                 StampEntity<? extends StampEntityVersion> stampForChange = Entity.getStamp(stampNid);
                 long pastEpochMillis = stampForChange.time();
                 times.add(pastEpochMillis);
@@ -175,8 +175,8 @@ public class HierarchyController implements BasicController {
         ViewCoordinateRecord latestViewCoordinate = viewCalculator.viewCoordinateRecord().withStampCoordinate(latestStampCoordinate);
         ViewCalculatorWithCache latestViewCalculator = new ViewCalculatorWithCache(latestViewCoordinate);
 
-        IntIdList latestParentsOfconcept = latestViewCalculator.navigationCalculator().parentsOf(getEntityFacade().nid());
-        IntIdList latestChildrenOfconcept = latestViewCalculator.navigationCalculator().childrenOf(getEntityFacade().nid());
+        LongIdList latestParentsOfconcept = latestViewCalculator.navigationCalculator().parentsOf(getEntityFacade().nid());
+        LongIdList latestChildrenOfconcept = latestViewCalculator.navigationCalculator().childrenOf(getEntityFacade().nid());
         String conceptName = latestViewCalculator.getPreferredDescriptionTextWithFallbackOrNid(getEntityFacade().nid());
 
         long pastMillis = pastEpochMillis;
@@ -184,28 +184,28 @@ public class HierarchyController implements BasicController {
         ViewCoordinateRecord pastViewCoordinate = viewCalculator.viewCoordinateRecord().withStampCoordinate(pastStampCoordinate);
         ViewCalculatorWithCache pastViewCalculator = new ViewCalculatorWithCache(pastViewCoordinate);
 
-        IntIdList pastParentsOfconcept = pastViewCalculator.navigationCalculator().parentsOf(getEntityFacade().nid());
-        IntIdList pastChildrenOfconcept = pastViewCalculator.navigationCalculator().childrenOf(getEntityFacade().nid());
+        LongIdList pastParentsOfconcept = pastViewCalculator.navigationCalculator().parentsOf(getEntityFacade().nid());
+        LongIdList pastChildrenOfconcept = pastViewCalculator.navigationCalculator().childrenOf(getEntityFacade().nid());
         String pastConceptName = pastViewCalculator.getPreferredDescriptionTextWithFallbackOrNid(getEntityFacade().nid());
 
-        final Set<Integer> futureParentSet = new TreeSet<>(latestParentsOfconcept.intStream().boxed().toList());
-        final Set<Integer> pastParentSet = new TreeSet<>(pastParentsOfconcept.intStream().boxed().toList());
+        final Set<Long> futureParentSet = new TreeSet<>(latestParentsOfconcept.longStream().boxed().toList());
+        final Set<Long> pastParentSet = new TreeSet<>(pastParentsOfconcept.longStream().boxed().toList());
 
-        Set<Integer> addedNewInFutureSet = futureParentSet.stream().filter(e -> !pastParentSet.contains(e)).collect(Collectors.toSet());
-        Set<Integer> sameNewInFutureSet = futureParentSet.stream().filter(e -> pastParentSet.contains(e)).collect(Collectors.toSet());
-        Set<Integer> retiredInFutureSet = pastParentSet.stream().filter(e -> !futureParentSet.contains(e)).collect(Collectors.toSet());
+        Set<Long> addedNewInFutureSet = futureParentSet.stream().filter(e -> !pastParentSet.contains(e)).collect(Collectors.toSet());
+        Set<Long> sameNewInFutureSet = futureParentSet.stream().filter(e -> pastParentSet.contains(e)).collect(Collectors.toSet());
+        Set<Long> retiredInFutureSet = pastParentSet.stream().filter(e -> !futureParentSet.contains(e)).collect(Collectors.toSet());
 
         //
         CompletableFuture<Set<TreeItem<ConceptTreeItemRecord>>>  addedParentFuture = addConceptTreeItems(latestViewCalculator, latestEpochMillis,"ADDED", "added", addedNewInFutureSet);
         CompletableFuture<Set<TreeItem<ConceptTreeItemRecord>>>  existingParentFuture = addConceptTreeItems(latestViewCalculator,   pastMillis,    "", "", sameNewInFutureSet);
         CompletableFuture<Set<TreeItem<ConceptTreeItemRecord>>>  retiredParentFuture = addConceptTreeItems(pastViewCalculator  , latestEpochMillis,"RETIRED", "retired", retiredInFutureSet);
 
-        final Set<Integer> futureChildrenSet = new TreeSet<>(latestChildrenOfconcept.intStream().boxed().toList());
-        final Set<Integer> pastChildrenSet = new TreeSet<>(pastChildrenOfconcept.intStream().boxed().toList());
+        final Set<Long> futureChildrenSet = new TreeSet<>(latestChildrenOfconcept.longStream().boxed().toList());
+        final Set<Long> pastChildrenSet = new TreeSet<>(pastChildrenOfconcept.longStream().boxed().toList());
 
-        Set<Integer> addedChildrenInFutureSet = futureChildrenSet.stream().filter(e -> !pastChildrenSet.contains(e)).collect(Collectors.toSet());
-        Set<Integer> sameChildrenInFutureSet = futureChildrenSet.stream().filter(e -> pastChildrenSet.contains(e)).collect(Collectors.toSet());
-        Set<Integer> retiredChildrenInFutureSet = pastChildrenSet.stream().filter(e -> !futureChildrenSet.contains(e)).collect(Collectors.toSet());
+        Set<Long> addedChildrenInFutureSet = futureChildrenSet.stream().filter(e -> !pastChildrenSet.contains(e)).collect(Collectors.toSet());
+        Set<Long> sameChildrenInFutureSet = futureChildrenSet.stream().filter(e -> pastChildrenSet.contains(e)).collect(Collectors.toSet());
+        Set<Long> retiredChildrenInFutureSet = pastChildrenSet.stream().filter(e -> !futureChildrenSet.contains(e)).collect(Collectors.toSet());
 
         CompletableFuture<Set<TreeItem<ConceptTreeItemRecord>>>  addedChildrenFuture = addConceptTreeItems(latestViewCalculator, latestEpochMillis,"ADDED", "added", addedChildrenInFutureSet);
         CompletableFuture<Set<TreeItem<ConceptTreeItemRecord>>>  existingChildrenFuture = addConceptTreeItems(latestViewCalculator, pastMillis,    "", "", sameChildrenInFutureSet);
@@ -284,14 +284,14 @@ public class HierarchyController implements BasicController {
         ViewCoordinateRecord latestViewCoordinate = viewCalculator.viewCoordinateRecord().withStampCoordinate(latestStampCoordinate);
         ViewCalculatorWithCache latestViewCalculator = new ViewCalculatorWithCache(latestViewCoordinate);
 
-        IntIdList latestParentsOfconcept = latestViewCalculator.navigationCalculator().parentsOf(getEntityFacade().nid());
-        IntIdList latestChildrenOfconcept = latestViewCalculator.navigationCalculator().childrenOf(getEntityFacade().nid());
+        LongIdList latestParentsOfconcept = latestViewCalculator.navigationCalculator().parentsOf(getEntityFacade().nid());
+        LongIdList latestChildrenOfconcept = latestViewCalculator.navigationCalculator().childrenOf(getEntityFacade().nid());
         String conceptName = latestViewCalculator.getPreferredDescriptionTextWithFallbackOrNid(getEntityFacade().nid());
 
-        CompletableFuture<Set<TreeItem<ConceptTreeItemRecord>>> parentTreeItems = addConceptTreeItems(viewCalculator, latestMillis, "", null, new TreeSet<>(latestParentsOfconcept.intStream().boxed().toList()));
+        CompletableFuture<Set<TreeItem<ConceptTreeItemRecord>>> parentTreeItems = addConceptTreeItems(viewCalculator, latestMillis, "", null, new TreeSet<>(latestParentsOfconcept.longStream().boxed().toList()));
 
         // Add children concepts
-        CompletableFuture<Set<TreeItem<ConceptTreeItemRecord>>> childrenTreeItems = addConceptTreeItems(latestViewCalculator, latestMillis, null, null, new TreeSet<>(latestChildrenOfconcept.intStream().boxed().toList()));
+        CompletableFuture<Set<TreeItem<ConceptTreeItemRecord>>> childrenTreeItems = addConceptTreeItems(latestViewCalculator, latestMillis, null, null, new TreeSet<>(latestChildrenOfconcept.longStream().boxed().toList()));
         CompletableFuture
                 .allOf(parentTreeItems, childrenTreeItems)
                 .whenComplete((result, throwable)-> {
@@ -330,7 +330,7 @@ public class HierarchyController implements BasicController {
                                                                                  long epochTime,
                                                                                  String transaction,
                                                                                  String styleClasses,
-                                                                                 Set<Integer> conceptNids) {
+                                                                                 Set<Long> conceptNids) {
         // This now uses async threads off of the application thread.
         Comparator<TreeItem<ConceptTreeItemRecord>> c = (treeItem1, treeItem2) -> treeItem1.getValue().conceptTitle().compareTo(treeItem2.getValue().conceptTitle());
         return CompletableFuture.supplyAsync( () -> {

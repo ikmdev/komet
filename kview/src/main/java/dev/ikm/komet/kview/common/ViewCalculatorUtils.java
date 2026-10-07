@@ -95,7 +95,7 @@ public class ViewCalculatorUtils {
      * @param viewCalculator The {@link ViewCalculator} used to get human-readable descriptions for the stamp components
      * @return A formatted string containing the stamp details, or empty string if the stamp entity cannot be found
      */
-    public static String getStampToolTipText(int stampNid, ViewCalculator viewCalculator) {
+    public static String getStampToolTipText(long stampNid, ViewCalculator viewCalculator) {
         StringBuilder tooltipText = new StringBuilder();
         EntityHandle.get(stampNid).entity().filter(e -> !e.canceled()).ifPresent(entity -> {
             if (entity instanceof StampEntity<?> stampEntity) {
@@ -138,7 +138,7 @@ public class ViewCalculatorUtils {
                 .orElse("No description available");
     }
 
-    public static Function<Integer, String> getFetchSemanticDescriptionFunction(ViewProperties viewProperties) {
+    public static Function<Long, String> getFetchSemanticDescriptionFunction(ViewProperties viewProperties) {
         return semanticNid -> {
             StringBuilder sb = new StringBuilder();
             ViewCalculator viewCalculator = viewProperties.calculator();

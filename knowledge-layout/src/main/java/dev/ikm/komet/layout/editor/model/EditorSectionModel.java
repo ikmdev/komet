@@ -53,7 +53,7 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
      * pattern instance via {@link #resolveReferenceComponent(List)}. The referenced pattern can live in
      * any of the window's sections, so resolution has to wait until the whole window has loaded.
      */
-    private Integer unresolvedReferenceComponentNid;
+    private Long unresolvedReferenceComponentNid;
 
     public EditorSectionModel() {
         patterns.addListener(this::patternsChanged);

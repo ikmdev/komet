@@ -266,7 +266,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
      * @param nid
      * @return a non-null value for the String or nid
      */
-    private static String getPreferredDescriptionTextOrNid(ViewCalculator viewCalculator, int nid) {
+    private static String getPreferredDescriptionTextOrNid(ViewCalculator viewCalculator, long nid) {
         String descStringOrNid;
 
         try {
@@ -533,7 +533,7 @@ public class ViewMenuTask extends TrackingCallable<List<MenuItem>> {
         for (PublicIdStringKey key : FxGet.pathCoordinates(viewCalculator).keySet()) {
             CheckMenuItem item = new CheckMenuItem(key.getString());
             StampPathImmutable pathCoordinate = FxGet.pathCoordinates(viewCalculator).get(key);
-            int pathNid = pathCoordinate.pathConceptNid();
+            long pathNid = pathCoordinate.pathConceptNid();
             item.setSelected(pathNid == observableView.stampCoordinate().pathNidForFilter());
             item.setUserData(FxGet.pathCoordinates(viewCalculator).get(key));
             item.setOnAction(event -> {

@@ -47,7 +47,7 @@ public final class CommentReader {
      * @param time        the comment's commit time, epoch millis (from the comment semantic's stamp)
      * @param semanticNid the nid of the comment semantic itself
      */
-    public record CommentEntry(String text, int authorNid, long time, int semanticNid) {}
+    public record CommentEntry(String text, long authorNid, long time, long semanticNid) {}
 
     private CommentReader() {}
 
@@ -60,7 +60,7 @@ public final class CommentReader {
      * @param view         the view used to resolve each comment semantic's latest version
      * @return the comment thread, oldest first (empty if there are none)
      */
-    public static List<CommentEntry> getComments(int componentNid, ViewCalculator view) {
+    public static List<CommentEntry> getComments(long componentNid, ViewCalculator view) {
         List<CommentEntry> comments = new ArrayList<>();
         EntityService.get().forEachSemanticForComponentOfPattern(componentNid, KernelTerm.COMMENT_PATTERN.nid(),
                 semantic -> {

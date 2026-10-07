@@ -1,5 +1,7 @@
 package dev.ikm.komet.layout;
 
+import org.eclipse.collections.api.list.primitive.MutableLongList;
+
 import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.framework.observable.ObservableComposer.EntityComposer;
@@ -22,10 +24,10 @@ import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.State;
 import dev.ikm.tinkar.terms.KernelTerm;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.factory.primitive.IntLists;
+import org.eclipse.collections.api.factory.primitive.LongLists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.list.primitive.MutableIntList;
+import org.eclipse.collections.api.list.primitive.MutableLongList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +62,7 @@ public final class PatternDefinitionSeeder {
     }
 
     /** One field of a pattern's definition, as its Fields-pattern semantic states it. */
-    private record FieldFromSemantic(int dataTypeNid, int purposeNid, int meaningNid) {
+    private record FieldFromSemantic(long dataTypeNid, long purposeNid, long meaningNid) {
     }
 
     private PatternDefinitionSeeder() {
@@ -117,7 +119,7 @@ public final class PatternDefinitionSeeder {
      */
     private static void projectStoredPatternDefinitions(ObservableComposer composer,
                                                         ViewCalculator viewCalculator) {
-        MutableIntList patternNids = IntLists.mutable.empty();
+        MutableLongList patternNids = LongLists.mutable.empty();
         EntityService.get().forEachPatternEntity(pattern -> patternNids.add(pattern.nid()));
         patternNids.forEach(patternNid -> viewCalculator.latest(patternNid).ifPresent(version -> {
             if (version instanceof PatternEntityVersion patternVersion) {
@@ -126,7 +128,7 @@ public final class PatternDefinitionSeeder {
         }));
     }
 
-    private static void projectPatternDefinition(ObservableComposer composer, int patternNid,
+    private static void projectPatternDefinition(ObservableComposer composer, long patternNid,
                                                  PatternEntityVersion patternVersion) {
         if (isDefinedBySemantics(patternNid)) {
             // The semantics are the source of this pattern's definition, not a projection of it
@@ -163,7 +165,7 @@ public final class PatternDefinitionSeeder {
      * a referencing semantic with an identity other than the projection's
      * ({@link #isProjectedSemanticId}) means the semantics came first.
      */
-    private static boolean isDefinedBySemantics(int patternNid) {
+    private static boolean isDefinedBySemantics(long patternNid) {
         PublicId patternId = PrimitiveData.publicId(patternNid);
         List<PublicId> semanticIds = new ArrayList<>();
         EntityService.get().forEachSemanticForComponentOfPattern(patternNid,
@@ -217,14 +219,14 @@ public final class PatternDefinitionSeeder {
             EntityComposer<ObservablePatternVersion.Editable, ObservablePattern> patternComposer,
             ViewCalculator viewCalculator) {
         ObservablePattern pattern = patternComposer.getEntity();
-        int patternNid = pattern.nid();
+        long patternNid = pattern.nid();
         Latest<PatternEntityVersion> currentVersion = viewCalculator.latestPatternEntityVersion(patternNid);
 
         // Absent a meaning-and-purpose semantic the pattern keeps what it has (a new pattern's
         // composer placeholders otherwise).
-        int meaningNid = currentVersion.ifAbsentOrFunction(KometTerm.MEANING::nid,
+        long meaningNid = currentVersion.ifAbsentOrFunction(KometTerm.MEANING::nid,
                 PatternEntityVersion::semanticMeaningNid);
-        int purposeNid = currentVersion.ifAbsentOrFunction(KometTerm.PURPOSE::nid,
+        long purposeNid = currentVersion.ifAbsentOrFunction(KometTerm.PURPOSE::nid,
                 PatternEntityVersion::semanticPurposeNid);
         PatternEntityVersion meaningAndPurposePattern = viewCalculator
                 .latestPatternEntityVersion(PatternDefinitionTerms.MEANING_AND_PURPOSE_PATTERN).get();
@@ -256,7 +258,7 @@ public final class PatternDefinitionSeeder {
         ObservablePatternVersion.Editable patternEditable = patternComposer.getEditableVersion();
         patternEditable.getMeaningProperty().set(EntityProxy.Concept.make(meaningNid));
         patternEditable.getPurposeProperty().set(EntityProxy.Concept.make(purposeNid));
-        int stampNid = patternEditable.getEditStamp().nid();
+        long stampNid = patternEditable.getEditStamp().nid();
         MutableList<FieldDefinitionRecord> fieldDefinitions = Lists.mutable.ofInitialCapacity(fields.size());
         for (int i = 0; i < fields.size(); i++) {
             FieldFromSemantic field = fields.get(i);
@@ -267,8 +269,8 @@ public final class PatternDefinitionSeeder {
         patternComposer.save();
     }
 
-    private static boolean matchesInlineDefinition(PatternEntityVersion version, int meaningNid,
-                                                   int purposeNid, List<FieldFromSemantic> fields) {
+    private static boolean matchesInlineDefinition(PatternEntityVersion version, long meaningNid,
+                                                   long purposeNid, List<FieldFromSemantic> fields) {
         if (version.semanticMeaningNid() != meaningNid || version.semanticPurposeNid() != purposeNid) {
             return false;
         }
@@ -293,7 +295,7 @@ public final class PatternDefinitionSeeder {
      * pattern, in the order the store lists the semantics. Unpublished versions count: the view's
      * latest ranks them first.
      */
-    private static List<SemanticEntityVersion> latestActiveSemantics(int patternNid,
+    private static List<SemanticEntityVersion> latestActiveSemantics(long patternNid,
                                                                      EntityProxy.Pattern definitionPattern,
                                                                      ViewCalculator viewCalculator) {
         List<SemanticEntityVersion> versions = new ArrayList<>();
@@ -306,7 +308,7 @@ public final class PatternDefinitionSeeder {
         return versions;
     }
 
-    private static int conceptNid(SemanticEntityVersion semantic, int fieldIndex) {
+    private static long conceptNid(SemanticEntityVersion semantic, int fieldIndex) {
         return ((EntityFacade) semantic.fieldValues().get(fieldIndex)).nid();
     }
 
@@ -364,8 +366,8 @@ public final class PatternDefinitionSeeder {
         patternEditable.getMeaningProperty().set(meaning);
         patternEditable.getPurposeProperty().set(purpose);
 
-        int patternNid = PrimitiveData.nid(pattern.publicId());
-        int stampNid = patternEditable.getEditStamp().nid();
+        long patternNid = PrimitiveData.nid(pattern.publicId());
+        long stampNid = patternEditable.getEditStamp().nid();
         MutableList<FieldDefinitionRecord> fieldDefinitions = Lists.mutable.ofInitialCapacity(fields.size());
         for (int i = 0; i < fields.size(); i++) {
             FieldSpec field = fields.get(i);

@@ -56,7 +56,7 @@ public class InactivateComponentAction extends AbstractActionSuggested {
         appendInactiveVersion(entityVersion.nid(), editCoordinate.toEditCoordinateRecord());
     }
 
-    private void appendInactiveVersion(int entityNid, EditCoordinateRecord editCoordinateRecord) {
+    private void appendInactiveVersion(long entityNid, EditCoordinateRecord editCoordinateRecord) {
         Entity entity = EntityHandle.get(entityNid).orNull();
 
         Transaction transaction = Transaction.make();

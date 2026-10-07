@@ -32,8 +32,8 @@ import dev.ikm.komet.framework.propsheet.editor.IntIdListEditor;
 import dev.ikm.komet.framework.propsheet.editor.IntIdSetEditor;
 import dev.ikm.komet.framework.propsheet.editor.PasswordEditor;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.id.IntIdList;
-import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.LongIdList;
+import dev.ikm.tinkar.common.id.LongIdSet;
 import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.component.graph.DiTree;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -114,12 +114,12 @@ public class SheetItem<T> implements PropertySheet.Item {
                 break;
             case COMPONENT_ID_LIST:
                 // leave list in same order...
-                classType = IntIdList.class;
+                classType = LongIdList.class;
                 propertyEditorClass = IntIdListEditor.class;
                 break;
             case COMPONENT_ID_SET:
                 // sort set for presentation, order does not matter in set.
-                classType = IntIdSet.class;
+                classType = LongIdSet.class;
                 propertyEditorClass = IntIdSetEditor.class;
                 break;
             case DITREE: {
@@ -342,11 +342,11 @@ public class SheetItem<T> implements PropertySheet.Item {
                 propertyEditorClass = EntityLabelWithDragAndDrop.class;
                 break;
             case COMPONENT_ID_LIST:
-                classType = IntIdList.class;
+                classType = LongIdList.class;
                 propertyEditorClass = IntIdListEditor.class;
                 break;
             case COMPONENT_ID_SET:
-                classType = IntIdSet.class;
+                classType = LongIdSet.class;
                 propertyEditorClass = IntIdSetEditor.class;
                 break;
             case DITREE:
@@ -411,11 +411,11 @@ public class SheetItem<T> implements PropertySheet.Item {
                 propertyEditorClass = EntityLabelWithDragAndDrop.class;
                 break;
             case COMPONENT_ID_LIST:
-                classType = IntIdList.class;
+                classType = LongIdList.class;
                 propertyEditorClass = IntIdListEditor.class;
                 break;
             case COMPONENT_ID_SET:
-                classType = IntIdSet.class;
+                classType = LongIdSet.class;
                 propertyEditorClass = IntIdSetEditor.class;
                 break;
             case DITREE:

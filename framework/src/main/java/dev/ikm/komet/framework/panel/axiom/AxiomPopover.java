@@ -51,7 +51,7 @@ public final class AxiomPopover {
      * @param screenX        the screen x of the invoking gesture
      * @param screenY        the screen y of the invoking gesture
      */
-    public static void show(int conceptNid, PremiseType premiseType, ViewProperties viewProperties,
+    public static void show(long conceptNid, PremiseType premiseType, ViewProperties viewProperties,
                             Node anchor, double screenX, double screenY) {
         Optional<ObservableSemanticSnapshot> optionalAxiomSnapshot =
                 ObservableSemantic.getAxiomSnapshot(conceptNid, premiseType, viewProperties.calculator());

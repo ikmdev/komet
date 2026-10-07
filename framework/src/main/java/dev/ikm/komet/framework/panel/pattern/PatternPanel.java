@@ -34,7 +34,7 @@ public class PatternPanel extends ComponentIsFinalPanel<
 
     public PatternPanel(ObservablePatternSnapshot patternSnapshot, ViewProperties viewProperties,
                         SimpleObjectProperty<EntityFacade> topEnclosingComponentProperty,
-                        ObservableSet<Integer> referencedNids) {
+                        ObservableSet<Long> referencedNids) {
         super(patternSnapshot, viewProperties, topEnclosingComponentProperty, referencedNids);
         this.collapsiblePane.setText("Pattern");
         this.getComponentDetailPane().pseudoClassStateChanged(PseudoClasses.PATTERN_PSEUDO_CLASS, true);

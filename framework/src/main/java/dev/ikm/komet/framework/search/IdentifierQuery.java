@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.search;
 
+import java.util.OptionalLong;
 import dev.ikm.komet.framework.ComponentLookup;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.PrimitiveData;
@@ -50,7 +51,7 @@ public final class IdentifierQuery {
     }
 
     /** A nid, as typed. */
-    private record Nid(int nid) implements Identifier {
+    private record Nid(long nid) implements Identifier {
     }
 
     /** A UUID, as typed. */
@@ -107,16 +108,16 @@ public final class IdentifierQuery {
      *
      * @return the nids; empty when the query names nothing the knowledge base holds
      */
-    public int[] nids() {
-        int[] nids = new int[identifiers.size()];
+    public long[] nids() {
+        long[] nids = new long[identifiers.size()];
         int count = 0;
         for (Identifier identifier : identifiers) {
             switch (identifier) {
                 case Nid typed -> nids[count++] = typed.nid();
                 case Uuid typed -> {
-                    OptionalInt nid = ComponentLookup.nid(typed.uuid());
+                    OptionalLong nid = ComponentLookup.nid(typed.uuid());
                     if (nid.isPresent()) {
-                        nids[count++] = nid.getAsInt();
+                        nids[count++] = nid.getAsLong();
                     }
                 }
             }
@@ -187,7 +188,7 @@ public final class IdentifierQuery {
      * in another knowledge base; the least is chosen so the stored form does not depend on the
      * order this one lists them in.
      */
-    private static Optional<UUID> leastUuid(int nid) {
+    private static Optional<UUID> leastUuid(long nid) {
         try {
             PublicId publicId = PrimitiveData.publicId(nid);
             if (publicId == null || publicId.uuidCount() == 0) {

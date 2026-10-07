@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.Set;
 
 import static dev.ikm.komet.framework.dnd.KometClipboard.COMPONENT_DRAG_FORMAT;
@@ -106,19 +107,19 @@ class KometClipboardTest {
         @Test
         @DisplayName("null fragment → empty")
         void nullIsEmpty() {
-            assertEquals(OptionalInt.empty(), KometClipboard.nidFromProxyXml(null));
+            assertEquals(OptionalLong.empty(), KometClipboard.nidFromProxyXml(null));
         }
 
         @Test
         @DisplayName("blank fragment → empty")
         void blankIsEmpty() {
-            assertEquals(OptionalInt.empty(), KometClipboard.nidFromProxyXml("   "));
+            assertEquals(OptionalLong.empty(), KometClipboard.nidFromProxyXml("   "));
         }
 
         @Test
         @DisplayName("unparseable fragment → empty (not thrown)")
         void malformedIsEmpty() {
-            assertEquals(OptionalInt.empty(), KometClipboard.nidFromProxyXml("not-a-proxy"));
+            assertEquals(OptionalLong.empty(), KometClipboard.nidFromProxyXml("not-a-proxy"));
         }
     }
 }

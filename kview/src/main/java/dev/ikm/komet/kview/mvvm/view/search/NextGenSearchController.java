@@ -81,8 +81,8 @@ import org.carlfx.cognitive.loader.JFXNode;
 import org.controlsfx.control.PopOver;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
-import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
+import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
+import org.eclipse.collections.impl.factory.primitive.LongObjectMaps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -294,7 +294,7 @@ public class NextGenSearchController {
             // of either — is answered with those components. Anything else is a text search.
             Optional<IdentifierQuery> identifierQuery = IdentifierQuery.parse(queryText);
             if (identifierQuery.isPresent()) {
-                for (int nid : identifierQuery.get().nids()) {
+                for (long nid : identifierQuery.get().nids()) {
                     addComponentFromNid(nid);
                 }
             } else if (remoteSearch.isPresent()) {
@@ -429,7 +429,7 @@ public class NextGenSearchController {
         }
     }
 
-    private void addComponentFromNid(int nid) {
+    private void addComponentFromNid(long nid) {
         setCurrentSearchResultType(SearchResultType.NID);
 
         searchResultsListView.getItems().add(nid);
@@ -494,13 +494,13 @@ public class NextGenSearchController {
 
     private void createMapOfEntries(Map<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> topItems,
                                     List<LatestVersionSearchResult> results) {
-        MutableIntObjectMap<MutableList<LatestVersionSearchResult>> topNidMatchMap = IntObjectMaps.mutable.empty();
+        MutableLongObjectMap<MutableList<LatestVersionSearchResult>> topNidMatchMap = LongObjectMaps.mutable.empty();
         for (LatestVersionSearchResult result : results) {
             topNidMatchMap.getIfAbsentPut(result.latestVersion().get().chronology().topEnclosingComponentNid(),
                     () -> Lists.mutable.empty()).add(result);
         }
         // topItems is similar to tempRoot
-        for (int topNid : topNidMatchMap.keySet().toArray()) {
+        for (long topNid : topNidMatchMap.keySet().toArray()) {
             String topText = getViewProperties().nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(topNid);
             Latest<EntityVersion> latestTopVersion = getViewProperties().nodeView().calculator().latest(topNid);
             latestTopVersion.ifPresent(entityVersion -> {

@@ -44,7 +44,7 @@ import dev.ikm.komet.framework.rulebase.ConsequenceAction;
 import dev.ikm.komet.framework.rulebase.ConsequenceMenu;
 import dev.ikm.komet.framework.rulebase.RuleService;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.id.IntIdList;
+import dev.ikm.tinkar.common.id.LongIdList;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
@@ -225,9 +225,9 @@ public class ClauseView {
         openConceptButton.setOnMouseClicked(this::handleShowFeatureNodeClick);
         StringBuilder builder = new StringBuilder();
         builder.append("πσ: ");
-        Optional<IntIdList> optionalPropertyPattern = this.axiomVertex.property(KernelTerm.PROPERTY_SEQUENCE);
+        Optional<LongIdList> optionalPropertyPattern = this.axiomVertex.property(KernelTerm.PROPERTY_SEQUENCE);
         optionalPropertyPattern.ifPresent(propertyPattern -> {
-            for (int propertyPatternNid : propertyPattern.intStream().toArray()) {
+            for (long propertyPatternNid : propertyPattern.longStream().toArray()) {
                 builder.append("[" + calculator().getDescriptionTextOrNid(propertyPatternNid) + "] ");
             }
         });
@@ -617,7 +617,7 @@ public class ClauseView {
         Dragboard db = titleLabel.startDragAndDrop(TransferMode.COPY);
         KonceptDragSource.setDragView(db, titleLabel);
 
-        int conceptNid = switch (LogicalOperatorsForVertex.get(axiomVertex)) {
+        long conceptNid = switch (LogicalOperatorsForVertex.get(axiomVertex)) {
             case CONCEPT -> {
                 ConceptFacade conceptForVertex = CONCEPT.getPropertyFast(axiomVertex);
                 yield conceptForVertex.nid();
@@ -778,7 +778,7 @@ public class ClauseView {
         showPopup(entity.nid(), mouseEvent);
     }
 
-    private void showPopup(int conceptNid, MouseEvent mouseEvent) {
+    private void showPopup(long conceptNid, MouseEvent mouseEvent) {
         // Shared with every at-rest KonceptBadge's popout (ike-issues#941): one popover
         // implementation, so the clause affordance and the badge affordance cannot drift.
         AxiomPopover.show(conceptNid, this.axiomView.premiseType, viewProperties(),
@@ -1067,7 +1067,7 @@ public class ClauseView {
         return isDefined(facade.nid());
     }
 
-    boolean isDefined(int conceptNid) {
+    boolean isDefined(long conceptNid) {
         Latest<DiTreeEntity> conceptExpression = calculator().getAxiomTreeForEntity(conceptNid, premiseType());
         if (!conceptExpression.isPresent()) {
             return false;
@@ -1083,7 +1083,7 @@ public class ClauseView {
         return viewProperties().calculator().isMultiparent(facade);
     }
 
-    boolean isMultiparent(int conceptNid) {
+    boolean isMultiparent(long conceptNid) {
         return viewProperties().calculator().isMultiparent(conceptNid);
     }
 

@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.UUID;
 import java.util.prefs.BackingStoreException;
 import java.util.stream.Stream;
@@ -297,9 +297,9 @@ public class EntityKlWindowState {
      * @return the nid of the associated entity, or empty if no entity is associated or the
      *         open knowledge base does not hold it
      */
-    public OptionalInt resolveEntityNid() {
+    public OptionalLong resolveEntityNid() {
         if (entityUuid == null) {
-            return OptionalInt.empty();
+            return OptionalLong.empty();
         }
         return ComponentLookup.nid(entityUuid);
     }

@@ -65,8 +65,8 @@ public class PatternSemanticsTableControl extends Control {
     public void setEntityProxyToComponentItem(Function<EntityProxy, ComponentItem> entityProxyToComponentItem) { this.entityProxyToComponentItem.set(entityProxyToComponentItem); }
 
     // -- nid to component item
-    private final ObjectProperty<Function<Integer, ComponentItem>> nidToComponentItem = new SimpleObjectProperty<>();
-    public Function<Integer, ComponentItem> getNidToComponentItem() { return nidToComponentItem.get(); }
-    public ObjectProperty<Function<Integer, ComponentItem>> nidToComponentItemProperty() { return nidToComponentItem; }
-    public void setNidToComponentItem(Function<Integer, ComponentItem> nidToComponentItem) { this.nidToComponentItem.set(nidToComponentItem); }
+    private final ObjectProperty<Function<Long, ComponentItem>> nidToComponentItem = new SimpleObjectProperty<>();
+    public Function<Long, ComponentItem> getNidToComponentItem() { return nidToComponentItem.get(); }
+    public ObjectProperty<Function<Long, ComponentItem>> nidToComponentItemProperty() { return nidToComponentItem; }
+    public void setNidToComponentItem(Function<Long, ComponentItem> nidToComponentItem) { this.nidToComponentItem.set(nidToComponentItem); }
 }

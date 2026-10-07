@@ -334,7 +334,7 @@ public class ConceptViewModel extends FormViewModel {
         // get the public id of the referenced concept
         PublicId conceptRecordPublicId =  otherName.getParentConcept();
 
-        int conceptNid = EntityService.get().nidForPublicId(conceptRecordPublicId);
+        long conceptNid = EntityService.get().nidForPublicId(conceptRecordPublicId);
 
         // the versions that we will first populate with the existing versions of the semantic
         RecordListBuilder versions = RecordListBuilder.make();

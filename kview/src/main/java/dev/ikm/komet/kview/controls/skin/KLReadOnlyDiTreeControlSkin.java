@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import java.util.function.LongFunction;
 import dev.ikm.komet.framework.panel.axiom.ConcreteDomainOperators;
 import dev.ikm.komet.kview.NodeUtils;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
@@ -136,7 +137,7 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
         NodeUtils.setShowing(promptTextLabel, !hasContent);
         NodeUtils.setShowing(treeContainer, hasContent);
         if (hasContent) {
-            int rootConceptNid = getSkinnable().getRootConceptNid();
+            long rootConceptNid = getSkinnable().getRootConceptNid();
             if (rootConceptNid != 0) {
                 treeContainer.getChildren().add(rootNode(rootConceptNid, tree));
             } else if (tree != null) {
@@ -156,7 +157,7 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
      * shown when the control knows its {@link KLReadOnlyDiTreeControl#rootConceptNidProperty()
      * root concept}.
      */
-    private Node rootNode(int rootConceptNid, DiTreeEntity tree) {
+    private Node rootNode(long rootConceptNid, DiTreeEntity tree) {
         VBox childrenBox = new VBox();
         childrenBox.getStyleClass().add("ditree-children");
         if (tree != null) {
@@ -218,7 +219,7 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
     }
 
     private Node buildVertex(EntityVertex vertex, DiTreeEntity tree) {
-        int meaning = vertex.getMeaningNid();
+        long meaning = vertex.getMeaningNid();
         if (meaning == KernelTerm.NECESSARY_SET.nid()) {
             return createClauseNode(vertex, tree, "necessary-set", "Necessary set");
         }
@@ -246,8 +247,8 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
             return featureRow(vertex);
         }
         // Property sets, … — fall back to a plain clause header for v1.
-        IntFunction<String> descriptionResolver = getSkinnable().getDescriptionResolver();
-        String clauseText = descriptionResolver != null ? descriptionResolver.apply(meaning) : Integer.toString(meaning);
+        LongFunction<String> descriptionResolver = getSkinnable().getDescriptionResolver();
+        String clauseText = descriptionResolver != null ? descriptionResolver.apply(meaning) : Long.toString(meaning);
         return createClauseNode(vertex, tree, "feature", clauseText);
     }
 
@@ -297,7 +298,7 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
     /**
      * Builds a full-width chip row for a concept reference (an is-a of the enclosing set).
      */
-    private Node conceptRow(EntityVertex vertex, int nid) {
+    private Node conceptRow(EntityVertex vertex, long nid) {
         Node itemNode = createChipNode(vertex, nid, ChipKind.CONCEPT_REFERENCE);
         if (itemNode instanceof Region region) {
             region.setMaxWidth(Double.MAX_VALUE);
@@ -357,7 +358,7 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
      * @param conceptNid the concept the chip renders
      * @param kind       the editing role the chip plays
      */
-    protected Node createChipNode(EntityVertex vertex, int conceptNid, ChipKind kind) {
+    protected Node createChipNode(EntityVertex vertex, long conceptNid, ChipKind kind) {
         ComponentItemNode itemNode =
                 ComponentItemNodeFactory.create(getSkinnable().getComponentItemResolver().apply(conceptNid));
         itemNode.setShowDragHandleOnHover(true);

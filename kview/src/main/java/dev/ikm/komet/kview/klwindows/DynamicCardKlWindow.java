@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.klwindows;
 
+import java.util.OptionalLong;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.layout_engine.host.DynamicCard;
@@ -208,8 +209,8 @@ public final class DynamicCardKlWindow extends AbstractChapterKlWindow<Pane> {
         // Migration fallback: a window saved before the card persisted its own content has an empty card
         // node, so revert() loaded no layout — seed the card from the legacy window-state copy.
         if (!card.isContentRestored()) {
-            final OptionalInt entityNid = windowState.resolveEntityNid();
-            card.setReferenceComponent(entityNid.isPresent() ? EntityHandle.get(entityNid.getAsInt()).orNull() : null);
+            final OptionalLong entityNid = windowState.resolveEntityNid();
+            card.setReferenceComponent(entityNid.isPresent() ? EntityHandle.get(entityNid.getAsLong()).orNull() : null);
             preferences.get(DYNAMIC_CARD_LAYOUT_TITLE).ifPresent(title ->
                     card.setEditorWindowPreferences(KometPreferencesImpl.getConfigurationRootPreferences()
                             .node(KL_EDITOR_APP).node(KL_USER_WINDOWS_DIR).node(title)));

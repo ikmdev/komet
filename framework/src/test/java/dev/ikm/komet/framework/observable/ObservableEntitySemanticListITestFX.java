@@ -95,14 +95,14 @@ class ObservableEntitySemanticListITestFX {
     void observableSemanticListMatchesPrimitiveData() {
         int totalSemantics = 0;
         for (ConceptFacade concept : SAMPLE_CONCEPTS) {
-            int conceptNid = concept.nid();
+            long conceptNid = concept.nid();
 
-            Set<Integer> expectedNids = new HashSet<>();
+            Set<Long> expectedNids = new HashSet<>();
             EntityService.get().forEachSemanticForComponent(conceptNid, semantic -> expectedNids.add(semantic.nid()));
 
             ObservableConcept observableConcept = ObservableEntityHandle.getConceptOrThrow(conceptNid);
 
-            Set<Integer> observedNids = new HashSet<>();
+            Set<Long> observedNids = new HashSet<>();
             for (ObservableSemantic observableSemantic : observableConcept.getObservableSemanticList()) {
                 assertNotNull(observableSemantic, "Enumerated semantic wrapper must not be null");
                 assertEquals(conceptNid, observableSemantic.referencedComponentNid(),
@@ -129,7 +129,7 @@ class ObservableEntitySemanticListITestFX {
     @Order(3)
     void observableSemanticListIsEmptyWhenNoReferencingSemantics() {
         for (ConceptFacade concept : SAMPLE_CONCEPTS) {
-            int conceptNid = concept.nid();
+            long conceptNid = concept.nid();
             if (EntityService.get().semanticsForComponent(conceptNid).findAny().isPresent()) {
                 continue;
             }

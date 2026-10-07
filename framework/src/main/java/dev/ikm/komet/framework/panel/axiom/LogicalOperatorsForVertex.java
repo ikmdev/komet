@@ -94,7 +94,7 @@ public enum LogicalOperatorsForVertex {
         return get(facade.nid());
     }
 
-    public static LogicalOperatorsForVertex get(int meaningNid) {
+    public static LogicalOperatorsForVertex get(long meaningNid) {
         for (LogicalOperatorsForVertex logicalOperator : LogicalOperatorsForVertex.values()) {
             if (logicalOperator.logicalMeaning.nid() == meaningNid) {
                 return logicalOperator;
@@ -111,7 +111,7 @@ public enum LogicalOperatorsForVertex {
         return entityFacade.nid() == logicalMeaning.nid();
     }
 
-    public boolean semanticallyEqual(int nid) {
+    public boolean semanticallyEqual(long nid) {
         return nid == logicalMeaning.nid();
     }
 

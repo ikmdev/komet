@@ -1,5 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import dev.ikm.tinkar.common.id.Nid;
+
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.search.SearchResultCell;
@@ -275,8 +277,8 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                 }
             }
 
-            int nid = extractNid(event);
-            if (nid != Integer.MIN_VALUE) {  //
+            long nid = extractNid(event);
+            if (!Nid.isNone(nid)) {  //
                 EntityProxy entity = EntityHandle.get(nid).expectEntity().toProxy();
 
                 control.setEntity(entity);
@@ -340,7 +342,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
      * @param dragEvent A drag event {@link DragEvent} from a JavaFX {@link Node}.
      * @return Returns a nid (int) representing a unique database identifier of a given entity. A component's nid is extracted from
      */
-    private int extractNid(DragEvent dragEvent) {
+    private long extractNid(DragEvent dragEvent) {
         if (isADragAndDropInfo(dragEvent)) {
             DragAndDropInfo dropInfo = (DragAndDropInfo) ((Node)dragEvent.getGestureSource()).getUserData();
             return EntityService.get().nidForPublicId(dropInfo.publicId());

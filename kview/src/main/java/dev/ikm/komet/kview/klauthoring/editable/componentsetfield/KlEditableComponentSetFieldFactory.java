@@ -5,12 +5,12 @@ import dev.ikm.komet.framework.observable.ObservableStamp;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.layout.version.field.KlField;
 import dev.ikm.komet.layout.version.field.KlFieldFactory;
-import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.LongIdSet;
 
-public class KlEditableComponentSetFieldFactory implements KlFieldFactory<IntIdSet> {
+public class KlEditableComponentSetFieldFactory implements KlFieldFactory<LongIdSet> {
 
     @Override
-    public KlField<IntIdSet> create(ObservableField.Editable<IntIdSet> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
+    public KlField<LongIdSet> create(ObservableField.Editable<LongIdSet> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
         return new KlEditableComponentSetField(observableFieldEditable, observableView, stamp4field);
     }
     /**
@@ -21,7 +21,7 @@ public class KlEditableComponentSetFieldFactory implements KlFieldFactory<IntIdS
      * @return A {@link Class} object representing the class type of the field
      * interface extending {@link KlField}.
      */
-    public Class<? extends KlField<IntIdSet>> getFieldInterface() {
+    public Class<? extends KlField<LongIdSet>> getFieldInterface() {
         return null;
     }
 
@@ -32,7 +32,7 @@ public class KlEditableComponentSetFieldFactory implements KlFieldFactory<IntIdS
      * @return A {@link Class} object representing the class type of the implementation
      * of {@link KlField} associated with this factory.
      */
-    public Class<? extends KlField<IntIdSet>> getFieldImplementation() {
+    public Class<? extends KlField<LongIdSet>> getFieldImplementation() {
         return KlEditableComponentSetField.class;
     }
 
