@@ -242,6 +242,10 @@ public class JournalController {
     @FXML
     private SeparatorMenuItem addContextMenuSeparator;
 
+    /** Opens the faded legacy-window group at the end of the "+" menu. */
+    @FXML
+    private SeparatorMenuItem legacySeparator;
+
     @FXML
     private StackPane trayPaneContainer;
 
@@ -574,12 +578,16 @@ public class JournalController {
 
         List<String> editorWindows = klEditorAppPreferences.node(KL_USER_WINDOWS_DIR).getList(KL_EDITOR_WINDOWS);
 
+        // Dynamic entries go between the static "New Concept"/"New Pattern" items and the
+        // faded legacy group that closes the menu, so the deprecated windows always sit last.
+        List<MenuItem> dynamicItems = new ArrayList<>();
+
         addContextMenuSeparator.setVisible(!editorWindows.isEmpty());
         for (String windowTitle : editorWindows) {
-            KometIcon icon = KometIcon.create(KL_EDITABLE_VIEW);
+            KometIcon icon = KometIcon.create(KL_EDITABLE_VIEW, "icon-klcontext-menu");
             MenuItem windowMenuItem = new MenuItem(windowTitle, icon);
             windowTitleToMenuItem.put(windowTitle, windowMenuItem);
-            addContextMenu.getItems().add(windowMenuItem);
+            dynamicItems.add(windowMenuItem);
 
             windowMenuItem.setOnAction(actionEvent -> newCreateGenPurposeKLWindow(null, windowTitle));
 
@@ -587,11 +595,11 @@ public class JournalController {
 
             // Parallel entry: realize the same designed layout as a kview-free DynamicCard.
             MenuItem dynamicCardMenuItem = new MenuItem(windowTitle + " — Dynamic Card",
-                    KometIcon.create(KL_EDITABLE_VIEW));
+                    KometIcon.create(KL_EDITABLE_VIEW, "icon-klcontext-menu"));
             // Open as a component-focusable card so an empty card shows the identicon + name drop target —
             // drag a concept onto it to focus the card (and populate its component areas).
             dynamicCardMenuItem.setOnAction(actionEvent -> newCreateDynamicComponentCardWindow(null, windowTitle));
-            addContextMenu.getItems().add(dynamicCardMenuItem);
+            dynamicItems.add(dynamicCardMenuItem);
         }
 
         // Discover summonable tool areas (e.g. the Claude Assistant) contributed via
@@ -603,7 +611,7 @@ public class JournalController {
             anyToolArea = true;
             MenuItem toolMenuItem = new MenuItem(toolAreaFactory.toolName());
             toolMenuItem.setOnAction(actionEvent -> createToolAreaWindow(toolAreaFactory));
-            addContextMenu.getItems().add(toolMenuItem);
+            dynamicItems.add(toolMenuItem);
         }
         // Discover plugin-contributed first-class cards (e.g. the Claude Assistant as a ClaudeCard),
         // ServiceLoader-discovered as KlCardProvider, and add a "+"-menu entry that opens each natively —
@@ -612,11 +620,12 @@ public class JournalController {
             anyToolArea = true;
             MenuItem cardMenuItem = new MenuItem(cardProvider.cardName());
             cardMenuItem.setOnAction(actionEvent -> createCardWindow(cardProvider));
-            addContextMenu.getItems().add(cardMenuItem);
+            dynamicItems.add(cardMenuItem);
         }
         if (anyToolArea) {
             addContextMenuSeparator.setVisible(true);
         }
+        addContextMenu.getItems().addAll(addContextMenu.getItems().indexOf(legacySeparator), dynamicItems);
 
         // Journal tile lifecycle (ike-issues#1047): every card tile registered under this
         // journal — open or closed — with front, reopen, and true deletion. Content is

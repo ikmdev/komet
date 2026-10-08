@@ -6210,6 +6210,19 @@ Styling a context menu for kview ui/ux controls
     -fx-fill: white;
 }
 
+/* Submenu arrow (e.g. the journal "+" menu's Tiles entry): modena paints it in the dark
+   mark colour, invisible on this box, so match the white labels. */
+.klcontext-menu .menu > .right-container > .arrow {
+    -fx-background-color: white;
+}
+
+/* Legacy windows in the journal "+" menu (superseded, slated for removal): fade the text and
+   icon, not the hover highlight, so the entries read as subdued but still clickable. */
+.klcontext-menu .menu-item.legacy-menu-item > .label,
+.klcontext-menu .menu-item.legacy-menu-item > .graphic-container {
+    -fx-opacity: 0.45;
+}
+
 .icon-klcontext-menu {
     size: 12px;
 
