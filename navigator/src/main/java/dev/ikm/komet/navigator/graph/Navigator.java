@@ -27,7 +27,7 @@ public interface Navigator {
      * @param childNid the child id
      * @return the taxonomy parent nids
      */
-    int[] getParentNids(int childNid);
+    long[] getParentNids(long childNid);
 
     /**
      * Gets the child nids.
@@ -35,7 +35,7 @@ public interface Navigator {
      * @param parentNid the parent id
      * @return the child nids
      */
-    int[] getChildNids(int parentNid);
+    long[] getChildNids(long parentNid);
 
     /**
      * For circumstances where there is more than one type of navigable relationship.
@@ -43,7 +43,7 @@ public interface Navigator {
      * @param childNid
      * @return an ImmutableCollection of all the parent Edges.
      */
-    ImmutableList<Edge> getParentEdges(int childNid);
+    ImmutableList<Edge> getParentEdges(long childNid);
 
     /**
      * For circumstances where there is more than one type of navigable relationship.
@@ -51,13 +51,13 @@ public interface Navigator {
      * @param parentNid
      * @return an ImmutableCollection of all the child Edges.
      */
-    ImmutableList<Edge> getChildEdges(int parentNid);
+    ImmutableList<Edge> getChildEdges(long parentNid);
 
     /**
      * @param conceptNid concept to test if it is a leaf node
      * @return true if the node is a leaf (it has no children)
      */
-    boolean isLeaf(int conceptNid);
+    boolean isLeaf(long conceptNid);
 
     /**
      * Checks if child of.
@@ -66,7 +66,7 @@ public interface Navigator {
      * @param parentNid the parent id
      * @return true, if child of
      */
-    boolean isChildOf(int childNid, int parentNid);
+    boolean isChildOf(long childNid, long parentNid);
 
     /**
      * Checks if descendant  of.
@@ -75,14 +75,14 @@ public interface Navigator {
      * @param ancestorNid   the parent id
      * @return true, if kind of
      */
-    boolean isDescendentOf(int descendantNid, int ancestorNid);
+    boolean isDescendentOf(long descendantNid, long ancestorNid);
 
     /**
      * Gets the roots.
      *
      * @return the root concept nids
      */
-    int[] getRootNids();
+    long[] getRootNids();
 
     /**
      * Get the ViewCalculator which defines the parent/child relationships of this tree.

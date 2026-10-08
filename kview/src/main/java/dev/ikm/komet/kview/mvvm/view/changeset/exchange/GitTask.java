@@ -30,7 +30,7 @@ import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.reasoner.service.ClassifierResults;
 import dev.ikm.tinkar.reasoner.service.ReasonerService;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -1094,7 +1094,7 @@ public class GitTask extends TrackingCallable<Boolean> {
             double reasonerStartPercent = reasoningWorkStart + ((remainingReasoning / reasonerCount) * i);
             double reasonerEndPercent = reasoningWorkStart + ((remainingReasoning / reasonerCount) * (i + 1));
 
-            rs.init(Calculators.View.Default(), TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN);
+            rs.init(Calculators.View.Default(), KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, KernelTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN);
 
             try {
                 // Extract

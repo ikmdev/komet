@@ -1,5 +1,7 @@
 package dev.ikm.komet.layout.editor.model;
 
+import javafx.beans.property.ReadOnlyLongWrapper;
+import javafx.beans.property.ReadOnlyLongProperty;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.FieldDefinitionRecord;
@@ -102,9 +104,9 @@ public class EditorFieldModel extends EditorGridNodeModel {
     public ReadOnlyIntegerProperty indexProperty() { return index.getReadOnlyProperty(); }
 
     // -- data type nid
-    private ReadOnlyIntegerWrapper dataTypeNid = new ReadOnlyIntegerWrapper();
-    public int getDataTypeNid() { return dataTypeNid.get(); }
-    public ReadOnlyIntegerProperty dataTypeNidProperty() { return dataTypeNid.getReadOnlyProperty(); }
+    private ReadOnlyLongWrapper dataTypeNid = new ReadOnlyLongWrapper();
+    public long getDataTypeNid() { return dataTypeNid.get(); }
+    public ReadOnlyLongProperty dataTypeNidProperty() { return dataTypeNid.getReadOnlyProperty(); }
 
     // -- parent Pattern
     private ReadOnlyObjectWrapper<EditorPatternModel> parentPattern = new ReadOnlyObjectWrapper<>();

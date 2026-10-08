@@ -14,6 +14,15 @@
     </description>
 
     <dependencies>
+        <!-- Orders the reactor only: this module reaches nothing in tinkar-core, so without it
+             a parallel build could compile it before the nid build check (tinkar-core
+             nid-check) is built. The compiler takes the check from its processor path. -->
+        <dependency>
+            <groupId>dev.ikm.tinkar</groupId>
+            <artifactId>nid-check</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
         <!-- The incubator RichTextArea model (RichParagraph / StyledTextModel). -->
         <dependency>
             <groupId>org.openjfx</groupId>

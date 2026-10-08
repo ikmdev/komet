@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import dev.ikm.komet.terms.KometTerm;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CASE_SIGNIFICANCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_SUBMITTED;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.LANGUAGE;
@@ -23,7 +23,8 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.KernelTerm.DESCRIPTION_TYPE;
+import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.CreateConceptEvent;
@@ -32,12 +33,12 @@ import dev.ikm.komet.kview.mvvm.view.AbstractBasicController;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.beans.InvalidationListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -108,8 +109,8 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
 
         // Initialize the fqnViewModel
         fqnViewModel
-                .setPropertyValue(NAME_TYPE, TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
-                .setPropertyValue(STATUS, TinkarTerm.ACTIVE_STATE);
+                .setPropertyValue(NAME_TYPE, KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
+                .setPropertyValue(STATUS, KernelTerm.ACTIVE_STATE);
 
         // register listeners
         InvalidationListener formValid = (obs) -> {
@@ -135,7 +136,7 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
     private void copyUIToViewModelProperties() {
         if (fqnViewModel != null) {
             fqnViewModel.setPropertyValue(NAME_TEXT, fullyQualifiedNameTextField.getText())
-                    .setPropertyValue(NAME_TYPE, TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
+                    .setPropertyValue(NAME_TYPE, KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE)
                     .setPropertyValue(CASE_SIGNIFICANCE, caseSignificanceComboBox.getSelectionModel().getSelectedItem())
                     .setPropertyValue(STATUS, statusComboBox.getSelectionModel().getSelectedItem())
                     .setPropertyValue(MODULE, moduleComboBox.getSelectionModel().getSelectedItem())
@@ -151,18 +152,18 @@ public class AddFullyQualifiedNameController extends AbstractBasicController {
     public void updateView() {
 
         // populate form combo fields module, status, case significance, lang.
-        populate(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
-        populate(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId()));
+        populate(moduleComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), KometTerm.MODULE));
+        populate(statusComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), KometTerm.STATUS_VALUE));
         populate(caseSignificanceComboBox, fqnViewModel.findAllCaseSignificants(getViewProperties()));
-        populate(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
-        populate(typeDisplayComboBox, fetchDescendentsOfConcept(getViewProperties(), DESCRIPTION_TYPE.publicId()));
+        populate(languageComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), KernelTerm.LANGUAGE));
+        populate(typeDisplayComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), DESCRIPTION_TYPE));
 
         // Set UI to default values
-        caseSignificanceComboBox.setValue(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
-        statusComboBox.setValue(Entity.getFast(State.ACTIVE.nid()));
-        moduleComboBox.setValue(TinkarTerm.DEVELOPMENT_MODULE);
-        languageComboBox.setValue(TinkarTerm.ENGLISH_LANGUAGE);
-        typeDisplayComboBox.setValue(TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+        caseSignificanceComboBox.setValue(KernelTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
+        statusComboBox.setValue(EntityHandle.get(State.ACTIVE.nid()).expectConcept());
+        moduleComboBox.setValue(KometTerm.DEVELOPMENT_MODULE);
+        languageComboBox.setValue(KernelTerm.ENGLISH_LANGUAGE);
+        typeDisplayComboBox.setValue(KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
 
     }
 

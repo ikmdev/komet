@@ -32,14 +32,13 @@ import dev.ikm.komet.framework.propsheet.editor.IntIdListEditor;
 import dev.ikm.komet.framework.propsheet.editor.IntIdSetEditor;
 import dev.ikm.komet.framework.propsheet.editor.PasswordEditor;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.id.IntIdList;
-import dev.ikm.tinkar.common.id.IntIdSet;
-import dev.ikm.tinkar.component.FieldDefinition;
+import dev.ikm.tinkar.common.id.LongIdList;
+import dev.ikm.tinkar.common.id.LongIdSet;
+import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.component.graph.DiTree;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
 
 import java.util.Optional;
 
@@ -115,12 +114,12 @@ public class SheetItem<T> implements PropertySheet.Item {
                 break;
             case COMPONENT_ID_LIST:
                 // leave list in same order...
-                classType = IntIdList.class;
+                classType = LongIdList.class;
                 propertyEditorClass = IntIdListEditor.class;
                 break;
             case COMPONENT_ID_SET:
                 // sort set for presentation, order does not matter in set.
-                classType = IntIdSet.class;
+                classType = LongIdSet.class;
                 propertyEditorClass = IntIdSetEditor.class;
                 break;
             case DITREE: {
@@ -314,7 +313,7 @@ public class SheetItem<T> implements PropertySheet.Item {
 
         // Get field definition from the underlying observable field
         ObservableField<?> observableField = editableField.getObservableFeature();
-        FieldDefinition fieldDef = observableField.fieldDefinition(viewProperties.calculator());
+        FeatureDefinition fieldDef = observableField.fieldDefinition(viewProperties.calculator());
 
         // Get field metadata
         String name = viewProperties.calculator().getDescriptionTextOrNid(fieldDef.meaningNid());
@@ -343,11 +342,11 @@ public class SheetItem<T> implements PropertySheet.Item {
                 propertyEditorClass = EntityLabelWithDragAndDrop.class;
                 break;
             case COMPONENT_ID_LIST:
-                classType = IntIdList.class;
+                classType = LongIdList.class;
                 propertyEditorClass = IntIdListEditor.class;
                 break;
             case COMPONENT_ID_SET:
-                classType = IntIdSet.class;
+                classType = LongIdSet.class;
                 propertyEditorClass = IntIdSetEditor.class;
                 break;
             case DITREE:
@@ -372,7 +371,7 @@ public class SheetItem<T> implements PropertySheet.Item {
     /**
      * Creates a SheetItem for an editable field with custom property and field definition.
      * <p>     * This is a lower-level method that allows binding to any SimpleObjectProperty
-     * with metadata from a FieldDefinition.
+     * with metadata from a FeatureDefinition.
      *
      * @param editableProperty the editable property to bind to
      * @param fieldDefinition the field definition for metadata (meaning, purpose, data type)
@@ -382,7 +381,7 @@ public class SheetItem<T> implements PropertySheet.Item {
      */
     public static <T> SheetItem<T> makeEditableWithDefinition(
             SimpleObjectProperty<Object> editableProperty,
-            FieldDefinition fieldDefinition,
+            FeatureDefinition fieldDefinition,
             String category,
             ViewProperties viewProperties) {
 
@@ -412,11 +411,11 @@ public class SheetItem<T> implements PropertySheet.Item {
                 propertyEditorClass = EntityLabelWithDragAndDrop.class;
                 break;
             case COMPONENT_ID_LIST:
-                classType = IntIdList.class;
+                classType = LongIdList.class;
                 propertyEditorClass = IntIdListEditor.class;
                 break;
             case COMPONENT_ID_SET:
-                classType = IntIdSet.class;
+                classType = LongIdSet.class;
                 propertyEditorClass = IntIdSetEditor.class;
                 break;
             case DITREE:

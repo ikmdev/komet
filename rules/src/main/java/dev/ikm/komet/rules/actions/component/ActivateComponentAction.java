@@ -25,6 +25,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptRecord;
 import dev.ikm.tinkar.entity.ConceptVersionRecord;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import dev.ikm.tinkar.entity.PatternEntity;
@@ -40,7 +41,7 @@ import dev.ikm.tinkar.terms.State;
 import javafx.event.ActionEvent;
 import org.eclipse.collections.api.list.ImmutableList;
 
-import static dev.ikm.tinkar.terms.TinkarTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN;
+import static dev.ikm.tinkar.terms.KernelTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN;
 
 public class ActivateComponentAction extends AbstractActionSuggested {
 
@@ -56,8 +57,8 @@ public class ActivateComponentAction extends AbstractActionSuggested {
         appendActiveVersion(entityVersion.nid(), editCoordinate.toEditCoordinateRecord());
     }
 
-    private void appendActiveVersion(int entityNid, EditCoordinateRecord editCoordinateRecord) {
-        Entity entity = Entity.getFast(entityNid);
+    private void appendActiveVersion(long entityNid, EditCoordinateRecord editCoordinateRecord) {
+        Entity entity = EntityHandle.get(entityNid).orNull();
 
         Transaction transaction = Transaction.make();
         ViewCoordinateRecord viewRecord = viewCalculator.viewCoordinateRecord();
@@ -92,7 +93,7 @@ public class ActivateComponentAction extends AbstractActionSuggested {
             CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
             TinkExecutor.threadPool().submit(commitTransactionTask);
         }, () -> {
-            throw new IllegalStateException("No latest pattern version for: " + Entity.getFast(TINKAR_BASE_MODEL_COMPONENT_PATTERN));
+            throw new IllegalStateException("No latest pattern version for: " + EntityHandle.get(TINKAR_BASE_MODEL_COMPONENT_PATTERN).orNull());
         });
     }
 

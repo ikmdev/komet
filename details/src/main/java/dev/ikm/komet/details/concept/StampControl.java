@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.details.concept;
 
+import dev.ikm.tinkar.common.id.Nid;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import dev.ikm.komet.framework.comment.CommentReader;
@@ -48,7 +49,7 @@ public class StampControl extends Label {
         this.getStyleClass().setAll(STAMP_INDICATOR.toString());
     }
 
-    public void setStampedVersion(int stampNid, ViewProperties viewProperties, int stampOrder) {
+    public void setStampedVersion(long stampNid, ViewProperties viewProperties, int stampOrder) {
 
         Latest<StampEntityVersion> stampVersion = viewProperties.calculator().latest(stampNid);
         stampVersion.ifPresent(stampEntityVersion -> {
@@ -67,8 +68,8 @@ public class StampControl extends Label {
         this.setTooltip(stampTip);
     }
 
-    public String describeStampSequenceForTooltip(int stampNid, ViewCalculator viewCalculator) {
-        if (stampNid == Integer.MAX_VALUE) {
+    public String describeStampSequenceForTooltip(long stampNid, ViewCalculator viewCalculator) {
+        if (Nid.isNotApplicable(stampNid)) {
             // TODO is this still how we handle this in the Tinkar era?
             return "Uncommitted from observable with no stamped version";
         }

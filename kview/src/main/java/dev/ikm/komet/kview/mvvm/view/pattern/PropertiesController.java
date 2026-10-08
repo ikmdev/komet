@@ -71,8 +71,8 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Type.PATTERN;
 import static dev.ikm.komet.kview.state.PatternDetailsState.NEW_PATTERN_INITIAL;
-import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey;
 
 public class PropertiesController {

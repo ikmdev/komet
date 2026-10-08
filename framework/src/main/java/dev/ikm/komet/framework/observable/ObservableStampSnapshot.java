@@ -89,9 +89,9 @@ import java.util.function.Predicate;
  * latest.ifPresent(stamp -> {
  *     State state = stamp.state();
  *     long time = stamp.time();
- *     int authorNid = stamp.authorNid();
- *     int moduleNid = stamp.moduleNid();
- *     int pathNid = stamp.pathNid();
+ *     long authorNid = stamp.authorNid();
+ *     long moduleNid = stamp.moduleNid();
+ *     long pathNid = stamp.pathNid();
  *
  *     processStampMetadata(state, time, authorNid, moduleNid, pathNid);
  * });

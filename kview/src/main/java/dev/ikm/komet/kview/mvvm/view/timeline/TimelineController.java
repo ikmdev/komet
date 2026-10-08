@@ -156,7 +156,7 @@ public class TimelineController implements BasicController {
     private JFXNode<Pane, FilterMenuController> filterJFXNode;
 
     private String configPath;
-    private List<Integer> configModuleIds;
+    private List<Long> configModuleIds;
 
     @FXML
     private Button filterMenuButton;
@@ -169,7 +169,7 @@ public class TimelineController implements BasicController {
 
                 if (getViewProperties() != null && getMainConcept() != null) {
 
-                    LinkedHashMap<String, List<Integer>> pm =  pathMap.getPathModulesNidOnlyMap();
+                    LinkedHashMap<String, List<Long>> pm =  pathMap.getPathModulesNidOnlyMap();
 
                     viewModel.setPropertyValue(TimelineViewModel.TimelineProperties.VIEW_PROPERTIES, getViewProperties());
                     viewModel.setPropertyValue(TimelineViewModel.TimelineProperties.AVAILABLE_PATH_MOULES_MAP, pm);
@@ -321,12 +321,12 @@ public class TimelineController implements BasicController {
 
         Optional<ViewModel> viewModel = filterJFXNode.getViewModel("timelineViewModel");
         viewModel.ifPresent( (vm -> {
-            ObservableList<Integer> modules = vm.getObservableList(TimelineViewModel.TimelineProperties.CHECKED_MODULE_IDS);
+            ObservableList<Long> modules = vm.getObservableList(TimelineViewModel.TimelineProperties.CHECKED_MODULE_IDS);
             SimpleStringProperty path = vm.getProperty(TimelineViewModel.TimelineProperties.SELECTED_PATH);
 
 
             modules.subscribe( () -> {
-                List<Integer> snapshot = List.copyOf(modules);
+                List<Long> snapshot = List.copyOf(modules);
                 LOG.info("current selected modules list: {}", snapshot);
 
                 String selectedPath = path.getValue();
@@ -537,7 +537,7 @@ public class TimelineController implements BasicController {
         }
         datePointSelected.set(null);
     }
-    public void updateConfigPathAndModules(String configPath, List<Integer> configModuleIds) {
+    public void updateConfigPathAndModules(String configPath, List<Long> configModuleIds) {
         this.configPath = configPath;
         this.configModuleIds = configModuleIds;
     }
@@ -551,7 +551,7 @@ public class TimelineController implements BasicController {
                 resetConfigPathAndModules();
                 if (pathMap.keySet().size() > 0){
                     String configPath = pathMap.keySet().stream().findFirst().get();
-                    List<Integer> configModuleIds = pathMap.getModuleNids(configPath);
+                    List<Long> configModuleIds = pathMap.getModuleNids(configPath);
                     updateConfigPathAndModules(configPath, configModuleIds);
                 }
             }
@@ -619,7 +619,7 @@ public class TimelineController implements BasicController {
      * Creates a master treemap structure
      * @param nid The main concept entity. The map will contain paths, each path contains modules, each module contains years, each year contains a change chronology or date point.
      */
-    private void buildTimelineMap(int nid) {
+    private void buildTimelineMap(long nid) {
         ViewCalculator viewCalculator = getViewProperties().calculator();
         ChangeChronology changeChronology = viewCalculator.changeChronology(nid);
         Comparator<VersionChangeRecord> comparator = (o1, o2) -> viewCalculator.stampCalculator().comparePositions(o1.stampNid(), o2.stampNid());
@@ -628,12 +628,12 @@ public class TimelineController implements BasicController {
             StampEntity<? extends StampEntityVersion> stampForChange = Entity.getStamp(changeRecord.stampNid());
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(stampForChange.time());
-            int moduleNid = stampForChange.moduleNid();
+            long moduleNid = stampForChange.moduleNid();
             String pathName = viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(stampForChange.pathNid());
             int mYear = calendar.get(Calendar.YEAR);
 
             if (!pathMap.containsKey(pathName)) {
-                TreeMap<Integer, TreeMap<Integer, TreeSet<VersionChangeRecord>>> moduleMap = new TreeMap<>();
+                TreeMap<Long, TreeMap<Integer, TreeSet<VersionChangeRecord>>> moduleMap = new TreeMap<>();
                 this.pathMap.put(pathName, moduleMap);
             }
             if (!pathMap.get(pathName).containsKey(moduleNid)) {
@@ -673,14 +673,14 @@ public class TimelineController implements BasicController {
      * @param modulesSelected selected modules (extensions).
      * @return A List of ordered long unique values representing truncated date milliseconds values (epoch).
      */
-    private TreeSet<Long> determineNumOfUniqueDatePoints(String pathSelected, List<Integer> modulesSelected){
+    private TreeSet<Long> determineNumOfUniqueDatePoints(String pathSelected, List<Long> modulesSelected){
 
         // A map of epoch millis (truncated time precision) value of boolean denotes true when a change has a date point,
         // otherwise all extensions don't have changes. We need to create a space to denote nothing happened that year.
         TreeSet<Long> datePoints = new TreeSet<>();
         TreeSet<Integer> availableYears = new TreeSet<>();
 
-        for (Integer moduleId : modulesSelected) {
+        for (Long moduleId : modulesSelected) {
             if (pathMap.get(pathSelected) == null || pathMap.get(pathSelected).get(moduleId) == null) {
                 String errorMsg = "Path: %s and Module: %s not found. Module id = %s".formatted(pathSelected,
                         getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(moduleId),
@@ -726,7 +726,7 @@ public class TimelineController implements BasicController {
 
         return datePoints;
     }
-    private void drawAllTimelines(String pathSelected, List<Integer> modulesSelected) {
+    private void drawAllTimelines(String pathSelected, List<Long> modulesSelected) {
         if (pathSelected == null || modulesSelected == null || modulesSelected.size() ==0) return;
         ViewCalculator viewCalculator = getViewProperties().calculator();
         TreeSet<Long> uniqueDatePoints = determineNumOfUniqueDatePoints(pathSelected, modulesSelected);
@@ -774,7 +774,7 @@ public class TimelineController implements BasicController {
 
             LOG.info("Path: %s Module: %s%n".formatted(pathSelected,
                     viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(modulesSelected.get(i))));
-            final int moduleNid = modulesSelected.get(i);
+            final long moduleNid = modulesSelected.get(i);
             pathMap.get(pathSelected)
                     .get(modulesSelected.get(i))
                     .forEach((year, changeSet) -> {

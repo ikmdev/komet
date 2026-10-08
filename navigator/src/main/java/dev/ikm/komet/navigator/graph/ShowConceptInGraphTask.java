@@ -15,21 +15,24 @@
  */
 package dev.ikm.komet.navigator.graph;
 
+import dev.ikm.tinkar.common.id.LongIdList;
+import dev.ikm.tinkar.common.id.LongIds;
+
  import dev.ikm.komet.navigator.graph.MultiParentGraphViewController;
- import dev.ikm.tinkar.common.id.IntIdList;
- import dev.ikm.tinkar.common.id.IntIds;
+ import dev.ikm.tinkar.common.id.LongIdList;
+ import dev.ikm.tinkar.common.id.LongIds;
  import dev.ikm.tinkar.common.service.PrimitiveData;
  import javafx.application.Platform;
  import org.eclipse.collections.api.factory.Lists;
  import org.eclipse.collections.api.list.ImmutableList;
  import org.eclipse.collections.api.list.MutableList;
- import org.eclipse.collections.api.list.primitive.MutableIntList;
-import org.eclipse.collections.impl.factory.primitive.IntLists;
+ import org.eclipse.collections.api.list.primitive.MutableLongList;
+import dev.ikm.tinkar.terms.KernelTerm;
+import org.eclipse.collections.impl.factory.primitive.LongLists;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,10 +49,10 @@ public class ShowConceptInGraphTask extends TrackingCallable<Void> {
     private static final Logger LOG = LoggerFactory.getLogger(ShowConceptInGraphTask.class);
 
     private final MultiParentGraphViewController multiParentGraphView;
-    private final int conceptNid;
+    private final long conceptNid;
     private final String conceptDescription;
 
-    public ShowConceptInGraphTask(MultiParentGraphViewController multiParentGraphView, int conceptNid) {
+    public ShowConceptInGraphTask(MultiParentGraphViewController multiParentGraphView, long conceptNid) {
         this.multiParentGraphView = multiParentGraphView;
         this.conceptNid = conceptNid;
         this.conceptDescription = multiParentGraphView.getViewCalculator().getDescriptionTextOrNid(this.conceptNid);
@@ -60,14 +63,14 @@ public class ShowConceptInGraphTask extends TrackingCallable<Void> {
     protected Void compute() throws Exception {
         // await() init() completion.
 
-        IntIdList pathSeed = IntIds.list.of(conceptNid);
-        ImmutableList<IntIdList> pathsToRoot = findPathsToRoot(conceptNid, Lists.immutable.of(pathSeed));
+        LongIdList pathSeed = LongIds.list.of(conceptNid);
+        ImmutableList<LongIdList> pathsToRoot = findPathsToRoot(conceptNid, Lists.immutable.of(pathSeed));
 
         SortedSet<PathToRootWithScore> sortedListsForReturn = new TreeSet<>();
-        for (IntIdList pathToRoot: pathsToRoot) {
+        for (LongIdList pathToRoot: pathsToRoot) {
             int score = 0;
-            for (int pathConceptNid: pathToRoot.toArray()) {
-                IntIdList childCount = multiParentGraphView.getNavigator().getViewCalculator().unsortedUnversionedChildrenOf(pathConceptNid);
+            for (long pathConceptNid: pathToRoot.toArray()) {
+                LongIdList childCount = multiParentGraphView.getNavigator().getViewCalculator().unsortedUnversionedChildrenOf(pathConceptNid);
                 score += childCount.size();
             }
             sortedListsForReturn.add(new PathToRootWithScore(pathToRoot, score));
@@ -77,11 +80,11 @@ public class ShowConceptInGraphTask extends TrackingCallable<Void> {
         // 17:26:33,328 [INFO  ] t.navigator.graph.ShowConceptInGraphTask - Calculated root path: [Amino acids measurement, Homocystine measurement, Urine homocystine measurement]
         // There are other options in the list that include SOLOR_CONCEPT, so we will find the lowest score that ends with
         // Solor concept
-        IntIdList bestPath = sortedListsForReturn.first().pathToRoot;
-        if (bestPath.get(bestPath.size()-1) != TinkarTerm.SOLOR_CONCEPT.nid()) {
+        LongIdList bestPath = sortedListsForReturn.first().pathToRoot;
+        if (bestPath.get(bestPath.size()-1) != KernelTerm.ROOT_VERTEX.nid()) {
             for (PathToRootWithScore pathToRootWithScore: sortedListsForReturn) {
                 if (pathToRootWithScore.pathToRoot.get(pathToRootWithScore.pathToRoot.size()-1)
-                        == TinkarTerm.SOLOR_CONCEPT.nid()) {
+                        == KernelTerm.ROOT_VERTEX.nid()) {
                     bestPath = pathToRootWithScore.pathToRoot;
                     break;
                 }
@@ -89,22 +92,22 @@ public class ShowConceptInGraphTask extends TrackingCallable<Void> {
         }
 
 
-        final IntIdList reversedPathToRoot = IntIds.list.of(IntLists.mutable.of(bestPath.toArray()).reverseThis().toArray());
+        final LongIdList reversedPathToRoot = LongIds.list.of(LongLists.mutable.of(bestPath.toArray()).reverseThis().toArray());
         LOG.atInfo().log(() -> String.format("Calculated root path: " + Arrays.toString(PrimitiveData.textList(reversedPathToRoot.toArray()).toArray())));
         this.multiParentGraphView.expandAndSelect(reversedPathToRoot);
         return null;
     }
 
-    private ImmutableList<IntIdList> findPathsToRoot(int conceptNid, ImmutableList<IntIdList> incomingLists) {
-        int[] parentNids = multiParentGraphView.getNavigator().getParentNids(conceptNid);
+    private ImmutableList<LongIdList> findPathsToRoot(long conceptNid, ImmutableList<LongIdList> incomingLists) {
+        long[] parentNids = multiParentGraphView.getNavigator().getParentNids(conceptNid);
         if (parentNids.length == 0) {
             return incomingLists; // Nothing to add
         }
-        MutableList<IntIdList> listsForReturn = Lists.mutable.ofInitialCapacity(incomingLists.size() * parentNids.length);
+        MutableList<LongIdList> listsForReturn = Lists.mutable.ofInitialCapacity(incomingLists.size() * parentNids.length);
 
-        for (int parentNid: parentNids) {
-            MutableList<IntIdList> listsWithAddedParent = Lists.mutable.ofInitialCapacity(incomingLists.size());
-            for (IntIdList incomingList: incomingLists) {
+        for (long parentNid: parentNids) {
+            MutableList<LongIdList> listsWithAddedParent = Lists.mutable.ofInitialCapacity(incomingLists.size());
+            for (LongIdList incomingList: incomingLists) {
                 listsWithAddedParent.add(incomingList.with(parentNid));
             }
             listsForReturn.addAll(findPathsToRoot(parentNid, listsWithAddedParent.toImmutableList()).castToList());
@@ -112,7 +115,7 @@ public class ShowConceptInGraphTask extends TrackingCallable<Void> {
         return listsForReturn.toImmutableList();
     }
 
-    private record PathToRootWithScore(IntIdList pathToRoot, int score) implements Comparable<PathToRootWithScore> {
+    private record PathToRootWithScore(LongIdList pathToRoot, int score) implements Comparable<PathToRootWithScore> {
 
         @Override
         public int compareTo(PathToRootWithScore o) {

@@ -49,7 +49,7 @@ public class ObservableStampPathNoOverride
 
    //~--- constructors --------------------------------------------------------
 
-    private ObservableStampPathNoOverride(int pathConceptNid,
+    private ObservableStampPathNoOverride(long pathConceptNid,
                                           ImmutableSet<StampPositionRecord> origins) {
         this(StampPathImmutable.make(pathConceptNid, origins));
     }

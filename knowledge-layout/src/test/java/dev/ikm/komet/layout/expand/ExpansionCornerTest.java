@@ -1,15 +1,18 @@
 package dev.ikm.komet.layout.expand;
 
 import dev.ikm.tinkar.common.bind.EnumConceptBinding;
+import dev.ikm.tinkar.common.id.PublicId;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
+import java.util.TreeSet;
 import java.util.UUID;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -29,11 +32,10 @@ class ExpansionCornerTest {
 
     @Test
     void identitiesAreDistinct() {
-        Set<UUID> seen = new HashSet<>();
-        for (ExpansionCorner corner : ExpansionCorner.values()) {
-            assertTrue(seen.add(corner.publicId().asUuidArray()[0]), "duplicate identity for " + corner);
-        }
-        assertEquals(4, seen.size(), "all corner identities present and distinct");
+        List<ExpansionCorner> corners = List.of(ExpansionCorner.values());
+        assertNoneShareAUuid(corners, ExpansionCorner::publicId);
+        assertEquals(4, new TreeSet<>(corners.stream().map(ExpansionCorner::publicId).toList()).size(),
+                "all corner identities present and distinct");
     }
 
     @Test
@@ -80,7 +82,17 @@ class ExpansionCornerTest {
     }
 
     private static void assertId(EnumConceptBinding concept, String expectedUuid) {
-        assertEquals(UUID.fromString(expectedUuid), concept.publicId().asUuidArray()[0],
+        assertTrue(concept.publicId().contains(UUID.fromString(expectedUuid)),
                 "FROZEN identity forked for " + concept);
+    }
+
+    /** No two of the identities share a UUID: public ids that share any UUID are the same component. */
+    private static <T> void assertNoneShareAUuid(List<T> components, Function<T, PublicId> publicId) {
+        for (int i = 0; i < components.size(); i++) {
+            for (int j = i + 1; j < components.size(); j++) {
+                assertFalse(PublicId.equals(publicId.apply(components.get(i)), publicId.apply(components.get(j))),
+                        "shared identity: " + components.get(i) + " and " + components.get(j));
+            }
+        }
     }
 }

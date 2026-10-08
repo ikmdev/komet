@@ -1,0 +1,153 @@
+/*
+ * Copyright © 2015 Integrated Knowledge Management (support@ikm.dev)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package dev.ikm.komet.framework;
+
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/**
+ * No hash collection in Komet's main code is keyed by a public id. Public ids are equal when
+ * they share any UUID, and {@code PublicId.hashCode} is, by design, not consistent with that: equal
+ * public ids may hash apart. Within a store, key by nid; a sorted collection ({@code TreeSet},
+ * {@code TreeMap}) is fine when "the same UUIDs" is the question. See {@code PublicId}'s javadoc.
+ * <p>
+ * The check reads the source: a hash collection's key type is erased from a method's bytecode.
+ * A deliberate exception is marked on its line: {@code // public-id-hash-key: <reason>}.
+ */
+class PublicIdHashKeyGuardTest {
+    // The same check as tinkar-core's (dev.ikm.tinkar.integration.integrity), over this repository.
+
+
+    /** A hashed set, map or cache whose element or key type is a public id. */
+    static final Pattern HASHED_BY_PUBLIC_ID = Pattern.compile(
+            "\\b(Set|HashSet|LinkedHashSet|Map|HashMap|LinkedHashMap|ConcurrentMap|ConcurrentHashMap"
+                    + "|MutableSet|ImmutableSet|MutableMap|ImmutableMap|UnifiedSet|UnifiedMap"
+                    + "|Cache|LoadingCache|AsyncCache)\\s*<\\s*(\\?\\s+extends\\s+)?PublicId\\b");
+    static final String EXCEPTION_MARK = "public-id-hash-key:";
+
+    @Test
+    void noHashCollectionIsKeyedByAPublicId() throws IOException {
+        Path repository = repositoryRoot();
+        List<String> found = new ArrayList<>();
+        int scanned = 0;
+        for (Path file : mainSources(repository)) {
+            scanned++;
+            List<String> lines = Files.readAllLines(file);
+            for (int i = 0; i < lines.size(); i++) {
+                String line = lines.get(i);
+                String trimmed = line.strip();
+                if (trimmed.startsWith("*") || trimmed.startsWith("//") || line.contains(EXCEPTION_MARK)) {
+                    continue;
+                }
+                if (HASHED_BY_PUBLIC_ID.matcher(line).find()) {
+                    found.add(repository.relativize(file) + ":" + (i + 1) + ": " + trimmed);
+                }
+            }
+        }
+        assertTrue(scanned > 100, "the main sources were found under " + repository);
+        assertEquals(List.of(), found, "hash collections keyed by a public id; key by nid, or mark a"
+                + " deliberate exception with // " + EXCEPTION_MARK + " <reason>");
+    }
+
+    /**
+     * A public id's first UUID taken as if it meant something: a shared UUID proves identity, the
+     * first or any other, but a differing first UUID proves nothing, so neither a key nor an
+     * identity check may rest on one. Derive from {@code leastUuid()}, compare with
+     * {@code PublicId.equals}, show {@code idString()}. A deliberate exception is marked on its
+     * line: {@code // first-uuid: <reason>}.
+     */
+    static final Pattern FIRST_UUID = Pattern.compile(
+            "asUuidArray\\(\\)\\s*\\[\\s*0\\s*\\]|asUuidList\\(\\)\\s*\\.\\s*(get\\(\\s*0\\s*\\)|getFirst\\(\\))"
+                    + "|getUuids\\(\\s*0\\s*\\)|getUuidsList\\(\\)\\s*\\.\\s*get\\(\\s*0\\s*\\)");
+    static final String FIRST_UUID_MARK = "first-uuid:";
+
+    @Test
+    void noFirstUuidIsTakenAsAnIdentity() throws IOException {
+        Path repository = repositoryRoot();
+        List<String> found = new ArrayList<>();
+        for (Path file : mainSources(repository)) {
+            List<String> lines = Files.readAllLines(file);
+            for (int i = 0; i < lines.size(); i++) {
+                String line = lines.get(i);
+                String trimmed = line.strip();
+                if (trimmed.startsWith("*") || trimmed.startsWith("//") || line.contains(FIRST_UUID_MARK)) {
+                    continue;
+                }
+                if (FIRST_UUID.matcher(line).find()) {
+                    found.add(repository.relativize(file) + ":" + (i + 1) + ": " + trimmed);
+                }
+            }
+        }
+        assertEquals(List.of(), found, "first UUIDs taken as an identity; use leastUuid(), PublicId.equals or"
+                + " idString(), or mark a deliberate exception with // " + FIRST_UUID_MARK + " <reason>");
+    }
+
+    /**
+     * The main Java sources under the repository, found without entering build output or
+     * {@code .git}: tests running beside this one write and delete files under
+     * {@code target}, and a walk that entered it could meet a file that has just gone.
+     */
+    static List<Path> mainSources(Path repository) throws IOException {
+        List<Path> sources = new ArrayList<>();
+        Files.walkFileTree(repository, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path directory, BasicFileAttributes attributes) {
+                String name = directory.getFileName() == null ? "" : directory.getFileName().toString();
+                return name.equals("target") || name.equals(".git") ? FileVisitResult.SKIP_SUBTREE
+                        : FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) {
+                if (isMainSource(file)) {
+                    sources.add(file);
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        });
+        return sources;
+    }
+
+    static boolean isMainSource(Path file) {
+        String path = file.toString().replace('\\', '/');
+        return path.endsWith(".java") && path.contains("/src/main/java/") && !path.contains("/target/");
+    }
+
+    /** The repository root: the nearest ancestor of the working directory holding a {@code .git}. */
+    static Path repositoryRoot() {
+        Path directory = Path.of(System.getProperty("user.dir")).toAbsolutePath();
+        while (directory != null && !Files.exists(directory.resolve(".git"))) {
+            directory = directory.getParent();
+        }
+        if (directory == null) {
+            throw new UncheckedIOException(new IOException("No repository root above " + System.getProperty("user.dir")));
+        }
+        return directory;
+    }
+}

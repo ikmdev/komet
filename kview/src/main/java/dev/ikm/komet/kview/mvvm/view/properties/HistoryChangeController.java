@@ -106,7 +106,7 @@ public class HistoryChangeController implements BasicController {
                 .isPresent();
     }
 
-    private TreeMap<String, TreeSet<Integer>> pathMap = new TreeMap<>();
+    private TreeMap<String, TreeSet<Long>> pathMap = new TreeMap<>();
     public void updateModel(final ViewProperties viewProperties, final EntityFacade entityFacade) {
         this.viewProperties = viewProperties;
         this.entityFacade = entityFacade;
@@ -136,7 +136,7 @@ public class HistoryChangeController implements BasicController {
         });
 
     }
-    private void buildPathModuleSet(int entityNid) {
+    private void buildPathModuleSet(long entityNid) {
         ViewCalculator viewCalculator = getViewProperties().calculator();
         ChangeChronology changeChronology = viewCalculator.changeChronology(entityNid);
         for(VersionChangeRecord versionChangeRecord:changeChronology.changeRecords()) {
@@ -145,11 +145,11 @@ public class HistoryChangeController implements BasicController {
             if (!pathMap.containsKey(pathName)) {
                 pathMap.put(pathName, new TreeSet<>());
             }
-            int moduleNid = stampForChange.moduleNid();
+            long moduleNid = stampForChange.moduleNid();
             pathMap.get(pathName).add(moduleNid);
         }
     }
-    private List<Integer> getModuleNids(String pathName){
+    private List<Long> getModuleNids(String pathName){
         return pathMap.get(pathName).stream().toList();
     }
     public void highlightListItemByChangeCoordinate(ChangeCoordinate changeCoordinate) {
@@ -201,8 +201,8 @@ public class HistoryChangeController implements BasicController {
         // 3. Color left side of list item.
         // 4. Generate module ids, names and paths to populate filter dialog
 
-        final int entityNid = getEntityFacade().nid();
-        Map<VersionChangeRecord, Integer> versionToNidMap = new HashMap<>();
+        final long entityNid = getEntityFacade().nid();
+        Map<VersionChangeRecord, Long> versionToNidMap = new HashMap<>();
         // User selects All or Concepts display
         if (isFilterSelected("All", "Concept")) {
             // Populate concept versions
@@ -270,7 +270,7 @@ public class HistoryChangeController implements BasicController {
         return sortedRecords;
     }
 
-    public List<Pane> generateRows(final ViewProperties viewProperties, int entityNid, List<VersionChangeRecord> versionChangeRecords) {
+    public List<Pane> generateRows(final ViewProperties viewProperties, long entityNid, List<VersionChangeRecord> versionChangeRecords) {
         List<Pane> paneList = new ArrayList<>();
         for (VersionChangeRecord changeRecord:versionChangeRecords) {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(DESCRIPTION_LIST_ITEM_FXML_FILE));
@@ -308,7 +308,7 @@ public class HistoryChangeController implements BasicController {
         return paneList;
     }
 
-    public List<Pane> generateRows(final ViewProperties viewProperties, List<VersionChangeRecord> versionChangeRecords, Map<VersionChangeRecord, Integer> versionToNidMap) {
+    public List<Pane> generateRows(final ViewProperties viewProperties, List<VersionChangeRecord> versionChangeRecords, Map<VersionChangeRecord, Long> versionToNidMap) {
         List<Pane> paneList = new ArrayList<>();
         for (VersionChangeRecord changeRecord : versionChangeRecords) {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(DESCRIPTION_LIST_ITEM_FXML_FILE));

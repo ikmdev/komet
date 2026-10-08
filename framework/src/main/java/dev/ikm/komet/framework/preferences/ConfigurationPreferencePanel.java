@@ -15,13 +15,13 @@
  */
 package dev.ikm.komet.framework.preferences;
 
+import dev.ikm.komet.terms.KometSettingTerm;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import dev.ikm.komet.framework.propsheet.SheetItem;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.terms.TinkarTerm;
 
 import java.util.prefs.BackingStoreException;
 
@@ -33,10 +33,8 @@ import static dev.ikm.komet.framework.preferences.PreferenceGroup.Keys.GROUP_NAM
 public class ConfigurationPreferencePanel extends AbstractPreferences implements ConfigurationPreference {
 
     private final SimpleStringProperty nameProperty
-            = new SimpleStringProperty(this, TinkarTerm.CONFIGURATION_NAME.toXmlFragment());
-    private final BooleanProperty enableEdit = new SimpleBooleanProperty(this, TinkarTerm.ENABLE_EDITING.toXmlFragment());
-    private final SimpleStringProperty datastoreLocationProperty
-            = new SimpleStringProperty(this, TinkarTerm.DATASTORE_LOCATION.toXmlFragment());
+            = new SimpleStringProperty(this, KometSettingTerm.CONFIGURATION_NAME.toXmlFragment());
+    private final BooleanProperty enableEdit = new SimpleBooleanProperty(this, KometSettingTerm.ENABLE_EDITING.toXmlFragment());
 
     public ConfigurationPreferencePanel(KometPreferences preferencesNode, ViewProperties viewProperties,
                                         KometPreferencesController kpc) {

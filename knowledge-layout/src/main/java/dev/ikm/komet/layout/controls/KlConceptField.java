@@ -27,7 +27,7 @@ import javafx.scene.control.Skin;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.function.Consumer;
 
 /**
@@ -65,7 +65,7 @@ public class KlConceptField extends Control {
          * @param label the presentation label (the badge resolves its own name from the view; this
          *              is carried for the host); never null
          */
-        record Concept(int nid, String label) implements Value {
+        record Concept(long nid, String label) implements Value {
             /**
              * Validates the value.
              *
@@ -94,7 +94,7 @@ public class KlConceptField extends Control {
          * @param nid   the concept nid
          * @param label the presentation label
          */
-        record Result(int nid, String label) {
+        record Result(long nid, String label) {
         }
 
         /**
@@ -155,10 +155,10 @@ public class KlConceptField extends Control {
     /**
      * The concept nid currently shown, or empty.
      *
-     * @return the nid, or {@link OptionalInt#empty()} when empty
+     * @return the nid, or {@link OptionalLong#empty()} when empty
      */
-    public final OptionalInt conceptNid() {
-        return (value.get() instanceof Value.Concept concept) ? OptionalInt.of(concept.nid()) : OptionalInt.empty();
+    public final OptionalLong conceptNid() {
+        return (value.get() instanceof Value.Concept concept) ? OptionalLong.of(concept.nid()) : OptionalLong.empty();
     }
 
     // ── injected backend + presentation ──────────────────────────────────────────
@@ -257,7 +257,7 @@ public class KlConceptField extends Control {
      * @param nid   the chosen concept nid
      * @param label the presentation label
      */
-    public final void commitConcept(int nid, String label) {
+    public final void commitConcept(long nid, String label) {
         Value.Concept concept = new Value.Concept(nid, label == null ? "" : label);
         value.set(concept);
         Consumer<Value.Concept> callback = onSelected.get();

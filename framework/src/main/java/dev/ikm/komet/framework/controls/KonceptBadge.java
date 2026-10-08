@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 package dev.ikm.komet.framework.controls;
-import network.ike.docs.konceptcore.KonceptAppearance;
+
+import dev.ikm.tinkar.common.id.Nid;import network.ike.docs.konceptcore.KonceptAppearance;
 import network.ike.docs.konceptcore.KonceptKind;
 
 import dev.ikm.komet.framework.Identicon;
@@ -28,8 +29,8 @@ import dev.ikm.komet.framework.graphics.KonceptGlyphFonts;
 import dev.ikm.komet.framework.graphics.SmallCapsFonts;
 import dev.ikm.komet.framework.settings.KonceptGlyphSettings;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.id.IntIdList;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIdList;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
@@ -39,7 +40,7 @@ import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.beans.value.ObservableValue;
 import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
@@ -197,7 +198,7 @@ public class KonceptBadge extends HBox {
     }
 
     /** Sentinel nid for a presentation-only badge built without a populated store/view. */
-    private static final int UNKNOWN_NID = Integer.MIN_VALUE;
+    private static final long UNKNOWN_NID = Integer.MIN_VALUE;
 
     /**
      * Width cap (px) of the expanded multi-line rendering used by the identity tooltip and the
@@ -206,7 +207,7 @@ public class KonceptBadge extends HBox {
      */
     private static final double EXPANDED_MAX_WIDTH = 340;
 
-    private final int nid;
+    private final long nid;
     private final PublicId publicId;
     private final ViewProperties viewProperties;
     private boolean inactive;
@@ -288,7 +289,7 @@ public class KonceptBadge extends HBox {
      * @param entityNid      the component nid
      * @param viewProperties the view used to resolve the name, latest state and classification
      */
-    public KonceptBadge(int entityNid, ViewProperties viewProperties) {
+    public KonceptBadge(long entityNid, ViewProperties viewProperties) {
         this(entityNid, PrimitiveData.publicId(entityNid), null, viewProperties, true);
     }
 
@@ -300,7 +301,7 @@ public class KonceptBadge extends HBox {
      * @param viewProperties the view used to resolve the name, latest state and classification
      * @param showStatus     {@code true} to compute and show the taxonomic status glyph
      */
-    public KonceptBadge(int entityNid, ViewProperties viewProperties, boolean showStatus) {
+    public KonceptBadge(long entityNid, ViewProperties viewProperties, boolean showStatus) {
         this(entityNid, PrimitiveData.publicId(entityNid), null, viewProperties, showStatus);
     }
 
@@ -328,7 +329,7 @@ public class KonceptBadge extends HBox {
      * @param publicId the component identifier driving the identicon and tooltip
      * @param name     the concept name to display (not truncated); may be {@code null}
      */
-    public KonceptBadge(int nid, PublicId publicId, String name) {
+    public KonceptBadge(long nid, PublicId publicId, String name) {
         this(nid, publicId, name, null, false);
     }
 
@@ -346,11 +347,11 @@ public class KonceptBadge extends HBox {
      * @param publicId       the component identifier driving the identicon and tooltip
      * @param viewProperties the view used to resolve the name, status, kind, state, and the popout
      */
-    public KonceptBadge(int nid, PublicId publicId, ViewProperties viewProperties) {
+    public KonceptBadge(long nid, PublicId publicId, ViewProperties viewProperties) {
         this(nid, publicId, null, viewProperties, true);
     }
 
-    private KonceptBadge(int nid, PublicId publicId, String explicitName, ViewProperties viewProperties,
+    private KonceptBadge(long nid, PublicId publicId, String explicitName, ViewProperties viewProperties,
                          boolean showStatus) {
         this.nid = nid;
         this.publicId = publicId;
@@ -395,16 +396,16 @@ public class KonceptBadge extends HBox {
         showKindSigil.subscribe(shown -> applySigilVisibility());
         showDefinitionStatus.subscribe(shown -> setStatus(status));
         showMultipleParents.subscribe(shown -> setStatus(status));
-        setStatus(showStatus && viewProperties != null && nid != UNKNOWN_NID
+        setStatus(showStatus && viewProperties != null && !Nid.isNone(nid)
                 ? computeStatus(nid, viewProperties, premiseType)
                 : KonceptStatus.NONE);
         // Be honest about the component kind: a concept stays bare, every other kind gets its sigil
         // (a presentation-only badge, with no view to verify, stays the bare concept default).
-        setKind(viewProperties != null && nid != UNKNOWN_NID
+        setKind(viewProperties != null && !Nid.isNone(nid)
                 ? KonceptKindResolver.resolve(nid, viewProperties.calculator())
                 : KonceptKind.CONCEPT);
         // A stamp shows its compact provenance (status · date-time · author) rather than a name.
-        if (kind.isStamp() && viewProperties != null && nid != UNKNOWN_NID) {
+        if (kind.isStamp() && viewProperties != null && !Nid.isNone(nid)) {
             setConceptName(StampText.compact(nid, viewProperties.calculator()));
         }
         // The definition popout (ike-issues#941) is installed by the setKind call above: every
@@ -415,7 +416,7 @@ public class KonceptBadge extends HBox {
 
         pseudoClassStateChanged(INACTIVE, inactive);
 
-        if (nid != UNKNOWN_NID) {
+        if (!Nid.isNone(nid)) {
             // A grabbable chip shows the hand, not whatever the host shows — in a RichTextArea
             // that is the text I-beam, which misreads the badge as text. JavaFX resolves the
             // cursor from the innermost node that sets one, so this wins over any ancestor.
@@ -483,14 +484,16 @@ public class KonceptBadge extends HBox {
     /**
      * The badge's canonical id-bearing {@code k:} interchange token
      * ({@code k:uuid=<id>[Name]}, ike-issues#735) — the paste-everywhere form; the bare name
-     * when the badge has no identifier.
+     * when the badge has no identifier. The token carries one UUID, the least of the public
+     * id's ({@link PublicId#leastUuid()}): any of them resolves the concept, and the least
+     * keeps the token independent of the order the UUIDs are listed in.
      */
     private String interchangeToken() {
         String name = conceptName == null ? "" : conceptName;
-        if (publicId == null || publicId.asUuidArray().length == 0) {
+        if (publicId == null || publicId.uuidCount() == 0) {
             return name;
         }
-        return "k:uuid=" + publicId.asUuidArray()[0] + "[" + name + "]";
+        return "k:uuid=" + publicId.leastUuid() + "[" + name + "]";
     }
 
     /** Puts {@code value} on the system clipboard as plain text. */
@@ -752,8 +755,8 @@ public class KonceptBadge extends HBox {
      * @param kind           the component kind
      * @return {@code true} when the popout affordance applies
      */
-    static boolean popoutApplicable(int nid, ViewProperties viewProperties, KonceptKind kind) {
-        return nid != UNKNOWN_NID && viewProperties != null && kind == KonceptKind.CONCEPT;
+    static boolean popoutApplicable(long nid, ViewProperties viewProperties, KonceptKind kind) {
+        return !Nid.isNone(nid) && viewProperties != null && kind == KonceptKind.CONCEPT;
     }
 
     /**
@@ -845,7 +848,7 @@ public class KonceptBadge extends HBox {
      */
     public void setPremiseType(PremiseType premiseType) {
         this.premiseType = premiseType;
-        if (viewProperties != null && nid != UNKNOWN_NID && status != KonceptStatus.NONE) {
+        if (viewProperties != null && !Nid.isNone(nid) && status != KonceptStatus.NONE) {
             setStatus(computeStatus(nid, viewProperties, premiseType));
         }
     }
@@ -1076,13 +1079,13 @@ public class KonceptBadge extends HBox {
      */
     public KonceptBadge expandedRendering(double maxWidthPx) {
         KonceptBadge expanded;
-        if (viewProperties != null && nid != UNKNOWN_NID) {
+        if (viewProperties != null && !Nid.isNone(nid)) {
             expanded = new KonceptBadge(nid, publicId, viewProperties);
             if (expanded.premiseType != premiseType) {
                 expanded.setPremiseType(premiseType);
             }
         } else {
-            expanded = (nid != UNKNOWN_NID)
+            expanded = (!Nid.isNone(nid))
                     ? new KonceptBadge(nid, publicId, conceptName)
                     : new KonceptBadge(publicId, conceptName);
             expanded.setKind(kind);
@@ -1337,7 +1340,7 @@ public class KonceptBadge extends HBox {
         if (publicId != null) {
             tip.append("\nUUID: ").append(publicId.idString());
         }
-        if (nid != UNKNOWN_NID) {
+        if (!Nid.isNone(nid)) {
             tip.append("\nnid: ").append(nid);
         }
         return tip.toString().strip();
@@ -1354,17 +1357,17 @@ public class KonceptBadge extends HBox {
         return identicon.getBoundsInParent().getMaxX();
     }
 
-    private static String resolveName(int nid, ViewProperties viewProperties) {
-        if (viewProperties == null || nid == UNKNOWN_NID) {
-            return Integer.toString(nid);
+    private static String resolveName(long nid, ViewProperties viewProperties) {
+        if (viewProperties == null || Nid.isNone(nid)) {
+            return Long.toString(nid);
         }
         // Respect the view's language coordinate (which prioritises the regular/preferred name over
         // the fully qualified name); do not force the FQN.
         return viewProperties.calculator().getDescriptionTextOrNid(nid);
     }
 
-    private static boolean computeInactive(int nid, ViewProperties viewProperties) {
-        if (viewProperties == null || nid == UNKNOWN_NID) {
+    private static boolean computeInactive(long nid, ViewProperties viewProperties) {
+        if (viewProperties == null || Nid.isNone(nid)) {
             return false;
         }
         try {
@@ -1392,7 +1395,7 @@ public class KonceptBadge extends HBox {
      * @return the classification, or {@link KonceptStatus#NONE} when the concept has no resolvable
      *         logical definition
      */
-    public static KonceptStatus computeStatus(int nid, ViewProperties viewProperties, PremiseType premiseType) {
+    public static KonceptStatus computeStatus(long nid, ViewProperties viewProperties, PremiseType premiseType) {
         return computeStatus(nid, viewProperties.calculator(), premiseType);
     }
 
@@ -1408,16 +1411,16 @@ public class KonceptBadge extends HBox {
      * @return the classification, or {@link KonceptStatus#NONE} when the concept has no resolvable
      *         logical definition
      */
-    public static KonceptStatus computeStatus(int nid, ViewCalculator calculator, PremiseType premiseType) {
-        if (nid == UNKNOWN_NID || nid == -1 || nid == TinkarTerm.UNINITIALIZED_COMPONENT.nid()) {
+    public static KonceptStatus computeStatus(long nid, ViewCalculator calculator, PremiseType premiseType) {
+        if (Nid.isNone(nid) || nid == -1 || nid == KernelTerm.UNINITIALIZED_COMPONENT.nid()) {
             return KonceptStatus.NONE;
         }
-        IntIdList parents;
+        LongIdList parents;
         try {
             parents = calculator.navigationCalculator().parentsOf(nid);
         } catch (RuntimeException ex) {
             LOG.warn("Could not resolve parents for nid {}", nid, ex);
-            parents = IntIds.list.empty();
+            parents = LongIds.list.empty();
         }
         Latest<DiTreeEntity> definition = calculator.getAxiomTreeForEntity(nid, premiseType);
         if (!definition.isPresent()) {
@@ -1430,7 +1433,7 @@ public class KonceptBadge extends HBox {
             return KonceptStatus.ROOT;
         }
         boolean multiParent = parents.size() > 1;
-        boolean sufficient = definition.get().containsVertexWithMeaning(TinkarTerm.SUFFICIENT_SET);
+        boolean sufficient = definition.get().containsVertexWithMeaning(KernelTerm.SUFFICIENT_SET);
         if (sufficient) {
             return multiParent ? KonceptStatus.DEFINED_MULTIPARENT : KonceptStatus.DEFINED;
         }

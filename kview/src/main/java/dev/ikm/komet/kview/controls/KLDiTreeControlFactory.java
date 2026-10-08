@@ -9,7 +9,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityHandle;
 import javafx.scene.image.Image;
 
-import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.UUID;
 
 /**
@@ -60,9 +60,9 @@ public final class KLDiTreeControlFactory {
      * @param uuid the seed concept's UUID
      * @return the nid, if the concept exists
      */
-    private static OptionalInt seedNid(UUID uuid) {
+    private static OptionalLong seedNid(UUID uuid) {
         return PrimitiveData.get().hasUuid(uuid)
-                ? OptionalInt.of(PrimitiveData.nid(uuid))
-                : OptionalInt.empty();
+                ? OptionalLong.of(PrimitiveData.nid(uuid))
+                : OptionalLong.empty();
     }
 }

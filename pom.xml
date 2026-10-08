@@ -5,7 +5,7 @@
  <parent>
         <groupId>network.ike.platform</groupId>
         <artifactId>ike-parent</artifactId>
-        <version>191</version>
+        <version>196</version>
         <relativePath/>
     </parent>
     <groupId>dev.ikm.komet</groupId>
@@ -77,7 +77,8 @@
         <jpackage.version>1.7.3</jpackage.version>
         <maven.github-flow.version>1.21.1-r11</maven.github-flow.version>
         <javafx-maven-plugin.version>0.0.8</javafx-maven-plugin.version>
-        <tinkar-starter-data.version>1.1.2</tinkar-starter-data.version>
+        <!-- The IKE starter set the tests load, from starter-data-ws, which builds after this repository. -->
+        <ike-starter-set.version>1-SNAPSHOT</ike-starter-set.version>
 
         <!-- TestFX / Monocle -->
         <commonTestFXArgs>
@@ -92,6 +93,12 @@
             --add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=dev.ikm.komet.navigator
         </commonTestFXArgs>
         <java.version>27</java.version>
+        <!-- The nid build check (tinkar-core nid-check, IKE-Network/ike-issues#1244): how it
+             reports (error, or warning for a census), which classes may narrow a nid, and
+             javac's cap on warnings, high enough that no warning is dropped. -->
+        <nid-check.report>error</nid-check.report>
+        <nid-check.allow></nid-check.allow>
+        <javac.maxwarns>10000</javac.maxwarns>
     </properties>
 
     <dependencyManagement>
@@ -116,16 +123,19 @@
             <artifactId>log4j-slf4j2-impl</artifactId>
             <scope>test</scope>
         </dependency>
-        <!--- Bind To SLF4J Dependencies (Start) -->
+        <!--- Bind To SLF4J Dependencies (Start). Runtime scope: the bridges catch other
+             libraries' log4j and commons-logging calls; nothing here compiles against them. -->
         <!-- Binding log4j to slf4j -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>log4j-over-slf4j</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <!-- Binding tools-logging to slf4j -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <!-- Bind To SLF4J Dependencies (End) -->
         <dependency>
@@ -141,6 +151,17 @@
         <dependency>
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>common-java5</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- The shared test logging configuration (log4j2-test.xml); a library ships none of its own. log4j-jul routes java.util.logging (Lucene, JavaFX) into Log4j in the test JVMs. -->
+        <dependency>
+            <groupId>dev.ikm.tinkar</groupId>
+            <artifactId>test-logging</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-jul</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -223,9 +244,17 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
+                        <!-- Lucene 10.5.1 turns its Vector API code on only up to Java 26 and warns on 27.
+                             The property raises that limit; the full suite passes with it. Drop it when
+                             a Lucene release supports Java 27. -->
                         <argLine>
+                            @{argLine}
                             --enable-preview
+                            --enable-native-access=ALL-UNNAMED
+                            --sun-misc-unsafe-memory-access=allow
+                            -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager
                             --add-modules jdk.incubator.vector
+                            -Dorg.apache.lucene.vectorization.upperJavaFeatureVersion=27
                         </argLine>
                     </configuration>
                 </plugin>
@@ -237,6 +266,32 @@
                         <!-- @SuppressWarnings is ineffective because Checkstyle fails during parsing, before annotations are processed -->
                         <excludes>**/ViewContext.java,**/DefaultKl*Field.java,**/KlReadOnly*Field.java,**/KlEditable*Field.java</excludes>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                        <!-- Shared by every module's analyze execution (same id).
+                             These dependencies never appear in bytecode: the
+                             logging binding and the LogManager are chosen by
+                             name, test-logging holds only a configuration file,
+                             and the JUnit and surefire artifacts are launcher
+                             infrastructure. ike-parent ignores its own provided
+                             zips itself (IKE-Network/ike-issues#1193). -->
+                        <execution>
+                            <id>analyze</id>
+                            <configuration>
+                                <ignoredUnusedDeclaredDependencies>
+                                    <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-slf4j2-impl</ignoredUnusedDeclaredDependency>
+                                    <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-jul</ignoredUnusedDeclaredDependency>
+                                    <ignoredUnusedDeclaredDependency>dev.ikm.tinkar:test-logging</ignoredUnusedDeclaredDependency>
+                                    <ignoredUnusedDeclaredDependency>org.junit.jupiter:junit-jupiter</ignoredUnusedDeclaredDependency>
+                                    <ignoredUnusedDeclaredDependency>org.junit.platform:junit-platform-console</ignoredUnusedDeclaredDependency>
+                                    <ignoredUnusedDeclaredDependency>org.apache.maven.surefire:common-java5</ignoredUnusedDeclaredDependency>
+                                </ignoredUnusedDeclaredDependencies>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -255,6 +310,21 @@
                         <annotationProcessor>io.soabase.recordbuilder.processor.RecordBuilderProcessor
                         </annotationProcessor>
                     </annotationProcessors>
+                    <!-- The nid build check (tinkar-core nid-check, IKE-Network/ike-issues#1244). -->
+                    <compilerArgs combine.children="append">
+                        <arg>-Xplugin:NidCheck report=${nid-check.report} allow=${nid-check.allow}</arg>
+                        <arg>-Xmaxwarns</arg>
+                        <arg>${javac.maxwarns}</arg>
+                        <arg>-Xmaxerrs</arg>
+                        <arg>10000</arg>
+                    </compilerArgs>
+                    <annotationProcessorPathsUseDepMgmt>true</annotationProcessorPathsUseDepMgmt>
+                    <annotationProcessorPaths combine.children="append">
+                        <path>
+                            <groupId>dev.ikm.tinkar</groupId>
+                            <artifactId>nid-check</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
         </plugins>
@@ -284,9 +354,17 @@
                                     <includes>
                                         <include>**/*ITestFX.java</include>
                                     </includes>
+                                    <!-- Lucene 10.5.1 turns its Vector API code on only up to Java 26 and warns on 27.
+                                         The property raises that limit; the full suite passes with it. Drop it when
+                                         a Lucene release supports Java 27. -->
                                     <argLine>
+                                        @{failsafeArgLine}
                                         --enable-preview
+                                        --enable-native-access=ALL-UNNAMED
+                                        --sun-misc-unsafe-memory-access=allow
+                                        -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager
                                         --add-modules jdk.incubator.vector
+                                        -Dorg.apache.lucene.vectorization.upperJavaFeatureVersion=27
                                         ${commonTestFXArgs}
                                     </argLine>
                                     <forkCount>1</forkCount>
@@ -331,9 +409,17 @@
                                     <includes>
                                         <include>**/*UTestFX.java</include>
                                     </includes>
+                                    <!-- Lucene 10.5.1 turns its Vector API code on only up to Java 26 and warns on 27.
+                                         The property raises that limit; the full suite passes with it. Drop it when
+                                         a Lucene release supports Java 27. -->
                                     <argLine>
+                                        @{argLine}
                                         --enable-preview
+                                        --enable-native-access=ALL-UNNAMED
+                                        --sun-misc-unsafe-memory-access=allow
+                                        -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager
                                         --add-modules jdk.incubator.vector
+                                        -Dorg.apache.lucene.vectorization.upperJavaFeatureVersion=27
                                         ${commonTestFXArgs}
                                     </argLine>
                                 </configuration>

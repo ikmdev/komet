@@ -20,7 +20,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.util.text.DescriptionToToken;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.Field;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -28,7 +28,7 @@ import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,17 +96,17 @@ public class DocBook {
         return builder.toString();
     }
 
-    public static boolean isDefined(int conceptNid, ViewProperties viewProperties) {
+    public static boolean isDefined(long conceptNid, ViewProperties viewProperties) {
         return viewProperties.calculator().isDefined(conceptNid);
     }
 
-    public static boolean isMultiparent(int conceptNid, ViewProperties viewProperties) {
+    public static boolean isMultiparent(long conceptNid, ViewProperties viewProperties) {
         return viewProperties.calculator().isMultiparent(conceptNid);
     }
 
-    public static String getGlossentry(int entityNid,
+    public static String getGlossentry(long entityNid,
                                        ViewProperties viewProperties, String svgString) {
-        return getGlossentry(Entity.getFast(entityNid), viewProperties, svgString);
+        return getGlossentry(EntityHandle.get(entityNid).expectEntity(), viewProperties, svgString);
     }
 
     public static String getGlossentry(EntityFacade entity,
@@ -157,16 +157,16 @@ public class DocBook {
 
     private static void addDescriptions(StringBuilder builder, EntityFacade entity, ViewProperties viewProperties) {
         ImmutableList<SemanticEntity> descriptions = viewProperties.calculator().getDescriptionsForComponent(entity);
-        HashMap<Integer, SemanticEntityVersion> nidDescriptionVersionMap = new HashMap<>();
+        HashMap<Long, SemanticEntityVersion> nidDescriptionVersionMap = new HashMap<>();
         for (SemanticEntity descriptionChronology : descriptions) {
             Latest<SemanticEntityVersion> latestDescriptionVersion = viewProperties.calculator().latest(descriptionChronology);
             if (latestDescriptionVersion.isPresent()) {
                 SemanticEntityVersion descriptionVersion = latestDescriptionVersion.get();
-                Latest<Field<ConceptFacade>> descriptionType = viewProperties.calculator().getFieldForSemanticWithMeaning(descriptionVersion.nid(), TinkarTerm.DESCRIPTION_TYPE);
+                Latest<Field<ConceptFacade>> descriptionType = viewProperties.calculator().getFieldForSemanticWithMeaning(descriptionVersion.nid(), KernelTerm.DESCRIPTION_TYPE);
 
                 descriptionType.ifPresent(descriptionTypeField -> {
-                    if (descriptionTypeField.value().nid() == TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE.nid() ||
-                            descriptionTypeField.value().nid() == TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid()) {
+                    if (descriptionTypeField.value().nid() == KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE.nid() ||
+                            descriptionTypeField.value().nid() == KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid()) {
                         nidDescriptionVersionMap.put(descriptionVersion.nid(), descriptionVersion);
                     }
                 });
@@ -176,7 +176,7 @@ public class DocBook {
         Latest<SemanticEntityVersion> latestFQN = viewProperties.calculator().getFullyQualifiedDescription(entity);
         if (latestFQN.isPresent()) {
             //TODO is inefficient to retrieve by NID when we already have the latestFQN...
-            Latest<Field<String>> textField = viewProperties.calculator().getFieldForSemanticWithMeaning(latestFQN.get().nid(), TinkarTerm.TEXT_FOR_DESCRIPTION);
+            Latest<Field<String>> textField = viewProperties.calculator().getFieldForSemanticWithMeaning(latestFQN.get().nid(), KernelTerm.TEXT_FOR_DESCRIPTION);
             addDescriptionText(builder,
                     textField.get().value());
             nidDescriptionVersionMap.remove(latestFQN.get().nid());
@@ -184,12 +184,12 @@ public class DocBook {
         Latest<SemanticEntityVersion> latestPreferredName = viewProperties.calculator().getRegularDescription(entity);
         if (latestPreferredName.isPresent()) {
             //TODO is inefficient to retrieve by NID when we already have the latestFQN...
-            Latest<Field<String>> textField = viewProperties.calculator().getFieldForSemanticWithMeaning(latestFQN.get().nid(), TinkarTerm.TEXT_FOR_DESCRIPTION);
+            Latest<Field<String>> textField = viewProperties.calculator().getFieldForSemanticWithMeaning(latestFQN.get().nid(), KernelTerm.TEXT_FOR_DESCRIPTION);
             addDescriptionText(builder, textField.get().value());
             nidDescriptionVersionMap.remove(latestPreferredName.get().nid());
         }
         for (SemanticEntityVersion name : nidDescriptionVersionMap.values()) {
-            Latest<Field<String>> textField = viewProperties.calculator().getFieldForSemanticWithMeaning(latestFQN.get().nid(), TinkarTerm.TEXT_FOR_DESCRIPTION);
+            Latest<Field<String>> textField = viewProperties.calculator().getFieldForSemanticWithMeaning(latestFQN.get().nid(), KernelTerm.TEXT_FOR_DESCRIPTION);
             addDescriptionText(builder, textField.get().value());
         }
     }

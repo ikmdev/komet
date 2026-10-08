@@ -24,7 +24,7 @@ import dev.ikm.tinkar.common.util.thread.TaskCountManager;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.application.Platform;
 import org.eclipse.collections.api.collection.ImmutableCollection;
@@ -42,7 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class FetchChildren extends TrackingCallable<Void> {
     private static final Logger LOG = LoggerFactory.getLogger(FetchChildren.class);
     private static final AtomicInteger FETCHER_SEQUENCE = new AtomicInteger(1);
-    private static final ConcurrentHashMap<Integer, FetchChildren> FETCHER_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Long, FetchChildren> FETCHER_MAP = new ConcurrentHashMap<>();
 
     private final CountDownLatch childrenLoadedLatch;
     private final MultiParentVertexImpl parentGraphItem;
@@ -92,7 +92,7 @@ public class FetchChildren extends TrackingCallable<Void> {
                     taskCountManager.acquire();
                     TinkExecutor.threadPool().execute(() -> {
                         try {
-                            ConceptEntity childChronology = Entity.getFast(childLink.destinationNid());
+                            ConceptEntity childChronology = EntityHandle.get(childLink.destinationNid()).expectConcept();
                             MultiParentVertexImpl childItem = new MultiParentVertexImpl(childChronology, parentGraphItem.getGraphController(), childLink.typeNids(), null);
                             try {
                                 childItem.setDefined(this.viewCalculator.hasSufficientSet(childChronology));

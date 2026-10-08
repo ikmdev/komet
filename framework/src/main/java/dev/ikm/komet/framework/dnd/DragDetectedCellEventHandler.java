@@ -81,7 +81,7 @@ public class DragDetectedCellEventHandler
         } else if (event.getSource() instanceof TreeCell) {
             eventNode = (Node) event.getSource();
             Object item = ((TreeCell<?>) event.getSource()).getItem();
-            if (item instanceof Integer nid) {
+            if (item instanceof Long nid) {
                 entityHandle = EntityHandle.get(nid);
             } else if (item instanceof EntityFacade entityFacade) {
                 entityHandle = EntityHandle.get(entityFacade);
@@ -138,7 +138,7 @@ public class DragDetectedCellEventHandler
             // kind of a concept, pattern, or stamp follows from the entity type alone. Only the
             // description-vs-plain-semantic distinction needs a view, and it degrades to SEMANTIC.
             if (entityHandle != null && entityHandle.entity().isPresent()) {
-                int nid = entityHandle.expectEntity().nid();
+                long nid = entityHandle.expectEntity().nid();
                 KonceptDragGlyph.setDragView(db, KonceptKindResolver.resolve(nid, null),
                         PrimitiveData.publicId(nid), PrimitiveData.text(nid), false);
             } else {

@@ -525,7 +525,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
          * @param nid the nid of the concept
          * @return a string
          */
-        private String getDescription(int nid) {
+        private String getDescription(long nid) {
             return navigator.getViewCalculator().getDescriptionTextOrNid(nid);
         }
     }

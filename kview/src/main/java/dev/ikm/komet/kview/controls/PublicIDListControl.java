@@ -1,7 +1,7 @@
 package dev.ikm.komet.kview.controls;
 
+import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.kview.controls.skin.PublicIDListControlSkin;
-import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.InvalidationListener;
@@ -43,7 +43,8 @@ public class PublicIDListControl extends Control {
                     .map(UUID::toString)
                     .collect(Collectors.toList());
 
-            idList.addAll(DataModelHelper.getIdsToAppend(viewCalculator, entityFacade.toProxy()));
+            idList.addAll(ObservableEntityHandle.get(entityFacade.nid()).expectEntity()
+                    .getSnapshot(viewCalculator).externalIdentifiers());
 
             // this assumes that the first ID is always the Komet ID
             if (!idList.isEmpty()) {

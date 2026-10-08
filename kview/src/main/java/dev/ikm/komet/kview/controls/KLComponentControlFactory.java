@@ -1,7 +1,7 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.tinkar.common.id.IntIdCollection;
+import dev.ikm.tinkar.common.id.LongIdCollection;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.uuid.UuidUtil;
@@ -77,7 +77,7 @@ public class KLComponentControlFactory {
         return componentComboBoxControl;
     }
 
-    public static <T extends IntIdCollection> KLComponentCollectionControl createComponentListControl(ViewCalculator viewCalculator) {
+    public static <T extends LongIdCollection> KLComponentCollectionControl createComponentListControl(ViewCalculator viewCalculator) {
         KLComponentCollectionControl<T> componentListControl = new KLComponentCollectionControl<>();
         NavigationCalculator navigationCalculator = viewCalculator.navigationCalculator();
 
@@ -96,7 +96,7 @@ public class KLComponentControlFactory {
 
         // dropping multiple concepts
         componentListControl.setOnDroppingMultipleConcepts(publicIds -> {
-            ArrayList<Integer> newNids = new ArrayList<>();
+            ArrayList<Long> newNids = new ArrayList<>();
 
             publicIds.forEach(uuidArrayList -> {
                 for (UUID[] uuidArray : uuidArrayList) {
@@ -104,7 +104,7 @@ public class KLComponentControlFactory {
                 }
             });
 
-            int[] newNidsIntArray = newNids.stream().mapToInt(i -> i).toArray();
+            long[] newNidsIntArray = newNids.stream().mapToLong(i -> i).toArray();
             componentListControl.setValue((T)componentListControl.getValue().with(newNidsIntArray));
         });
 

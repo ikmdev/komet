@@ -8,7 +8,7 @@ import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.kview.controls.KLComponentCollectionControl;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.layout.version.field.KlComponentListField;
-import dev.ikm.tinkar.common.id.IntIdList;
+import dev.ikm.tinkar.common.id.LongIdList;
 
 /**
  * Component list field implementation supporting both read-only and editable patterns.
@@ -19,7 +19,7 @@ import dev.ikm.tinkar.common.id.IntIdList;
  * and do not persist to the database until the parent {@link dev.ikm.komet.framework.observable.ObservableSemanticVersion.Editable}
  * is saved and committed via {@link dev.ikm.komet.framework.observable.ObservableComposer}.
  */
-public class KlEditableComponentListField extends BaseDefaultKlField<IntIdList> implements KlComponentListField {
+public class KlEditableComponentListField extends BaseDefaultKlField<LongIdList> implements KlComponentListField {
 
 
     /**
@@ -32,7 +32,7 @@ public class KlEditableComponentListField extends BaseDefaultKlField<IntIdList> 
      * @param stamp4field the stamp for UI state determination
      */
     public KlEditableComponentListField(
-            Editable<IntIdList> observableFieldEditable,
+            Editable<LongIdList> observableFieldEditable,
             ObservableView observableView,
             ObservableStamp stamp4field) {
 
@@ -54,7 +54,7 @@ public class KlEditableComponentListField extends BaseDefaultKlField<IntIdList> 
      * @param newFieldEditable A new ObservableField.Editable instance.
      */
     @Override
-    public void rebind(ObservableField.Editable<IntIdList> newFieldEditable) {
+    public void rebind(ObservableField.Editable<LongIdList> newFieldEditable) {
         // Obtain UI control
         KLComponentCollectionControl uiControl = (KLComponentCollectionControl) fxObject();
 

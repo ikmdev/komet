@@ -1,16 +1,14 @@
 package dev.ikm.komet.kview.mvvm.model;
 
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.id.IntIdSet;
-import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.id.LongIdSet;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.StampRecord;
-import dev.ikm.tinkar.entity.StampVersionRecord;
+import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.StampEntityVersion;
 import javafx.application.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,9 +61,9 @@ public class ViewCoordinateHelper {
      * @param viewProperties A given view property
      * @return newViewCalculatorWithCache
      */
-    public static ViewCalculatorWithCache createNavigationCalculatorWithPatternNidsLatest(ViewProperties viewProperties, int... patternNids) {
+    public static ViewCalculatorWithCache createNavigationCalculatorWithPatternNidsLatest(ViewProperties viewProperties, long... patternNids) {
         ViewCalculator existingViewCalculator = viewProperties.calculator();
-        IntIdSet intIdSet = existingViewCalculator.navigationCoordinate().navigationPatternNids().with(patternNids);
+        LongIdSet intIdSet = existingViewCalculator.navigationCoordinate().navigationPatternNids().with(patternNids);
         NavigationCoordinateRecord latestNavigationCoordinate = existingViewCalculator.navigationCoordinate().withNavigationPatternNids(intIdSet);
         ViewCoordinateRecord latestViewCoordinate = existingViewCalculator.viewCoordinateRecord().withNavigationCoordinate(latestNavigationCoordinate);
         return new ViewCalculatorWithCache(latestViewCoordinate);
@@ -80,23 +78,20 @@ public class ViewCoordinateHelper {
      */
     public static ViewCalculatorWithCache createViewCalculatorLatestCommittedStamp(ViewProperties viewProperties) {
         ViewCalculator existingViewCalculator = viewProperties.calculator();
-        AtomicReference<StampVersionRecord> stampVersionRecordAtomicReference = new AtomicReference<>();
-        PrimitiveData.get().forEachStampNid(intProc -> {
-            StampRecord stampRecord = Entity.getStamp(intProc);
-            if (stampRecord != null) {
-                // compare who has the latest date
-                Comparator<StampVersionRecord> comparator = Comparator.comparingLong(StampVersionRecord::time);
-                // filter out versions containing Long.MAX_VALUE.
-                Optional<StampVersionRecord> stampVersionRecordOpt = stampRecord.versions().stream().filter(stampVersionRecord1 -> stampVersionRecord1.committed()).max(comparator);
-                if (stampVersionRecordOpt.isPresent()) {
-                    long currentMaxLatest = stampVersionRecordAtomicReference.get() != null ? stampVersionRecordAtomicReference.get().time() : Long.MIN_VALUE;
-                    if (stampVersionRecordOpt.get().time() > currentMaxLatest) {
-                        stampVersionRecordAtomicReference.set(stampVersionRecordOpt.get());
-                    }
+        AtomicReference<StampEntityVersion> stampVersionRecordAtomicReference = new AtomicReference<>();
+        EntityService.get().forEachStampEntity(stampRecord -> {
+            // compare who has the latest date
+            Comparator<StampEntityVersion> comparator = Comparator.comparingLong(StampEntityVersion::time);
+            // filter out versions containing Long.MAX_VALUE.
+            Optional<StampEntityVersion> stampVersionRecordOpt = stampRecord.versions().stream().filter(stampVersionRecord1 -> stampVersionRecord1.committed()).max(comparator);
+            if (stampVersionRecordOpt.isPresent()) {
+                long currentMaxLatest = stampVersionRecordAtomicReference.get() != null ? stampVersionRecordAtomicReference.get().time() : Long.MIN_VALUE;
+                if (stampVersionRecordOpt.get().time() > currentMaxLatest) {
+                    stampVersionRecordAtomicReference.set(stampVersionRecordOpt.get());
                 }
             }
         });
-        StampVersionRecord stampVersionRecord = stampVersionRecordAtomicReference.get();
+        StampEntityVersion stampVersionRecord = stampVersionRecordAtomicReference.get();
         if (stampVersionRecord != null) {
             // get latest stamp in database
             StampCoordinateRecord latestStampCoordinate = existingViewCalculator.vertexStampCalculator().filter().withStampPositionTime(stampVersionRecord.time());

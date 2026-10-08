@@ -7,7 +7,7 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
@@ -63,7 +63,7 @@ public class EditorPatternModel extends EditorGridNodeModel {
 
     private final ViewCalculator viewCalculator;
     private final PatternFacade patternFacade;
-    private final int nid;
+    private final long nid;
     private final ImmutableList<FieldDefinitionRecord> fieldDefinitions;
 
     /**
@@ -91,7 +91,7 @@ public class EditorPatternModel extends EditorGridNodeModel {
      * @param viewCalculator the view calculator
      * @param patternNid the nid of the Pattern
      */
-    public EditorPatternModel(ViewCalculator viewCalculator, int patternNid) {
+    public EditorPatternModel(ViewCalculator viewCalculator, long patternNid) {
         this(viewCalculator, patternNid, UUID.randomUUID().toString());
     }
 
@@ -104,7 +104,7 @@ public class EditorPatternModel extends EditorGridNodeModel {
      * @param id the placement's id
      */
     @SuppressWarnings("removal")
-    private EditorPatternModel(ViewCalculator viewCalculator, int patternNid, String id) {
+    private EditorPatternModel(ViewCalculator viewCalculator, long patternNid, String id) {
         this.id = id;
         this.viewCalculator = viewCalculator;
         this.nid = patternNid;
@@ -116,7 +116,7 @@ public class EditorPatternModel extends EditorGridNodeModel {
         visibleFields.addListener(this::fieldsChanged);
 
         // -- the fields the Pattern is defined with in the database
-        Entity<EntityVersion> entity = EntityService.get().getEntityFast(patternFacade);
+        Entity<EntityVersion> entity = EntityHandle.get(patternFacade).expectPattern();
         Latest<EntityVersion> optionalLatest = viewCalculator.latest(entity);
         fieldDefinitions = optionalLatest.isPresent()
                 ? ((PatternVersionRecord) optionalLatest.get()).fieldDefinitions()
@@ -362,7 +362,7 @@ public class EditorPatternModel extends EditorGridNodeModel {
      * @param viewCalculator the calculator the semantic is displayed under
      * @return whether the semantic should be displayed
      */
-    public boolean displaysSemantic(int semanticNid, ViewCalculator viewCalculator) {
+    public boolean displaysSemantic(long semanticNid, ViewCalculator viewCalculator) {
         if (semanticFilters.isEmpty()) {
             return true;
         }
@@ -475,7 +475,7 @@ public class EditorPatternModel extends EditorGridNodeModel {
     /**
      * The Pattern's nid.
      */
-    public int getNid() { return nid; }
+    public long getNid() { return nid; }
 
     // -- pattern facade
     /**

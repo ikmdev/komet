@@ -18,16 +18,16 @@ package dev.ikm.komet.kview.klwindows.genediting;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.klwindows.*;
-import dev.ikm.komet.layout.context.KlContextFactory;
-import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.UUID;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
@@ -44,11 +44,6 @@ public class GenEditingKlWindowFactory implements EntityKlWindowFactory {
     public GenEditingKlWindow create(UUID journalTopic, EntityFacade entityFacade,
                                      ViewProperties viewProperties, KometPreferences preferences) {
         return new GenEditingKlWindow(journalTopic, entityFacade, viewProperties, preferences);
-    }
-
-    @Override
-    public GenEditingKlWindow create(KlPreferencesFactory preferencesFactory) {
-        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @SuppressWarnings("removal")
@@ -68,10 +63,10 @@ public class GenEditingKlWindowFactory implements EntityKlWindowFactory {
                 final ViewProperties viewProperties = journalViewProperties;
 
                 // Try to extract entity facade from saved state
-                final int entityNid = windowState.getEntityNid();
+                final OptionalLong entityNid = windowState.resolveEntityNid();
                 EntityFacade entityFacade = null;
-                if (entityNid != 0) {
-                    entityFacade = EntityService.get().getEntityFast(entityNid);
+                if (entityNid.isPresent()) {
+                    entityFacade = EntityHandle.get(entityNid.getAsLong()).orNull();
                 }
 
                 // Create the window with the extracted parameters
@@ -95,8 +90,4 @@ public class GenEditingKlWindowFactory implements EntityKlWindowFactory {
         return EntityKlWindowTypes.GEN_EDITING;
     }
 
-    @Override
-    public AbstractEntityChapterKlWindow restore(KometPreferences preferences) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
 }

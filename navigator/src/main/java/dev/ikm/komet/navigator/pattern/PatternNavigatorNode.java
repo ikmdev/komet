@@ -57,7 +57,7 @@ public class PatternNavigatorNode extends ExplorationNodeAbstract {
             selectedItems.addListener((ListChangeListener.Change<? extends TreeItem<Object>> c) -> {
                 MutableList<EntityFacade> selectedItemList = Lists.mutable.empty();
                 for (TreeItem<Object> item : c.getList()) {
-                    if (item.getValue() instanceof Integer nid) {
+                    if (item.getValue() instanceof Long nid) {
                         selectedItemList.add(EntityProxy.make(nid));
                     } else if (item.getValue() instanceof Entity entity) {
                         selectedItemList.add(EntityProxy.make(entity.nid()));

@@ -233,7 +233,7 @@ public final class KonceptDragGlyph {
      * @param name     the store-resolved name shown in the glyph
      * @param inactive whether the concept is retired (glyph name shown in the retired colour)
      */
-    public static void install(Node source, int nid, PublicId publicId, String name, boolean inactive) {
+    public static void install(Node source, long nid, PublicId publicId, String name, boolean inactive) {
         source.setOnDragDetected(event -> {
             if (source.getScene() == null) {
                 return;
@@ -312,7 +312,7 @@ public final class KonceptDragGlyph {
      * @param nid       the concept nid
      * @param viewCalc  the view for resolving the name and active state
      */
-    public static void setDragView(Dragboard dragboard, int nid, ViewCalculator viewCalc) {
+    public static void setDragView(Dragboard dragboard, long nid, ViewCalculator viewCalc) {
         // Resolve the kind AND the status here: this overload has the nid and the view, which is
         // everything both marks need. A pattern therefore drags with its sigil (ikmdev/komet#883)
         // and a concept with its copula cluster (ike-issues#861); the PublicId overloads cannot
@@ -331,7 +331,7 @@ public final class KonceptDragGlyph {
      * @param viewCalc the view used to classify; {@code null} yields {@link KonceptStatus#NONE}
      * @return the resolved status, never {@code null}
      */
-    private static KonceptStatus status(int nid, ViewCalculator viewCalc) {
+    private static KonceptStatus status(long nid, ViewCalculator viewCalc) {
         if (viewCalc == null) {
             return KonceptStatus.NONE;
         }
@@ -358,11 +358,11 @@ public final class KonceptDragGlyph {
      * @param nid the component nid
      * @return the resolved kind, never {@code null}
      */
-    private static KonceptKind kind(int nid) {
+    private static KonceptKind kind(long nid) {
         return kind(nid, null);
     }
 
-    private static KonceptKind kind(int nid, ViewCalculator viewCalc) {
+    private static KonceptKind kind(long nid, ViewCalculator viewCalc) {
         try {
             return KonceptKindResolver.resolve(nid, viewCalc);
         } catch (RuntimeException e) {
@@ -398,7 +398,7 @@ public final class KonceptDragGlyph {
      * @param viewCalc  the view for resolving the lead concept's name and active state
      * @param count     the total number of concepts being dragged (badge shown when {@code > 1})
      */
-    public static void setMultiDragView(Dragboard dragboard, int leadNid, ViewCalculator viewCalc, int count) {
+    public static void setMultiDragView(Dragboard dragboard, long leadNid, ViewCalculator viewCalc, int count) {
         // As the single-glyph nid overload: the lead component's kind and status are resolvable
         // here, so the lead pill carries its one leading mark (ikmdev/komet#883, ike-issues#861).
         double[] cursorX = new double[1];
@@ -454,7 +454,7 @@ public final class KonceptDragGlyph {
      * @param viewCalc the view for resolving the name and active state
      * @return the drag image
      */
-    public static Image image(int nid, ViewCalculator viewCalc) {
+    public static Image image(long nid, ViewCalculator viewCalc) {
         PublicId publicId = PrimitiveData.publicId(nid);
         return image(publicId, name(nid, viewCalc), isInactive(nid, viewCalc));
     }
@@ -486,7 +486,7 @@ public final class KonceptDragGlyph {
      * @param viewCalc the resolving view; {@code null} yields an empty name (icon-only glyph)
      * @return the resolved name, never {@code null}
      */
-    public static String name(int nid, ViewCalculator viewCalc) {
+    public static String name(long nid, ViewCalculator viewCalc) {
         if (viewCalc == null) {
             return "";
         }
@@ -500,7 +500,7 @@ public final class KonceptDragGlyph {
      * @param viewCalc the resolving view; {@code null} yields {@code false}
      * @return {@code true} if the latest version is inactive
      */
-    public static boolean isInactive(int nid, ViewCalculator viewCalc) {
+    public static boolean isInactive(long nid, ViewCalculator viewCalc) {
         if (viewCalc == null) {
             return false;
         }

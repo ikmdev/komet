@@ -183,7 +183,7 @@ public final class WindowEditSession {
      * @param seedFields         sets the new version's field values; given the pattern's fields, in order
      * @return the new uncommitted semantic
      */
-    public SemanticEntity<SemanticEntityVersion> createUncommittedSemantic(EntityFacade referenceComponent, int patternNid,
+    public SemanticEntity<SemanticEntityVersion> createUncommittedSemantic(EntityFacade referenceComponent, long patternNid,
                                                                            Consumer<List<ObservableField.Editable<?>>> seedFields) {
         ObservableEntity observableReferenceComponent = ObservableEntityHandle.get(referenceComponent.nid()).expectEntity();
         ObservablePattern observablePattern = ObservableEntityHandle.get(patternNid).expectPattern();
@@ -203,7 +203,7 @@ public final class WindowEditSession {
      * composer itself saved uncommitted: the composer commits its own working copy of such a version, so
      * the edit has to land in that copy.
      */
-    public void saveUncommittedFieldEdit(int semanticNid, int fieldIndex, Object newValue) {
+    public void saveUncommittedFieldEdit(long semanticNid, int fieldIndex, Object newValue) {
         ObservableSemantic observableSemantic = ObservableEntityHandle.get(semanticNid).expectSemantic();
         ObservableEntity observableReferenceComponent = ObservableEntityHandle.get(observableSemantic.referencedComponentNid()).expectEntity();
         ObservablePattern observablePattern = ObservableEntityHandle.get(observableSemantic.patternNid()).expectPattern();
@@ -247,12 +247,12 @@ public final class WindowEditSession {
     public int commitUnpublishedTransactions(Collection<SemanticEntity<SemanticEntityVersion>> unpublishedSemantics) {
         List<Entity<?>> unpublished = new ArrayList<>(unpublishedSemantics);
         if (getComponent() != null) {
-            unpublished.add(Entity.getFast(getComponent().nid()));
+            unpublished.add(EntityHandle.get(getComponent().nid()).expectEntity());
         }
 
         Set<Transaction> transactions = new HashSet<>();
         for (Entity<?> entity : unpublished) {
-            for (EntityVersion version : Entity.getFast(entity.nid()).versions()) {
+            for (EntityVersion version : EntityHandle.get(entity.nid()).expectEntity().versions()) {
                 if (version.uncommitted()) {
                     Transaction.forStamp(version.stamp().publicId()).ifPresent(transactions::add);
                 }
@@ -261,7 +261,7 @@ public final class WindowEditSession {
         transactions.forEach(Transaction::commit);
 
         return (int) unpublished.stream()
-                .filter(entity -> Entity.getFast(entity.nid()).uncommitted())
+                .filter(entity -> EntityHandle.get(entity.nid()).expectEntity().uncommitted())
                 .count();
     }
 

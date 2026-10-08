@@ -1,5 +1,6 @@
 package dev.ikm.komet.layout.selection;
 
+import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.tinkar.common.binary.Decoder;
 import dev.ikm.tinkar.common.binary.DecoderInput;
 import dev.ikm.tinkar.common.binary.Encodable;
@@ -30,11 +31,11 @@ public sealed interface VersionSelection
      * - PATH: Represents the path field of a version stamp.
      */
     enum StampElement implements ConceptEnumerationFacade<StampElement> {
-        STATUS(TinkarTerm.STATUS_FOR_VERSION),
-        TIME(TinkarTerm.TIME_FOR_VERSION),
-        AUTHOR(TinkarTerm.AUTHOR_FOR_VERSION),
-        MODULE(TinkarTerm.MODULE_FOR_VERSION),
-        PATH(TinkarTerm.PATH_FOR_VERSION);
+        STATUS(KometTerm.STATUS_FOR_VERSION),
+        TIME(KernelTerm.TIME_FOR_VERSION),
+        AUTHOR(KernelTerm.AUTHOR_FOR_VERSION),
+        MODULE(KometTerm.MODULE_FOR_VERSION),
+        PATH(KometTerm.PATH_FOR_VERSION);
 
         final ConceptFacade conceptForEnum;
 

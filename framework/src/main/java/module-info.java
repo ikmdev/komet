@@ -16,6 +16,9 @@
 
 import dev.ikm.tinkar.common.service.CachingService;
 
+// dev.ikm.komet.list builds after this module, so javac cannot see it yet when it checks the
+// qualified export below.
+@SuppressWarnings("module")
 open module dev.ikm.komet.framework {
     exports dev.ikm.komet.framework.activity;
     exports dev.ikm.komet.framework.alerts;
@@ -36,7 +39,7 @@ open module dev.ikm.komet.framework {
     exports dev.ikm.komet.framework.performance;
     exports dev.ikm.komet.framework.preferences;
     exports dev.ikm.komet.framework.progress;
-    exports dev.ikm.komet.framework.propsheet.editor to org.controlsfx.controls, dev.ikm.komet.list, dev.ikm.komet.desktop;
+    exports dev.ikm.komet.framework.propsheet.editor to org.controlsfx.controls, dev.ikm.komet.list;
     exports dev.ikm.komet.framework.propsheet;
     exports dev.ikm.komet.framework.rulebase;
     exports dev.ikm.komet.framework.search;
@@ -52,8 +55,6 @@ open module dev.ikm.komet.framework {
     exports dev.ikm.komet.framework.settings;
 
     provides CachingService with dev.ikm.komet.framework.dnd.DragRegistry.CacheProvider;
-    requires io.github.classgraph;
-    requires dev.ikm.tinkar.collection;
     requires com.github.benmanes.caffeine;
     requires org.kordamp.ikonli.fontawesome5;
     requires org.kordamp.ikonli.fontawesome;

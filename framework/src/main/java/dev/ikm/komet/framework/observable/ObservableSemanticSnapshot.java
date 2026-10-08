@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import java.util.OptionalLong;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -38,11 +39,11 @@ public final class ObservableSemanticSnapshot extends
         this.latestPattern = viewCalculator.latestPatternEntityVersion(entity.patternNid());
     }
 
-    public int referencedComponentNid() {
+    public long referencedComponentNid() {
         return observableEntity.referencedComponentNid();
     }
 
-    public int patternNid() {
+    public long patternNid() {
         return observableEntity.patternNid();
     }
 
@@ -155,25 +156,25 @@ public final class ObservableSemanticSnapshot extends
         return Optional.empty();
     }
 
-    public int findFirstFieldNidValueOrMaxValue(Predicate<Field> test) {
+    public long findFirstFieldNidValueOrMaxValue(Predicate<Field> test) {
         return findFirstFieldNidValueOrDefault(test, Integer.MAX_VALUE);
     }
 
-    public int findFirstFieldNidValueOrDefault(Predicate<Field> test, int defaultNid) {
-        OptionalInt optionalNid = findFirstFieldNidValue(test);
+    public long findFirstFieldNidValueOrDefault(Predicate<Field> test, long defaultNid) {
+        OptionalLong optionalNid = findFirstFieldNidValue(test);
         if (optionalNid.isPresent()) {
-            return optionalNid.getAsInt();
+            return optionalNid.getAsLong();
         }
         return defaultNid;
     }
 
-    public OptionalInt findFirstFieldNidValue(Predicate<Field> test) {
-        return findFirstField(test).ifAbsentOrFunction(OptionalInt::empty,
+    public OptionalLong findFirstFieldNidValue(Predicate<Field> test) {
+        return findFirstField(test).ifAbsentOrFunction(OptionalLong::empty,
                 objectField -> {
                     if (objectField.value() instanceof EntityFacade entityFacade) {
-                        return OptionalInt.of(entityFacade.nid());
+                        return OptionalLong.of(entityFacade.nid());
                     }
-                    return OptionalInt.empty();
+                    return OptionalLong.empty();
                 });
     }
 

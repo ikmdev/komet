@@ -32,7 +32,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 
 public class SemanticPanel extends ComponentIsFinalPanel<
         ObservableSemanticSnapshot,
@@ -40,7 +40,7 @@ public class SemanticPanel extends ComponentIsFinalPanel<
         ObservableSemanticVersion,
         SemanticVersionRecord> {
 
-    public SemanticPanel(ObservableSemanticSnapshot semanticSnapshot, ViewProperties viewProperties, SimpleObjectProperty<EntityFacade> topEnclosingComponentProperty, ObservableSet<Integer> referencedNids) {
+    public SemanticPanel(ObservableSemanticSnapshot semanticSnapshot, ViewProperties viewProperties, SimpleObjectProperty<EntityFacade> topEnclosingComponentProperty, ObservableSet<Long> referencedNids) {
         super(semanticSnapshot, viewProperties, topEnclosingComponentProperty, referencedNids);
         Latest<PatternEntityVersion> latestPatternVersion = viewProperties.calculator().latestPatternEntityVersion(semanticSnapshot.patternNid());
 
@@ -86,11 +86,11 @@ public class SemanticPanel extends ComponentIsFinalPanel<
         });
 
 
-        if (semanticSnapshot.patternNid() == TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid() ||
-                semanticSnapshot.patternNid() == TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid()) {
+        if (semanticSnapshot.patternNid() == KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid() ||
+                semanticSnapshot.patternNid() == KernelTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid()) {
             this.getComponentPanelBox().pseudoClassStateChanged(PseudoClasses.LOGICAL_DEFINITION_PSEUDO_CLASS, true);
             this.getComponentDetailPane().pseudoClassStateChanged(PseudoClasses.LOGICAL_DEFINITION_PSEUDO_CLASS, true);
-        } else if (semanticSnapshot.patternNid() == TinkarTerm.DESCRIPTION_PATTERN.nid()) {
+        } else if (semanticSnapshot.patternNid() == KernelTerm.DESCRIPTION_PATTERN.nid()) {
             this.getComponentPanelBox().pseudoClassStateChanged(PseudoClasses.DESCRIPTION_PSEUDO_CLASS, true);
             this.getComponentDetailPane().pseudoClassStateChanged(PseudoClasses.DESCRIPTION_PSEUDO_CLASS, true);
         } else {

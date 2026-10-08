@@ -136,7 +136,7 @@ public class ReferenceComponentController {
         UUID semanticUUID = UUID.randomUUID();
         EntityProxy referencedComponent = genEditingViewModel.getPropertyValue(REF_COMPONENT);
 
-        int semanticNid = Entity.nidForSemantic(patternFacade, PublicIds.of(semanticUUID));
+        long semanticNid = Entity.nidForSemantic(patternFacade, PublicIds.of(semanticUUID));
 
         SemanticRecord semanticRecord = SemanticRecordBuilder.builder()
                 .nid(semanticNid)
@@ -152,9 +152,9 @@ public class ReferenceComponentController {
         Transaction transaction = Transaction.make("Transaction For "+semanticRecord.nid());
 
         State state = stampFormViewModel.getPropertyValue(STATUS);
-        int authorNid = ((EntityFacade) stampFormViewModel.getPropertyValue(AUTHOR)).nid();
-        int moduleNid = ((ConceptFacade)  stampFormViewModel.getPropertyValue(MODULE)).nid();
-        int pathNid = ((ConceptFacade)  stampFormViewModel.getPropertyValue(PATH)).nid();
+        long authorNid = ((EntityFacade) stampFormViewModel.getPropertyValue(AUTHOR)).nid();
+        long moduleNid = ((ConceptFacade)  stampFormViewModel.getPropertyValue(MODULE)).nid();
+        long pathNid = ((ConceptFacade)  stampFormViewModel.getPropertyValue(PATH)).nid();
 
         StampEntity stampEntity = transaction.getStampForEntities(state, authorNid, moduleNid, pathNid, semanticRecord);
 

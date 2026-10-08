@@ -56,7 +56,7 @@ public class ComponentIsFinalPanel<ES extends ObservableEntitySnapshot<OE, OV>,
 
     public ComponentIsFinalPanel(ES component, ViewProperties viewProperties,
                                  SimpleObjectProperty<EntityFacade> topEnclosingComponentProperty,
-                                 ObservableSet<Integer> referencedNids) {
+                                 ObservableSet<Long> referencedNids) {
         super(viewProperties, referencedNids);
         if (component == null) {
             throw new NullPointerException();

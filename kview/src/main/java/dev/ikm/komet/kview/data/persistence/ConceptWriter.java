@@ -17,11 +17,8 @@ package dev.ikm.komet.kview.data.persistence;
 
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.*;
-import org.eclipse.collections.impl.factory.primitive.LongLists;
 
-import java.util.UUID;
-
-public class ConceptWriter implements Writer {
+public class ConceptWriter {
 
     private final PublicId stamp;
 
@@ -33,22 +30,19 @@ public class ConceptWriter implements Writer {
         //Create empty version list
         RecordListBuilder<ConceptVersionRecord> versions = RecordListBuilder.make();
 
-        //Pull out primordial UUID from PublicId
-        UUID primordialUUID = concept.asUuidArray()[0];
-
-        //Process additional UUID longs from PublicId
-        long[] additionalLongs = createAdditionalLongs(concept);
+        //Every UUID of the PublicId goes into the record header
+        PublicIdentifierRecord identifier = PublicIdentifierRecord.make(concept);
 
         //Assign nid for Concept
-        int conceptNid = EntityService.get().nidForPublicId(concept);
-        int stampNid = EntityService.get().nidForPublicId(stamp);
+        long conceptNid = EntityService.get().nidForPublicId(concept);
+        long stampNid = EntityService.get().nidForPublicId(stamp);
 
         //Create Concept Chronology
         ConceptRecord conceptRecord = ConceptRecordBuilder.builder()
                 .nid(conceptNid)
-                .leastSignificantBits(primordialUUID.getLeastSignificantBits())
-                .mostSignificantBits(primordialUUID.getMostSignificantBits())
-                .additionalUuidLongs(LongLists.immutable.of(additionalLongs))
+                .leastSignificantBits(identifier.leastSignificantBits())
+                .mostSignificantBits(identifier.mostSignificantBits())
+                .additionalUuidLongs(identifier.additionalUuidLongs())
                 .versions(versions)
                 .build();
 

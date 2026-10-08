@@ -46,7 +46,7 @@ public class ObservableStampPositionWithOverride
 
     @Override
     public void setExceptOverrides(StampPositionRecord updatedCoordinate) {
-        int pathConceptNid = updatedCoordinate.getPathForPositionNid();
+        long pathConceptNid = updatedCoordinate.getPathForPositionNid();
         if (pathConceptProperty().isOverridden()) {
             pathConceptNid = pathConceptProperty().get().nid();
         }

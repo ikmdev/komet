@@ -3,7 +3,6 @@ package dev.ikm.komet.kview.common;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.ComponentWithNid;
@@ -96,9 +95,9 @@ public class ViewCalculatorUtils {
      * @param viewCalculator The {@link ViewCalculator} used to get human-readable descriptions for the stamp components
      * @return A formatted string containing the stamp details, or empty string if the stamp entity cannot be found
      */
-    public static String getStampToolTipText(int stampNid, ViewCalculator viewCalculator) {
+    public static String getStampToolTipText(long stampNid, ViewCalculator viewCalculator) {
         StringBuilder tooltipText = new StringBuilder();
-        Entity.get(stampNid).ifPresent(entity -> {
+        EntityHandle.get(stampNid).entity().filter(e -> !e.canceled()).ifPresent(entity -> {
             if (entity instanceof StampEntity<?> stampEntity) {
                 tooltipText.append(getStampToolTipText(stampEntity, viewCalculator));
             }
@@ -139,7 +138,7 @@ public class ViewCalculatorUtils {
                 .orElse("No description available");
     }
 
-    public static Function<Integer, String> getFetchSemanticDescriptionFunction(ViewProperties viewProperties) {
+    public static Function<Long, String> getFetchSemanticDescriptionFunction(ViewProperties viewProperties) {
         return semanticNid -> {
             StringBuilder sb = new StringBuilder();
             ViewCalculator viewCalculator = viewProperties.calculator();

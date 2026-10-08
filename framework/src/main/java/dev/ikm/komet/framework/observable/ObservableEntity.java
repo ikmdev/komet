@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import org.eclipse.collections.impl.map.mutable.primitive.LongObjectHashMap;
+import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
 import static dev.ikm.tinkar.events.EntityVersionChangeEvent.VERSION_UPDATED;
 import static dev.ikm.tinkar.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -27,6 +29,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.ConceptRecord;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
@@ -115,8 +118,8 @@ import java.util.concurrent.atomic.AtomicReference;
  *     .asConcept()
  *     .ifPresent(concept -> displayLabel.setText(concept.description()));
  *
- * // ❌ WRONG: Direct static method (deprecated, will be removed)
- * ObservableConcept concept = ObservableEntity.get(conceptNid); // DON'T DO THIS
+ * // ❌ WRONG: Unchecked cast (bypasses type checking)
+ * ObservableConcept concept = (ObservableConcept) ObservableEntityHandle.get(conceptNid).orNull(); // DON'T DO THIS
  * }</pre>
  *
  * <h2>When to Use ObservableEntity vs Entity</h2>
@@ -176,7 +179,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * // Background thread
  * CompletableFuture.supplyAsync(() -> {
  *     // Use immutable Entity for calculations
- *     Entity<?> entity = Entity.getFast(nid);
+ *     Entity<?> entity = EntityHandle.get(nid).expectEntity();
  *     return computeResult(entity);
  * }).thenAccept(result -> {
  *     // Switch to JavaFX thread for UI updates
@@ -345,7 +348,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
      * @see com.github.benmanes.caffeine.cache.Cache
      * @see java.lang.ref.WeakReference
      */
-    protected static final Cache<Integer, ObservableEntity> CANONICAL_INSTANCES =
+    protected static final Cache<Long, ObservableEntity> CANONICAL_INSTANCES =
             Caffeine.newBuilder()
                     .weakValues()
                     .build();
@@ -357,7 +360,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
 
     private final FeatureList<OV> versionSetAsList;
 
-    private MutableIntObjectMap<OV> versionPropertyMap = new IntObjectHashMap<>();
+    private MutableLongObjectMap<OV> versionPropertyMap = new LongObjectHashMap<>();
 
     final private AtomicReference<Entity<?>> entityReference;
 
@@ -408,38 +411,12 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
     protected abstract OV wrap(EntityVersion version);
 
     /**
-     * @deprecated Use {@link ObservableEntityHandle#getSnapshot(int, ViewCalculator)} instead.
-     * <p>     * This static accessor method is being phased out in favor of the fluent
-     * {@link ObservableEntityHandle} API, which provides better type safety, null handling,
-     * and composability. This method will be made module-internal in a future release.
-     * <p>     * <b>Migration:</b>
-     * <pre>{@code
-     * // Old (deprecated):
-     * ObservableEntitySnapshot snapshot = ObservableEntity.getSnapshot(nid, calculator);
-     *
-     * // New (recommended):
-     * Optional<ObservableEntitySnapshot<?, ?>> snapshot =
-     *     ObservableEntityHandle.getSnapshot(nid, calculator);
-     * }</pre>
-     *
-     * @see ObservableEntityHandle#getSnapshot(int, ViewCalculator)
-     * @see ObservableEntityHandle#getConceptSnapshotOrThrow(int, ViewCalculator)
-     * @see ObservableEntityHandle#getSemanticSnapshotOrThrow(int, ViewCalculator)
-     * @see ObservableEntityHandle#getPatternSnapshotOrThrow(int, ViewCalculator)
-     */
-    @Deprecated(since = "Current", forRemoval = true)
-    public static <OE extends ObservableEntity<OV>, OV extends ObservableEntityVersion<?,EV>, EV extends EntityVersion>
-    ObservableEntitySnapshot<OE, OV> getSnapshot(int nid, ViewCalculator calculator) {
-        return packagePrivateGetSnapshot(nid, calculator);
-    }
-
-    /**
      * Package-private method for internal use by ObservableEntityHandle.
      * External code should use {@link ObservableEntityHandle#getSnapshot(int, ViewCalculator)}.
      */
     static <OE extends ObservableEntity<OV>, OV extends ObservableEntityVersion<?,EV>, EV extends EntityVersion>
-    ObservableEntitySnapshot<OE, OV> packagePrivateGetSnapshot(int nid, ViewCalculator calculator) {
-        return packagePrivateGet(Entity.packagePrivateGetFast(nid)).getSnapshot(calculator);
+    ObservableEntitySnapshot<OE, OV> packagePrivateGetSnapshot(long nid, ViewCalculator calculator) {
+        return packagePrivateGet(EntityHandle.get(nid).orNull()).getSnapshot(calculator);
     }
 
     public abstract ObservableEntitySnapshot<?,?> getSnapshot(ViewCalculator calculator);
@@ -475,35 +452,6 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
     }
     static ObservableSemantic packagePrivateGetSemantic(SemanticEntity entity) {
         return packagePrivateGet((Entity<? extends EntityVersion>) entity);
-    }
-
-    /**
-     * @deprecated Use {@link ObservableEntityHandle#get(int)} or type-specific methods instead.
-     * <p>     * This static accessor method is being phased out in favor of the fluent
-     * {@link ObservableEntityHandle} API, which provides better type safety, null handling,
-     * and composability. This method will be made module-internal in a future release.
-     * <p>     * <b>Migration:</b>
-     * <pre>{@code
-     * // Old (deprecated):
-     * ObservableConcept concept = ObservableEntity.get(nid);
-     *
-     * // New (recommended - type-safe):
-     * ObservableConcept concept = ObservableEntityHandle.getConceptOrThrow(nid);
-     *
-     * // Or with safe Optional handling:
-     * ObservableEntityHandle.get(nid)
-     *     .asConcept()
-     *     .ifPresent(concept -> process(concept));
-     * }</pre>
-     *
-     * @see ObservableEntityHandle#get(int)
-     * @see ObservableEntityHandle#getConceptOrThrow(int)
-     * @see ObservableEntityHandle#getSemanticOrThrow(int)
-     * @see ObservableEntityHandle#getPatternOrThrow(int)
-     */
-    @Deprecated(since = "Current", forRemoval = true)
-    public static <OE extends ObservableEntity> OE get(Entity<? extends EntityVersion> entity) {
-        return packagePrivateGet(entity);
     }
 
     /**
@@ -557,37 +505,8 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
      * Package-private method for internal use by ObservableEntityHandle.
      * External code should use {@link ObservableEntityHandle#get(int)}.
      */
-    static <OE extends ObservableEntity> OE packagePrivateGet(int nid) {
-        return packagePrivateGet(Entity.packagePrivateGetFast(nid));
-    }
-
-    /**
-     * @deprecated Use {@link ObservableEntityHandle#get(int)} or type-specific methods instead.
-     * <p>     * This static accessor method is being phased out in favor of the fluent
-     * {@link ObservableEntityHandle} API, which provides better type safety, null handling,
-     * and composability. This method will be made module-internal in a future release.
-     * <p>     * <b>Migration:</b>
-     * <pre>{@code
-     * // Old (deprecated):
-     * ObservableConcept concept = ObservableEntity.get(nid);
-     *
-     * // New (recommended - type-safe):
-     * ObservableConcept concept = ObservableEntityHandle.getConceptOrThrow(nid);
-     *
-     * // Or using fluent API:
-     * ObservableEntityHandle.get(nid)
-     *     .ifConcept(concept -> process(concept))
-     *     .ifAbsent(() -> handleMissing());
-     * }</pre>
-     *
-     * @see ObservableEntityHandle#get(int)
-     * @see ObservableEntityHandle#getConceptOrThrow(int)
-     * @see ObservableEntityHandle#getSemanticOrThrow(int)
-     * @see ObservableEntityHandle#getPatternOrThrow(int)
-     */
-    @Deprecated(since = "Current", forRemoval = true)
-    public static <OE extends ObservableEntity> OE get(int nid) {
-        return packagePrivateGet(nid);
+    static <OE extends ObservableEntity> OE packagePrivateGet(long nid) {
+        return packagePrivateGet(EntityHandle.get(nid).orNull());
     }
 
     /**
@@ -603,7 +522,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
         return entityReference.get();
     }
 
-    public MutableIntObjectMap<OV> versionPropertyMap() {
+    public MutableLongObjectMap<OV> versionPropertyMap() {
         return versionPropertyMap;
     }
 
@@ -628,7 +547,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
     }
 
     @Override
-    public int nid() {
+    public long nid() {
         return entityReference.get().nid();
     }
 
@@ -650,9 +569,9 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
     /**
      * Returns the semantics that reference this entity's component, each wrapped as an
      * {@link ObservableSemantic}.
-     * <p>The referencing semantic nids are resolved through
-     * {@link EntityService#semanticNidsForComponent(int)} for this entity's {@link #nid()}, and each
-     * is mapped to its canonical {@link ObservableSemantic} instance from the shared
+     * <p>The referencing semantics are resolved through
+     * {@link EntityService#forEachSemanticForComponent(long, java.util.function.Consumer)} for this
+     * entity's {@link #nid()}, and each is mapped to its canonical {@link ObservableSemantic} instance from the shared
      * {@link #CANONICAL_INSTANCES} pool (the same resolution path used by the other
      * {@code ObservableEntity} accessors). The returned list is a point-in-time projection of the
      * semantics present when this method is called; it is not a live view, so semantics added after
@@ -664,12 +583,11 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
      *         are resolved on the JavaFX application thread only
      */
     public Iterable<ObservableSemantic> getObservableSemanticList() {
-        int[] semanticNids = EntityService.get().semanticNidsForComponent(nid());
         MutableList<ObservableSemantic> observableSemantics = Lists.mutable.empty();
-        for (int semanticNid : semanticNids) {
-            ObservableSemantic observableSemantic = packagePrivateGet(semanticNid);
+        EntityService.get().forEachSemanticForComponent(nid(), semantic -> {
+            ObservableSemantic observableSemantic = packagePrivateGetSemantic(semantic);
             observableSemantics.add(observableSemantic);
-        }
+        });
         return observableSemantics.toImmutable();
     }
 
@@ -682,13 +600,12 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
      * @param patternNid the pattern whose semantics referencing this component to return
      * @return the observable semantics of {@code patternNid} referencing this component; empty if none
      */
-    public Iterable<ObservableSemantic> getObservableSemanticListOfPattern(int patternNid) {
-        int[] semanticNids = EntityService.get().semanticNidsForComponentOfPattern(nid(), patternNid);
+    public Iterable<ObservableSemantic> getObservableSemanticListOfPattern(long patternNid) {
         MutableList<ObservableSemantic> observableSemantics = Lists.mutable.empty();
-        for (int semanticNid : semanticNids) {
-            ObservableSemantic observableSemantic = packagePrivateGet(semanticNid);
+        EntityService.get().forEachSemanticForComponentOfPattern(nid(), patternNid, semantic -> {
+            ObservableSemantic observableSemantic = packagePrivateGetSemantic(semantic);
             observableSemantics.add(observableSemantic);
-        }
+        });
         return observableSemantics.toImmutable();
     }
 
@@ -737,16 +654,16 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
         };
     }
 
-    private static class EntityChangeSubscriber implements Subscriber<Integer> {
+    private static class EntityChangeSubscriber implements Subscriber<Long> {
 
         @Override
-        public void onNext(Integer nid) {
+        public void onNext(Long nid) {
             // Do nothing with item, but request another...
             if (CANONICAL_INSTANCES.getIfPresent(nid) != null) {
                 if (!Platform.isFxApplicationThread()) {
-                    Platform.runLater(() -> get(nid));
+                    Platform.runLater(() -> packagePrivateGet(nid));
                 } else {
-                    get(nid);
+                    packagePrivateGet(nid);
                 }
             }
         }

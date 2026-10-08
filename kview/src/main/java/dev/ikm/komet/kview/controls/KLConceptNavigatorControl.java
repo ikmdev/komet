@@ -4,7 +4,7 @@ import dev.ikm.komet.kview.controls.skin.ConceptNavigatorHelper;
 import dev.ikm.komet.kview.controls.skin.KLConceptNavigatorTreeViewSkin;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
@@ -39,20 +39,20 @@ import java.util.function.Function;
  * a {@link Navigator}, as such:
  * <pre><code>
  *
- * private List&lt;ConceptNavigatorTreeItem&gt; getChildren(int nid) {
+ * private List&lt;ConceptNavigatorTreeItem&gt; getChildren(long nid) {
  *     return getNavigator().getChildEdges(nid).stream()
  *             .map(edge -&gt; getConceptNavigatorTreeItem(edge.destinationNid(), nid))
  *             .toList();
  * }
  *
- * private ConceptNavigatorTreeItem getConceptNavigatorTreeItem(int nid, int parentNid) {
+ * private ConceptNavigatorTreeItem getConceptNavigatorTreeItem(long nid, long parentNid) {
  *     ConceptNavigatorTreeItem conceptNavigatorTreeItem = new ConceptNavigatorTreeItem(getNavigator(), nid, parentNid);
  *     conceptNavigatorTreeItem.getChildren().addAll(getChildren(nid));
  *     return conceptNavigatorTreeItem;
  * }
  *
- * public void createNavigator(int rootNid) {
- *     ConceptNavigatorTreeItem root = getConceptNavigatorTreeItem(Entity.getFast(rootNid), -1);
+ * public void createNavigator(long rootNid) {
+ *     ConceptNavigatorTreeItem root = getConceptNavigatorTreeItem(EntityHandle.get(rootNid).expectConcept(), -1);
  *     root.setExpanded(true);
  *
  *     KLConceptNavigatorControl conceptNavigator = new KLConceptNavigatorControl();
@@ -67,13 +67,13 @@ import java.util.function.Function;
  * the user requires them, which is when the treeItem gets expanded:
  * <pre><code>
  *
- * private List&lt;ConceptNavigatorTreeItem&gt; getChildren(int nid) {
+ * private List&lt;ConceptNavigatorTreeItem&gt; getChildren(long nid) {
  *     return getNavigator().getChildEdges(nid).stream()
  *             .map(edge -&gt; getConceptNavigatorTreeItem(edge.destinationNid(), nid))
  *             .toList();
  * }
  *
- * private ConceptNavigatorTreeItem getConceptNavigatorTreeItem(int nid, int parentNid) {
+ * private ConceptNavigatorTreeItem getConceptNavigatorTreeItem(long nid, long parentNid) {
  *     ConceptNavigatorTreeItem conceptNavigatorTreeItem = new ConceptNavigatorTreeItem(getNavigator(), nid, parentNid);
  *     conceptNavigatorTreeItem.expandedProperty().subscribe((_, expanded) -&gt; {
  *             if (expanded &amp;&amp; conceptNavigatorTreeItem.getChildren().isEmpty()) {
@@ -83,8 +83,8 @@ import java.util.function.Function;
  *     return conceptNavigatorTreeItem;
  * }
  *
- * public void createNavigator(int rootNid) {
- *     ConceptNavigatorTreeItem root = getConceptNavigatorTreeItem(Entity.getFast(rootNid), -1);
+ * public void createNavigator(long rootNid) {
+ *     ConceptNavigatorTreeItem root = getConceptNavigatorTreeItem(EntityHandle.get(rootNid).expectConcept(), -1);
  *     root.setExpanded(true);
  *
  *     KLConceptNavigatorControl conceptNavigator = new KLConceptNavigatorControl();
@@ -123,7 +123,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
             }
 
             @Override
-            public ConceptNavigatorTreeItem getConceptNavigatorTreeItem(KLConceptNavigatorControl treeView, int nid, int parentNid) {
+            public ConceptNavigatorTreeItem getConceptNavigatorTreeItem(KLConceptNavigatorControl treeView, long nid, long parentNid) {
                 return treeView.getConceptNavigatorTreeItem(nid, parentNid);
             }
         });
@@ -452,7 +452,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
      * @param nid the nid of a parent concept
      * @return a list of {@link ConceptNavigatorTreeItem} with the children of that parent
      */
-    private List<ConceptNavigatorTreeItem> getChildren(int nid) {
+    private List<ConceptNavigatorTreeItem> getChildren(long nid) {
         return getNavigator().getChildEdges(nid).stream()
                 .map(edge -> getConceptNavigatorTreeItem(edge.destinationNid(), nid))
                 .filter(item -> item != null)
@@ -467,7 +467,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
      * @param parentNid the nid of the parent of the concept, or -1 if root.
      * @return a {@link ConceptNavigatorTreeItem} for that concept
      */
-    private ConceptNavigatorTreeItem getConceptNavigatorTreeItem(int nid, int parentNid) {
+    private ConceptNavigatorTreeItem getConceptNavigatorTreeItem(long nid, long parentNid) {
         ConceptNavigatorTreeItem conceptNavigatorTreeItem = createSingleConceptNavigatorTreeItem(nid, parentNid);
         if (conceptNavigatorTreeItem == null) {
             return null;
@@ -507,7 +507,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
      * @param conceptNavigatorTreeItem the {@link ConceptNavigatorTreeItem} that doesn't have its children added yet.
      */
     private void fetchChildren(ConceptNavigatorTreeItem conceptNavigatorTreeItem) {
-        int nid = conceptNavigatorTreeItem.getValue().nid();
+        long nid = conceptNavigatorTreeItem.getValue().nid();
         if (!getNavigator().getChildEdges(nid).isEmpty()) {
             conceptNavigatorTreeItem.getChildren().addAll(getChildren(nid));
         }
@@ -522,7 +522,7 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
      * in the first place.
      */
     private Future<Boolean> fetchChildrenTask(ConceptNavigatorTreeItem conceptNavigatorTreeItem) {
-        int nid = conceptNavigatorTreeItem.getValue().nid();
+        long nid = conceptNavigatorTreeItem.getValue().nid();
         if (getNavigator().getChildEdges(nid).isEmpty()) {
             return null;
         }
@@ -548,8 +548,8 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
      * @param parentNid the nid of the parent of the concept, or -1 if root.
      * @return a {@link ConceptNavigatorTreeItem} for that concept, without children.
      */
-    private ConceptNavigatorTreeItem createSingleConceptNavigatorTreeItem(int nid, int parentNid) {
-        ConceptFacade facade = Entity.getFast(nid);
+    private ConceptNavigatorTreeItem createSingleConceptNavigatorTreeItem(long nid, long parentNid) {
+        ConceptFacade facade = EntityHandle.get(nid).asConcept().orElse(null);
         if (facade == null) {
             return null;
         }

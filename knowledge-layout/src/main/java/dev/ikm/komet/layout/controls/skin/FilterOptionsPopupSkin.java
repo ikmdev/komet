@@ -605,7 +605,7 @@ public class FilterOptionsPopupSkin implements Skin<FilterOptionsPopup> {
         if (navigator == null || navigator.getRootNids() == null || navigator.getRootNids().length == 0) {
             return;
         }
-        int rootNid = navigator.getRootNids()[0];
+        long rootNid = navigator.getRootNids()[0];
 
         if (control.getFilterType() == FilterOptionsPopup.FILTER_TYPE.NAVIGATOR) {
             // header: All first children of root

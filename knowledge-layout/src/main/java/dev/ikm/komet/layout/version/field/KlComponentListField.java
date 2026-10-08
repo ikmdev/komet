@@ -2,7 +2,7 @@ package dev.ikm.komet.layout.version.field;
 
 import dev.ikm.tinkar.common.bind.annotations.axioms.ParentConcept;
 import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
-import dev.ikm.tinkar.common.id.IntIdList;
+import dev.ikm.tinkar.common.id.LongIdList;
 
 /**
  * Represents a attribute that holds a list of component entities.
@@ -16,5 +16,5 @@ import dev.ikm.tinkar.common.id.IntIdList;
  */
 @RegularName("Component List Field")
 @ParentConcept(KlListField.class)
-public interface KlComponentListField extends KlField<IntIdList> {
+public interface KlComponentListField extends KlField<LongIdList> {
 }

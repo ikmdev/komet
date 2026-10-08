@@ -24,22 +24,22 @@ import dev.ikm.komet.framework.propsheet.editor.IntIdCollectionEditor;
 import dev.ikm.komet.framework.propsheet.editor.IntIdListEditor;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.common.id.IntIdList;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIdList;
+import dev.ikm.tinkar.common.id.LongIds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ListNode extends CollectionNode<IntIdList> {
+public class ListNode extends CollectionNode<LongIdList> {
     private static final Logger LOG = LoggerFactory.getLogger(ListNode.class);
     protected static final String TITLE = "List Manager";
 
     public ListNode(ViewProperties viewProperties, KometPreferences nodePreferences) {
         super(viewProperties, nodePreferences);
-        this.collectionItemsProperty.set(IntIds.list.empty());
+        this.collectionItemsProperty.set(LongIds.list.empty());
     }
 
     @Override
-    protected IntIdCollectionEditor<IntIdList> getCollectionEditor(ViewProperties viewProperties, SimpleObjectProperty<IntIdList> listItems) {
+    protected IntIdCollectionEditor<LongIdList> getCollectionEditor(ViewProperties viewProperties, SimpleObjectProperty<LongIdList> listItems) {
         return new IntIdListEditor(viewProperties, listItems);
     }
 

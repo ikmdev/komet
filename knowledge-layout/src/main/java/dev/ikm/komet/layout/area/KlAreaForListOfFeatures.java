@@ -33,7 +33,7 @@ import java.util.Optional;
  */
 public sealed interface KlAreaForListOfFeatures<F extends Feature<?>, FX extends Region>
         extends KlAreaForList<F, FeatureList<F>, FX>
-        permits KlAreaForListOfFeatureDefinitions, KlListOfFieldArea, KlAreaForListOfVersions {
+        permits KlAreaForListOfFeatureDefinitions, KlAreaForListOfVersions {
 
     enum PreferenceKeys {
         AREA_FEATURE_LIST_KEY,

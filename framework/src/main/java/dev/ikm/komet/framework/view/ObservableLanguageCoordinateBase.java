@@ -18,7 +18,7 @@ package dev.ikm.komet.framework.view;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.coordinate.language.LanguageCoordinate;
 import dev.ikm.tinkar.coordinate.language.LanguageCoordinateRecord;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -114,13 +114,13 @@ public abstract class ObservableLanguageCoordinateBase extends ObservableCoordin
                 descriptionPatternPreferenceNidList(),
                 descriptionTypePreferenceNidList(),
                 dialectPatternPreferenceNidList(),
-                IntIds.list.of(newList.castToList(), EntityFacade::toNid)));
+                LongIds.list.of(newList.castToList(), EntityFacade::toNid)));
     }
     private void descriptionPatternPreferenceListChanged(ObservableValue<? extends ImmutableList<PatternFacade>> observable,
                                                          ImmutableList<PatternFacade> oldList,
                                                          ImmutableList<PatternFacade> newList) {
         this.setValue(LanguageCoordinateRecord.make(languageConceptNid(),
-                IntIds.list.of(newList.castToList(), EntityFacade::toNid),
+                LongIds.list.of(newList.castToList(), EntityFacade::toNid),
                 descriptionTypePreferenceNidList(),
                 dialectPatternPreferenceNidList(),
                 modulePreferenceNidListForLanguage()));
@@ -130,7 +130,7 @@ public abstract class ObservableLanguageCoordinateBase extends ObservableCoordin
                                                       ImmutableList<ConceptFacade> newList) {
         this.setValue(LanguageCoordinateRecord.make(languageConceptNid(),
                 descriptionPatternPreferenceNidList(),
-                IntIds.list.of(newList.castToList(), EntityFacade::toNid),
+                LongIds.list.of(newList.castToList(), EntityFacade::toNid),
                 dialectPatternPreferenceNidList(),
                 modulePreferenceNidListForLanguage()));
     }
@@ -141,7 +141,7 @@ public abstract class ObservableLanguageCoordinateBase extends ObservableCoordin
         this.setValue(LanguageCoordinateRecord.make(languageConceptNid(),
                 descriptionPatternPreferenceNidList(),
                 descriptionTypePreferenceNidList(),
-                IntIds.list.of(newList.castToList(), EntityFacade::toNid),
+                LongIds.list.of(newList.castToList(), EntityFacade::toNid),
                 modulePreferenceNidListForLanguage()));
     }
 
@@ -149,7 +149,7 @@ public abstract class ObservableLanguageCoordinateBase extends ObservableCoordin
                                         ConceptFacade oldLanguageConcept,
                                         ConceptFacade newLanguageConcept) {
         if (newLanguageConcept == null) {
-            // Can occur when Entity.getFast() returns null in gRPC/ephemeral-store mode
+            // Can occur when the entity lookup finds nothing in gRPC/ephemeral-store mode
             // (language entity not yet loaded). Retain the existing coordinate value.
             return;
         }

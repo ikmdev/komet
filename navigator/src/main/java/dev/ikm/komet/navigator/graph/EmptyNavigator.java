@@ -23,7 +23,7 @@ import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 
 import java.util.ArrayList;
 
@@ -58,36 +58,36 @@ public class EmptyNavigator implements Navigator {
     }
 
     @Override
-    public int[] getChildNids(int parentNid) {
-        return new int[0];
+    public long[] getChildNids(long parentNid) {
+        return new long[0];
     }
 
 
     @Override
-    public int[] getParentNids(int childNid) {
-        return new int[0];
+    public long[] getParentNids(long childNid) {
+        return new long[0];
     }
 
     @Override
-    public int[] getRootNids() {
+    public long[] getRootNids() {
         if (roots.isEmpty()) {
-            return new int[]{TinkarTerm.UNINITIALIZED_COMPONENT.nid()};
+            return new long[]{KernelTerm.UNINITIALIZED_COMPONENT.nid()};
         }
-        return roots.stream().mapToInt(value -> value.nid()).toArray();
+        return roots.stream().mapToLong(value -> value.nid()).toArray();
     }
 
     @Override
-    public boolean isChildOf(int childNid, int parentNid) {
+    public boolean isChildOf(long childNid, long parentNid) {
         return false;
     }
 
     @Override
-    public boolean isLeaf(int conceptNid) {
+    public boolean isLeaf(long conceptNid) {
         return true;
     }
 
     @Override
-    public boolean isDescendentOf(int descendantNid, int ancestorNid) {
+    public boolean isDescendentOf(long descendantNid, long ancestorNid) {
         throw new UnsupportedOperationException();
     }
 
@@ -96,12 +96,12 @@ public class EmptyNavigator implements Navigator {
     }
 
     @Override
-    public ImmutableList<Edge> getParentEdges(int parentConceptNid) {
+    public ImmutableList<Edge> getParentEdges(long parentConceptNid) {
         return Lists.immutable.empty();
     }
 
     @Override
-    public ImmutableList<Edge> getChildEdges(int childConceptNid) {
+    public ImmutableList<Edge> getChildEdges(long childConceptNid) {
         return Lists.immutable.empty();
     }
 

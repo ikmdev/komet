@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 
 import static dev.ikm.tinkar.events.FrameworkTopics.RULES_TOPIC;
-import static dev.ikm.tinkar.terms.TinkarTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN;
+import static dev.ikm.tinkar.terms.KernelTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN;
 
 public abstract class AbstractAxiomAction extends AbstractActionSuggested {
 	
@@ -73,7 +73,7 @@ public abstract class AbstractAxiomAction extends AbstractActionSuggested {
             axiomSubjectRecord.updatedTreeHandler().accept(newTree);
             return;
         }
-        SemanticRecord semanticContainingAxiom = Entity.getFast(axiomSubjectRecord.semanticContainingAxiom().nid());
+        SemanticRecord semanticContainingAxiom = EntityHandle.get(axiomSubjectRecord.semanticContainingAxiom().nid()).expectSemanticRecord();
         Optional<Transaction> optionalTransaction = Transaction.forVersion(axiomSubjectRecord.semanticContainingAxiom().version());
         Transaction transaction;
         if (optionalTransaction.isPresent()) {
@@ -98,7 +98,7 @@ public abstract class AbstractAxiomAction extends AbstractActionSuggested {
             //TODO need to surface transactions in the journal, then turn off this "auto commit"...
             transaction.commit();
         }, () -> {
-            throw new IllegalStateException("No latest pattern version for: " + Entity.getFast(TINKAR_BASE_MODEL_COMPONENT_PATTERN));
+            throw new IllegalStateException("No latest pattern version for: " + EntityHandle.get(TINKAR_BASE_MODEL_COMPONENT_PATTERN).orNull());
         });
     }
 }

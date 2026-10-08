@@ -49,7 +49,7 @@ import java.util.Optional;
 public class EntityLabel extends Label {
     private static final Logger LOG = LoggerFactory.getLogger(EntityLabel.class);
 
-    private final int entityNid;
+    private final long entityNid;
     private final Button openConceptButton = new Button("", Icon.LINK_EXTERNAL.makeIcon());
     private final ViewProperties viewProperties;
     private PremiseType premiseType = PremiseType.INFERRED;
@@ -58,7 +58,7 @@ public class EntityLabel extends Label {
         this(entity.nid(), viewProperties);
     }
 
-    public EntityLabel(int entityNid, ViewProperties viewProperties) {
+    public EntityLabel(long entityNid, ViewProperties viewProperties) {
         this.entityNid = entityNid;
         this.viewProperties = viewProperties;
         this.setText(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(entityNid));
@@ -107,7 +107,7 @@ public class EntityLabel extends Label {
         }
     }
 
-    private void showPopup(int conceptNid, MouseEvent mouseEvent) {
+    private void showPopup(long conceptNid, MouseEvent mouseEvent) {
 
         Optional<ObservableSemanticSnapshot> optionalAxiomSnapshot =
                 ObservableSemantic.getAxiomSnapshot(conceptNid, premiseType, viewProperties.calculator());

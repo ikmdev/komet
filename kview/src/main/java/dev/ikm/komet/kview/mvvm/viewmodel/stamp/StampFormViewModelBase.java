@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.mvvm.viewmodel.stamp;
 
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import dev.ikm.komet.terms.KometTerm;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.AUTHOR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TIME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TITLE;
@@ -13,6 +13,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Pr
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUSES;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.TIME;
+import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
@@ -21,7 +22,6 @@ import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.ComponentWithNid;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import org.carlfx.cognitive.validator.ValidationResult;
@@ -79,22 +79,22 @@ public abstract class StampFormViewModelBase extends FormViewModel {
     public void populateDefaults() {
         setPropertyValue(StampFormViewModelBase.Properties.STATUS, State.ACTIVE);
         // module
-        // @TODO Revisit TinkarTerms bindings file because the defaultModuleProperty is returning a module that isn't part of the list of modules available.
-        //       int moduleNid = getViewProperties().nodeView().editCoordinate().defaultModuleProperty().get().nid();
-        int moduleNid = TinkarTerm.DEVELOPMENT_MODULE.nid();
+        // @TODO Revisit the bindings because the defaultModuleProperty is returning a module that isn't part of the list of modules available.
+        //       long moduleNid = getViewProperties().nodeView().editCoordinate().defaultModuleProperty().get().nid();
+        long moduleNid = KometTerm.DEVELOPMENT_MODULE.nid();
         List<ComponentWithNid> moduleEntities = getObservableList(StampFormViewModelBase.Properties.MODULES);
         ComponentWithNid module = lookupByNid(moduleNid, moduleEntities);
         setPropertyValue(StampFormViewModelBase.Properties.MODULE, module);
 
         // Path
-        int pathNid = getViewProperties().nodeView().editCoordinate().defaultPathProperty().get().nid();
+        long pathNid = getViewProperties().nodeView().editCoordinate().defaultPathProperty().get().nid();
         List<ComponentWithNid> pathEntities = getObservableList(StampFormViewModelBase.Properties.PATHS);
         ComponentWithNid path = lookupByNid(pathNid, pathEntities);
         setPropertyValue(StampFormViewModelBase.Properties.PATH, path);
 
     }
 
-    private ComponentWithNid lookupByNid(int nid, List<ComponentWithNid> entities) {
+    private ComponentWithNid lookupByNid(long nid, List<ComponentWithNid> entities) {
         return entities.stream()
                 .filter(entity ->
                         entity.nid() == nid)
@@ -106,10 +106,10 @@ public abstract class StampFormViewModelBase extends FormViewModel {
         this.topic = topic;
 
         // initialize observable lists
-        Set<ComponentWithNid> modules = fetchDescendentsOfConcept(viewProperties, TinkarTerm.MODULE.publicId()).stream().map(conceptEntity -> (ComponentWithNid) conceptEntity).collect(Collectors.toSet());
+        Set<ComponentWithNid> modules = NavigationReads.descendantsOf(viewProperties.calculator(), KometTerm.MODULE).stream().map(conceptEntity -> (ComponentWithNid) conceptEntity).collect(Collectors.toSet());
         // add default module just in case it isn't a descendent
         modules.add(viewProperties.nodeView().editCoordinate().defaultModuleProperty().get());
-        Set<ComponentWithNid> paths = fetchDescendentsOfConcept(viewProperties, TinkarTerm.PATH.publicId()).stream().map(conceptEntity -> (ComponentWithNid) conceptEntity).collect(Collectors.toSet());
+        Set<ComponentWithNid> paths = NavigationReads.descendantsOf(viewProperties.calculator(), KometTerm.PATH).stream().map(conceptEntity -> (ComponentWithNid) conceptEntity).collect(Collectors.toSet());
 
         if (getObservableList(MODULES).isEmpty()) {
             setPropertyValues(MODULES, modules);

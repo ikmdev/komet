@@ -23,7 +23,7 @@ import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 
 import java.util.List;
 import java.util.Map;
@@ -62,7 +62,7 @@ public final class PatternRequirementUtils {
      * {@link #isPatternSatisfied(int, List, List, StampCalculator, int)}.
      */
     public static boolean isPatternSatisfied(EditorPatternModel pattern, List<EntityFacade> semantics,
-                                      StampCalculator calculator, int statedAxiomsPatternNid) {
+                                      StampCalculator calculator, long statedAxiomsPatternNid) {
         return isPatternSatisfied(pattern.getNid(), pattern.getRequirements(), semantics, calculator, statedAxiomsPatternNid);
     }
 
@@ -84,9 +84,9 @@ public final class PatternRequirementUtils {
      * @param calculator             resolves each semantic's latest version
      * @param statedAxiomsPatternNid the stated definition pattern per the view's logic coordinate
      */
-    public static boolean isPatternSatisfied(int patternNid, List<EditorPatternRequirement> requirements,
+    public static boolean isPatternSatisfied(long patternNid, List<EditorPatternRequirement> requirements,
                                       List<EntityFacade> semantics, StampCalculator calculator,
-                                      int statedAxiomsPatternNid) {
+                                      long statedAxiomsPatternNid) {
         if (semantics.isEmpty()) {
             return false;
         }
@@ -132,8 +132,8 @@ public final class PatternRequirementUtils {
      */
     public static boolean definesNecessaryOrSufficientSet(SemanticEntityVersion version) {
         return version.fieldValues().get(0) instanceof DiTreeEntity definition
-                && (definition.containsVertexWithMeaning(TinkarTerm.NECESSARY_SET)
-                        || definition.containsVertexWithMeaning(TinkarTerm.SUFFICIENT_SET));
+                && (definition.containsVertexWithMeaning(KernelTerm.NECESSARY_SET)
+                        || definition.containsVertexWithMeaning(KernelTerm.SUFFICIENT_SET));
     }
 
     /**
@@ -167,7 +167,7 @@ public final class PatternRequirementUtils {
                                                                         List<E> entries,
                                                                         Function<EditorPatternModel, List<EntityFacade>> semanticsOfPattern,
                                                                         StampCalculator calculator,
-                                                                        int statedAxiomsPatternNid) {
+                                                                        long statedAxiomsPatternNid) {
         if (entries.size() == 1) {
             return Optional.of(entries.getFirst());
         }

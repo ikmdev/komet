@@ -1,6 +1,6 @@
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.terms.EntityProxy;
 import org.junit.jupiter.api.Test;
 
@@ -25,13 +25,13 @@ class ObservableComposerDefaultFieldValuesTest {
         assertTrue(ObservableComposer.isDefaultFieldValue(null), "null, an unsupported data type's start");
         assertTrue(ObservableComposer.isDefaultFieldValue(BLANK_CONCEPT), "the blank concept");
         assertTrue(ObservableComposer.isDefaultFieldValue(
-                EntityProxy.Concept.make("Blank", BLANK_CONCEPT.asUuidArray()[0])), "any facade of the blank concept");
+                EntityProxy.Concept.make("Blank", BLANK_CONCEPT.leastUuid())), "any facade of the blank concept");
         assertTrue(ObservableComposer.isDefaultFieldValue(""), "empty string");
         assertTrue(ObservableComposer.isDefaultFieldValue(0), "zero integer");
         assertTrue(ObservableComposer.isDefaultFieldValue(0.0F), "zero float");
         assertTrue(ObservableComposer.isDefaultFieldValue(false), "false");
-        assertTrue(ObservableComposer.isDefaultFieldValue(IntIds.list.empty()), "empty component list");
-        assertTrue(ObservableComposer.isDefaultFieldValue(IntIds.set.empty()), "empty component set");
+        assertTrue(ObservableComposer.isDefaultFieldValue(LongIds.list.empty()), "empty component list");
+        assertTrue(ObservableComposer.isDefaultFieldValue(LongIds.set.empty()), "empty component set");
         assertTrue(ObservableComposer.isDefaultFieldValue(new byte[0]), "empty byte array");
     }
 
@@ -43,7 +43,7 @@ class ObservableComposerDefaultFieldValuesTest {
         assertFalse(ObservableComposer.isDefaultFieldValue(3), "a non-zero integer");
         assertFalse(ObservableComposer.isDefaultFieldValue(1.5F), "a non-zero float");
         assertFalse(ObservableComposer.isDefaultFieldValue(true), "true");
-        assertFalse(ObservableComposer.isDefaultFieldValue(IntIds.list.of(1, 2)), "a component list with entries");
+        assertFalse(ObservableComposer.isDefaultFieldValue(LongIds.list.of(1, 2)), "a component list with entries");
         assertFalse(ObservableComposer.isDefaultFieldValue(new byte[]{1}), "bytes");
     }
 }

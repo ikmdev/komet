@@ -274,9 +274,9 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                 // Also advertise the standard multi-concept format (ike-issues#854) so any target —
                 // the assistant compose box, another list — can read all dragged concepts, not just
                 // the navigator's own format.
-                int[] nids = draggedItems.stream()
+                long[] nids = draggedItems.stream()
                         .filter(i -> i.getValue() != null && i.getValue().publicId() != null)
-                        .mapToInt(i -> i.getValue().nid())
+                        .mapToLong(i -> i.getValue().nid())
                         .toArray();
                 KometClipboard.putConcepts(clipboardContent, nids);
                 dragboard.setContent(clipboardContent);
@@ -907,7 +907,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
      * @param notifyUser whether to surface a user-facing message, in addition to logging the diagnostic
      */
     private void reportConceptNotDisplayed(InvertedTree.ConceptItem conceptItem, boolean notifyUser) {
-        int nid = conceptItem.childNid();
+        long nid = conceptItem.childNid();
         TinkExecutor.threadPool().execute(() -> {
             ConceptNavigatorUtils.ConceptDisplayDiagnosis diagnosis =
                     ConceptNavigatorUtils.investigateUndisplayableConcept(nid, treeView.getNavigator());
@@ -915,7 +915,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
 
             BiConsumer<ConceptFacade, String> handler = treeView.getOnConceptNavigationFailed();
             if (notifyUser && handler != null) {
-                ConceptFacade facade = EntityHandle.get(nid).isConcept() ? Entity.getFast(nid) : null;
+                ConceptFacade facade = EntityHandle.get(nid).asConcept().orElse(null);
                 Platform.runLater(() -> handler.accept(facade, diagnosis.summary()));
             }
         });
@@ -975,8 +975,8 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
     }
 
     private ConceptNavigatorTreeItem getItemAndExpand(List<InvertedTree.ConceptItem> lineage, ConceptNavigatorTreeItem parent, int i) {
-        int parentNid = lineage.get(i).nid();
-        int nid = lineage.get(i).childNid();
+        long parentNid = lineage.get(i).nid();
+        long nid = lineage.get(i).childNid();
         ConceptNavigatorTreeItem item = (ConceptNavigatorTreeItem) parent.getChildren().stream()
                 .filter(c -> c.getValue().nid() == nid)
                 .findFirst()
@@ -1009,7 +1009,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
      */
     private class ModifiedEntitySubscriber {
 
-        private final FlowSubscriber<Integer> flowSubscriber;
+        private final FlowSubscriber<Long> flowSubscriber;
         private final EvtBus eventBus = EvtBusFactory.getDefaultEvtBus();
         private final Subscriber<RefreshCalculatorCacheEvent> refreshEventSubscriber;
 
@@ -1072,7 +1072,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
             eventBus.subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshEventSubscriber);
         }
 
-        FlowSubscriber<Integer> getFlowSubscriber() {
+        FlowSubscriber<Long> getFlowSubscriber() {
             return flowSubscriber;
         }
     }

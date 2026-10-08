@@ -1,5 +1,6 @@
 package dev.ikm.komet.kleditorapp.view;
 
+import dev.ikm.tinkar.common.id.Nid;
 import dev.ikm.komet.kleditorapp.view.control.EditorWindowControl;
 import dev.ikm.komet.kleditorapp.view.control.FieldColumnControl;
 import dev.ikm.komet.kleditorapp.view.control.FieldViewControl;
@@ -258,7 +259,7 @@ public class KLEditorWindowController {
             Dragboard dragboard = event.getDragboard();
 
             if (dragboard.hasContent(KL_EDITOR_VERSION_PROXY)) {
-                Integer patternNid = (Integer) dragboard.getContent(KL_EDITOR_VERSION_PROXY);
+                long patternNid = Nid.nidOf(dragboard.getContent(KL_EDITOR_VERSION_PROXY));
 
                 EditorPatternModel editorPatternModel = new EditorPatternModel(viewCalculator, patternNid);
                 editorPatternModel.setRowIndex(gridDropInfo.getRowIndex());

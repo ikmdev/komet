@@ -1,5 +1,7 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import dev.ikm.tinkar.common.id.Nid;
+
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.search.SearchResultCell;
@@ -275,9 +277,9 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
                 }
             }
 
-            int nid = extractNid(event);
-            if (nid != Integer.MIN_VALUE) {  //
-                EntityProxy entity = Entity.getFast(nid).toProxy();
+            long nid = extractNid(event);
+            if (!Nid.isNone(nid)) {  //
+                EntityProxy entity = EntityHandle.get(nid).expectEntity().toProxy();
 
                 control.setEntity(entity);
                 addConceptNode(entity, control.getComponentNameRenderer());
@@ -340,7 +342,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
      * @param dragEvent A drag event {@link DragEvent} from a JavaFX {@link Node}.
      * @return Returns a nid (int) representing a unique database identifier of a given entity. A component's nid is extracted from
      */
-    private int extractNid(DragEvent dragEvent) {
+    private long extractNid(DragEvent dragEvent) {
         if (isADragAndDropInfo(dragEvent)) {
             DragAndDropInfo dropInfo = (DragAndDropInfo) ((Node)dragEvent.getGestureSource()).getUserData();
             return EntityService.get().nidForPublicId(dropInfo.publicId());
@@ -405,7 +407,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
             Object uuidsContent = dragEvent.getDragboard().getContent(CONCEPT_NAVIGATOR_DRAG_FORMAT);
             if (uuidsContent instanceof List list) {
                 if (!list.isEmpty() && list.get(0) instanceof UUID[]) {
-                    Entity<?> entity = EntityService.get().getEntityFast(EntityService.get().nidForUuids((UUID[]) list.get(0)));
+                    Entity<?> entity = EntityHandle.get(EntityService.get().nidForUuids((UUID[]) list.get(0))).expectEntity();
                     return getSkinnable().getComponentAllowedFilter().test(entity.publicId());
                 } else if (uuidsContent instanceof List<?>) {
                     // Drag & dropping multiple concepts

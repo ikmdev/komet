@@ -73,7 +73,7 @@ public class NewPatternAction extends AbstractActionImmediate implements Generat
             Transaction transaction = Transaction.make("New pattern for: " + newPatternText);
             StampEntity stampEntity = transaction.getStamp(State.ACTIVE, editCoordinate.getAuthorNidForChanges(),
                     editCoordinate.getDefaultModuleNid(), editCoordinate.getDefaultPathNid());
-            Entity.provider().putStamp(stampEntity);
+            Entity.provider().putEntity(stampEntity);
 
             PatternBuilder newPatternBuilder = PatternBuilder.builder(stampEntity);
 

@@ -20,7 +20,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import org.eclipse.collections.api.list.ImmutableList;
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * Reads the commit-comment thread attached to a STAMP (or any component).
  * <p>
- * A commit comment is modeled as a {@link TinkarTerm#COMMENT_PATTERN} semantic whose referenced
+ * A commit comment is modeled as a {@link KernelTerm#COMMENT_PATTERN} semantic whose referenced
  * component is the STAMP's nid, with the comment text in field 0. Because a stamp may be
  * referenced by many such semantics — each authored independently, each carrying its own
  * stamp — the comments form a thread. This is the read side of that model: it replaces the
@@ -47,12 +47,12 @@ public final class CommentReader {
      * @param time        the comment's commit time, epoch millis (from the comment semantic's stamp)
      * @param semanticNid the nid of the comment semantic itself
      */
-    public record CommentEntry(String text, int authorNid, long time, int semanticNid) {}
+    public record CommentEntry(String text, long authorNid, long time, long semanticNid) {}
 
     private CommentReader() {}
 
     /**
-     * Returns every {@link TinkarTerm#COMMENT_PATTERN} semantic whose referenced component is
+     * Returns every {@link KernelTerm#COMMENT_PATTERN} semantic whose referenced component is
      * {@code componentNid} (e.g. a STAMP nid), each taken from its latest version under the
      * supplied view, ordered oldest comment first.
      *
@@ -60,22 +60,21 @@ public final class CommentReader {
      * @param view         the view used to resolve each comment semantic's latest version
      * @return the comment thread, oldest first (empty if there are none)
      */
-    public static List<CommentEntry> getComments(int componentNid, ViewCalculator view) {
+    public static List<CommentEntry> getComments(long componentNid, ViewCalculator view) {
         List<CommentEntry> comments = new ArrayList<>();
-        int[] commentSemanticNids = EntityService.get()
-                .semanticNidsForComponentOfPattern(componentNid, TinkarTerm.COMMENT_PATTERN.nid());
-        for (int semanticNid : commentSemanticNids) {
-            Latest<SemanticEntityVersion> latest = view.stampCalculator().latest(semanticNid);
-            if (latest.isPresent()) {
-                SemanticEntityVersion version = latest.get();
-                ImmutableList<Object> fields = version.fieldValues();
-                if (!fields.isEmpty() && fields.get(0) != null) {
-                    StampEntity<?> stamp = version.stamp();
-                    comments.add(new CommentEntry(String.valueOf(fields.get(0)),
-                            stamp.authorNid(), stamp.time(), semanticNid));
-                }
-            }
-        }
+        EntityService.get().forEachSemanticForComponentOfPattern(componentNid, KernelTerm.COMMENT_PATTERN.nid(),
+                semantic -> {
+                    Latest<SemanticEntityVersion> latest = view.stampCalculator().latest(semantic);
+                    if (latest.isPresent()) {
+                        SemanticEntityVersion version = latest.get();
+                        ImmutableList<Object> fields = version.fieldValues();
+                        if (!fields.isEmpty() && fields.get(0) != null) {
+                            StampEntity<?> stamp = version.stamp();
+                            comments.add(new CommentEntry(String.valueOf(fields.get(0)),
+                                    stamp.authorNid(), stamp.time(), semantic.nid()));
+                        }
+                    }
+                });
         comments.sort(Comparator.comparingLong(CommentEntry::time));
         return comments;
     }

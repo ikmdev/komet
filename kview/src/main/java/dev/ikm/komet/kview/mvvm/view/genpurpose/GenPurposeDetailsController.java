@@ -22,8 +22,8 @@ import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupView
 import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
 
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.observable.ObservableEntity;
+import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -59,6 +59,7 @@ import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowType;
 import dev.ikm.komet.layout_engine.window.WindowSupport;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
@@ -172,7 +173,7 @@ public class GenPurposeDetailsController {
      * {@link #semanticEntityToPatternSemanticsPresenter}. Kept in step by {@link #doAddSemanticViews}
      * and {@link #clearSemanticViews}; read by {@link #unpublishedSemantics}.
      */
-    private final Map<Integer, SemanticEntity<SemanticEntityVersion>> displayedSemantics = new LinkedHashMap<>();
+    private final Map<Long, SemanticEntity<SemanticEntityVersion>> displayedSemantics = new LinkedHashMap<>();
 
     /**
      * Given a SemanticEntity what's its associated Semantic Control.
@@ -232,7 +233,7 @@ public class GenPurposeDetailsController {
      * removing the definition's last set, un-satisfy — the stated pattern's requirement.
      * Strong reference: the entity provider holds its subscribers weakly.
      */
-    private dev.ikm.tinkar.common.util.broadcast.Subscriber<Integer> statedDefinitionChangeSubscriber;
+    private dev.ikm.tinkar.common.util.broadcast.Subscriber<Long> statedDefinitionChangeSubscriber;
 
     /**
      * Wires the window's behavior onto its view for the KL-editor window definition held at
@@ -423,7 +424,7 @@ public class GenPurposeDetailsController {
     }
 
     private void updateStampControl(EntityFacade refConcept) {
-        ObservableEntity observableEntity = ObservableEntity.get(refConcept.nid());
+        ObservableEntity observableEntity = ObservableEntityHandle.get(refConcept.nid()).expectEntity();
         ObservableEntitySnapshot observableEntitySnapshot;
         try {
             observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
@@ -447,7 +448,7 @@ public class GenPurposeDetailsController {
 
             // -- time
             long newTime = stampEntity.time();
-            stampViewControl.setLastUpdated(TimeUtils.toShortDateString(newTime));
+            stampViewControl.setLastUpdated(DateTimeUtil.format(newTime, DateTimeUtil.DAY_FORMATTER));
 
             // -- author
             ConceptFacade authorConcept = stampEntity.author();
@@ -564,7 +565,7 @@ public class GenPurposeDetailsController {
      * The stated axioms pattern per the view's logic coordinate — the pattern whose semantics
      * edit inline as an axiom tree (see {@code KlFieldHelper.createReadOnlyKlField}).
      */
-    private int statedAxiomsPatternNid() {
+    private long statedAxiomsPatternNid() {
         return getViewProperties().calculator().viewCoordinateRecord().logicCoordinate().statedAxiomsPatternNid();
     }
 
@@ -664,7 +665,7 @@ public class GenPurposeDetailsController {
      * The axiom tree already shows the edit, so nothing re-renders here; the required chips and
      * the Publish button follow through the stated-definition change subscriber.
      */
-    private void saveUncommittedInlineEdit(int semanticNid, int fieldIndex, Object newValue) {
+    private void saveUncommittedInlineEdit(long semanticNid, int fieldIndex, Object newValue) {
         session.saveUncommittedFieldEdit(semanticNid, fieldIndex, newValue);
     }
 
@@ -1350,7 +1351,7 @@ public class GenPurposeDetailsController {
         }
 
         // Pattern Entity
-        int patternNid = editorPatternModel.getNid();
+        long patternNid = editorPatternModel.getNid();
         EntityHandle handle = EntityHandle.get(patternNid);
         PatternEntity patternEntity;
         if (handle.asPattern().isEmpty()) {
@@ -1598,7 +1599,7 @@ public class GenPurposeDetailsController {
                 });
             }
         }
-        int currentAuthorNid = getViewProperties().nodeView().editCoordinate().getAuthorNidForChanges();
+        long currentAuthorNid = getViewProperties().nodeView().editCoordinate().getAuthorNidForChanges();
         sectionModelToTitledPane.forEach((section, titledPane) -> {
             List<SemanticEntity<SemanticEntityVersion>> unpublished = unpublishedBySection.get(section);
             if (unpublished == null) {
@@ -1606,7 +1607,7 @@ public class GenPurposeDetailsController {
                 return;
             }
             boolean allByCurrentAuthor = unpublished.stream()
-                    .flatMap(semantic -> Entity.getFast(semantic.nid()).versions().stream())
+                    .flatMap(semantic -> EntityHandle.get(semantic.nid()).expectEntity().versions().stream())
                     .filter(EntityVersion::uncommitted)
                     .allMatch(version -> version.stamp().authorNid() == currentAuthorNid);
             titledPane.setUnpublishedNote((unpublished.size() == 1 ? "1 change" : unpublished.size() + " changes")
@@ -1622,7 +1623,7 @@ public class GenPurposeDetailsController {
      */
     private List<SemanticEntity<SemanticEntityVersion>> unpublishedSemantics() {
         return displayedSemantics.values().stream()
-                .filter(semantic -> Entity.getFast(semantic.nid()).uncommitted())
+                .filter(semantic -> EntityHandle.get(semantic.nid()).expectSemantic().uncommitted())
                 .toList();
     }
 
@@ -1634,7 +1635,7 @@ public class GenPurposeDetailsController {
     private int unpublishedChangeCount() {
         int count = unpublishedSemantics().size();
         EntityFacade refComponent = session.getComponent();
-        if (refComponent != null && Entity.getFast(refComponent.nid()).uncommitted()) {
+        if (refComponent != null && EntityHandle.get(refComponent.nid()).expectEntity().uncommitted()) {
             count++;
         }
         return count;

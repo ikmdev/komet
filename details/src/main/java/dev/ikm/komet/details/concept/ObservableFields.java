@@ -433,7 +433,7 @@ public enum ObservableFields implements ConceptFacade {
      */
     String fullyQualifiedDescription;
     String regularDescription;
-    private int cachedNid;
+    private long cachedNid;
 
     //~--- constructors --------------------------------------------------------
 
@@ -485,7 +485,7 @@ public enum ObservableFields implements ConceptFacade {
     }
 
     @Override
-    public int nid() throws NoSuchElementException {
+    public long nid() throws NoSuchElementException {
         if (cachedNid == 0) {
             cachedNid = PrimitiveData.nid(getUuid());
         }

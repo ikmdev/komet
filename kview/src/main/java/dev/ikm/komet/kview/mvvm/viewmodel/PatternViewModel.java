@@ -20,10 +20,10 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Pr
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATH;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.STATUS;
 import static dev.ikm.tinkar.terms.EntityProxy.Pattern;
-import static dev.ikm.tinkar.terms.TinkarTerm.ACCEPTABLE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DEFINITION_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.komet.terms.KometTerm.ACCEPTABLE;
+import static dev.ikm.tinkar.terms.KernelTerm.DEFINITION_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.framework.observable.ObservableComposer.EntityComposer;
 import dev.ikm.komet.framework.observable.ObservableField;
@@ -44,7 +44,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.ConceptRecord;
 import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
@@ -207,7 +207,7 @@ public class PatternViewModel extends FormViewModel {
         ObjectProperty<EntityFacade> patternProperty = getProperty(ViewModelKey.PATTERN);
         EntityFacade patternFacade = patternProperty.getValue();
         if (patternFacade != null && getPropertyValue(ViewModelKey.MODE).equals(EDIT)) {
-            Entity entity = EntityService.get().getEntityFast(patternFacade);
+            Entity entity = EntityHandle.get(patternFacade).expectPattern();
             ViewCalculator viewCalculator = getViewProperties().calculator();
 
             // Load Fields data.
@@ -240,15 +240,15 @@ public class PatternViewModel extends FormViewModel {
 
             loadFqnDetails(patternFacade);
 
-            viewCalculator.forEachSemanticVersionForComponentOfPattern(entity.nid(), TinkarTerm.DESCRIPTION_PATTERN.nid(),
+            viewCalculator.forEachSemanticVersionForComponentOfPattern(entity.nid(), KernelTerm.DESCRIPTION_PATTERN.nid(),
                 (semanticEntityVersion,  entityVersion1, patternEntityVersion) -> {
                     EntityFacade language = (EntityFacade) semanticEntityVersion.fieldValues().get(0);
                     String nameText = (String) semanticEntityVersion.fieldValues().get(1);
                     EntityFacade caseSignificance = (EntityFacade) semanticEntityVersion.fieldValues().get(2);
                     EntityFacade descriptionType = (EntityFacade) semanticEntityVersion.fieldValues().get(3);
                     DescrName descrName = new DescrName(null, nameText, descriptionType,
-                        Entity.getFast(caseSignificance.nid()), Entity.getFast(semanticEntityVersion.state().nid()),
-                            Entity.getFast(semanticEntityVersion.module().nid()),Entity.getFast(language.nid()), semanticEntityVersion.publicId());
+                        EntityHandle.get(caseSignificance.nid()).expectConcept(), EntityHandle.get(semanticEntityVersion.state().nid()).expectConcept(),
+                            EntityHandle.get(semanticEntityVersion.module().nid()).expectConcept(),EntityHandle.get(language.nid()).expectConcept(), semanticEntityVersion.publicId());
                 if (PublicId.equals(descriptionType.publicId(), REGULAR_NAME_DESCRIPTION_TYPE.publicId())) {
                     ObservableList<DescrName> otherNamesList = getObservableList(OTHER_NAMES);
                     HashMap<DescrName, SemanticEntityVersion> regularNamesMap = getPropertyValue(OTHER_NAME_SEMANTIC_VERSION_MAP);
@@ -274,8 +274,8 @@ public class PatternViewModel extends FormViewModel {
      * One-shot diagnostic for the intermittent "empty shell" pattern window on restore: a window whose
      * chrome appears but whose fields/descriptions are blank because content was populated exactly once,
      * synchronously, at restore — before the datastore was warm. Two empty-shell signatures are possible:
-     * (1) the persisted nid did not resolve to an entity yet (the restore factory's {@code Entity.getFast}
-     * returned {@code null}, so {@code PATTERN} is {@code null} and the EDIT-mode load block above is
+     * (1) the persisted nid did not resolve to an entity yet (the restore factory's entity lookup
+     * found nothing, so {@code PATTERN} is {@code null} and the EDIT-mode load block above is
      * skipped entirely); or (2) the entity resolved but no latest version is resolvable under this
      * window's coordinate. Unlike the concept window, the pattern window registers no data-ready re-render
      * hook, so either case persists until a coordinate change or a commit. This emits one definitive line.
@@ -289,7 +289,7 @@ public class PatternViewModel extends FormViewModel {
                     + "(persisted nid did not resolve to an entity at restore; load block skipped)", mode);
             return;
         }
-        final Entity entity = EntityService.get().getEntityFast(patternFacade.nid());
+        final Entity entity = EntityHandle.get(patternFacade.nid()).orNull();
         final boolean entityResolved = entity != null;
         final boolean dataLoaded = entityResolved
                 && getViewProperties().calculator().latest(entity).isPresent();
@@ -324,8 +324,8 @@ public class PatternViewModel extends FormViewModel {
         EntityFacade fqnCaseSignificance = (EntityFacade) fqnSemanticEntityVersion.fieldValues().get(2);
         EntityFacade fqnDescriptionType = (EntityFacade) fqnSemanticEntityVersion.fieldValues().get(3);
         DescrName fqnDescrName = new DescrName(null, fqnString, fqnDescriptionType,
-                Entity.getFast(fqnCaseSignificance.nid()), Entity.getFast(fqnSemanticEntityVersion.state().nid()),
-                Entity.getFast(fqnSemanticEntityVersion.module().nid()),Entity.getFast(fqnLanguage.nid()), fqnSemanticEntityVersion.publicId());
+                EntityHandle.get(fqnCaseSignificance.nid()).expectConcept(), EntityHandle.get(fqnSemanticEntityVersion.state().nid()).expectConcept(),
+                EntityHandle.get(fqnSemanticEntityVersion.module().nid()).expectConcept(),EntityHandle.get(fqnLanguage.nid()).expectConcept(), fqnSemanticEntityVersion.publicId());
         setPropertyValue(FQN_DESCRIPTION_NAME, fqnDescrName);
         setPropertyValue(FQN_DESCRIPTION_NAME_TEXT, fqnString);
         setPropertyValue(FQN_CASE_SIGNIFICANCE, fqnCaseSignificance);
@@ -410,8 +410,8 @@ public class PatternViewModel extends FormViewModel {
 
         // Build field definitions from the UI collection
         ObservableList<PatternField> fieldsProperty = getObservableList(ViewModelKey.FIELDS_COLLECTION);
-        int patternNid = PrimitiveData.nid(patternPublicId);
-        int stampNid = patternEditable.getEditStamp().nid();
+        long patternNid = PrimitiveData.nid(patternPublicId);
+        long stampNid = patternEditable.getEditStamp().nid();
         org.eclipse.collections.api.list.MutableList<FieldDefinitionRecord> fieldDefs =
                 org.eclipse.collections.api.factory.Lists.mutable.ofInitialCapacity(fieldsProperty.size());
         for (int i = 0; i < fieldsProperty.size(); i++) {
@@ -434,7 +434,7 @@ public class PatternViewModel extends FormViewModel {
                     : PublicIds.newRandom();
 
             EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> fqnComposer =
-                    composer.composeSemantic(fqnPublicId, observablePattern, TinkarTerm.DESCRIPTION_PATTERN);
+                    composer.composeSemantic(fqnPublicId, observablePattern, KernelTerm.DESCRIPTION_PATTERN);
             ObservableSemanticVersion.Editable fqnEditable = fqnComposer.getEditableVersion();
 
             // DESCRIPTION_PATTERN fields: [0]=language, [1]=text, [2]=caseSignificance, [3]=descriptionType
@@ -450,7 +450,7 @@ public class PatternViewModel extends FormViewModel {
             // Compose US Dialect for the FQN
             PublicId dialectPublicId = PublicIds.newRandom();
             EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> dialectComposer =
-                    composer.composeSemantic(dialectPublicId, fqnComposer.getEntity(), TinkarTerm.US_DIALECT_PATTERN);
+                    composer.composeSemantic(dialectPublicId, fqnComposer.getEntity(), KernelTerm.US_DIALECT_PATTERN);
             ObservableSemanticVersion.Editable dialectEditable = dialectComposer.getEditableVersion();
             // US_DIALECT_PATTERN fields: [0]=acceptability
             dialectEditable.getEditableField(0).setObjectValue(ACCEPTABLE);
@@ -483,7 +483,7 @@ public class PatternViewModel extends FormViewModel {
 
             if (shouldCompose) {
                 EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> synComposer =
-                        composer.composeSemantic(otherNamePublicId, observablePattern, TinkarTerm.DESCRIPTION_PATTERN);
+                        composer.composeSemantic(otherNamePublicId, observablePattern, KernelTerm.DESCRIPTION_PATTERN);
                 ObservableSemanticVersion.Editable synEditable = synComposer.getEditableVersion();
                 synEditable.getEditableField(0).setObjectValue(otherName.getLanguage());
                 synEditable.getEditableField(1).setObjectValue(otherName.getNameText());
@@ -495,7 +495,7 @@ public class PatternViewModel extends FormViewModel {
                 if (!isEdit || otherName.getSemanticPublicId() == null) {
                     PublicId synDialectPublicId = PublicIds.newRandom();
                     EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> synDialectComposer =
-                            composer.composeSemantic(synDialectPublicId, synComposer.getEntity(), TinkarTerm.US_DIALECT_PATTERN);
+                            composer.composeSemantic(synDialectPublicId, synComposer.getEntity(), KernelTerm.US_DIALECT_PATTERN);
                     synDialectComposer.getEditableVersion().getEditableField(0).setObjectValue(ACCEPTABLE);
                     synDialectComposer.save();
                 }

@@ -34,7 +34,7 @@ module dev.ikm.komet.kview {
 
     requires transitive dev.ikm.komet.layout;
     requires jdk.jfr;
-    requires org.eclipse.jgit;
+    requires dev.ikm.jpms.jgit;
     requires dev.ikm.tinkar.reasoner.service;
     requires org.eclipse.collections.api;
     requires org.eclipse.collections.impl;
@@ -155,9 +155,7 @@ module dev.ikm.komet.kview {
     exports dev.ikm.komet.kview.controls;
     opens dev.ikm.komet.kview.controls;
     opens dev.ikm.komet.kview.controls.skin to javafx.controls;
-    opens dev.ikm.komet.kview.klfields.readonly to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.klfields;
-    exports dev.ikm.komet.kview.klfields.readonly;
 
     exports dev.ikm.komet.kview;
     opens dev.ikm.komet.kview;

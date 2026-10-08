@@ -25,8 +25,8 @@ public class TimelineViewModel extends SimpleViewModel {
     }
 
     public TimelineViewModel() {
-        addProperty(TimelineProperties.AVAILABLE_PATH_MOULES_MAP, new LinkedHashMap<String, List<Integer>>())
-                .addProperty(TimelineProperties.CHECKED_MODULE_IDS, List.<Integer>of())
+        addProperty(TimelineProperties.AVAILABLE_PATH_MOULES_MAP, new LinkedHashMap<String, List<Long>>())
+                .addProperty(TimelineProperties.CHECKED_MODULE_IDS, List.<Long>of())
                 .addProperty(TimelineProperties.SELECTED_PATH, (String) null)
                 .addProperty(TimelineProperties.VIEW_PROPERTIES, (ViewProperties) null)
                 .addProperty(TimelineProperties.FILTER_POP_UP_VISIBLE, false);

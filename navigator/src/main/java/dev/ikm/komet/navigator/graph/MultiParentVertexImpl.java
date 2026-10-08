@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.navigator.graph;
 
+import dev.ikm.tinkar.common.id.Nid;
 //~--- JDK imports ------------------------------------------------------------
 
 import dev.ikm.tinkar.common.alert.AlertStreams;
@@ -23,24 +24,24 @@ import javafx.scene.Node;
 import javafx.scene.control.TreeItem;
 import org.eclipse.collections.api.collection.ImmutableCollection;
 import dev.ikm.komet.framework.view.ObservableView;
-import dev.ikm.tinkar.common.id.IntIdSet;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIdSet;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Pattern;
 
@@ -65,8 +66,8 @@ public class MultiParentVertexImpl
     private static final Logger LOG = LoggerFactory.getLogger(MultiParentVertexImpl.class);
     //~--- fieldValues --------------------------------------------------------------
     private final List<MultiParentVertexImpl> extraParents = new ArrayList<>();
-    private final int nid;
-    private final IntIdSet typeNids;
+    private final long nid;
+    private final LongIdSet typeNids;
     private CountDownLatch childrenLoadedLatch = new CountDownLatch(1);
     private volatile boolean cancelLookup = false;
     private boolean defined = false;
@@ -83,22 +84,22 @@ public class MultiParentVertexImpl
         super();
         this.graphController = graphController;
         this.nid = Integer.MAX_VALUE;
-        this.typeNids = IntIds.set.of(TinkarTerm.UNINITIALIZED_COMPONENT.nid());
+        this.typeNids = LongIds.set.of(KernelTerm.UNINITIALIZED_COMPONENT.nid());
     }
 
-    public MultiParentVertexImpl(int conceptNid, MultiParentGraphViewController graphController, IntIdSet typeNids) {
-        this(Entity.getFast(conceptNid), graphController, typeNids, null);
+    public MultiParentVertexImpl(long conceptNid, MultiParentGraphViewController graphController, LongIdSet typeNids) {
+        this(EntityHandle.get(conceptNid).expectConcept(), graphController, typeNids, null);
     }
 
     public MultiParentVertexImpl(ConceptEntity conceptEntity
-            , MultiParentGraphViewController graphController, IntIdSet typeNids, Node graphic) {
+            , MultiParentGraphViewController graphController, LongIdSet typeNids, Node graphic) {
         super(conceptEntity, graphic);
         this.graphController = graphController;
         this.nid = conceptEntity.nid();
         this.typeNids = typeNids;
     }
 
-    private static int getConceptNid(TreeItem<ConceptEntity> item) {
+    private static long getConceptNid(TreeItem<ConceptEntity> item) {
         return ((item != null) && (item.getValue() != null)) ? item.getValue()
                 .nid()
                 : null;
@@ -143,11 +144,11 @@ public class MultiParentVertexImpl
         if (compare != 0) {
             return compare;
         }
-        return Integer.compare(nid, o.nid);
+        return Long.compare(nid, o.nid);
     }
 
     public void updateDescription() {
-        if (this.nid != Integer.MAX_VALUE) {
+        if (!Nid.isNotApplicable(this.nid)) {
             this.conceptDescriptionText = graphController.getObservableView().getDescriptionTextOrNid(nid);
         } else {
             this.conceptDescriptionText = "hidden root";
@@ -199,7 +200,7 @@ public class MultiParentVertexImpl
                     }
 
                     for (Edge childLink : childLinks) {
-                        ConceptEntity childChronology = Entity.getFast(childLink.destinationNid());
+                        ConceptEntity childChronology = EntityHandle.get(childLink.destinationNid()).expectConcept();
                         MultiParentVertexImpl childItem = new MultiParentVertexImpl(childChronology, graphController, childLink.typeNids(), null);
                         ObservableView observableView = graphController.getObservableView();
 
@@ -298,7 +299,7 @@ public class MultiParentVertexImpl
 
     @Override
     public boolean isLeaf() {
-        if (this.nid == Integer.MAX_VALUE) {
+        if (Nid.isNotApplicable(this.nid)) {
             return false;
         }
         if (leafStatus != LeafStatus.UNKNOWN) {
@@ -348,10 +349,10 @@ public class MultiParentVertexImpl
     //~--- get methods ---------------------------------------------------------
     @Override
     public boolean isRoot() {
-        if (this.nid == Integer.MAX_VALUE) {
+        if (Nid.isNotApplicable(this.nid)) {
             return true;
         }
-        if (TinkarTerm.ROOT_VERTEX.nid() == this.nid) {
+        if (KernelTerm.ROOT_VERTEX.nid() == this.nid) {
             return true;
         } else if (this.getParent() == null) {
             return true;
@@ -387,12 +388,12 @@ public class MultiParentVertexImpl
     }
 
     @Override
-    public int getConceptNid() {
+    public long getConceptNid() {
         return (getValue() != null) ? getValue().nid()
                 : Integer.MIN_VALUE;
     }
 
-    public IntIdSet getTypeNids() {
+    public LongIdSet getTypeNids() {
         return typeNids;
     }
 
@@ -403,11 +404,11 @@ public class MultiParentVertexImpl
     }
 
     @Override
-    public OptionalInt getOptionalParentNid() {
+    public OptionalLong getOptionalParentNid() {
         if (getParent() != null && getParent().getValue() != null) {
-            return OptionalInt.of(getParent().getValue().nid());
+            return OptionalLong.of(getParent().getValue().nid());
         }
-        return OptionalInt.empty();
+        return OptionalLong.empty();
     }
 
     //~--- set methods ---------------------------------------------------------

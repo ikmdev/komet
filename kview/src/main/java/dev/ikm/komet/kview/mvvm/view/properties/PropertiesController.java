@@ -48,7 +48,7 @@ import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.ComponentWithNid;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -280,7 +280,7 @@ public class PropertiesController implements Serializable {
                         .setValue(CASE_SIGNIFICANCE, null)
                         .setValue(MODULE, null)
                         .setValue(LANGUAGE, null)
-                        .setValue(STATUS, TinkarTerm.ACTIVE_STATE)
+                        .setValue(STATUS, KernelTerm.ACTIVE_STATE)
                         .setValue(IS_SUBMITTED, false)
 
                         .setValue(DESCRIPTION_CASE_SIGNIFICANCE, addFullyQualifiedNameController.getViewModel().getValue(CASE_SIGNIFICANCE))
@@ -359,7 +359,7 @@ public class PropertiesController implements Serializable {
                             .setPropertyValue(CASE_SIGNIFICANCE, null)
                             .setPropertyValue(MODULE, null)
                             .setPropertyValue(LANGUAGE, null)
-                            .setPropertyValue(STATUS, TinkarTerm.ACTIVE_STATE)
+                            .setPropertyValue(STATUS, KernelTerm.ACTIVE_STATE)
                             .setPropertyValue(IS_SUBMITTED, false);
                     controller.clearView();
                     controller.updateView();

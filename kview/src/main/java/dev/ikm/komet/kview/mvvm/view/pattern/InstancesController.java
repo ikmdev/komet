@@ -1,8 +1,8 @@
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,7 +12,6 @@ import javafx.scene.control.ListView;
 import org.carlfx.cognitive.loader.InjectViewModel;
 
 import java.text.NumberFormat;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.PATTERN;
 
@@ -49,18 +48,16 @@ public class InstancesController {
         ObservableList<Object> patternChildren = FXCollections.observableArrayList();
         EntityFacade patternItem = patternViewModel.getPropertyValue(PATTERN);
         setMetaTitle(patternItem.description());
-        int patternNid = patternItem.nid();
-        AtomicInteger childCount = new AtomicInteger();
-
-        // populate the collection of instance for each pattern
-        PrimitiveData.get().forEachSemanticNidOfPattern(patternNid, semanticNid -> {
-            if (childCount.incrementAndGet() < MAX_INSTANCES) {
-                patternChildren.add(semanticNid);
-            }
-        });
-        if (childCount.get() >= MAX_INSTANCES) {
+        long patternNid = patternItem.nid();
+        // populate the collection of instance for each pattern: read only the semantics shown,
+        // and count the rest without reading them (IKE-Network/ike-issues#1249)
+        int childCount = EntityService.get().countSemanticsOfPattern(patternNid);
+        EntityService.get().semanticsOfPattern(patternNid)
+                .limit(MAX_INSTANCES - 1)
+                .forEach(semantic -> patternChildren.add(semantic.nid()));
+        if (childCount >= MAX_INSTANCES) {
             NumberFormat numberFormat = NumberFormat.getInstance();
-            patternChildren.add(numberFormat.format(childCount.get() - MAX_INSTANCES) + " additional semantics suppressed...");
+            patternChildren.add(numberFormat.format(childCount - MAX_INSTANCES) + " additional semantics suppressed...");
         }
         boolean hasChildren = patternChildren.size() > 0;
 

@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 package dev.ikm.komet.framework.controls;
+import dev.ikm.tinkar.terms.KernelTerm;
 import network.ike.docs.konceptcore.KonceptKind;
 
-import dev.ikm.tinkar.common.id.IntIdList;
+import dev.ikm.tinkar.common.id.LongIdList;
 import dev.ikm.tinkar.coordinate.language.LanguageCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
@@ -38,7 +39,7 @@ import org.slf4j.LoggerFactory;
  * <p>The four atoms map directly from the entity type ({@link ConceptEntity}, {@link PatternEntity},
  * {@link StampEntity}); a {@link SemanticEntity} is further split into {@link KonceptKind#DESCRIPTION}
  * when its pattern is one of the view <em>coordinate's</em> description patterns — asked of the
- * {@link ViewCalculator}, never a hardcoded {@code TinkarTerm.DESCRIPTION_PATTERN}, so configured
+ * {@link ViewCalculator}, never a hardcoded {@code KernelTerm.DESCRIPTION_PATTERN}, so configured
  * dialects and description types are respected — and {@link KonceptKind#SEMANTIC} otherwise.
  */
 public final class KonceptKindResolver {
@@ -69,7 +70,7 @@ public final class KonceptKindResolver {
      * @return the component's kind, never {@code null}; {@link KonceptKind#UNKNOWN} when the nid
      *         does not resolve to a known component
      */
-    public static KonceptKind resolve(int nid, ViewCalculator calculator) {
+    public static KonceptKind resolve(long nid, ViewCalculator calculator) {
         Entity<?> entity;
         try {
             entity = EntityHandle.get(nid).entity().orElse(null);
@@ -99,14 +100,14 @@ public final class KonceptKindResolver {
      * @return {@code true} if the pattern is a description pattern in any of the view's language
      *         coordinates
      */
-    private static boolean isDescription(int patternNid, ViewCalculator calculator) {
+    private static boolean isDescription(long patternNid, ViewCalculator calculator) {
         if (calculator == null) {
             return false;
         }
         ImmutableList<LanguageCoordinateRecord> coordinates =
                 calculator.languageCalculator().languageCoordinateList();
         for (LanguageCoordinateRecord coordinate : coordinates) {
-            IntIdList descriptionPatterns = coordinate.descriptionPatternPreferenceNidList();
+            LongIdList descriptionPatterns = coordinate.descriptionPatternPreferenceNidList();
             for (int i = 0; i < descriptionPatterns.size(); i++) {
                 if (descriptionPatterns.get(i) == patternNid) {
                     return true;

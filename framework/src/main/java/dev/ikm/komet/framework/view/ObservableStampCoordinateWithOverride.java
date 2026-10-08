@@ -15,9 +15,9 @@
  */
 package dev.ikm.komet.framework.view;
 
-import dev.ikm.tinkar.common.id.IntIdList;
-import dev.ikm.tinkar.common.id.IntIdSet;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIdList;
+import dev.ikm.tinkar.common.id.LongIdSet;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinate;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StampPositionRecord;
@@ -76,19 +76,19 @@ public class ObservableStampCoordinateWithOverride extends ObservableStampCoordi
             if (timeProperty().isOverridden()) {
                 time = time();
             }
-            int pathConceptNid = updatedCoordinate.pathNidForFilter();
+            long pathConceptNid = updatedCoordinate.pathNidForFilter();
             if (pathConceptProperty().isOverridden()) {
                 pathConceptNid = pathConceptProperty().get().nid();
             }
-            IntIdSet moduleSpecificationNids = updatedCoordinate.moduleNids();
+            LongIdSet moduleSpecificationNids = updatedCoordinate.moduleNids();
             if (moduleSpecificationsProperty().isOverridden()) {
                 moduleSpecificationNids = moduleNids();
             }
-            IntIdSet moduleExclusionNids = updatedCoordinate.excludedModuleNids();
+            LongIdSet moduleExclusionNids = updatedCoordinate.excludedModuleNids();
             if (excludedModuleSpecificationsProperty().isOverridden()) {
                 moduleExclusionNids = excludedModuleNids();
             }
-            IntIdList modulePriorityOrder = updatedCoordinate.modulePriorityNidList();
+            LongIdList modulePriorityOrder = updatedCoordinate.modulePriorityNidList();
             if (modulePriorityOrderProperty().isOverridden()) {
                 modulePriorityOrder = modulePriorityNidList();
             }
@@ -197,9 +197,9 @@ public class ObservableStampCoordinateWithOverride extends ObservableStampCoordi
         return StampCoordinateRecord.make(this.allowedStatesProperty().getOriginalValue(),
                 StampPositionRecord.make(timeProperty().getOriginalValue().longValue(),
                         pathConceptProperty().getOriginalValue()),
-                IntIds.set.of(moduleSpecificationsProperty().getOriginalValue().castToSet(), EntityFacade::toNid),
-                IntIds.set.of(excludedModuleSpecificationsProperty().getOriginalValue().castToSet(), EntityFacade::toNid),
-                IntIds.list.of(modulePriorityOrderProperty().getOriginalValue().castToList(), EntityFacade::toNid));
+                LongIds.set.of(moduleSpecificationsProperty().getOriginalValue().castToSet(), EntityFacade::toNid),
+                LongIds.set.of(excludedModuleSpecificationsProperty().getOriginalValue().castToSet(), EntityFacade::toNid),
+                LongIds.list.of(modulePriorityOrderProperty().getOriginalValue().castToList(), EntityFacade::toNid));
     }
 
 
@@ -234,9 +234,9 @@ public class ObservableStampCoordinateWithOverride extends ObservableStampCoordi
         return StampCoordinateRecord.make(this.allowedStatesProperty().get(),
                 StampPositionRecord.make(timeProperty().get(),
                         pathConceptProperty().get().nid()),
-                IntIds.set.of(moduleSpecificationsProperty().get().castToSet(), EntityFacade::toNid),
-                IntIds.set.of(excludedModuleSpecificationsProperty().get().castToSet(), EntityFacade::toNid),
-                IntIds.list.of(modulePriorityOrderProperty().getOriginalValue().castToList(), EntityFacade::toNid));
+                LongIds.set.of(moduleSpecificationsProperty().get().castToSet(), EntityFacade::toNid),
+                LongIds.set.of(excludedModuleSpecificationsProperty().get().castToSet(), EntityFacade::toNid),
+                LongIds.list.of(modulePriorityOrderProperty().getOriginalValue().castToList(), EntityFacade::toNid));
     }
 
 }

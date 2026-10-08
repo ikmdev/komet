@@ -15,5 +15,5 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
-public record ConceptTreeItemRecord(int nid, String conceptTitle, String date, String transaction, String ...states) {
+public record ConceptTreeItemRecord(long nid, String conceptTitle, String date, String transaction, String ...states) {
 }

@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.rules.builder;
 
+import dev.ikm.tinkar.terms.KernelTerm;
 import dev.ikm.komet.framework.panel.axiom.AxiomSubjectRecord;
 import dev.ikm.komet.framework.performance.impl.ObservationRecord;
 import dev.ikm.komet.framework.rulebase.Consequence;
@@ -51,7 +52,7 @@ public class AxiomFocusedRulesBuilder {
                 .where("$observation.topic() == Topic.AXIOM_FOCUSED")
                 .where("""
                      $observation.subject() instanceof AxiomSubjectRecord axiomSubject && 
-                     axiomSubject.axiomMeaningNid() != TinkarTerm.DEFINITION_ROOT.nid()
+                     axiomSubject.axiomMeaningNid() != KernelTerm.DEFINITION_ROOT.nid()
                     """)
                 .execute(ctx -> {
                     ObservationRecord $observation = ctx.get("$observation");

@@ -14,5 +14,5 @@ public interface InlineEditSaver {
      * @param fieldIndex   the edited field's index in the semantic's pattern
      * @param newValue     the field's new value
      */
-    void saveUncommittedFieldValue(int semanticNid, int fieldIndex, Object newValue);
+    void saveUncommittedFieldValue(long semanticNid, int fieldIndex, Object newValue);
 }

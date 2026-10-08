@@ -9,7 +9,7 @@ import javafx.scene.layout.Region;
 
 /**
  * Represents a specialized non-sealed interface for a field area tied to the concept domain within the Knowledge Layout framework.
- * This interface extends {@code KlFieldArea} to handle field areas associated with the {@code ConceptFacade} data type and
+ * This interface extends {@code KlAreaForFeature} to handle field areas associated with the {@code ConceptFacade} data type and
  * its corresponding JavaFX {@code Region}.
  *
  * This interface provides a foundation for managing and displaying concept-related fields in a type-safe and extensible manner.
@@ -25,9 +25,9 @@ public non-sealed interface KlAreaForConcept<FX extends Region>
         extends KlAreaForFeature<ConceptFacade, Feature<ConceptFacade>, FX> {
 
     /**
-     * Represents a factory interface for creating and managing instances of {@code KlFieldAreaForConcept}
+     * Represents a factory interface for creating and managing instances of {@code KlAreaForConcept}
      * associated with the {@code ConceptFacade} data type and JavaFX {@code Region} components.
-     * <p>     * This interface extends the generic {@code KlFieldArea.Factory} to provide specialized contract definitions
+     * <p>     * This interface extends the generic {@code KlAreaForFeature.Factory} to provide specialized contract definitions
      * for constructing, configuring, and managing field areas tied specifically to the {@code ConceptFacade} domain.
      * It ensures the type-safe creation of field areas that bind observable fields of type {@code ConceptFacade}
      * with their respective JavaFX regions of type {@code FX}.

@@ -17,12 +17,12 @@ package dev.ikm.komet.navigator.graph.treetasks;
 
 import dev.ikm.komet.navigator.graph.MultiParentGraphViewController;
 import dev.ikm.komet.navigator.graph.MultiParentVertexImpl;
-import dev.ikm.tinkar.common.id.IntIdList;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIdList;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import org.eclipse.collections.api.collection.ImmutableCollection;
@@ -36,9 +36,9 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ExpandTask extends TrackingCallable<Void> {
     private static final Logger LOG = LoggerFactory.getLogger(ExpandTask.class);
     private final MultiParentGraphViewController multiParentGraphViewController;
-    final IntIdList expansionPath;
+    final LongIdList expansionPath;
 
-    public ExpandTask(MultiParentGraphViewController multiParentGraphViewController, IntIdList expansionPath) {
+    public ExpandTask(MultiParentGraphViewController multiParentGraphViewController, LongIdList expansionPath) {
         this.multiParentGraphViewController = multiParentGraphViewController;
         this.expansionPath = expansionPath;
         Platform.runLater(() -> {
@@ -51,13 +51,13 @@ public class ExpandTask extends TrackingCallable<Void> {
     protected Void compute() {
         LOG.info("Starting expansion of: " + expansionPath);
 
-        int conceptNid = expansionPath.get(0);
+        long conceptNid = expansionPath.get(0);
         MutableList<MutableList<MultiParentVertexImpl>> siblingLists = Lists.mutable.ofInitialCapacity(expansionPath.size());
         MutableList<MultiParentVertexImpl> pathParentList = Lists.mutable.ofInitialCapacity(expansionPath.size());
         final MultiParentVertexImpl newTreeTop = new MultiParentVertexImpl(
-                Entity.getFast(conceptNid),
+                EntityHandle.get(conceptNid).expectConcept(),
                 multiParentGraphViewController,
-                IntIds.set.empty(),
+                LongIds.set.empty(),
                 null
         );
 
@@ -71,11 +71,11 @@ public class ExpandTask extends TrackingCallable<Void> {
             siblingLists.add(childrenVertexes);
             Node vertexGraphic = null;
 
-            int nextParentNid = expansionPath.get(i);
+            long nextParentNid = expansionPath.get(i);
 
             AtomicReference<MultiParentVertexImpl> newPathParent = new AtomicReference<>();
             for (Edge edge : childrenEdges) {
-                ConceptEntity conceptEntity = Entity.getFast(edge.destinationNid());
+                ConceptEntity conceptEntity = EntityHandle.get(edge.destinationNid()).expectConcept();
                 MultiParentVertexImpl childVertex = new MultiParentVertexImpl(conceptEntity,
                         multiParentGraphViewController, edge.typeNids(), vertexGraphic);
                 childVertex.updateDescription();

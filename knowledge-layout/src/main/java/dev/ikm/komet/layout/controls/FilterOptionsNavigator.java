@@ -35,7 +35,7 @@ public interface FilterOptionsNavigator {
      *
      * @return the root nids, never {@code null} (may be empty)
      */
-    int[] getRootNids();
+    long[] getRootNids();
 
     /**
      * Returns the child edges of the given parent concept in navigation order.
@@ -43,7 +43,7 @@ public interface FilterOptionsNavigator {
      * @param parentNid the parent concept nid
      * @return the child edges of {@code parentNid}
      */
-    ImmutableList<Edge> getChildEdges(int parentNid);
+    ImmutableList<Edge> getChildEdges(long parentNid);
 
     /**
      * Returns the view calculator backing this navigation source.

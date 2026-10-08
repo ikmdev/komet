@@ -15,20 +15,22 @@
  */
 package dev.ikm.komet.navigator.graph.treetasks;
 
+import org.eclipse.collections.api.list.primitive.MutableLongList;
+
 import dev.ikm.komet.navigator.graph.MultiParentVertexImpl;
-import dev.ikm.tinkar.common.id.IntIdList;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIdList;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import org.eclipse.collections.api.list.primitive.MutableIntList;
-import org.eclipse.collections.api.map.primitive.ImmutableIntObjectMap;
-import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
-import org.eclipse.collections.impl.factory.primitive.IntLists;
-import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
+import org.eclipse.collections.api.list.primitive.MutableLongList;
+import org.eclipse.collections.api.map.primitive.ImmutableLongObjectMap;
+import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
+import org.eclipse.collections.impl.factory.primitive.LongLists;
+import org.eclipse.collections.impl.factory.primitive.LongObjectMaps;
 import org.eclipse.collections.impl.set.sorted.mutable.TreeSortedSet;
 
-public record RestoreNavigationRecord(ImmutableIntObjectMap<RestoreVertexRecord> restoreVertexRecordMap, IntIdList selections) {
+public record RestoreNavigationRecord(ImmutableLongObjectMap<RestoreVertexRecord> restoreVertexRecordMap, LongIdList selections) {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -38,19 +40,19 @@ public record RestoreNavigationRecord(ImmutableIntObjectMap<RestoreVertexRecord>
     }
 
     public static RestoreNavigationRecord create(TreeView<ConceptFacade> tree) {
-        MutableIntObjectMap<RestoreVertexRecord> vertexRecords =IntObjectMaps.mutable.empty();
+        MutableLongObjectMap<RestoreVertexRecord> vertexRecords =LongObjectMaps.mutable.empty();
         for (TreeItem<ConceptFacade> childVertex: tree.getRoot().getChildren()) {
             if (childVertex instanceof MultiParentVertexImpl multiParentChildVertex) {
                 depthFirstSearchVisit(multiParentChildVertex, vertexRecords);
             }
         }
-        MutableIntList selectedNids = IntLists.mutable.empty();
+        MutableLongList selectedNids = LongLists.mutable.empty();
         tree.getSelectionModel().getSelectedItems().forEach(conceptFacadeTreeItem -> selectedNids.add(conceptFacadeTreeItem.getValue().nid()));
-        return new RestoreNavigationRecord(vertexRecords.toImmutable(), IntIds.list.of(selectedNids.toArray()));
+        return new RestoreNavigationRecord(vertexRecords.toImmutable(), LongIds.list.of(selectedNids.toArray()));
     }
 
     private static void depthFirstSearchVisit(MultiParentVertexImpl vertex,
-                                              MutableIntObjectMap<RestoreVertexRecord> vertexRecords) {
+                                              MutableLongObjectMap<RestoreVertexRecord> vertexRecords) {
         if (vertex.isExpanded() || vertex.isSecondaryParentOpened()) {
             vertexRecords.put(vertex.getConceptNid(), new RestoreVertexRecord(vertex.getConceptNid(),
                     vertex.isExpanded(), vertex.isSecondaryParentOpened()));

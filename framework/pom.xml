@@ -56,10 +56,6 @@
             <artifactId>controlsfx</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.github.classgraph</groupId>
-            <artifactId>classgraph</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
         </dependency>
@@ -164,12 +160,22 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>dev.ikm.tinkar</groupId>
             <artifactId>common</artifactId>
         </dependency>
         <dependency>
             <groupId>dev.ikm.tinkar</groupId>
-            <artifactId>collection</artifactId>
+            <artifactId>component</artifactId>
         </dependency>
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
@@ -194,8 +200,29 @@
                         <goals>
                             <goal>analyze-only</goal>
                         </goals>
-                        <configuration combine.self="override">
+                        <configuration>
                             <ignoreUnusedRuntime>true</ignoreUnusedRuntime>
+                            <!-- JavaFX publishes an empty jar under the declared coordinates and the
+                                 classes in a per-platform classified jar, so the analyzer reports every
+                                 JavaFX module as both unused (declared) and undeclared (classified). -->
+                            <ignoredUsedUndeclaredDependencies combine.children="append">
+                                <ignoredUsedUndeclaredDependency>org.openjfx:*</ignoredUsedUndeclaredDependency>
+                            </ignoredUsedUndeclaredDependencies>
+                            <ignoredUnusedDeclaredDependencies combine.children="append">
+                                <ignoredUnusedDeclaredDependency>org.openjfx:*</ignoredUnusedDeclaredDependency>
+                                <!-- Icons are named by string (iconLiteral, -fx-icon-code); ikonli finds
+                                     the pack at runtime through ServiceLoader. The packs stay compile
+                                     scope with requires in module-info so jlink, which follows requires
+                                     and does not bind services, puts them in the image. -->
+                                <ignoredUnusedDeclaredDependency>org.kordamp.ikonli:*</ignoredUnusedDeclaredDependency>
+                                <!-- Annotation processor; its annotations are source-retention, so no
+                                     class reference survives into the bytecode (requires static). -->
+                                <ignoredUnusedDeclaredDependency>dev.ikm.jpms:record-builder-core</ignoredUnusedDeclaredDependency>
+                                <!-- The tests' providers are found through ServiceLoader. -->
+                                <ignoredUnusedDeclaredDependency>dev.ikm.tinkar:data-ephemeral-provider</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>dev.ikm.tinkar:entity-provider</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>dev.ikm.tinkar:executor-provider</ignoredUnusedDeclaredDependency>
+                            </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
                     <execution>
@@ -207,19 +234,23 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>dev.ikm.data.tinkar</groupId>
-                                    <artifactId>tinkar-starter-data</artifactId>
-                                    <version>${tinkar-starter-data.version}</version>
+                                    <groupId>network.ike.foundation</groupId>
+                                    <artifactId>ike-starter-set</artifactId>
+                                    <version>${ike-starter-set.version}</version>
                                     <classifier>reasoned-pb</classifier>
                                     <type>zip</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/data</outputDirectory>
+                                    <destFileName>ike-starter-set-reasoned-pb.zip</destFileName>
                                 </artifactItem>
                             </artifactItems>
                             <stripVersion>true</stripVersion>
                             <outputDirectory>${project.build.directory}/data</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>
+                            <!-- Copy only when the installed starter set is newer than the copy here, rather than
+                                 overwriting it on every build. -->
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
                         </configuration>
                     </execution>
                 </executions>
@@ -241,9 +272,17 @@
                                 <target.data.directory>${project.build.directory}/data</target.data.directory>
                             </systemPropertyVariables>
                             <!-- Add JavaFX arguments for headless testing -->
+                            <!-- Lucene 10.5.1 turns its Vector API code on only up to Java 26 and warns on 27.
+                                 The property raises that limit; the full suite passes with it. Drop it when
+                                 a Lucene release supports Java 27. -->
                             <argLine>
+                                @{failsafeArgLine}
                                 --enable-preview
+                                --enable-native-access=ALL-UNNAMED
+                                --sun-misc-unsafe-memory-access=allow
+                                -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager
                                 --add-modules jdk.incubator.vector
+                                -Dorg.apache.lucene.vectorization.upperJavaFeatureVersion=27
                                 -Dtestfx.headless=true
                                 --add-opens=javafx.graphics/com.sun.glass.ui=ALL-UNNAMED
                                 --add-opens=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
@@ -252,15 +291,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>25</source>
-                    <target>25</target>
-                    <compilerArgs>--enable-preview</compilerArgs>
-                </configuration>
             </plugin>
         </plugins>
     </build>

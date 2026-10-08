@@ -20,15 +20,14 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.primitive.LongLists;
 
 import java.util.UUID;
 
 
-public class SemanticWriter implements Writer {
+public class SemanticWriter {
 
     private final PublicId stamp;
 
@@ -42,16 +41,16 @@ public class SemanticWriter implements Writer {
 
     public void description(PublicId semantic, PublicId referencedComponent, PublicId descriptionType, String text){
         //Assign nids to description components
-        final int descriptionTypeNid = EntityService.get().nidForPublicId(descriptionType);
+        final long descriptionTypeNid = EntityService.get().nidForPublicId(descriptionType);
         final ConceptFacade descriptionTypeFacade = ConceptFacade.make(descriptionTypeNid);
 
         //Create Semantic Detail
-        SemanticDetail semanticDetail = new SemanticDetail(TinkarTerm.DESCRIPTION_PATTERN, referencedComponent, () -> {
+        SemanticDetail semanticDetail = new SemanticDetail(KernelTerm.DESCRIPTION_PATTERN, referencedComponent, () -> {
             //Semantic Field Object values
             MutableList<Object> descriptionFields = Lists.mutable.empty();
-            descriptionFields.add(TinkarTerm.ENGLISH_LANGUAGE);
+            descriptionFields.add(KernelTerm.ENGLISH_LANGUAGE);
             descriptionFields.add(text);
-            descriptionFields.add(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
+            descriptionFields.add(KernelTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
             descriptionFields.add(descriptionTypeFacade);
             return descriptionFields;
         });
@@ -65,7 +64,7 @@ public class SemanticWriter implements Writer {
         PublicId identifierPattern = PublicIds.of(UUID.fromString("5d60e14b-c410-5172-9559-3c4253278ae2"));
 
         //Assign nids to description components
-        final int sourceNid = EntityService.get().nidForPublicId(source);
+        final long sourceNid = EntityService.get().nidForPublicId(source);
         final ConceptFacade sourceFacade = ConceptFacade.make(sourceNid);
 
         //Create Semantic Detail
@@ -83,11 +82,11 @@ public class SemanticWriter implements Writer {
 
     public void usDialect(PublicId semantic, PublicId referencedComponent, PublicId dialectAcceptability){
         //Assign nids to description components
-        final int dialectNid = EntityService.get().nidForPublicId(dialectAcceptability);
+        final long dialectNid = EntityService.get().nidForPublicId(dialectAcceptability);
         final ConceptFacade dialectFacade = ConceptFacade.make(dialectNid);
 
         //Create Semantic Detail
-        SemanticDetail semanticDetail = new SemanticDetail(TinkarTerm.US_DIALECT_PATTERN, referencedComponent, () -> {
+        SemanticDetail semanticDetail = new SemanticDetail(KernelTerm.US_DIALECT_PATTERN, referencedComponent, () -> {
             //Semantic Field Object values
             MutableList<Object> dialectFields = Lists.mutable.empty();
             dialectFields.add(dialectFacade);
@@ -116,7 +115,7 @@ public class SemanticWriter implements Writer {
 
     public void comment(PublicId semantic, PublicId referencedComponent, String comment, PublicId stamp){
         //Create Semantic Detail
-        SemanticDetail semanticDetail = new SemanticDetail(TinkarTerm.COMMENT_PATTERN, referencedComponent, () -> {
+        SemanticDetail semanticDetail = new SemanticDetail(KernelTerm.COMMENT_PATTERN, referencedComponent, () -> {
             //Semantic Field Object values
             MutableList<Object> commentFields = Lists.mutable.empty();
             commentFields.add(comment);
@@ -144,7 +143,7 @@ public class SemanticWriter implements Writer {
         PublicId versionControlPattern = PublicIds.of(UUID.fromString("70f89dd5-2cdb-59bb-bbaa-98527513547c"));
 
         //Assign nids to description components
-        final int conceptNid = EntityService.get().nidForPublicId(concept);
+        final long conceptNid = EntityService.get().nidForPublicId(concept);
         final ConceptFacade conceptFacade = ConceptFacade.make(conceptNid);
 
         //Create Semantic Detail
@@ -162,7 +161,7 @@ public class SemanticWriter implements Writer {
 
 //    public void statedAxiom(PublicId semantic, PublicId referencedComponent, List<PublicId> origins){
 //        //Create Semantic Detail
-//        SemanticDetail semanticDetail = new SemanticDetail(TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, referencedComponent, () -> {
+//        SemanticDetail semanticDetail = new SemanticDetail(KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, referencedComponent, () -> {
 //            //Semantic Field Object values
 //            MutableList<Object> statedAxiomFields = Lists.mutable.empty();
 //            MutableList<EntityVertex> vertexMap = Lists.mutable.empty();
@@ -177,7 +176,7 @@ public class SemanticWriter implements Writer {
 //                    definitionRootUUID.getMostSignificantBits(),
 //                    definitionRootUUID.getLeastSignificantBits(),
 //                    vertexIdx.getAndIncrement(),
-//                    ConceptDTO.make(TinkarTerm.DEFINITION_ROOT.idString()),
+//                    ConceptDTO.make(KernelTerm.DEFINITION_ROOT.idString()),
 //                    definitionRootProperty.toImmutable());
 //            EntityVertex definitionRootVertex = EntityVertex.make(definitionVertexDTO);
 //            vertexMap.add(definitionRootVertex);
@@ -193,12 +192,12 @@ public class SemanticWriter implements Writer {
 //
 //                        UUID referenceUUID = UUID.randomUUID();
 //                        MutableMap<ConceptDTO, Object> referenceProperty = Maps.mutable.empty();
-//                        referenceProperty.put(ConceptDTO.make(TinkarTerm.CONCEPT_REFERENCE.idString()),conceptFacade);
+//                        referenceProperty.put(ConceptDTO.make(KernelTerm.CONCEPT_REFERENCE.idString()),conceptFacade);
 //                        EntityVertex referenceVertex = EntityVertex.make(new VertexDTO(
 //                                referenceUUID.getMostSignificantBits(),
 //                                referenceUUID.getLeastSignificantBits(),
 //                                referenceIdx,
-//                                ConceptDTO.make(TinkarTerm.CONCEPT_REFERENCE.idString()),
+//                                ConceptDTO.make(KernelTerm.CONCEPT_REFERENCE.idString()),
 //                                referenceProperty.toImmutable()));
 //                        vertexMap.add(referenceVertex);
 //                    });
@@ -210,7 +209,7 @@ public class SemanticWriter implements Writer {
 //                    andUUID.getMostSignificantBits(),
 //                    andUUID.getLeastSignificantBits(),
 //                    vertexIdx.getAndIncrement(),
-//                    ConceptDTO.make(TinkarTerm.AND.idString()),
+//                    ConceptDTO.make(KernelTerm.AND.idString()),
 //                    andProperty.toImmutable()));
 //            vertexMap.add(andVertex);
 //
@@ -221,7 +220,7 @@ public class SemanticWriter implements Writer {
 //                    necessarySetUUID.getMostSignificantBits(),
 //                    necessarySetUUID.getLeastSignificantBits(),
 //                    vertexIdx.get(),
-//                    ConceptDTO.make(TinkarTerm.NECESSARY_SET.idString()),
+//                    ConceptDTO.make(KernelTerm.NECESSARY_SET.idString()),
 //                    necessarySetProperty.toImmutable()));
 //            vertexMap.add(necessarySetVertex);
 //
@@ -249,17 +248,14 @@ public class SemanticWriter implements Writer {
 //    }
 
     private void write(PublicId semantic, SemanticDetail semanticDetail){
-        //Assign primordial UUID from PublicId
-        UUID primordialUUID = semantic.asUuidArray()[0];
+        //Every UUID of the PublicId goes into the record header
+        PublicIdentifierRecord identifier = PublicIdentifierRecord.make(semantic);
 
         //Assign nids for PublicIds
-        int semanticNid = EntityService.get().nidForPublicId(semantic);
-        int patternNid = EntityService.get().nidForPublicId(semanticDetail.pattern());
-        int referencedComponentNid = EntityService.get().nidForPublicId(semanticDetail.referencedComponent());
-        int stampNid = EntityService.get().nidForPublicId(stamp);
-
-        //Process additional UUID longs from PublicId
-        long[] additionalLongs = createAdditionalLongs(semantic);
+        long semanticNid = EntityService.get().nidForPublicId(semantic);
+        long patternNid = EntityService.get().nidForPublicId(semanticDetail.pattern());
+        long referencedComponentNid = EntityService.get().nidForPublicId(semanticDetail.referencedComponent());
+        long stampNid = EntityService.get().nidForPublicId(stamp);
 
         //Create empty version list
         RecordListBuilder<SemanticVersionRecord> versions = RecordListBuilder.make();
@@ -267,9 +263,9 @@ public class SemanticWriter implements Writer {
         //Create Semantic Chronology
         SemanticRecord semanticRecord = SemanticRecordBuilder.builder()
                 .nid(semanticNid)
-                .leastSignificantBits(primordialUUID.getLeastSignificantBits())
-                .mostSignificantBits(primordialUUID.getMostSignificantBits())
-                .additionalUuidLongs(LongLists.immutable.of(additionalLongs))
+                .leastSignificantBits(identifier.leastSignificantBits())
+                .mostSignificantBits(identifier.mostSignificantBits())
+                .additionalUuidLongs(identifier.additionalUuidLongs())
                 .patternNid(patternNid)
                 .referencedComponentNid(referencedComponentNid)
                 .versions(versions.toImmutable())

@@ -5,7 +5,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.klfields.KlFieldType;
-import dev.ikm.tinkar.common.id.IntIdCollection;
+import dev.ikm.tinkar.common.id.LongIdCollection;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntity;
@@ -117,7 +117,7 @@ public class SemanticTooltip extends Tooltip {
         titleLabel.getStyleClass().add("field-title");
 
         // Field Value
-        int dataTypeNid = patternVersionRecord.fieldDefinitions().get(fieldIndex).dataTypeNid();
+        long dataTypeNid = patternVersionRecord.fieldDefinitions().get(fieldIndex).dataTypeNid();
         Optional<KlFieldType> optionalFieldType = KlFieldType.of(dataTypeNid);
 
         optionalFieldType.ifPresent(fieldType -> {
@@ -136,7 +136,7 @@ public class SemanticTooltip extends Tooltip {
                     nodeToAdd = createComponentFieldValue((EntityProxy) field);
                 }
                 case C_LIST, C_SET -> {
-                    nodeToAdd = createCListOrCSetFieldValue((IntIdCollection) field);
+                    nodeToAdd = createCListOrCSetFieldValue((LongIdCollection) field);
                 }
             }
 
@@ -150,10 +150,10 @@ public class SemanticTooltip extends Tooltip {
         grid.getRowConstraints().add(rowConstraints);
     }
 
-    private FlowPane createCListOrCSetFieldValue(IntIdCollection field) {
+    private FlowPane createCListOrCSetFieldValue(LongIdCollection field) {
         FlowPane flowPane = new FlowPane();
 
-        IntIdCollection intIdCollection = field;
+        LongIdCollection intIdCollection = field;
         intIdCollection.forEach(nid -> {
             EntityProxy entityProxy = EntityProxy.make(nid);
             ComponentItemNode componentItemNode = createComponentItemNode(entityProxy);

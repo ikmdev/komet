@@ -24,7 +24,7 @@ import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -132,7 +132,7 @@ final public class MultiParentGraphCell
 
             item1.setOnAction(
                     (ActionEvent e) -> {
-                        int conceptNid = ((MultiParentVertexImpl) getTreeItem()).getConceptNid();
+                        long conceptNid = ((MultiParentVertexImpl) getTreeItem()).getConceptNid();
                         ObservableView manifold = ((MultiParentVertexImpl) getTreeItem()).getGraphController().getObservableView();
                         graphItem.getValue();
                     });
@@ -169,7 +169,7 @@ final public class MultiParentGraphCell
 
                 for (Edge parentLink : allParents) {
                     if ((allParents.size() == 1) || (parentLink.destinationNid() != parentItem.getValue().nid())) {
-                        ConceptEntity parentChronology = Entity.getFast(parentLink.destinationNid());
+                        ConceptEntity parentChronology = EntityHandle.get(parentLink.destinationNid()).expectConcept();
                         MultiParentVertexImpl extraParentItem = new MultiParentVertexImpl(parentChronology, treeItem.getGraphController(), parentLink.typeNids(), null);
                         ObservableView observableView = treeItem.getGraphController().getObservableView();
                         extraParentItem.setDefined(observableView.calculator().hasSufficientSet(parentChronology));

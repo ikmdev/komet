@@ -299,7 +299,7 @@ public class ConceptTile extends HBox {
      * @param nid the nid of the concept
      * @return a string
      */
-    private String getDescription(int nid) {
+    private String getDescription(long nid) {
         return treeView.getNavigator().getViewCalculator().getDescriptionTextOrNid(nid);
     }
 }

@@ -96,7 +96,7 @@ public final class FeatureList<F extends Feature<?>>
     }
 
     @Override
-    public int patternNid() {
+    public long patternNid() {
         return this.patternFacade.nid();
     }
 

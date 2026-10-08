@@ -44,7 +44,7 @@ public class MenuChangeItemsForViewTask implements Callable<MenuItem>, ScopedVal
         for (PublicIdStringKey key : FxGet.pathCoordinates(viewCalculator).keySet()) {
             CheckMenuItem item = new CheckMenuItem(key.getString());
             StampPathImmutable pathCoordinate = FxGet.pathCoordinates(viewCalculator).get(key);
-            int pathNid = pathCoordinate.pathConceptNid();
+            long pathNid = pathCoordinate.pathConceptNid();
             item.setSelected(pathNid == observableView.stampCoordinate().pathNidForFilter());
             item.setDisable(item.isSelected());
             item.setUserData(FxGet.pathCoordinates(viewCalculator).get(key));

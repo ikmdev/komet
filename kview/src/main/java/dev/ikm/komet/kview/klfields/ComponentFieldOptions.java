@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.kview.klfields;
 
-import dev.ikm.komet.kview.mvvm.model.DataModelHelper;
+import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.komet.layout.KlTerms;
 import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -23,23 +23,24 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.KernelTerm;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static dev.ikm.tinkar.terms.TinkarTerm.DEFINITION_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_ACCEPTABILITY;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE;
-import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
-import static dev.ikm.tinkar.terms.TinkarTerm.MODULE;
-import static dev.ikm.tinkar.terms.TinkarTerm.PATH;
-import static dev.ikm.tinkar.terms.TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.STATUS_VALUE;
+import static dev.ikm.tinkar.terms.KernelTerm.DEFINITION_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.KernelTerm.DESCRIPTION_ACCEPTABILITY;
+import static dev.ikm.tinkar.terms.KernelTerm.DESCRIPTION_CASE_SIGNIFICANCE;
+import static dev.ikm.tinkar.terms.KernelTerm.DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.KernelTerm.LANGUAGE;
+import static dev.ikm.tinkar.terms.KernelTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
+import static dev.ikm.komet.terms.KometTerm.MODULE;
+import static dev.ikm.komet.terms.KometTerm.PATH;
+import static dev.ikm.tinkar.terms.KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.komet.terms.KometTerm.STATUS_VALUE;
 
 /**
  * Decides, for a component field of a semantic, whether the user must choose from a
@@ -59,6 +60,21 @@ import static dev.ikm.tinkar.terms.TinkarTerm.STATUS_VALUE;
  */
 public final class ComponentFieldOptions {
 
+    /**
+     * The field data types a pattern field may be given here; the data types with no
+     * editor (trees, graphs, arrays, points, instants, UUIDs) are left out.
+     */
+    private static final List<EntityProxy.Concept> SUPPORTED_FIELD_DATA_TYPES = List.of(
+            KernelTerm.STRING,
+            KernelTerm.COMPONENT_FIELD,
+            KernelTerm.COMPONENT_ID_SET_FIELD,
+            KernelTerm.COMPONENT_ID_LIST_FIELD,
+            KernelTerm.INTEGER_FIELD,
+            KernelTerm.FLOAT_FIELD,
+            KernelTerm.BOOLEAN_FIELD,
+            KernelTerm.BYTE_ARRAY_FIELD,
+            KometTerm.IMAGE_FIELD);
+
     private ComponentFieldOptions() {
     }
 
@@ -77,10 +93,10 @@ public final class ComponentFieldOptions {
                 .or(() -> optionsForConcept(viewCalculator, fieldDefinition.purposeNid()));
     }
 
-    private static Optional<List<EntityProxy>> optionsForConcept(ViewCalculator viewCalculator, int conceptNid) {
+    private static Optional<List<EntityProxy>> optionsForConcept(ViewCalculator viewCalculator, long conceptNid) {
         // Description types are deliberately NOT the descendants of DESCRIPTION_TYPE — that subtree
         // also holds unrelated metadata concepts (extended relationship type, inferred navigation, ...).
-        // Use a fixed set instead: the classic windows' pair (DataModelHelper.fetchDescriptionTypes)
+        // Use a fixed set instead: the classic windows' pair
         // plus the definition description type.
         if (conceptNid == DESCRIPTION_TYPE.nid()) {
             return Optional.of(sortedByName(viewCalculator,
@@ -89,10 +105,10 @@ public final class ComponentFieldOptions {
         }
         // The data type of a pattern field (the Fields pattern of the pattern-definition patterns) is
         // one of the data types the field editors support: the same fixed set the classic Pattern
-        // window offers in its data type drop-down (DataModelHelper.fetchFieldDefinitionDataTypes).
+        // window offers in its data type drop-down (SUPPORTED_FIELD_DATA_TYPES).
         if (conceptNid == KlTerms.FIELD_DATA_TYPE.nid()) {
             return Optional.of(sortedByName(viewCalculator,
-                    DataModelHelper.fetchFieldDefinitionDataTypes().stream().map(ConceptEntity::toProxy)));
+                    SUPPORTED_FIELD_DATA_TYPES.stream()));
         }
         return optionsParentForConcept(conceptNid)
                 .map(parent -> sortedByName(viewCalculator, fetchDescendents(viewCalculator, parent)));
@@ -102,7 +118,7 @@ public final class ComponentFieldOptions {
      * The concept whose descendants form the allowed choices for a field matched by the given
      * meaning or purpose concept, or empty when no rule matches.
      */
-    private static Optional<ConceptFacade> optionsParentForConcept(int conceptNid) {
+    private static Optional<ConceptFacade> optionsParentForConcept(long conceptNid) {
         if (conceptNid == DESCRIPTION_CASE_SIGNIFICANCE.nid()) {
             return Optional.of(DESCRIPTION_CASE_SIGNIFICANCE);
         }
@@ -125,7 +141,7 @@ public final class ComponentFieldOptions {
     }
 
     private static Stream<EntityProxy> fetchDescendents(ViewCalculator viewCalculator, ConceptFacade parent) {
-        return viewCalculator.descendentsOf(parent.nid()).intStream()
+        return viewCalculator.descendentsOf(parent.nid()).longStream()
                 .mapToObj(nid -> EntityHandle.get(nid).expectConcept().toProxy());
     }
 

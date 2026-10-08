@@ -21,13 +21,11 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.*;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.primitive.LongLists;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class PatternWriter implements Writer {
+public class PatternWriter {
 
     public final PublicId stamp;
 
@@ -41,24 +39,21 @@ public class PatternWriter implements Writer {
         //Create empty version list
         RecordListBuilder<PatternVersionRecord> versions = RecordListBuilder.make();
 
-        //Pull out primordial UUID from PublicId
-        UUID primordialUUID = pattern.asUuidArray()[0];
-
-        //Process additional UUID longs from PublicId
-        long[] additionalLongs = createAdditionalLongs(pattern);
+        //Every UUID of the PublicId goes into the record header
+        PublicIdentifierRecord identifier = PublicIdentifierRecord.make(pattern);
 
         //Assign nids for Pattern component Concepts
-        int patternNid = EntityService.get().nidForPublicId(pattern);
-        int meaningConceptNid = EntityService.get().nidForPublicId(patternDetail.meaning());
-        int purposeConceptNid = EntityService.get().nidForPublicId(patternDetail.purpose());
-        int stampNid = EntityService.get().nidForPublicId(stamp);
+        long patternNid = EntityService.get().nidForPublicId(pattern);
+        long meaningConceptNid = EntityService.get().nidForPublicId(patternDetail.meaning());
+        long purposeConceptNid = EntityService.get().nidForPublicId(patternDetail.purpose());
+        long stampNid = EntityService.get().nidForPublicId(stamp);
 
         //Create Pattern Chronology
         PatternRecord patternRecord = PatternRecordBuilder.builder()
                 .nid(patternNid)
-                .leastSignificantBits(primordialUUID.getLeastSignificantBits())
-                .mostSignificantBits(primordialUUID.getMostSignificantBits())
-                .additionalUuidLongs(LongLists.immutable.of(additionalLongs))
+                .leastSignificantBits(identifier.leastSignificantBits())
+                .mostSignificantBits(identifier.mostSignificantBits())
+                .additionalUuidLongs(identifier.additionalUuidLongs())
                 .versions(versions.toImmutable())
                 .build();
 
@@ -66,9 +61,9 @@ public class PatternWriter implements Writer {
         final AtomicInteger patternIndex = new AtomicInteger(0);
         MutableList<FieldDefinitionRecord> fieldDefinitions = Lists.mutable.empty();
         patternFieldDetails.forEach(patternFieldDetail -> {
-            int meaningNid = EntityService.get().nidForPublicId(patternFieldDetail.meaning());
-            int purposeNid = EntityService.get().nidForPublicId(patternFieldDetail.purpose());
-            int dataTypeNid = EntityService.get().nidForPublicId(patternFieldDetail.dataType());
+            long meaningNid = EntityService.get().nidForPublicId(patternFieldDetail.meaning());
+            long purposeNid = EntityService.get().nidForPublicId(patternFieldDetail.purpose());
+            long dataTypeNid = EntityService.get().nidForPublicId(patternFieldDetail.dataType());
 
             FieldDefinitionRecord fieldDefinitionRecord = FieldDefinitionRecordBuilder.builder()
                     .patternNid(patternNid)

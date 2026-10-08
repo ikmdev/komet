@@ -76,7 +76,7 @@ public interface ObservableView
     /**
      * Will change all contained paths (vertex, edge, and language), to the provided path.
      */
-    default void setViewPath(int pathConceptNid) {
+    default void setViewPath(long pathConceptNid) {
         setViewPath(EntityProxy.Concept.make(pathConceptNid));
     }
 

@@ -4,7 +4,7 @@ import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticCompo
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticComponentCollectionCell;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticIdenticonCell;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticStandardCell;
-import dev.ikm.tinkar.common.id.IntIdCollection;
+import dev.ikm.tinkar.common.id.LongIdCollection;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -25,9 +25,9 @@ import javafx.util.Subscription;
 
 import java.util.List;
 
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_LIST_FIELD;
-import static dev.ikm.tinkar.terms.TinkarTerm.COMPONENT_ID_SET_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_ID_LIST_FIELD;
+import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_ID_SET_FIELD;
 
 public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsTableControl> {
     public static final PseudoClass EDIT_MODE_PSEUDO_CLASS = PseudoClass.getPseudoClass("edit-mode");
@@ -261,10 +261,10 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
         tableViewInitialized = true;
     }
 
-    private TableColumn<SemanticRow, Integer> createSemanticIdenticonColumn() {
+    private TableColumn<SemanticRow, Long> createSemanticIdenticonColumn() {
         // Named "Semantic icon" so the show/hide-columns menu lists it; the header cell itself
         // stays icon-only via CSS (.column-header.identicon-column .label is graphic-only).
-        TableColumn<SemanticRow, Integer> identiconColumn = new TableColumn<>("Semantic icon");
+        TableColumn<SemanticRow, Long> identiconColumn = new TableColumn<>("Semantic icon");
         identiconColumn.setCellValueFactory(cellData ->
                 cellData.getValue().semanticNidProperty());
         identiconColumn.setCellFactory(_ -> new SemanticIdenticonCell(getSkinnable().getNidToComponentItem()));
@@ -277,9 +277,9 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
         final TableColumn<SemanticRow, ?> tableColumn;
 
         if (field.dataType() == COMPONENT_ID_SET_FIELD.nid() || field.dataType() == COMPONENT_ID_LIST_FIELD.nid()) {
-            TableColumn<SemanticRow, IntIdCollection> col = new TableColumn<>();
+            TableColumn<SemanticRow, LongIdCollection> col = new TableColumn<>();
             col.setCellValueFactory(cellData ->
-                    (ObservableValue<IntIdCollection>) cellData.getValue().getFields().get(row.getFields().indexOf(field)).observableFieldProperty());
+                    (ObservableValue<LongIdCollection>) cellData.getValue().getFields().get(row.getFields().indexOf(field)).observableFieldProperty());
             col.setCellFactory(_ -> new SemanticComponentCollectionCell(getSkinnable().getNidToComponentItem()));
             tableColumn = col;
         } else if (field.dataType() == COMPONENT_FIELD.nid()) {

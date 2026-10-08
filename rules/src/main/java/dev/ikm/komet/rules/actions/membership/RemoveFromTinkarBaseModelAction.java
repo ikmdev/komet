@@ -18,7 +18,6 @@ package dev.ikm.komet.rules.actions.membership;
 import dev.ikm.komet.rules.actions.AbstractActionSuggested;
 import javafx.event.ActionEvent;
 import org.eclipse.collections.api.factory.Lists;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
@@ -30,7 +29,9 @@ import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.State;
 
-import static dev.ikm.tinkar.terms.TinkarTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN;
+import java.util.Optional;
+
+import static dev.ikm.tinkar.terms.KernelTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN;
 
 public class RemoveFromTinkarBaseModelAction extends AbstractActionSuggested {
     final ConceptEntityVersion conceptVersion;
@@ -42,18 +43,19 @@ public class RemoveFromTinkarBaseModelAction extends AbstractActionSuggested {
 
     @Override
     public void doAction(ActionEvent actionEvent, EditCoordinateRecord editCoordinate) {
-        int[] semanticNidsForComponent = PrimitiveData.get().semanticNidsForComponentOfPattern(conceptVersion.nid(), TINKAR_BASE_MODEL_COMPONENT_PATTERN.nid());
-        if (semanticNidsForComponent.length == 0) {
+        Optional<SemanticEntity<SemanticEntityVersion>> semanticForComponent = EntityService.get()
+                .semanticsForComponentOfPattern(conceptVersion.nid(), TINKAR_BASE_MODEL_COMPONENT_PATTERN.nid()).findFirst();
+        if (semanticForComponent.isEmpty()) {
             // case 1: never a member
             throw new IllegalStateException("Asking to retire element that was never a member...");
         } else {
-            updateSemantic(semanticNidsForComponent[0], editCoordinate.toEditCoordinateRecord());
+            updateSemantic(semanticForComponent.get().nid(), editCoordinate.toEditCoordinateRecord());
         }
     }
 
 
-    private void updateSemantic(int semanticNid, EditCoordinateRecord editCoordinateRecord) {
-        SemanticRecord semanticEntity = Entity.getFast(semanticNid);
+    private void updateSemantic(long semanticNid, EditCoordinateRecord editCoordinateRecord) {
+        SemanticRecord semanticEntity = EntityHandle.get(semanticNid).expectSemanticRecord();
         Transaction transaction = Transaction.make();
         ViewCoordinateRecord viewRecord = viewCalculator.viewCoordinateRecord();
 
@@ -66,7 +68,7 @@ public class RemoveFromTinkarBaseModelAction extends AbstractActionSuggested {
             transaction.addComponent(analogue);
             Entity.provider().putEntity(analogue);
         }, () -> {
-            throw new IllegalStateException("No latest pattern version for: " + Entity.getFast(TINKAR_BASE_MODEL_COMPONENT_PATTERN));
+            throw new IllegalStateException("No latest pattern version for: " + EntityHandle.get(TINKAR_BASE_MODEL_COMPONENT_PATTERN).orNull());
         });
         CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
         TinkExecutor.threadPool().submit(commitTransactionTask);

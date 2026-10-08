@@ -58,7 +58,8 @@ public record SemanticVersionSelection(PublicId componentPublicId, PublicId stam
         for (StampElement selection: StampElement.values()) {
             selectableProperties.add(new StampElementSelection(selection));
         }
-        Optional<SemanticEntity<SemanticEntityVersion>> optionalSemantic = EntityService.get().getEntity(componentPublicId);
+        Optional<SemanticEntity<SemanticEntityVersion>> optionalSemantic = EntityHandle.get(componentPublicId).asSemantic()
+                .filter(e -> !e.canceled()).map(e -> (SemanticEntity<SemanticEntityVersion>) e);
         optionalSemantic.ifPresent(semanticEntity -> {
            // Attribute vs FIELD vs Property... Use JavaFx properties? AttributeProperties? FieldProperties?
             semanticEntity.getVersion(stampPublicId).ifPresent(entityVersion -> {

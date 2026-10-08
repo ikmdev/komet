@@ -11,7 +11,7 @@ import dev.ikm.komet.kview.controls.KLReadOnlyComponentSetControl;
 import dev.ikm.komet.kview.events.MakeConceptWindowEvent;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.layout.version.field.KlComponentSetField;
-import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.LongIdSet;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.events.EvtBusFactory;
@@ -22,7 +22,7 @@ import javafx.scene.layout.Region;
 import java.util.*;
 import java.util.function.*;
 
-public class KlReadOnlyComponentSetField extends BaseDefaultKlField<IntIdSet> implements KlComponentSetField {
+public class KlReadOnlyComponentSetField extends BaseDefaultKlField<LongIdSet> implements KlComponentSetField {
 
     /**
      * Creates a read-only component set field.
@@ -31,7 +31,7 @@ public class KlReadOnlyComponentSetField extends BaseDefaultKlField<IntIdSet> im
      * @param stamp4field the stamp for UI state determination
      * @param journalTopic used for summoning the concept window in the specific workspace
      */
-    public KlReadOnlyComponentSetField(ObservableField<IntIdSet> observableComponentSetField, ObservableView observableView, ObservableStamp stamp4field, UUID journalTopic) {
+    public KlReadOnlyComponentSetField(ObservableField<LongIdSet> observableComponentSetField, ObservableView observableView, ObservableStamp stamp4field, UUID journalTopic) {
         final KLReadOnlyComponentSetControl node = new KLReadOnlyComponentSetControl();
         super(observableComponentSetField, observableView, stamp4field, node);
         node.setTitle(getTitle());
@@ -49,10 +49,10 @@ public class KlReadOnlyComponentSetField extends BaseDefaultKlField<IntIdSet> im
         node.setOnPopulateAction(itemConsumer);
     }
 
-    private void updateReadOnlyIntIdSet(KLReadOnlyComponentSetControl klReadOnlyComponentSetControl, IntIdSet newIntIdSet,
+    private void updateReadOnlyIntIdSet(KLReadOnlyComponentSetControl klReadOnlyComponentSetControl, LongIdSet newLongIdSet,
                                         ViewCalculator viewCalculator) {
         klReadOnlyComponentSetControl.getItems().clear();
-        newIntIdSet.forEach(nid -> {
+        newLongIdSet.forEach(nid -> {
             EntityProxy entityProxy = EntityProxy.make(nid);
             Image icon = Identicon.generateIdenticonImage(entityProxy.publicId());
 

@@ -18,7 +18,7 @@ package dev.ikm.komet.framework.view;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinate;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinateRecord;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinateDelegate;
@@ -83,7 +83,7 @@ public abstract class ObservableNavigationCoordinateBase
                                       ImmutableSet<PatternFacade> oldSet,
                                       ImmutableSet<PatternFacade> newSet) {
         this.setValue(getValue().withNavigationPatternNids(
-                IntIds.set.of(newSet.castToSet(), EntityFacade::toNid)));
+                LongIds.set.of(newSet.castToSet(), EntityFacade::toNid)));
     }
 
     private void vertexStateSetChanged(ObservableValue<? extends StateSet> observableValue, StateSet oldValue, StateSet newValue) {
@@ -99,7 +99,7 @@ public abstract class ObservableNavigationCoordinateBase
                                              ImmutableList<PatternFacade> oldList,
                                              ImmutableList<PatternFacade> newList) {
         this.setValue(getValue().withVerticesSortPatternNidList(
-                IntIds.list.of(newList.castToList(), EntityFacade::toNid)));
+                LongIds.list.of(newList.castToList(), EntityFacade::toNid)));
     }
 
     @Override

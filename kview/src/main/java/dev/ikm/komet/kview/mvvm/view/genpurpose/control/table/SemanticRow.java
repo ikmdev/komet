@@ -17,10 +17,10 @@ public class SemanticRow {
     public List<SemanticField> getFields() { return fields; }
 
     // -- semantic nid
-    private final ObjectProperty<Integer> semanticNid = new SimpleObjectProperty<>();
-    public ObjectProperty<Integer> semanticNidProperty() { return semanticNid; }
-    public Integer getSemanticNid() { return semanticNid.get(); }
-    public void setSemanticNid(Integer publicId) { this.semanticNid.set(publicId); }
+    private final ObjectProperty<Long> semanticNid = new SimpleObjectProperty<>();
+    public ObjectProperty<Long> semanticNidProperty() { return semanticNid; }
+    public Long getSemanticNid() { return semanticNid.get(); }
+    public void setSemanticNid(Long publicId) { this.semanticNid.set(publicId); }
 
     // -- edit mode
     private final BooleanProperty editMode = new SimpleBooleanProperty();

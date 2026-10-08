@@ -1,6 +1,6 @@
 package dev.ikm.komet.layout;
 
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -13,7 +13,6 @@ import java.util.UUID;
 import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -64,8 +63,16 @@ class PatternFieldDefaultsTest {
                 PatternFieldDefaults.defaultsSemanticId(descriptionPattern)), "stable for the same pattern");
         assertFalse(PublicId.equals(PatternFieldDefaults.defaultsSemanticId(descriptionPattern),
                 PatternFieldDefaults.defaultsSemanticId(otherPattern)), "distinct per pattern");
-        assertNotEquals(descriptionPattern.asUuidArray()[0],
-                PatternFieldDefaults.defaultsSemanticId(descriptionPattern).asUuidArray()[0],
+        assertFalse(PublicId.equals(descriptionPattern, PatternFieldDefaults.defaultsSemanticId(descriptionPattern)),
                 "never the pattern's own identity");
+    }
+
+    @Test
+    void defaultsSemanticIdentityDoesNotDependOnTheOrderThePatternsUuidsAreListedIn() {
+        UUID one = UUID.fromString("a4de0039-2bb2-5f4e-b1b3-8f9c0e1e0d33");
+        UUID other = UUID.fromString("2f236377-2da7-49bf-8802-fd0fd2dfcdb5");
+
+        assertTrue(PublicId.equals(PatternFieldDefaults.defaultsSemanticId(PublicIds.of(one, other)),
+                PatternFieldDefaults.defaultsSemanticId(PublicIds.of(other, one))), "the same for either order");
     }
 }

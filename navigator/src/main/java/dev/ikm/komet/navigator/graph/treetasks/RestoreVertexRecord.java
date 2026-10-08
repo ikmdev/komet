@@ -17,7 +17,7 @@ package dev.ikm.komet.navigator.graph.treetasks;
 
 import dev.ikm.tinkar.common.service.PrimitiveData;
 
-public record RestoreVertexRecord(int nid, boolean childrenExpanded, boolean extraParentsExpanded)
+public record RestoreVertexRecord(long nid, boolean childrenExpanded, boolean extraParentsExpanded)
     implements Comparable<RestoreVertexRecord> {
     @Override
     public String toString() {

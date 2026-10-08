@@ -10,18 +10,18 @@ import dev.ikm.komet.layout.area.KlAreaForIntIdSet;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.layout_engine.blueprint.FeatureAreaBlueprint;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.LongIdSet;
 import dev.ikm.tinkar.entity.EntityHandle;
 import javafx.scene.image.Image;
 
 import java.util.*;
 
 /**
- * A read-only area for displaying IntIdSet fields within the Komet framework.
- * This area utilizes a KLReadOnlyDataTypeControl to present the IntIdSet value
+ * A read-only area for displaying LongIdSet fields within the Komet framework.
+ * This area utilizes a KLReadOnlyDataTypeControl to present the LongIdSet value
  * in a non-editable format.
  */
-public final class ReadOnlyComponentSetFieldArea extends FeatureAreaBlueprint<IntIdSet, Feature<IntIdSet>, KLReadOnlyComponentSetControl>
+public final class ReadOnlyComponentSetFieldArea extends FeatureAreaBlueprint<LongIdSet, Feature<LongIdSet>, KLReadOnlyComponentSetControl>
         implements KlAreaForIntIdSet<KLReadOnlyComponentSetControl> {
     private ReadOnlyComponentSetFieldArea(KometPreferences preferences) {
         super(preferences, new KLReadOnlyComponentSetControl());
@@ -57,17 +57,17 @@ public final class ReadOnlyComponentSetFieldArea extends FeatureAreaBlueprint<In
     }
 
     @Override
-    protected void featureChanged(Feature<IntIdSet> oldFeature, Feature<IntIdSet> newFeature) {
+    protected void featureChanged(Feature<LongIdSet> oldFeature, Feature<LongIdSet> newFeature) {
         if (newFeature != null) {
             setDisplayValues(newFeature);
         }
     }
 
     /**
-     * Sets the display values of the read-only IntIdSet field area and title (based on meaning).
-     * @param newValue the new Feature<IntIdSet> to display
+     * Sets the display values of the read-only LongIdSet field area and title (based on meaning).
+     * @param newValue the new Feature<LongIdSet> to display
      */
-    private void setDisplayValues(Feature<IntIdSet> newValue) {
+    private void setDisplayValues(Feature<LongIdSet> newValue) {
         getFxPeer().setTitle(calculatorForContext().getDescriptionTextOrNid(newValue.definition(calculatorForContext()).purposeNid()));
 
         getFxPeer().getItems().clear();

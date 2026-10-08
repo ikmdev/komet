@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.navigator.pattern;
 
+import dev.ikm.tinkar.common.id.Nid;
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.activity.ActivityStream;
 import dev.ikm.komet.framework.graphics.Icon;
@@ -24,13 +25,13 @@ import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.coordinate.stamp.StampPathImmutable;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
@@ -55,7 +56,6 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.OptionalInt;
 import java.util.ResourceBundle;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class PatternViewController {
     private static final Logger LOG = LoggerFactory.getLogger(PatternViewController.class);
@@ -155,14 +155,14 @@ public class PatternViewController {
         this.rootTreeItem.getChildren().clear();
         TinkExecutor.threadPool().execute(() -> {
             ArrayList<TreeItem<Object>> patternItems = new ArrayList<>();
-            PrimitiveData.get().forEachPatternNid(patternNid -> {
-                Latest<PatternEntityVersion> latestPattern = viewProperties.calculator().latest(patternNid);
+            EntityService.get().forEachPatternEntity(pattern -> {
+                Latest<PatternEntityVersion> latestPattern = viewProperties.calculator().latest(pattern);
                 latestPattern.ifPresent(patternEntityVersion -> {
-                    patternItems.add(new TreeItem<>(patternNid));
+                    patternItems.add(new TreeItem<>(pattern.nid()));
                 });
             });
             patternItems.sort((o1, o2) -> {
-                if (o1.getValue() instanceof Integer nid1 && o2.getValue() instanceof Integer nid2) {
+                if (o1.getValue() instanceof Long nid1 && o2.getValue() instanceof Long nid2) {
                     return NaturalOrder.compareStrings(viewProperties.calculator().getDescriptionTextOrNid(nid1),
                             viewProperties.calculator().getDescriptionTextOrNid(nid2));
                 } else {
@@ -172,16 +172,16 @@ public class PatternViewController {
             Platform.runLater(() -> this.rootTreeItem.getChildren().setAll(patternItems));
             for (TreeItem<Object> patternItem : patternItems) {
                 ArrayList<TreeItem<Object>> patternChildren = new ArrayList<>();
-                int patternNid = (Integer) patternItem.getValue();
-                AtomicInteger childCount = new AtomicInteger();
-                PrimitiveData.get().forEachSemanticNidOfPattern(patternNid, semanticNid -> {
-                    if (childCount.incrementAndGet() < maxChildrenInPatternViewer) {
-                        patternChildren.add(new TreeItem<>(semanticNid));
-                    }
-                });
-                if (childCount.get() >= maxChildrenInPatternViewer) {
+                long patternNid = Nid.nidOf(patternItem.getValue());
+                // read only the semantics shown, and count the rest without reading them
+                // (IKE-Network/ike-issues#1249)
+                int childCount = EntityService.get().countSemanticsOfPattern(patternNid);
+                EntityService.get().semanticsOfPattern(patternNid)
+                        .limit(maxChildrenInPatternViewer - 1)
+                        .forEach(semantic -> patternChildren.add(new TreeItem<>(semantic.nid())));
+                if (childCount >= maxChildrenInPatternViewer) {
                     NumberFormat numberFormat = NumberFormat.getInstance();
-                    patternChildren.add(new TreeItem<>(numberFormat.format(childCount.get() - maxChildrenInPatternViewer) + " additional semantics suppressed..."));
+                    patternChildren.add(new TreeItem<>(numberFormat.format(childCount - maxChildrenInPatternViewer) + " additional semantics suppressed..."));
                 }
                 Platform.runLater(() -> patternItem.getChildren().setAll(patternChildren));
             }

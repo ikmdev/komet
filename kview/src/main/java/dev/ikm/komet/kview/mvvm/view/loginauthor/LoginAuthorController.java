@@ -1,14 +1,15 @@
 package dev.ikm.komet.kview.mvvm.view.loginauthor;
 
+import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.ViewCoordinateHelper;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
-import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ComponentWithNid;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -24,7 +25,6 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchLeafDescendentsOfConcept;
 import static dev.ikm.komet.kview.mvvm.view.loginauthor.LoginAuthorViewModel.LoginProperties.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 
@@ -58,14 +58,14 @@ public class LoginAuthorController {
     public void initialize() {
         ViewProperties viewProperties = getViewProperties();
         // Create new instance of ViewCalculator to have stated navigation along with inferred.
-        ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, TinkarTerm.STATED_NAVIGATION_PATTERN.nid());
+        ViewCalculator viewCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(viewProperties, KernelTerm.STATED_NAVIGATION_PATTERN.nid());
         // Only leaf descendants of USER are named users; grouping concepts in the subtree are excluded (ike-issues#754).
-        Set<ConceptEntity> conceptEntitySet = fetchLeafDescendentsOfConcept(viewCalculator, TinkarTerm.USER.publicId());
+        Set<ConceptEntity> conceptEntitySet = NavigationReads.leafDescendantsOf(viewCalculator, KernelTerm.USER);
 
         //If there are no authors mentioned in the stated or inferred then we use the default tinkar term user.
         if (conceptEntitySet.isEmpty()) {
             //TODO further refactoring should be done to be more abstract and UI should only use light entity facade to be more abstract.
-            conceptEntitySet.add(EntityService.get().getEntityFast(TinkarTerm.USER));
+            conceptEntitySet.add(EntityHandle.get(KernelTerm.USER).expectConcept());
         }
 
         loginAuthorViewModel.getObservableList(AUTHORS).addAll(conceptEntitySet);
@@ -161,7 +161,7 @@ public class LoginAuthorController {
         try {
             java.util.UUID uuid = java.util.UUID.fromString(uuidText.trim());
             return available.stream()
-                    .filter(author -> EntityService.get().getEntityFast(author.nid()).publicId().asUuidList().contains(uuid))
+                    .filter(author -> EntityHandle.get(author.nid()).expectEntity().publicId().asUuidList().contains(uuid))
                     .findFirst();
         } catch (IllegalArgumentException e) {
             return java.util.Optional.empty();
@@ -180,7 +180,9 @@ public class LoginAuthorController {
         }
         try {
             KometPreferences authorPrefs = KometPreferencesImpl.getConfigurationRootPreferences().node(AUTHOR_LOGIN_NODE);
-            String uuid = EntityService.get().getEntityFast(author.nid()).publicId().asUuidList().get(0).toString();
+            // Any of the author's UUIDs finds it again (findByUuid); the least keeps the stored
+            // one independent of the order the store lists them in.
+            String uuid = EntityHandle.get(author.nid()).expectEntity().publicId().leastUuid().toString();
             authorPrefs.put(LAST_AUTHOR_KEY, uuid);
             java.util.LinkedHashSet<String> selected = new java.util.LinkedHashSet<>();
             for (String existing : authorPrefs.get(SELECTED_AUTHORS_KEY).orElse("").split(",")) {

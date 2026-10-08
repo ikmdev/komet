@@ -106,7 +106,7 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
         return getObservableEntity();
     }
 
-    public int nid() {
+    public long nid() {
         return versionProperty.get().nid();
     }
 
@@ -124,7 +124,7 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
     }
 
     @Override
-    public int stampNid() {
+    public long stampNid() {
         return version().stampNid();
     }
 
@@ -360,7 +360,7 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
             V oldVersion = (V) observableVersion.getVersionRecord();
             try {
                 // Diagnostic for ikmdev/komet-desktop#12: decode the entity's nid so the (patternSeq, elementSeq) is obvious in the log.
-                int analogueNid = analogue.nid();
+                long analogueNid = analogue.nid();
                 LOG.info("save(): entity nid={} -> patternSeq={}, elementSeq={} (entityClass={})",
                         analogueNid,
                         dev.ikm.tinkar.common.id.impl.NidLayout.active().decodePatternSequence(analogueNid),
@@ -421,7 +421,7 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
          * Creates a new version with the specified stamp nid.
          * Subclasses must implement this to provide type-specific version creation.
          */
-        protected abstract V createVersionWithStamp(V version, int stampNid);
+        protected abstract V createVersionWithStamp(V version, long stampNid);
 
         /**
          * Creates an analogue (entity record) containing the specified version.
@@ -449,7 +449,7 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
      * @param nid the nid of the component (entity) whose version is being edited
      * @param stampNid the nid of the ObservableStamp (typically identifying the author)
      */
-    record EditableVersionKey(int nid, int stampNid) {}
+    record EditableVersionKey(long nid, long stampNid) {}
 
     /**
      * Caffeine cache with weak values ensuring canonical editable versions.

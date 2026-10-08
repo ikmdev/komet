@@ -21,7 +21,7 @@ import dev.ikm.tinkar.common.util.text.NaturalOrder;
 import dev.ikm.tinkar.component.graph.DiTree;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 
 import java.util.Comparator;
 
@@ -49,58 +49,58 @@ public class AxiomComparator implements Comparator<ClauseView> {
 
     private int compare(EntityVertex vertex1, EntityVertex vertex2) {
         if (vertex1.getMeaningNid() != vertex2.getMeaningNid()) {
-            if (vertex1.getMeaningNid() == TinkarTerm.AND.nid()) {
+            if (vertex1.getMeaningNid() == KernelTerm.AND.nid()) {
                 return -1;
             }
-            if (vertex2.getMeaningNid() == TinkarTerm.AND.nid()) {
+            if (vertex2.getMeaningNid() == KernelTerm.AND.nid()) {
                 return 1;
             }
-            if (vertex1.getMeaningNid() == TinkarTerm.SUFFICIENT_SET.nid()) {
+            if (vertex1.getMeaningNid() == KernelTerm.SUFFICIENT_SET.nid()) {
                 return -1;
             }
-            if (vertex2.getMeaningNid() == TinkarTerm.SUFFICIENT_SET.nid()) {
+            if (vertex2.getMeaningNid() == KernelTerm.SUFFICIENT_SET.nid()) {
                 return 1;
             }
-            if (vertex1.getMeaningNid() == TinkarTerm.NECESSARY_SET.nid()) {
+            if (vertex1.getMeaningNid() == KernelTerm.NECESSARY_SET.nid()) {
                 return -1;
             }
-            if (vertex2.getMeaningNid() == TinkarTerm.NECESSARY_SET.nid()) {
+            if (vertex2.getMeaningNid() == KernelTerm.NECESSARY_SET.nid()) {
                 return 1;
             }
-            if (vertex1.getMeaningNid() == TinkarTerm.INCLUSION_SET.nid()) {
+            if (vertex1.getMeaningNid() == KernelTerm.INCLUSION_SET.nid()) {
                 return -1;
             }
-            if (vertex2.getMeaningNid() == TinkarTerm.INCLUSION_SET.nid()) {
+            if (vertex2.getMeaningNid() == KernelTerm.INCLUSION_SET.nid()) {
                 return 1;
             }
-            if (vertex1.getMeaningNid() == TinkarTerm.PROPERTY_SET.nid()) {
+            if (vertex1.getMeaningNid() == KernelTerm.PROPERTY_SET.nid()) {
                 return -1;
             }
-            if (vertex2.getMeaningNid() == TinkarTerm.PROPERTY_SET.nid()) {
+            if (vertex2.getMeaningNid() == KernelTerm.PROPERTY_SET.nid()) {
                 return 1;
             }
-            if (vertex1.getMeaningNid() == TinkarTerm.CONCEPT_REFERENCE.nid()) {
+            if (vertex1.getMeaningNid() == KernelTerm.CONCEPT_REFERENCE.nid()) {
                 return -1;
             }
-            if (vertex2.getMeaningNid() == TinkarTerm.CONCEPT_REFERENCE.nid()) {
+            if (vertex2.getMeaningNid() == KernelTerm.CONCEPT_REFERENCE.nid()) {
                 return 1;
             }
-            if (vertex1.getMeaningNid() == TinkarTerm.ROLE.nid()) {
+            if (vertex1.getMeaningNid() == KernelTerm.ROLE.nid()) {
                 return -1;
             }
-            if (vertex2.getMeaningNid() == TinkarTerm.ROLE.nid()) {
+            if (vertex2.getMeaningNid() == KernelTerm.ROLE.nid()) {
                 return 1;
             }
-            if (vertex1.getMeaningNid() == TinkarTerm.INTERVAL_ROLE.nid()) {
+            if (vertex1.getMeaningNid() == KernelTerm.INTERVAL_ROLE.nid()) {
                 return -1;
             }
-            if (vertex2.getMeaningNid() == TinkarTerm.INTERVAL_ROLE.nid()) {
+            if (vertex2.getMeaningNid() == KernelTerm.INTERVAL_ROLE.nid()) {
                 return 1;
             }
-            if (vertex1.getMeaningNid() == TinkarTerm.FEATURE.nid()) {
+            if (vertex1.getMeaningNid() == KernelTerm.FEATURE.nid()) {
                 return -1;
             }
-            if (vertex2.getMeaningNid() == TinkarTerm.FEATURE.nid()) {
+            if (vertex2.getMeaningNid() == KernelTerm.FEATURE.nid()) {
                 return 1;
             }
         } else {
@@ -109,15 +109,15 @@ public class AxiomComparator implements Comparator<ClauseView> {
             ImmutableList<EntityVertex> children1 = diGraph.successors(vertex1);
             ImmutableList<EntityVertex> children2 = diGraph.successors(vertex2);
 
-            if (vertex1.getMeaningNid() == TinkarTerm.NECESSARY_SET.nid() ||
-                    vertex1.getMeaningNid() == TinkarTerm.AND.nid() ||
-                    vertex1.getMeaningNid() == TinkarTerm.SUFFICIENT_SET.nid() ||
-                    vertex1.getMeaningNid() == TinkarTerm.NECESSARY_SET.nid() ||
-                    vertex1.getMeaningNid() == TinkarTerm.INCLUSION_SET.nid() ||
-                    vertex1.getMeaningNid() == TinkarTerm.PROPERTY_SET.nid() ||
-                    vertex1.getMeaningNid() == TinkarTerm.FEATURE.nid() ||
+            if (vertex1.getMeaningNid() == KernelTerm.NECESSARY_SET.nid() ||
+                    vertex1.getMeaningNid() == KernelTerm.AND.nid() ||
+                    vertex1.getMeaningNid() == KernelTerm.SUFFICIENT_SET.nid() ||
+                    vertex1.getMeaningNid() == KernelTerm.NECESSARY_SET.nid() ||
+                    vertex1.getMeaningNid() == KernelTerm.INCLUSION_SET.nid() ||
+                    vertex1.getMeaningNid() == KernelTerm.PROPERTY_SET.nid() ||
+                    vertex1.getMeaningNid() == KernelTerm.FEATURE.nid() ||
                     // TODO compare similar to role
-                    vertex1.getMeaningNid() == TinkarTerm.INTERVAL_ROLE.nid()) {
+                    vertex1.getMeaningNid() == KernelTerm.INTERVAL_ROLE.nid()) {
                 if (children1.isEmpty()) {
                     if (children2.isEmpty()) {
                         return 0;
@@ -130,9 +130,9 @@ public class AxiomComparator implements Comparator<ClauseView> {
                 return children1.size() - children2.size();
             }
 
-            if (vertex1.getMeaningNid() == TinkarTerm.CONCEPT_REFERENCE.nid()) {
-                ConceptFacade concept1 = vertex1.propertyFast(TinkarTerm.CONCEPT_REFERENCE);
-                ConceptFacade concept2 = vertex2.propertyFast(TinkarTerm.CONCEPT_REFERENCE);
+            if (vertex1.getMeaningNid() == KernelTerm.CONCEPT_REFERENCE.nid()) {
+                ConceptFacade concept1 = vertex1.propertyFast(KernelTerm.CONCEPT_REFERENCE);
+                ConceptFacade concept2 = vertex2.propertyFast(KernelTerm.CONCEPT_REFERENCE);
                 return viewProperties.calculator().getDescriptionTextOrNid(concept1).compareTo(
                         viewProperties.calculator().getDescriptionTextOrNid(concept2)
                 );
@@ -140,15 +140,15 @@ public class AxiomComparator implements Comparator<ClauseView> {
 
 
             // Node is a role of some type...
-            if (vertex1.getMeaningNid() == TinkarTerm.ROLE.nid() &&
-                    vertex2.getMeaningNid() == TinkarTerm.ROLE.nid()) {
-                ConceptFacade roleOperator1 = vertex1.propertyFast(TinkarTerm.ROLE_OPERATOR);
-                ConceptFacade roleType1 = vertex1.propertyFast(TinkarTerm.ROLE_TYPE);
-                ConceptFacade roleOperator2 = vertex2.propertyFast(TinkarTerm.ROLE_OPERATOR);
-                ConceptFacade roleType2 = vertex2.propertyFast(TinkarTerm.ROLE_TYPE);
+            if (vertex1.getMeaningNid() == KernelTerm.ROLE.nid() &&
+                    vertex2.getMeaningNid() == KernelTerm.ROLE.nid()) {
+                ConceptFacade roleOperator1 = vertex1.propertyFast(KernelTerm.ROLE_OPERATOR);
+                ConceptFacade roleType1 = vertex1.propertyFast(KernelTerm.ROLE_TYPE);
+                ConceptFacade roleOperator2 = vertex2.propertyFast(KernelTerm.ROLE_OPERATOR);
+                ConceptFacade roleType2 = vertex2.propertyFast(KernelTerm.ROLE_TYPE);
 
-                if (roleOperator1.nid() == TinkarTerm.EXISTENTIAL_RESTRICTION.nid() &&
-                        roleOperator2.nid() == TinkarTerm.EXISTENTIAL_RESTRICTION.nid()) {
+                if (roleOperator1.nid() == KernelTerm.EXISTENTIAL_RESTRICTION.nid() &&
+                        roleOperator2.nid() == KernelTerm.EXISTENTIAL_RESTRICTION.nid()) {
                     if (roleType1.nid() == roleType2.nid()) {
                         // need to access children...
                         if (children1.isEmpty()) {
@@ -165,21 +165,21 @@ public class AxiomComparator implements Comparator<ClauseView> {
                         }
                         return children1.size() - children2.size();
                     }
-                    if (roleType1.nid() == TinkarTerm.ROLE_GROUP.nid() &&
-                            roleType2.nid() != TinkarTerm.ROLE_GROUP.nid()) {
+                    if (roleType1.nid() == KernelTerm.ROLE_GROUP.nid() &&
+                            roleType2.nid() != KernelTerm.ROLE_GROUP.nid()) {
                         return -1;
                     }
-                    if (roleType2.nid() == TinkarTerm.ROLE_GROUP.nid() &&
-                            roleType1.nid() != TinkarTerm.ROLE_GROUP.nid()) {
+                    if (roleType2.nid() == KernelTerm.ROLE_GROUP.nid() &&
+                            roleType1.nid() != KernelTerm.ROLE_GROUP.nid()) {
                         return 1;
                     }
                     return NaturalOrder.compareStrings(viewProperties.calculator().getDescriptionTextOrNid(roleType1),
                             viewProperties.calculator().getDescriptionTextOrNid(roleType2));
                 }
-                if (roleOperator1.nid() == TinkarTerm.UNIVERSAL_RESTRICTION.nid()) {
+                if (roleOperator1.nid() == KernelTerm.UNIVERSAL_RESTRICTION.nid()) {
                     return -1;
                 }
-                if (roleOperator2.nid() == TinkarTerm.UNIVERSAL_RESTRICTION.nid()) {
+                if (roleOperator2.nid() == KernelTerm.UNIVERSAL_RESTRICTION.nid()) {
                     return 1;
                 }
             }

@@ -15,12 +15,13 @@
  */
 package dev.ikm.komet.framework.panel.axiom;
 
+import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.komet.framework.PseudoClasses;
 import dev.ikm.komet.framework.graphics.Icon;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.id.IntIdList;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIdList;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.component.graph.DiTree;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
@@ -28,7 +29,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.event.Event;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
@@ -77,7 +78,7 @@ public class AxiomView implements PropertyEditor<DiTree<EntityVertex>> {
 
     private AxiomView(ObservableSemanticVersion axiomTreeSemanticVersion, PremiseType premiseType, ViewProperties viewProperties) {
         this.axiomTreeSemanticVersion = axiomTreeSemanticVersion;
-        viewProperties.calculator().getFieldForSemanticWithPurpose(axiomTreeSemanticVersion, TinkarTerm.LOGICAL_DEFINITION).ifPresentOrElse(objectField -> {
+        viewProperties.calculator().getFieldForSemanticWithPurpose(axiomTreeSemanticVersion, KometTerm.LOGICAL_DEFINITION).ifPresentOrElse(objectField -> {
             axiomTree = (DiTreeEntity) objectField.value();
         }, () -> {
             // TODO handle this state better...
@@ -94,13 +95,13 @@ public class AxiomView implements PropertyEditor<DiTree<EntityVertex>> {
         }
     }
 
-    public static final Node computeGraphic(int conceptNid, boolean expanded, State state, ViewProperties viewProperties, PremiseType premiseType) {
+    public static final Node computeGraphic(long conceptNid, boolean expanded, State state, ViewProperties viewProperties, PremiseType premiseType) {
 
         if (conceptNid == -1
-                || conceptNid == TinkarTerm.UNINITIALIZED_COMPONENT.nid()) {
+                || conceptNid == KernelTerm.UNINITIALIZED_COMPONENT.nid()) {
             return Icon.ALERT_CONFIRM2.makeIcon();
         }
-        IntIdList parents = IntIds.list.empty();
+        LongIdList parents = LongIds.list.empty();
         try {
             parents = viewProperties.calculator().navigationCalculator().parentsOf(conceptNid);
         } catch (RuntimeException ex) {
@@ -114,7 +115,7 @@ public class AxiomView implements PropertyEditor<DiTree<EntityVertex>> {
             }
         }
         boolean multiParent = !parents.isEmpty();
-        boolean sufficient = conceptExpression.get().containsVertexWithMeaning(TinkarTerm.SUFFICIENT_SET);
+        boolean sufficient = conceptExpression.get().containsVertexWithMeaning(KernelTerm.SUFFICIENT_SET);
 
         if (parents.isEmpty()) {
             return Icon.TAXONOMY_ROOT_ICON.makeIcon();
@@ -190,7 +191,7 @@ public class AxiomView implements PropertyEditor<DiTree<EntityVertex>> {
     String getEntityForAxiomsText(String prefix) {
         //TODO This null check should not be necessary...
         if (axiomTreeSemanticVersion != null) {
-            if (axiomTreeSemanticVersion.referencedComponentNid() != TinkarTerm.UNINITIALIZED_COMPONENT.nid()) {
+            if (axiomTreeSemanticVersion.referencedComponentNid() != KernelTerm.UNINITIALIZED_COMPONENT.nid()) {
                 StringBuilder builder = new StringBuilder();
                 if (prefix != null) {
                     builder.append(prefix);
@@ -242,7 +243,7 @@ public class AxiomView implements PropertyEditor<DiTree<EntityVertex>> {
         throw new UnsupportedOperationException();
     }
 
-    int getEntityBeingDefinedNid() {
+    long getEntityBeingDefinedNid() {
         return this.axiomTreeSemanticVersion.referencedComponentNid();
     }
 

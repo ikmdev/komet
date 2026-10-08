@@ -17,10 +17,10 @@ package dev.ikm.komet.framework.view;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import javafx.beans.value.ObservableValue;
 
 //~--- classes ----------------------------------------------------------------
@@ -73,21 +73,21 @@ public class ObservableEditCoordinateNoOverride
     @Override
     protected SimpleEqualityBasedObjectProperty<ConceptFacade> makeAuthorForChangesProperty(EditCoordinate editCoordinate) {
         return new SimpleEqualityBasedObjectProperty<>(this,
-                TinkarTerm.AUTHOR_FOR_EDIT_COORDINATE.toXmlFragment(),
+                KometTerm.AUTHOR_FOR_EDIT_COORDINATE.toXmlFragment(),
                 editCoordinate.getAuthorForChanges());
     }
 
     @Override
     protected SimpleEqualityBasedObjectProperty<ConceptFacade> makeDefaultModuleProperty(EditCoordinate editCoordinate) {
         return new SimpleEqualityBasedObjectProperty(this,
-                TinkarTerm.DEFAULT_MODULE_FOR_EDIT_COORDINATE.toXmlFragment(),
+                KometTerm.DEFAULT_MODULE_FOR_EDIT_COORDINATE.toXmlFragment(),
                 editCoordinate.getDefaultModule());
     }
 
     @Override
     protected SimpleEqualityBasedObjectProperty<ConceptFacade> makeDestinationModuleProperty(EditCoordinate editCoordinate) {
         return new SimpleEqualityBasedObjectProperty<>(this,
-                TinkarTerm.DESTINATION_MODULE_FOR_EDIT_COORDINATE.toXmlFragment(),
+                KometTerm.DESTINATION_MODULE_FOR_EDIT_COORDINATE.toXmlFragment(),
                 editCoordinate.getDestinationModule());
     }
 
@@ -95,14 +95,14 @@ public class ObservableEditCoordinateNoOverride
     protected SimpleEqualityBasedObjectProperty<ConceptFacade> makeDefaultPathProperty(EditCoordinate editCoordinate) {
         return new SimpleEqualityBasedObjectProperty<>(this,
                 //TODO make concept for PATH_FOR_EDIT_COORDINATE
-                TinkarTerm.PATH_FOR_PATH_COORDINATE.toXmlFragment(),
+                KometTerm.PATH_FOR_PATH_COORDINATE.toXmlFragment(),
                 editCoordinate.getDefaultPath());
     }
 
     @Override
     protected SimpleEqualityBasedObjectProperty<ConceptFacade> makePromotionPathProperty(EditCoordinate editCoordinate) {
         return new SimpleEqualityBasedObjectProperty(this,
-                TinkarTerm.PROMOTION_PATH_FOR_EDIT_CORDINATE.toXmlFragment(),
+                KometTerm.PROMOTION_PATH_FOR_EDIT_COORDINATE.toXmlFragment(),
                 editCoordinate.getPromotionPath());
     }
 }

@@ -20,6 +20,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.sparrowwallet.toucan.LifeHash;
 import com.sparrowwallet.toucan.LifeHashVersion;
 import dev.ikm.tinkar.common.id.PublicId;
+import dev.ikm.tinkar.common.id.PublicIds;
 import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
@@ -30,6 +31,9 @@ import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -108,14 +112,19 @@ public class Identicon {
      * image instead of regenerating, and generate synchronously only on a genuine cold miss.
      * Declared before {@link #IMAGE_CACHE} so the cache's removal listener may reference it.
      */
-    private static final Set<PublicId> FILLED = ConcurrentHashMap.newKeySet();
+    private static final Set<List<UUID>> FILLED = ConcurrentHashMap.newKeySet();
 
-    private static final Cache<PublicId, Image> IMAGE_CACHE = Caffeine.newBuilder()
+    /**
+     * Keyed by a public id's UUIDs, sorted: a public id is never a hash key (its {@code hashCode} is
+     * deliberately inconsistent with its any-shared-UUID {@code equals}), and the sorted list is the
+     * same for the same UUIDs whatever order a public id lists them in.
+     */
+    private static final Cache<List<UUID>, Image> IMAGE_CACHE = Caffeine.newBuilder()
             .maximumSize(CACHE_MAX_SIZE)
             // When an image is evicted, drop its "filled" flag too, so FILLED never outlives the
             // cached image (else a later sync lookup would trust FILLED and return an evicted-and-
             // re-created blank placeholder) and never grows unbounded past the cache.
-            .removalListener((PublicId key, Image image, com.github.benmanes.caffeine.cache.RemovalCause cause) -> {
+            .removalListener((List<UUID> key, Image image, com.github.benmanes.caffeine.cache.RemovalCause cause) -> {
                 if (key != null) {
                     FILLED.remove(key);
                 }
@@ -181,16 +190,24 @@ public class Identicon {
      * concept across the app, and every later async or sync lookup returns it filled).
      */
     private static Image identiconImageNow(PublicId publicId) {
-        if (FILLED.contains(publicId)) {
-            Image cached = IMAGE_CACHE.getIfPresent(publicId);
+        List<UUID> key = key(publicId);
+        if (FILLED.contains(key)) {
+            Image cached = IMAGE_CACHE.getIfPresent(key);
             if (cached != null) {
                 return cached;
             }
         }
-        Image image = generateIdenticonImageLifeHash(publicId, LIFE_HASH_VERSION);
-        IMAGE_CACHE.put(publicId, image);
-        FILLED.add(publicId);
+        Image image = generateIdenticonImageLifeHash(key, LIFE_HASH_VERSION);
+        IMAGE_CACHE.put(key, image);
+        FILLED.add(key);
         return image;
+    }
+
+    /** A public id's UUIDs, sorted: the same for the same UUIDs, in whatever order they were listed. */
+    private static List<UUID> key(PublicId publicId) {
+        UUID[] uuids = publicId.asUuidArray();
+        Arrays.sort(uuids);
+        return List.of(uuids);
     }
 
     /**
@@ -214,7 +231,7 @@ public class Identicon {
      *         it's requested for a given {@code publicId})
      */
     public static Image generateIdenticonImage(PublicId publicId) {
-        return IMAGE_CACHE.get(publicId, Identicon::createAndFillAsync);
+        return IMAGE_CACHE.get(key(publicId), Identicon::createAndFillAsync);
     }
 
     /**
@@ -226,7 +243,7 @@ public class Identicon {
      * automatically (JavaFX observes pixel-buffer changes on
      * {@link WritableImage}).
      */
-    private static Image createAndFillAsync(PublicId publicId) {
+    private static Image createAndFillAsync(List<UUID> publicId) {
         // This runs on a cache miss (unseen or evicted): the new placeholder is transparent until the
         // async fill completes, so clear any stale "filled" flag now (the removalListener is async, so
         // an evict-then-re-request could otherwise still see FILLED true against this blank placeholder).
@@ -286,12 +303,16 @@ public class Identicon {
      * Generates an identicon based on a publicID using the Lifehash algorithm.
      * The Lifehash algorithm has different modes of operation which you can choose from by passing a different LifeHashVersion instanece.
      *
-     * @param publicId the public id which would be the basis for generating the identicon. Different publicids will generate different identicons.
+     * @param sortedUuids a public id's UUIDs, sorted, the basis for generating the identicon. Different
+     *                    public ids generate different identicons; the same UUIDs, the same one.
      * @param lifeHashVersion the LifehashVersion to use. Different versions will produce different images.
      * @return the generated Identicon image.
      */
-    private static Image generateIdenticonImageLifeHash(PublicId publicId, LifeHashVersion lifeHashVersion) {
-        LifeHash.Image lifeHashImage = LifeHash.makeFromUTF8(publicId.idString(), lifeHashVersion, 1, false);
+    private static Image generateIdenticonImageLifeHash(List<UUID> sortedUuids, LifeHashVersion lifeHashVersion) {
+        // Drawn from the sorted UUIDs, so a component looks the same however its public id lists them.
+        // A public id's own idString, of its UUIDs sorted: unchanged for a single UUID.
+        LifeHash.Image lifeHashImage = LifeHash.makeFromUTF8(
+                PublicIds.of(sortedUuids.toArray(new UUID[0])).idString(), lifeHashVersion, 1, false);
 
         WritableImage writableImage = new WritableImage(lifeHashImage.width(), lifeHashImage.height());
         PixelWriter pixelWriter = writableImage.getPixelWriter();

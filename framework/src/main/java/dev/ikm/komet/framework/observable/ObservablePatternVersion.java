@@ -121,12 +121,12 @@ public final class ObservablePatternVersion
     }
 
     @Override
-    public int semanticPurposeNid() {
+    public long semanticPurposeNid() {
         return version().semanticPurposeNid();
     }
 
     @Override
-    public int semanticMeaningNid() {
+    public long semanticMeaningNid() {
         return version().semanticMeaningNid();
     }
 
@@ -298,7 +298,7 @@ public final class ObservablePatternVersion
         }
 
         @Override
-        protected PatternVersionRecord createVersionWithStamp(PatternVersionRecord version, int stampNid) {
+        protected PatternVersionRecord createVersionWithStamp(PatternVersionRecord version, long stampNid) {
             return version.withStampNid(stampNid);
         }
 

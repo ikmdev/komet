@@ -18,30 +18,30 @@ package dev.ikm.komet.framework.propsheet.editor;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.MultipleSelectionModel;
-import org.eclipse.collections.api.list.primitive.MutableIntList;
-import org.eclipse.collections.api.set.primitive.MutableIntSet;
-import org.eclipse.collections.impl.factory.primitive.IntLists;
-import org.eclipse.collections.impl.factory.primitive.IntSets;
+import org.eclipse.collections.api.list.primitive.MutableLongList;
+import org.eclipse.collections.api.set.primitive.MutableLongSet;
+import org.eclipse.collections.impl.factory.primitive.LongLists;
+import org.eclipse.collections.impl.factory.primitive.LongSets;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.tinkar.common.id.IntIdSet;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIdSet;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 
-public class IntIdSetEditor extends IntIdCollectionEditor<IntIdSet> {
+public class IntIdSetEditor extends IntIdCollectionEditor<LongIdSet> {
 
-    public IntIdSetEditor(ViewProperties viewProperties, SimpleObjectProperty<IntIdSet> intIdSetProperty) {
+    public IntIdSetEditor(ViewProperties viewProperties, SimpleObjectProperty<LongIdSet> intIdSetProperty) {
         super(viewProperties, intIdSetProperty);
 
     }
 
-    void updateListView(IntIdSet newValue) {
+    void updateListView(LongIdSet newValue) {
         TinkExecutor.threadPool().execute(() -> {
-            MutableIntList nidList;
+            MutableLongList nidList;
             if (newValue == null) {
-                nidList = IntLists.mutable.empty();
+                nidList = LongLists.mutable.empty();
             } else {
-                nidList = IntLists.mutable.ofAll(newValue.intStream());
+                nidList = LongLists.mutable.ofAll(newValue.longStream());
             }
 
             ViewCalculator calculator = viewProperties.calculator();
@@ -56,12 +56,12 @@ public class IntIdSetEditor extends IntIdCollectionEditor<IntIdSet> {
     }
 
     @Override
-    void deleteSelectedItems(MultipleSelectionModel<Integer> selectionModel) {
-        MutableIntSet intsToDelete = IntSets.mutable.empty();
-        for (Integer nid : listView.getSelectionModel().getSelectedItems()) {
+    void deleteSelectedItems(MultipleSelectionModel<Long> selectionModel) {
+        MutableLongSet intsToDelete = LongSets.mutable.empty();
+        for (Long nid : listView.getSelectionModel().getSelectedItems()) {
             intsToDelete.add(nid);
         }
-        IntIdSet remainingNidSet = IntIds.set.of(IntSets.mutable.ofAll(getValue().intStream()).withoutAll(intsToDelete).toArray());
+        LongIdSet remainingNidSet = LongIds.set.of(LongSets.mutable.ofAll(getValue().longStream()).withoutAll(intsToDelete).toArray());
         setValue(remainingNidSet);
     }
 }

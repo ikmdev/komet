@@ -9,7 +9,7 @@ import javafx.scene.layout.Region;
 /**
  * Represents an interface in the Knowledge Layout framework to manage field areas
  * specifically associated with objects and their corresponding JavaFX regional components.
- * This non-sealed interface builds upon {@link KlFieldArea} with a generalized focus
+ * This non-sealed interface builds upon {@link KlAreaForFeature} with a generalized focus
  * on object-related attributes and their visualization.
  *
  * @param <FX> The type of JavaFX {@link Region} associated with this field area for displaying or managing the object-related fields.
@@ -25,7 +25,7 @@ public non-sealed interface KlAreaForObject<FX extends Region>
      * associated with objects and their corresponding JavaFX regional components. This factory provides the contract
      * for building field areas associated with object data types and managing their properties within JavaFX regions.
      *
-     * Extending from {@code KlFieldArea.Factory}, this interface focuses on field areas that integrate object-type observable
+     * Extending from {@code KlAreaForFeature.Factory}, this interface focuses on field areas that integrate object-type observable
      * fields with JavaFX {@code Region} elements. It enables the creation, restoration, and configuration of these field
      * areas, supporting modular and reusable components for object-related layouts.
      *

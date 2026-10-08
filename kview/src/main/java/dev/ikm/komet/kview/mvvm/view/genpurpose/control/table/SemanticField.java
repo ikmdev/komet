@@ -5,7 +5,7 @@ import javafx.beans.property.ObjectProperty;
 
 public record SemanticField<T>(
         ObservableField<T> observableField,
-        int dataType,
+        long dataType,
         String fieldTitle,
         String fieldPurpose
 ) {

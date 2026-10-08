@@ -31,6 +31,7 @@ import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
 import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.komet.framework.search.HighlightedSegments;
+import dev.ikm.komet.framework.search.IdentifierQuery;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.tinkar.common.service.RemoteConceptSearchService;
 import dev.ikm.tinkar.common.service.ServiceLifecycleManager;
@@ -44,10 +45,7 @@ import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
-import dev.ikm.tinkar.common.id.PublicIds;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.util.text.NaturalOrder;
-import dev.ikm.tinkar.common.util.uuid.UuidUtil;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.entity.ConceptEntity;
@@ -83,8 +81,8 @@ import org.carlfx.cognitive.loader.JFXNode;
 import org.controlsfx.control.PopOver;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
-import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
+import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
+import org.eclipse.collections.impl.factory.primitive.LongObjectMaps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,7 +94,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.TreeMap;
 import java.util.UUID;
 
@@ -293,18 +290,13 @@ public class NextGenSearchController {
         Optional<RemoteConceptSearchService> remoteSearch =
                 ServiceLifecycleManager.get().getRunningService(RemoteConceptSearchService.class);
         try {
-            if (queryText.startsWith("-") && parseInt(queryText).isPresent()) {
-                addComponentFromNid(queryText);
-            } else if (queryText.startsWith("[") && queryText.endsWith("]")) {
-                queryText = queryText.replace("[", "").replace("]", "");
-                String[] nidStrings = queryText.split(",");
-                for (String nidString : nidStrings) {
-                    addComponentFromNid(nidString.strip());
+            // A query that names components by identifier — a nid, a UUID, or a bracketed list
+            // of either — is answered with those components. Anything else is a text search.
+            Optional<IdentifierQuery> identifierQuery = IdentifierQuery.parse(queryText);
+            if (identifierQuery.isPresent()) {
+                for (long nid : identifierQuery.get().nids()) {
+                    addComponentFromNid(nid);
                 }
-            } else if (queryText.length() == 36 && UuidUtil.isUUID(queryText)) {
-                UuidUtil.getUUID(queryText).ifPresent(uuid -> {
-                    addComponentFromNid(PrimitiveData.nid(PublicIds.of(uuid)));
-                });
             } else if (remoteSearch.isPresent()) {
                 RemoteConceptSearchService remote = remoteSearch.get();
                 final String remoteQuery = queryText;
@@ -437,12 +429,7 @@ public class NextGenSearchController {
         }
     }
 
-    private void addComponentFromNid(String queryText) {
-        int nid = parseInt(queryText).getAsInt();
-        addComponentFromNid(nid);
-    }
-
-    private void addComponentFromNid(int nid) {
+    private void addComponentFromNid(long nid) {
         setCurrentSearchResultType(SearchResultType.NID);
 
         searchResultsListView.getItems().add(nid);
@@ -505,23 +492,15 @@ public class NextGenSearchController {
         });
     }
 
-    private OptionalInt parseInt(String possibleInt) {
-        try {
-            return OptionalInt.of(Integer.parseInt(possibleInt));
-        } catch (NumberFormatException e) {
-            return OptionalInt.empty();
-        }
-    }
-
     private void createMapOfEntries(Map<SearchPanelController.NidTextRecord, List<LatestVersionSearchResult>> topItems,
                                     List<LatestVersionSearchResult> results) {
-        MutableIntObjectMap<MutableList<LatestVersionSearchResult>> topNidMatchMap = IntObjectMaps.mutable.empty();
+        MutableLongObjectMap<MutableList<LatestVersionSearchResult>> topNidMatchMap = LongObjectMaps.mutable.empty();
         for (LatestVersionSearchResult result : results) {
             topNidMatchMap.getIfAbsentPut(result.latestVersion().get().chronology().topEnclosingComponentNid(),
                     () -> Lists.mutable.empty()).add(result);
         }
         // topItems is similar to tempRoot
-        for (int topNid : topNidMatchMap.keySet().toArray()) {
+        for (long topNid : topNidMatchMap.keySet().toArray()) {
             String topText = getViewProperties().nodeView().calculator().getFullyQualifiedDescriptionTextWithFallbackOrNid(topNid);
             Latest<EntityVersion> latestTopVersion = getViewProperties().nodeView().calculator().latest(topNid);
             latestTopVersion.ifPresent(entityVersion -> {

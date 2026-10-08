@@ -11,13 +11,13 @@ import javafx.scene.image.Image;
 
 import java.util.function.Function;
 
-public class SemanticIdenticonCell extends TableCell<SemanticRow, Integer> {
-    private final Function<Integer, ComponentItem> nidToComponentItem;
+public class SemanticIdenticonCell extends TableCell<SemanticRow, Long> {
+    private final Function<Long, ComponentItem> nidToComponentItem;
     private final ComponentItemNode componentItemNode;
 
     private ComponentItem currentComponentItem;
 
-    public SemanticIdenticonCell(Function<Integer, ComponentItem> nidToComponentItem) {
+    public SemanticIdenticonCell(Function<Long, ComponentItem> nidToComponentItem) {
         this.nidToComponentItem = nidToComponentItem;
 
         componentItemNode = ComponentItemNodeFactory.create();
@@ -53,7 +53,7 @@ public class SemanticIdenticonCell extends TableCell<SemanticRow, Integer> {
     }
 
     private void updateColumnWidth() {
-        TableColumn<SemanticRow, Integer> column = getTableColumn();
+        TableColumn<SemanticRow, Long> column = getTableColumn();
         if (column == null) {
             return;
         }
@@ -64,7 +64,7 @@ public class SemanticIdenticonCell extends TableCell<SemanticRow, Integer> {
     }
 
     @Override
-    protected void updateItem(Integer semanticNid, boolean empty) {
+    protected void updateItem(Long semanticNid, boolean empty) {
         super.updateItem(semanticNid, empty);
 
         if (empty || semanticNid == null) {

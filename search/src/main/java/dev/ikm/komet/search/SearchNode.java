@@ -25,6 +25,7 @@ import javafx.scene.layout.BorderPane;
 import org.eclipse.collections.api.list.ImmutableList;
 import dev.ikm.komet.framework.ExplorationNodeAbstract;
 import dev.ikm.komet.framework.search.SearchControllerAndNode;
+import dev.ikm.komet.framework.search.IdentifierQuery;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -125,7 +126,10 @@ public class SearchNode extends ExplorationNodeAbstract {
 
     @Override
     protected void saveAdditionalPreferences() {
-        getNodePreferences().put(SearchKeys.QUERY_TEXT, this.controller.getQueryString());
+        // A query that names components by nid is stored by UUID: a nid is local to one
+        // knowledge base, so it is never kept in preferences (IKE-Network/ike-issues#1174).
+        getNodePreferences().put(SearchKeys.QUERY_TEXT,
+                IdentifierQuery.storedForm(this.controller.getQueryString()));
         getNodePreferences().put(SearchKeys.RESULT_LAYOUT_OPTION, this.controller.getResultsLayoutCombo().getValue().name());
         getNodePreferences().putBoolean(SearchKeys.SHOW_RESULTS, this.controller.hasResults());
     }

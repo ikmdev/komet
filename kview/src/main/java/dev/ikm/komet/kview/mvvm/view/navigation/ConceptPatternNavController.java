@@ -26,7 +26,8 @@ import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.application.Platform;
@@ -58,7 +59,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.PATTERN;
@@ -171,20 +171,19 @@ public class ConceptPatternNavController {
         // callback when all patterns are loaded. For each build up children instances.
         patternNavViewModel.setOnReload(stream -> {
             stream.forEach(patternItem -> {
-                int patternNid = patternItem.nid();
+                long patternNid = patternItem.nid();
                 // load the pattern instances into an observable list
                 ObservableList<Object> patternChildren = FXCollections.observableArrayList();
-                AtomicInteger childCount = new AtomicInteger();
-                // populate the collection of instance for each pattern
-                PrimitiveData.get().forEachSemanticNidOfPattern(patternNid, semanticNid -> {
-                    if (childCount.incrementAndGet() < maxChildrenInPatternViewer) {
-                        patternChildren.add(semanticNid);
-                    }
-                });
+                // populate the collection of instance for each pattern: read only the semantics
+                // shown, and count the rest without reading them (on SNOMED CT, millions)
+                int childCount = EntityService.get().countSemanticsOfPattern(patternNid);
+                EntityService.get().semanticsOfPattern(patternNid)
+                        .limit(maxChildrenInPatternViewer - 1)
+                        .forEach(semantic -> patternChildren.add(semantic.nid()));
 
-                if (childCount.get() >= maxChildrenInPatternViewer) {
+                if (childCount >= maxChildrenInPatternViewer) {
                     NumberFormat numberFormat = NumberFormat.getInstance();
-                    patternChildren.add(numberFormat.format(childCount.get() - maxChildrenInPatternViewer) + " additional semantics suppressed...");
+                    patternChildren.add(numberFormat.format(childCount - maxChildrenInPatternViewer) + " additional semantics suppressed...");
                 }
 
                 Platform.runLater(() -> {
@@ -233,14 +232,14 @@ public class ConceptPatternNavController {
                 try {
                     List<LatestVersionSearchResult> results = calculator.search(searchControl.getText(), 1000).toList();
                     results.sort((o1, o2) -> Float.compare(o2.score(), o1.score()));
-                    Map<Integer, List<LatestVersionSearchResult>> topNidMatchMap = new LinkedHashMap<>();
+                    Map<Long, List<LatestVersionSearchResult>> topNidMatchMap = new LinkedHashMap<>();
                     results.forEach(result -> topNidMatchMap.computeIfAbsent(result.latestVersion().get()
                             .chronology().topEnclosingComponentNid(), _ -> new ArrayList<>()).add(result));
                     Map<KLSearchControl.SearchResult, List<LatestVersionSearchResult>> searchResultsMap = new LinkedHashMap<>();
                     topNidMatchMap.keySet().forEach(key ->
                             navigator.getViewCalculator().latest(key).ifPresent(_ -> {
                                 // Add one search result per parent, ignoring concepts or patterns that don't have a parent
-                                for (int parentNid : navigator.getParentNids(key)) {
+                                for (long parentNid : navigator.getParentNids(key)) {
                                     searchResultsMap.put(new KLSearchControl.SearchResult(ConceptFacade.make(parentNid),
                                             ConceptFacade.make(key)), topNidMatchMap.get(key));
                                 }
@@ -288,7 +287,7 @@ public class ConceptPatternNavController {
                 if (selectedItem != null) {
                     conceptNavigatorControl.getNavigator().getParentNids(selectedItem.getValue().nid());
                     List<ConceptFacade> list = Arrays.stream(conceptNavigatorControl.getNavigator().getParentNids(selectedItem.getValue().nid())).boxed()
-                            .map(nid -> (ConceptFacade) Entity.getFast(nid)).toList();
+                            .map(nid -> (ConceptFacade) EntityHandle.get(nid).expectConcept()).toList();
                     ((ConceptNavigatorTreeItem) selectedItem).setRelatedConcepts(list);
                 }
                 yield i -> LOG.info("Click on {}", i.description());
@@ -386,7 +385,7 @@ public class ConceptPatternNavController {
         conceptsToggleButton.setSelected(true);
     }
 
-    public void showConcept(final int conceptNid) {
+    public void showConcept(final long conceptNid) {
         if (conceptNavigatorControl == null) {
             LOG.error("Concept navigator control is null");
             return;

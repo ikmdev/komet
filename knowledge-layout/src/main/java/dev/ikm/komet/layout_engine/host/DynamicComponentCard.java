@@ -1,7 +1,6 @@
 package dev.ikm.komet.layout_engine.host;
 
 import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.controls.TimeUtils;
 import dev.ikm.komet.framework.dnd.ClipboardHelper;
 import dev.ikm.komet.framework.dnd.DragAndDropHelper;
 import dev.ikm.komet.framework.dnd.KometClipboard;
@@ -15,6 +14,7 @@ import dev.ikm.komet.layout.area.AreaGridSettings;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.layout_engine.component.area.EditingArea;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.tinkar.common.util.time.DateTimeUtil;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntity;
@@ -24,8 +24,7 @@ import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.ProxyFactory;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
-import org.eclipse.collections.api.list.ImmutableList;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
@@ -130,13 +129,13 @@ public final class DynamicComponentCard extends DynamicCard {
         }
         List<SemanticEntity<SemanticEntityVersion>> descriptions = new ArrayList<>();
         EntityService.get().forEachSemanticForComponentOfPattern(
-                component.nid(), TinkarTerm.DESCRIPTION_PATTERN.nid(), descriptions::add);
+                component.nid(), KernelTerm.DESCRIPTION_PATTERN.nid(), descriptions::add);
         if (descriptions.isEmpty()) {
             return;
         }
         SemanticEntity<SemanticEntityVersion> descriptionSemantic = descriptions.getFirst();
         ObservableSemanticVersion.Editable editableVersion = composer()
-                .composeSemantic(descriptionSemantic.publicId(), component, TinkarTerm.DESCRIPTION_PATTERN)
+                .composeSemantic(descriptionSemantic.publicId(), component, KernelTerm.DESCRIPTION_PATTERN)
                 .getEditableVersion();
         for (ObservableField.Editable<?> editableField : editableVersion.getEditableFields()) {
             if (editableField.getValue() instanceof String) {
@@ -292,9 +291,8 @@ public final class DynamicComponentCard extends DynamicCard {
         identifiersBox.getChildren().clear();
         if (component.publicId() != null) {
             identiconView.setImage(Identicon.generateIdenticonImage(component.publicId()));
-            ImmutableList<UUID> uuids = component.publicId().asUuidList();
-            if (!uuids.isEmpty()) {
-                UUID kometId = uuids.getFirst();
+            // Every UUID: any of them identifies the component, so none is left out.
+            for (UUID kometId : component.publicId().asUuidList()) {
                 identifiersBox.getChildren().add(copyableIdRow("Komet ID: " + kometId, kometId.toString()));
             }
         }
@@ -322,7 +320,7 @@ public final class DynamicComponentCard extends DynamicCard {
         }
         final State state = stamp.state();
         statusLabel.setText(state == null ? "" : calculator.getPreferredDescriptionTextWithFallbackOrNid(state.nid()));
-        lastUpdatedLabel.setText(TimeUtils.toShortDateString(stamp.time()));
+        lastUpdatedLabel.setText(DateTimeUtil.format(stamp.time(), DateTimeUtil.DAY_FORMATTER));
         final ConceptFacade author = stamp.author();
         authorLabel.setText(author == null ? "" : calculator.getPreferredDescriptionTextWithFallbackOrNid(author.nid()));
         final ConceptFacade module = stamp.module();

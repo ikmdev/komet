@@ -16,6 +16,7 @@
 package dev.ikm.komet.framework.propsheet;
 
 import dev.ikm.komet.framework.controls.EntityLabelWithDragAndDrop;
+import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.panel.axiom.AxiomView;
@@ -25,13 +26,13 @@ import dev.ikm.komet.framework.propsheet.editor.ListEditor;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertStreams;
-import dev.ikm.tinkar.common.id.IntIdList;
-import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.LongIdList;
+import dev.ikm.tinkar.common.id.LongIdSet;
 import dev.ikm.tinkar.component.graph.DiTree;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.beans.value.ObservableValue;
@@ -177,10 +178,10 @@ public class KometPropertyEditorFactory implements Callback<PropertySheet.Item, 
                     return Optional.of(new ListEditor(viewProperties, (SimpleObjectProperty<ObservableList<EntityFacade>>) property.getObservableValue().get()));
                 }
                 if (editorClass == IntIdSetEditor.class) {
-                    return Optional.of(new IntIdSetEditor(viewProperties, (SimpleObjectProperty<IntIdSet>) property.getObservableValue().get()));
+                    return Optional.of(new IntIdSetEditor(viewProperties, (SimpleObjectProperty<LongIdSet>) property.getObservableValue().get()));
                 }
                 if (editorClass == IntIdListEditor.class) {
-                    return Optional.of(new IntIdListEditor(viewProperties, (SimpleObjectProperty<IntIdList>) property.getObservableValue().get()));
+                    return Optional.of(new IntIdListEditor(viewProperties, (SimpleObjectProperty<LongIdList>) property.getObservableValue().get()));
                 }
                 if (editorClass == EntityLabelWithDragAndDrop.class) {
                     return Optional.of(EntityLabelWithDragAndDrop.make(viewProperties, (ObjectProperty<EntityFacade>) property.getObservableValue().get()));
@@ -190,20 +191,20 @@ public class KometPropertyEditorFactory implements Callback<PropertySheet.Item, 
                     try {
                         DiTree<EntityVertex> axiomTree = (DiTree<EntityVertex>) property.getValue();
                         // Determine STATED vs INFERRED via fieldDefinition() which goes directly to
-                        // Entity.getFast() rather than the Observable layer (avoids thread-check
+                        // EntityHandle rather than the Observable layer (avoids thread-check
                         // and absent-entity exceptions). Fall back to STATED on any failure.
                         PremiseType premiseType = PremiseType.STATED;
                         try {
                             if (property.observableField.field()
                                     .fieldDefinition(viewProperties.calculator()).meaningNid()
-                                    == TinkarTerm.EL_PLUS_PLUS_INFERRED_TERMINOLOGICAL_AXIOMS.nid()) {
+                                    == KernelTerm.EL_PLUS_PLUS_INFERRED_TERMINOLOGICAL_AXIOMS.nid()) {
                                 premiseType = PremiseType.INFERRED;
                             }
                         } catch (Exception e) {
                             LOG.debug("Could not determine axiom premise type from field definition, defaulting to STATED: {}", e.getMessage());
                         }
-                        int semanticNid = property.observableField.field().nid();
-                        ObservableSemantic axiomSemantic = ObservableSemantic.get(semanticNid);
+                        long semanticNid = property.observableField.field().nid();
+                        ObservableSemantic axiomSemantic = ObservableEntityHandle.get(semanticNid).asSemantic().orElse(null);
                         if (axiomSemantic == null) {
                             LOG.warn("Axiom semantic not available for NID {} — returning no editor (gRPC mode)", semanticNid);
                             return Optional.empty();

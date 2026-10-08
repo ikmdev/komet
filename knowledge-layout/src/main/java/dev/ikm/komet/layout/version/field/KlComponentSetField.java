@@ -1,7 +1,7 @@
 package dev.ikm.komet.layout.version.field;
 
 import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
-import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.LongIdSet;
 
 /**
  * Represents a attribute that holds a set of component entities.
@@ -16,5 +16,5 @@ import dev.ikm.tinkar.common.id.IntIdSet;
  *
  */
 @RegularName("Component Set Field")
-public interface KlComponentSetField extends KlField<IntIdSet> {
+public interface KlComponentSetField extends KlField<LongIdSet> {
 }

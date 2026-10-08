@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import java.util.function.LongFunction;
 import dev.ikm.komet.kview.controls.KLReadOnlyDiTreeControl;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import javafx.animation.PauseTransition;
@@ -64,7 +65,7 @@ final class DiTreeDefinitionPeek {
             KLReadOnlyDiTreeControl.class.getResource("read-only-ditree-control.css").toExternalForm();
 
     private final Node chip;
-    private final int conceptNid;
+    private final long conceptNid;
     private final KLReadOnlyDiTreeControl owner;
     private final PauseTransition showTimer = new PauseTransition(SHOW_DELAY);
     private final PauseTransition hideTimer = new PauseTransition(HIDE_GRACE);
@@ -84,11 +85,11 @@ final class DiTreeDefinitionPeek {
      * @param conceptNid the concept the chip renders, whose definition the peek shows
      * @param owner      the tree control the chip belongs to — the source of the resolvers
      */
-    static void install(Node chip, int conceptNid, KLReadOnlyDiTreeControl owner) {
+    static void install(Node chip, long conceptNid, KLReadOnlyDiTreeControl owner) {
         new DiTreeDefinitionPeek(chip, conceptNid, owner);
     }
 
-    private DiTreeDefinitionPeek(Node chip, int conceptNid, KLReadOnlyDiTreeControl owner) {
+    private DiTreeDefinitionPeek(Node chip, long conceptNid, KLReadOnlyDiTreeControl owner) {
         this.chip = chip;
         this.conceptNid = conceptNid;
         this.owner = owner;
@@ -126,7 +127,7 @@ final class DiTreeDefinitionPeek {
         if (popover != null || chip.getScene() == null) {
             return;
         }
-        IntFunction<DiTreeEntity> definitionResolver = owner.getDefinitionResolver();
+        LongFunction<DiTreeEntity> definitionResolver = owner.getDefinitionResolver();
         DiTreeEntity definition = definitionResolver.apply(conceptNid);
         if (definition == null) {
             return;

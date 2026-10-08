@@ -42,7 +42,7 @@ public final class StampText {
      *                   {@code null} yields {@code "Stamp"}
      * @return {@code status · date-time · author}, or {@code "Stamp"} when the stamp cannot be read
      */
-    public static String compact(int stampNid, ViewCalculator calculator) {
+    public static String compact(long stampNid, ViewCalculator calculator) {
         if (calculator == null) {
             return "Stamp";
         }

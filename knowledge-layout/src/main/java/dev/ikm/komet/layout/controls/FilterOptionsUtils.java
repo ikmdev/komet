@@ -6,12 +6,11 @@ import dev.ikm.komet.framework.view.ObservableLanguageCoordinate;
 import dev.ikm.komet.framework.view.ObservableNavigationCoordinate;
 import dev.ikm.komet.framework.view.ObservableStampCoordinate;
 import dev.ikm.komet.framework.view.ObservableView;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
@@ -20,7 +19,7 @@ import org.eclipse.collections.api.set.ImmutableSet;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.util.Subscription;
@@ -179,7 +178,7 @@ public class FilterOptionsUtils {
                     }
                     // update dialect
                     languageFilterCoordinates.getDialect().selectedOptions().clear();
-                    if (TinkarTerm.ENGLISH_LANGUAGE.equals(lang)) {
+                    if (KernelTerm.ENGLISH_LANGUAGE.equals(lang)) {
                         ImmutableList<PatternFacade> list = observableLanguageCoordinate.dialectPatternPreferenceListProperty().get();
                         languageFilterCoordinates.getDialect().selectedOptions().addAll(list.castToList());
                         observableViewForFilterProperty.languageCoordinates().getFirst().dialectPatternPreferenceListProperty().set(list);
@@ -194,7 +193,7 @@ public class FilterOptionsUtils {
                     if (fromFilter) {
                         return;
                     }
-                    if (!TinkarTerm.ENGLISH_LANGUAGE.equals(observableLanguageCoordinate.languageConcept())) {
+                    if (!KernelTerm.ENGLISH_LANGUAGE.equals(observableLanguageCoordinate.languageConcept())) {
                         // ignore
                         return;
                     }
@@ -420,12 +419,8 @@ public class FilterOptionsUtils {
 
     public static List<ZonedDateTime> getTimesInUse() {
         SortedSet<ZonedDateTime> sortedSet = new TreeSet<>(Comparator.reverseOrder());
-        PrimitiveData.get().forEachStampNid(nid -> {
-            EntityHandle handle = EntityHandle.get(nid);
-            if (handle.isAbsent()) {
-                return;
-            }
-            long time = handle.expectStamp().time();
+        EntityService.get().forEachStampEntity(stamp -> {
+            long time = stamp.time();
             if (time != PRE_INCEPTION_TIME) {
                 sortedSet.add(Instant.ofEpochMilli(time).atZone(ZoneOffset.systemDefault()));
             }
@@ -433,21 +428,21 @@ public class FilterOptionsUtils {
         return sortedSet.stream().toList();
     }
 
-    private static int findNidForDescription(FilterOptionsNavigator navigator, int nid, String description) {
+    private static long findNidForDescription(FilterOptionsNavigator navigator, long nid, String description) {
         return navigator.getChildEdges(nid).stream()
-                .filter(edge -> Entity.getFast(edge.destinationNid()).description().equals(description))
+                .filter(edge -> EntityHandle.get(edge.destinationNid()).expectEntity().description().equals(description))
                 .findFirst()
                 .map(Edge::destinationNid)
                 .orElseThrow();
     }
 
-    public static List<EntityFacade> getDescendentsList(FilterOptionsNavigator navigator, int parentNid, String description) {
-        int nid = parentNid;
+    public static List<EntityFacade> getDescendentsList(FilterOptionsNavigator navigator, long parentNid, String description) {
+        long nid = parentNid;
         for (String s : description.split(", ")) {
             nid = findNidForDescription(navigator, nid, s);
         }
-        return navigator.getViewCalculator().descendentsOf(nid).intStream().boxed()
-                .map(i -> (EntityFacade) Entity.getFast(i))
+        return navigator.getViewCalculator().descendentsOf(nid).longStream().boxed()
+                .map(i -> (EntityFacade) EntityHandle.get(i).expectEntity())
                 .sorted()
                 .toList();
     }
@@ -456,7 +451,7 @@ public class FilterOptionsUtils {
         return switch (t) {
             case String value -> value;
             case State value -> viewCalculator == null ?
-                    Entity.getFast(value.nid()).description() :
+                    EntityHandle.get(value.nid()).expectConcept().description() :
                     getDescriptionTextOrNid(viewCalculator, value.nid());
             case Long value -> String.valueOf(value);
             case EntityFacade value -> {
@@ -470,7 +465,7 @@ public class FilterOptionsUtils {
         };
     }
 
-    public static String getDescriptionTextOrNid(ViewCalculator viewCalculator, int nid) {
+    public static String getDescriptionTextOrNid(ViewCalculator viewCalculator, long nid) {
         try {
             return viewCalculator.getDescriptionTextOrNid(nid);
         } catch (Exception e) {

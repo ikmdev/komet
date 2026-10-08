@@ -8,7 +8,7 @@ import dev.ikm.komet.kview.events.MakeKLWindowEvent;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.layout.editor.StandardEditorWindows;
-import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
@@ -205,11 +205,11 @@ public class PatternNavEntryController {
             // double click creates the concept window
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                 if (mouseEvent.getClickCount() == 2) {
-                    if (patternInstancesListView.getSelectionModel().getSelectedItem() instanceof Integer nid) {
+                    if (patternInstancesListView.getSelectionModel().getSelectedItem() instanceof Long nid) {
                         ViewProperties viewProperties = instancesViewModel.getPropertyValue(VIEW_PROPERTIES);
                         var newViewProperties = viewProperties.parentView().makeOverridableViewProperties("PatternNavEntryController.initialize.patternInstancesListViewOnMouseClicked");
 
-                        EntityFacade semanticChronology = EntityService.get().getEntity(nid).get();
+                        EntityFacade semanticChronology = EntityHandle.get(nid).expectEntity();
                         EvtBusFactory.getDefaultEvtBus().publish(instancesViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                                 new MakeGenEditingWindowEvent(this,
                                         MakeGenEditingWindowEvent.OPEN_GEN_EDIT, semanticChronology, newViewProperties));
@@ -222,7 +222,7 @@ public class PatternNavEntryController {
 
         // generate the display name in the format of "Reference Component in Pattern"
         // TODO: This is a candidate for a general purpose description function, rather than a one-off in this class.
-        Function<Integer, String> fetchDescriptionFunction = ViewCalculatorUtils.getFetchSemanticDescriptionFunction(viewProperties);
+        Function<Long, String> fetchDescriptionFunction = ViewCalculatorUtils.getFetchSemanticDescriptionFunction(viewProperties);
 
         // set the cell factory for each pattern's instance list
         patternInstancesListView.setCellFactory(_ -> new PatternSemanticListCell(fetchDescriptionFunction, viewProperties));

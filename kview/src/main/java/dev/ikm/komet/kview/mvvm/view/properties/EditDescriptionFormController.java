@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
-import static dev.ikm.komet.kview.mvvm.model.DataModelHelper.fetchDescendentsOfConcept;
+import dev.ikm.komet.terms.KometTerm;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CASE_SIGNIFICANCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_SUBMITTED;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.LANGUAGE;
@@ -23,16 +23,17 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.NAME_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE;
-import static dev.ikm.tinkar.terms.TinkarTerm.DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.TinkarTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
+import static dev.ikm.tinkar.terms.KernelTerm.DESCRIPTION_CASE_SIGNIFICANCE;
+import static dev.ikm.tinkar.terms.KernelTerm.DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.KernelTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
+import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.events.CreateConceptEvent;
 import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.view.BasicController;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
-import dev.ikm.tinkar.common.id.IntIdSet;
+import dev.ikm.tinkar.common.id.LongIdSet;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -41,7 +42,7 @@ import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.beans.InvalidationListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -143,8 +144,8 @@ public class EditDescriptionFormController implements BasicController {
         setEditDescriptionTitleLabel("Edit Description: Other Name");
 
         otherNameViewModel
-                .setPropertyValue(NAME_TYPE, TinkarTerm.REGULAR_NAME_DESCRIPTION_TYPE)
-                .setPropertyValue(STATUS, TinkarTerm.ACTIVE_STATE);
+                .setPropertyValue(NAME_TYPE, KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE)
+                .setPropertyValue(STATUS, KernelTerm.ACTIVE_STATE);
 
         populateDialectComboBoxes();
 
@@ -196,9 +197,9 @@ public class EditDescriptionFormController implements BasicController {
 
     @SuppressWarnings("removal")
     private void populateDialectComboBoxes() {
-        // currently no UNACCEPTABLE in TinkarTerm
-        Entity<? extends EntityVersion> acceptable = EntityService.get().getEntityFast(TinkarTerm.ACCEPTABLE);
-        Entity<? extends EntityVersion> preferred = EntityService.get().getEntityFast(TinkarTerm.PREFERRED);
+        // currently no UNACCEPTABLE in the kernel
+        Entity<? extends EntityVersion> acceptable = EntityHandle.get(KometTerm.ACCEPTABLE).expectConcept();
+        Entity<? extends EntityVersion> preferred = EntityHandle.get(KernelTerm.PREFERRED).expectConcept();
 
         // In gRPC read-only mode the ephemeral entity store may not contain vocabulary meta-concepts;
         // skip dialect population rather than throwing NPE.
@@ -207,12 +208,12 @@ public class EditDescriptionFormController implements BasicController {
         }
 
         // each combo box has a separate list instance
-        setupComboBox(dialectComboBox1, Arrays.asList(Entity.getFast(acceptable.nid()), Entity.getFast(preferred.nid())));
-        dialectComboBox1.getSelectionModel().select(Entity.getFast(acceptable.nid()));
-        setupComboBox(dialectComboBox2, Arrays.asList(Entity.getFast(acceptable.nid()), Entity.getFast(preferred.nid())));
-        dialectComboBox2.getSelectionModel().select(Entity.getFast(preferred.nid()));
-        setupComboBox(dialectComboBox3, Arrays.asList(Entity.getFast(acceptable.nid()), Entity.getFast(preferred.nid())));
-        dialectComboBox3.getSelectionModel().select(Entity.getFast(preferred.nid()));
+        setupComboBox(dialectComboBox1, Arrays.asList(EntityHandle.get(acceptable.nid()).expectConcept(), EntityHandle.get(preferred.nid()).expectConcept()));
+        dialectComboBox1.getSelectionModel().select(EntityHandle.get(acceptable.nid()).expectConcept());
+        setupComboBox(dialectComboBox2, Arrays.asList(EntityHandle.get(acceptable.nid()).expectConcept(), EntityHandle.get(preferred.nid()).expectConcept()));
+        dialectComboBox2.getSelectionModel().select(EntityHandle.get(preferred.nid()).expectConcept());
+        setupComboBox(dialectComboBox3, Arrays.asList(EntityHandle.get(acceptable.nid()).expectConcept(), EntityHandle.get(preferred.nid()).expectConcept()));
+        dialectComboBox3.getSelectionModel().select(EntityHandle.get(preferred.nid()).expectConcept());
     }
 
     public void setEditDescriptionTitleLabel(String addAxiomTitleLabelText) {
@@ -296,7 +297,7 @@ public class EditDescriptionFormController implements BasicController {
         comboBox.getItems().addAll(conceptEntities);
     }
 
-    private Optional<ConceptEntity> findByNid(List<ConceptEntity> items, int nid) {
+    private Optional<ConceptEntity> findByNid(List<ConceptEntity> items, long nid) {
 
         Optional<ConceptEntity> conceptOption = items.stream().parallel()
                 .filter(item -> (item.nid() == nid)).findAny();
@@ -309,7 +310,7 @@ public class EditDescriptionFormController implements BasicController {
         editDescrName = null;
         this.publicId = publicId;
         ViewCalculator viewCalculator = viewProperties.calculator();
-        int nid = EntityService.get().nidForPublicId(publicId);
+        long nid = EntityService.get().nidForPublicId(publicId);
 
         // this is the Other Name
         Latest<SemanticEntityVersion> latestEntityVersion = viewCalculator.latest(nid);
@@ -320,13 +321,13 @@ public class EditDescriptionFormController implements BasicController {
             String otherName = viewCalculator.getDescriptionText(nid).get();
             this.otherNameTextField.setText(otherName);
 
-            Entity<? extends EntityVersion> moduleEntity = EntityService.get().getEntityFast(TinkarTerm.MODULE);
-            IntIdSet moduleDescendents = viewProperties.parentView().calculator().descendentsOf(moduleEntity.nid());
+            Entity<? extends EntityVersion> moduleEntity = EntityHandle.get(KometTerm.MODULE).expectConcept();
+            LongIdSet moduleDescendents = viewProperties.parentView().calculator().descendentsOf(moduleEntity.nid());
 
             // get all descendant modules
             Set<ConceptEntity> allModules =
-                    moduleDescendents.intStream()
-                            .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
+                    moduleDescendents.longStream()
+                            .mapToObj(moduleNid -> EntityHandle.get(moduleNid).expectConcept())
                             .collect(Collectors.toSet());
             setupComboBox(moduleComboBox, allModules);
 
@@ -335,9 +336,9 @@ public class EditDescriptionFormController implements BasicController {
                     .ifPresent(concept -> otherNameViewModel.setPropertyValue(MODULE, concept));
 
             // get all statuses
-            IntIdSet statusDescendents = viewProperties.parentView().calculator().descendentsOf(TinkarTerm.STATUS_VALUE.nid());
-            Set<ConceptEntity> allStatuses = statusDescendents.intStream()
-                    .mapToObj(statusNid -> (ConceptEntity) Entity.getFast(statusNid))
+            LongIdSet statusDescendents = viewProperties.parentView().calculator().descendentsOf(KometTerm.STATUS_VALUE.nid());
+            Set<ConceptEntity> allStatuses = statusDescendents.longStream()
+                    .mapToObj(statusNid -> EntityHandle.get(statusNid).expectConcept())
                     .collect(Collectors.toSet());
             setupComboBox(statusComboBox, allStatuses);
 
@@ -346,12 +347,12 @@ public class EditDescriptionFormController implements BasicController {
                     .ifPresent(concept -> otherNameViewModel.setPropertyValue(STATUS, concept));
 
             // populate all case significance choices
-            IntIdSet caseSenseDescendents = viewProperties.parentView().calculator().descendentsOf(TinkarTerm.DESCRIPTION_CASE_SIGNIFICANCE.nid());
-            Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
+            LongIdSet caseSenseDescendents = viewProperties.parentView().calculator().descendentsOf(KernelTerm.DESCRIPTION_CASE_SIGNIFICANCE.nid());
+            Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.longStream()
                     .mapToObj(caseNid -> EntityHandle.getConceptOrThrow(caseNid))
                     .collect(Collectors.toSet());
 
-//            Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.intStream()
+//            Set<ConceptEntity> allCaseDescendents = caseSenseDescendents.longStream()
 //                    .mapToObj(caseNid -> EntityHandle.get(caseNid) (ConceptEntity) Entity.getFast(caseNid))
 //                    .collect(Collectors.toSet());
             setupComboBox(caseSignificanceComboBox, allCaseDescendents);
@@ -367,9 +368,9 @@ public class EditDescriptionFormController implements BasicController {
             }
 
             // get all available languages
-            IntIdSet languageDescendents = viewProperties.parentView().calculator().descendentsOf(TinkarTerm.LANGUAGE.nid());
-            Set<ConceptEntity> allLangs = languageDescendents.intStream()
-                    .mapToObj(langNid -> (ConceptEntity) Entity.getFast(langNid))
+            LongIdSet languageDescendents = viewProperties.parentView().calculator().descendentsOf(KernelTerm.LANGUAGE.nid());
+            Set<ConceptEntity> allLangs = languageDescendents.longStream()
+                    .mapToObj(langNid -> EntityHandle.get(langNid).expectConcept())
                     .collect(Collectors.toSet());
             setupComboBox(languageComboBox, allLangs);
 
@@ -382,10 +383,10 @@ public class EditDescriptionFormController implements BasicController {
             }
 
             // get all descendant types
-            IntIdSet descriptionTypeDecendants = viewProperties.parentView().calculator().descendentsOf(DESCRIPTION_TYPE.nid());
+            LongIdSet descriptionTypeDecendants = viewProperties.parentView().calculator().descendentsOf(DESCRIPTION_TYPE.nid());
             Set<ConceptEntity> allDescritionTypes =
-                    descriptionTypeDecendants.intStream()
-                            .mapToObj(typeNid -> (ConceptEntity) Entity.getFast(typeNid))
+                    descriptionTypeDecendants.longStream()
+                            .mapToObj(typeNid -> EntityHandle.get(typeNid).expectConcept())
                             .collect(Collectors.toSet());
             setupComboBox(typeDisplayComboBox, allDescritionTypes);
             //Set selected value for DESCRIPTION TYPE
@@ -437,11 +438,11 @@ public class EditDescriptionFormController implements BasicController {
      */
     public void setConceptAndPopulateForm(DescrName descrName) {
         editDescrName = descrName;
-        setupComboBox(moduleComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.MODULE.publicId()));
-        setupComboBox(statusComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.STATUS_VALUE.publicId()));
+        setupComboBox(moduleComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), KometTerm.MODULE));
+        setupComboBox(statusComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), KometTerm.STATUS_VALUE));
         setupComboBox(caseSignificanceComboBox, otherNameViewModel.findAllCaseSignificants(getViewProperties()));
-        setupComboBox(languageComboBox, fetchDescendentsOfConcept(getViewProperties(), TinkarTerm.LANGUAGE.publicId()));
-        setupComboBox(typeDisplayComboBox, fetchDescendentsOfConcept(getViewProperties(), DESCRIPTION_TYPE.publicId()));
+        setupComboBox(languageComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), KernelTerm.LANGUAGE));
+        setupComboBox(typeDisplayComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), DESCRIPTION_TYPE));
         otherNameViewModel.setPropertyValue(NAME_TEXT, descrName.getNameText())
                 .setPropertyValue(CASE_SIGNIFICANCE, descrName.getCaseSignificance())
                 .setPropertyValue(STATUS, descrName.getStatus())

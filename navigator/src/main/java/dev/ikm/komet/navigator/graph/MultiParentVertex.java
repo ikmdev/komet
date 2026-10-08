@@ -15,7 +15,8 @@
  */
 package dev.ikm.komet.navigator.graph;
 
-import dev.ikm.tinkar.common.id.IntIdSet;
+import java.util.OptionalLong;
+import dev.ikm.tinkar.common.id.LongIdSet;
 
 import java.util.OptionalInt;
 
@@ -28,12 +29,12 @@ public interface MultiParentVertex {
 
     boolean isSecondaryParentOpened();
 
-    int getConceptNid();
+    long getConceptNid();
 
-    IntIdSet getTypeNids();
+    LongIdSet getTypeNids();
 
     int getMultiParentDepth();
 
-    OptionalInt getOptionalParentNid();
+    OptionalLong getOptionalParentNid();
 
 }

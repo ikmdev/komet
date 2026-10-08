@@ -1,5 +1,7 @@
 package dev.ikm.komet.kleditorapp.view.control;
 
+import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.LongProperty;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -66,8 +68,8 @@ public class FieldViewControl extends GridBaseControl {
     public void setFieldNumber(int number) { fieldNumber.set(number); }
 
     // -- data type nid
-    private final IntegerProperty dataTypeNid = new SimpleIntegerProperty();
-    public int getDataTypeNid() { return dataTypeNid.get(); }
-    public IntegerProperty dataTypeNidProperty() { return dataTypeNid; }
+    private final LongProperty dataTypeNid = new SimpleLongProperty();
+    public long getDataTypeNid() { return dataTypeNid.get(); }
+    public LongProperty dataTypeNidProperty() { return dataTypeNid; }
     public void setDataTypeNid(int value) { dataTypeNid.set(value); }
 }

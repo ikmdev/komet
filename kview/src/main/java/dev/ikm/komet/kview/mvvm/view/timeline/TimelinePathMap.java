@@ -22,16 +22,16 @@ import java.util.*;
 /**
  * Path Name -> ModuleNid -> StampNid -> Set of VersionChangeRecords
  */
-public class TimelinePathMap extends TreeMap<String, TreeMap<Integer, TreeMap<Integer, TreeSet<VersionChangeRecord>>>> {
-    public List<Integer> getModuleNids(String pathName) {
+public class TimelinePathMap extends TreeMap<String, TreeMap<Long, TreeMap<Integer, TreeSet<VersionChangeRecord>>>> {
+    public List<Long> getModuleNids(String pathName) {
         if (get(pathName) == null) {
             return  Collections.emptyList();
         }
         return get(pathName).keySet().stream().toList();
     }
 
-    public LinkedHashMap<String, List<Integer>> getPathModulesNidOnlyMap() {
-        LinkedHashMap<String, List<Integer>> collection = new LinkedHashMap<>();
+    public LinkedHashMap<String, List<Long>> getPathModulesNidOnlyMap() {
+        LinkedHashMap<String, List<Long>> collection = new LinkedHashMap<>();
         forEach( (path, moduleMap) -> {
             collection.put(path, this.getModuleNids(path));
         });

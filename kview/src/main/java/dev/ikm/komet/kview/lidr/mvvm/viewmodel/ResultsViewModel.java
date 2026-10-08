@@ -21,7 +21,6 @@ import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel;
 import dev.ikm.komet.framework.builder.ConceptEntityBuilder;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.id.PublicId;
-import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.entity.ConceptRecord;
@@ -31,7 +30,7 @@ import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import org.carlfx.cognitive.validator.MessageType;
 import org.carlfx.cognitive.validator.ValidationMessage;
 import org.carlfx.cognitive.viewmodel.ViewModel;
@@ -129,7 +128,7 @@ public class ResultsViewModel extends FormViewModel {
 
         //FIXME is there default stamp info for a Result entity?
         StampEntity stampEntity = transaction.getStamp(
-                State.fromConceptNid(TinkarTerm.ACTIVE_STATE.nid()), // default to active
+                State.fromConceptNid(KernelTerm.ACTIVE_STATE.nid()), // default to active
                 System.currentTimeMillis(),
                 // Author/module/path from the edit coordinate — the single write source, so LIDR commits under
                 // the logged-in user, not the generic "Author" (and a real module, not -1) (IKE-Network/ike-issues#752).
@@ -139,8 +138,7 @@ public class ResultsViewModel extends FormViewModel {
 
         ConceptEntityBuilder newConceptBuilder = ConceptEntityBuilder.builder(stampEntity);
 
-        PublicId conceptPublicId = PublicIds.newRandom();
-        ConceptRecord conceptRecord = ConceptRecord.build(conceptPublicId.asUuidList().get(0), stampEntity.lastVersion());
+        ConceptRecord conceptRecord = ConceptRecord.build(UUID.randomUUID(), stampEntity.lastVersion());
 
         ConceptFacade conceptFacade = ConceptFacade.make(conceptRecord.nid());
 

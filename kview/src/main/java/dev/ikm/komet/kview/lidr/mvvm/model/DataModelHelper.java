@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.lidr.mvvm.model;
 
+import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.komet.framework.builder.AxiomBuilderRecord;
 import dev.ikm.komet.framework.panel.axiom.LogicalOperatorsForVertex;
 import dev.ikm.komet.framework.view.ObservableView;
@@ -24,8 +25,8 @@ import dev.ikm.komet.kview.data.persistence.SemanticWriter;
 import dev.ikm.komet.kview.data.schema.SemanticDetail;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
-import dev.ikm.tinkar.common.id.IntIdSet;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIdSet;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PrimitiveData;
@@ -46,7 +47,7 @@ import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -92,10 +93,10 @@ public class DataModelHelper {
 
     //FIXME this is just a work around for the May 2024 Connect-A-Thon
     public static final Set<ConceptEntity> CASE_SIGNIFICANCE_OPTIONS = Set.of(
-            Entity.getFast(TinkarTerm.DESCRIPTION_NOT_CASE_SENSITIVE.nid()),
-            Entity.getFast(TinkarTerm.NOT_APPLICABLE.nid()),
-            Entity.getFast(TinkarTerm.DESCRIPTION_CASE_SENSITIVE.nid()),
-            Entity.getFast(TinkarTerm.DESCRIPTION_INITIAL_CHARACTER_CASE_SENSITIVE.nid())
+            EntityHandle.get(KernelTerm.DESCRIPTION_NOT_CASE_SENSITIVE.nid()).expectConcept(),
+            EntityHandle.get(KometTerm.NOT_APPLICABLE.nid()).expectConcept(),
+            EntityHandle.get(KernelTerm.DESCRIPTION_CASE_SENSITIVE.nid()).expectConcept(),
+            EntityHandle.get(KernelTerm.DESCRIPTION_INITIAL_CHARACTER_CASE_SENSITIVE.nid()).expectConcept()
     );
 
 
@@ -116,7 +117,7 @@ public class DataModelHelper {
 
     @SuppressWarnings("removal")
     public static SpecimenRecord makeSpecimenRecord(PublicId specimenId) {
-        Optional<Entity> specimenEntity = EntityService.get().getEntity(specimenId.asUuidArray());
+        Optional<Entity<? extends EntityVersion>> specimenEntity = EntityHandle.get(specimenId.asUuidArray()).entity().filter(e -> !e.canceled());
         if (specimenEntity.isEmpty()) {
             throw new IllegalArgumentException("PublicId " + specimenId + " is not in database.");
         }
@@ -132,7 +133,7 @@ public class DataModelHelper {
     }
     @SuppressWarnings("removal")
     public static TargetRecord makeTargetRecord(PublicId targetId) {
-        Optional<Entity> targetEntity = EntityService.get().getEntity(targetId.asUuidArray());
+        Optional<Entity<? extends EntityVersion>> targetEntity = EntityHandle.get(targetId.asUuidArray()).entity().filter(e -> !e.canceled());
         if (targetEntity.isEmpty()) {
             throw new IllegalArgumentException("PublicId " + targetId + " is not in database.");
         }
@@ -147,7 +148,7 @@ public class DataModelHelper {
     }
     @SuppressWarnings("removal")
     public static ResultConformanceRecord makeResultConformanceRecord(PublicId resultConformanceId) {
-        Optional<Entity> resultConformanceEntity = EntityService.get().getEntity(resultConformanceId.asUuidArray());
+        Optional<Entity<? extends EntityVersion>> resultConformanceEntity = EntityHandle.get(resultConformanceId.asUuidArray()).entity().filter(e -> !e.canceled());
         if (resultConformanceEntity.isEmpty()) {
             throw new IllegalArgumentException("PublicId " + resultConformanceId + " is not in database.");
         }
@@ -171,7 +172,7 @@ public class DataModelHelper {
     }
     @SuppressWarnings("removal")
     public static LidrRecord makeLidrRecord(PublicId lidrRecordId) {
-        Optional<Entity> lidrRecordEntity = EntityService.get().getEntity(lidrRecordId.asUuidArray());
+        Optional<Entity<? extends EntityVersion>> lidrRecordEntity = EntityHandle.get(lidrRecordId.asUuidArray()).entity().filter(e -> !e.canceled());
         if (lidrRecordEntity.isEmpty()) {
             throw new IllegalArgumentException("PublicId " + lidrRecordId + " is not in database.");
         }
@@ -188,9 +189,10 @@ public class DataModelHelper {
         PublicId testPerformedId = (PublicId) vals.get(LidrRecord.IDX_TEST_PERFORMED);
         PublicId dataResultsTypeId = (PublicId) vals.get(LidrRecord.IDX_DATA_RESULTS_TYPE);
         PublicId analyteId = (PublicId) vals.get(LidrRecord.IDX_ANALYTES);
-        Set<PublicId> targetIds = ((IntIdSet) vals.get(LidrRecord.IDX_TARGETS)).mapToSet(PrimitiveData::publicId);
-        Set<PublicId> specimenIds = ((IntIdSet) vals.get(LidrRecord.IDX_SPECIMENS)).mapToSet(PrimitiveData::publicId);
-        Set<PublicId> resultConformanceIds = ((IntIdSet) vals.get(LidrRecord.IDX_RESULT_CONFORMANCES)).mapToSet(PrimitiveData::publicId);
+        // Lists, not sets: a public id is never a hash key. The nid sets already hold each component once.
+        List<PublicId> targetIds = ((LongIdSet) vals.get(LidrRecord.IDX_TARGETS)).mapToList(PrimitiveData::publicId);
+        List<PublicId> specimenIds = ((LongIdSet) vals.get(LidrRecord.IDX_SPECIMENS)).mapToList(PrimitiveData::publicId);
+        List<PublicId> resultConformanceIds = ((LongIdSet) vals.get(LidrRecord.IDX_RESULT_CONFORMANCES)).mapToList(PrimitiveData::publicId);
 
         AnalyteRecord analyte = makeAnalyteRecord(analyteId);
         Set<TargetRecord> targets = targetIds.stream().map(DataModelHelper::makeTargetRecord).collect(Collectors.toSet());
@@ -203,7 +205,7 @@ public class DataModelHelper {
 
     @SuppressWarnings("removal")
     public static AnalyteRecord makeAnalyteRecord(PublicId analyteId) {
-        Optional<Entity> analyteEntity = EntityService.get().getEntity(analyteId.asUuidArray());
+        Optional<Entity<? extends EntityVersion>> analyteEntity = EntityHandle.get(analyteId.asUuidArray()).entity().filter(e -> !e.canceled());
         if (analyteEntity.isEmpty()) {
             throw new IllegalArgumentException("PublicId " + analyteId + " is not in database.");
         }
@@ -234,8 +236,8 @@ public class DataModelHelper {
     public static PublicId findTestPerformed(PublicId deviceId){
         final AtomicReference<PublicId> publicIdAtomicReference = new AtomicReference<>();
 
-        int deviceNid = EntityService.get().nidForPublicId(deviceId);
-        int diagnosticDevicePatternNid = EntityService.get().nidForPublicId(PublicIds.of(UUID.fromString("a507b3c7-eadb-5d54-84c0-c44f3155d0bc")));
+        long deviceNid = EntityService.get().nidForPublicId(deviceId);
+        long diagnosticDevicePatternNid = EntityService.get().nidForPublicId(PublicIds.of(UUID.fromString("a507b3c7-eadb-5d54-84c0-c44f3155d0bc")));
 
         EntityService.get().forEachSemanticForComponentOfPattern(deviceNid, diagnosticDevicePatternNid, semanticEntityVersionSemanticEntity -> {
             publicIdAtomicReference.set( ((ConceptFacade) semanticEntityVersionSemanticEntity.versions().get(0).fieldValues().get(0)).publicId() );
@@ -262,15 +264,15 @@ public class DataModelHelper {
     }
 
     public static Optional<DiTree<EntityVertex>> findLatestLogicalDefinition(NavigationCalculator navCalc, PublicId pubId) {
-        int componentNid = EntityService.get().nidForPublicId(pubId);
+        long componentNid = EntityService.get().nidForPublicId(pubId);
         StampCalculator stampCalculator = navCalc.stampCalculator();
         AtomicReference<StampEntity<StampEntityVersion>> latestStamp = new AtomicReference<>();
         AtomicReference<DiTree<EntityVertex>> latestLogicalDefinitionSemanticVersion = new AtomicReference<>();
 
-        for (int navigationPatternNid : navCalc.navigationCoordinate().navigationPatternNids().toArray()) {
-            int logicalDefintionPatternNid =
-                    navigationPatternNid != TinkarTerm.STATED_NAVIGATION_PATTERN.nid() ?
-                            TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid() : TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
+        for (long navigationPatternNid : navCalc.navigationCoordinate().navigationPatternNids().toArray()) {
+            long logicalDefintionPatternNid =
+                    navigationPatternNid != KernelTerm.STATED_NAVIGATION_PATTERN.nid() ?
+                            KernelTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid() : KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
 
             EntityService.get().forEachSemanticForComponentOfPattern(componentNid, logicalDefintionPatternNid, (semanticEntity) -> {
                 stampCalculator.latest(semanticEntity)
@@ -294,10 +296,10 @@ public class DataModelHelper {
         ImmutableList<EntityVertex> vertexList = logicalDefinition.vertexMap();
         for (EntityVertex vertex : vertexList) {
             if (LogicalOperatorsForVertex.ROLE.semanticallyEqual((EntityFacade) vertex.meaning())) {
-                ConceptFacade roleTypeProperty = vertex.propertyAsConcept(TinkarTerm.ROLE_TYPE).get();
+                ConceptFacade roleTypeProperty = vertex.propertyAsConcept(KernelTerm.ROLE_TYPE).get();
                 if (roleTypeProperty.equals(roleTypeToFind)) {
                     EntityVertex manufacturerVertex = logicalDefinition.successors(vertex).get(0);
-                    return manufacturerVertex.propertyAsConcept(TinkarTerm.CONCEPT_REFERENCE);
+                    return manufacturerVertex.propertyAsConcept(KernelTerm.CONCEPT_REFERENCE);
                 }
             }
         }
@@ -305,20 +307,20 @@ public class DataModelHelper {
     }
     public static boolean isDevice(NavigationCalculator navCalc, PublicId pubId) {
         PublicId deviceConceptPublicId = PublicIds.of(UUID.fromString("e0ac20ad-ce6f-3ee4-8c71-51b070aa5737"));
-        int deviceComponentNid = EntityService.get().nidForPublicId(deviceConceptPublicId);
+        long deviceComponentNid = EntityService.get().nidForPublicId(deviceConceptPublicId);
 
 
         // possible concept having device as a parent
-        int componentNid = EntityService.get().nidForPublicId(pubId);
+        long componentNid = EntityService.get().nidForPublicId(pubId);
 
         StampCalculator stampCalculator = navCalc.stampCalculator();
         AtomicReference<StampEntity<StampEntityVersion>> latestStamp = new AtomicReference<>();
         AtomicReference<DiTree<Vertex>> latestInferredDefinitionSemanticVersion = new AtomicReference<>();
 
-        for (int navigationPatternNid : navCalc.navigationCoordinate().navigationPatternNids().toArray()) {
-            int logicalDefintionPatternNid =
-                    navigationPatternNid != TinkarTerm.STATED_NAVIGATION.nid() ?
-                            TinkarTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid() : TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
+        for (long navigationPatternNid : navCalc.navigationCoordinate().navigationPatternNids().toArray()) {
+            long logicalDefintionPatternNid =
+                    navigationPatternNid != KometTerm.STATED_NAVIGATION.nid() ?
+                            KernelTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid() : KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
 
             EntityService.get().forEachSemanticForComponentOfPattern(componentNid, logicalDefintionPatternNid, (semanticEntity) -> {
                 stampCalculator.latest(semanticEntity)
@@ -339,7 +341,7 @@ public class DataModelHelper {
         ImmutableList<Vertex> vertexList = logicalDefinition.vertexMap();
         for (Vertex vertex : vertexList) {
             if (LogicalOperatorsForVertex.CONCEPT.semanticallyEqual((EntityFacade) vertex.meaning())) {
-                EntityFacade refConcept = (EntityFacade) vertex.propertyAsConcept(TinkarTerm.CONCEPT_REFERENCE).get();
+                EntityFacade refConcept = (EntityFacade) vertex.propertyAsConcept(KernelTerm.CONCEPT_REFERENCE).get();
                 if (refConcept.nid() == deviceComponentNid) {
                     //Vertex manufacturerVertex = logicalDefinition.successors(vertex).get(0);
                     return true;
@@ -354,14 +356,14 @@ public class DataModelHelper {
     }
 
     public static boolean isSubtype(NavigationCalculator navCalc, PublicId pubId, PublicId superTypeId) {
-        int deviceComponentNid = EntityService.get().nidForPublicId(superTypeId);
+        long deviceComponentNid = EntityService.get().nidForPublicId(superTypeId);
 
         AtomicReference<DiTree<EntityVertex>> logicalDefinition = new AtomicReference<>();
         findLatestLogicalDefinition(navCalc, pubId).ifPresent(logicalDefinition::set);
         ImmutableList<EntityVertex> vertexList = logicalDefinition.get().vertexMap();
         for (EntityVertex vertex : vertexList) {
             if (LogicalOperatorsForVertex.CONCEPT.semanticallyEqual((EntityFacade) vertex.meaning())) {
-                EntityFacade refConcept = (EntityFacade) vertex.propertyAsConcept(TinkarTerm.CONCEPT_REFERENCE).get();
+                EntityFacade refConcept = (EntityFacade) vertex.propertyAsConcept(KernelTerm.CONCEPT_REFERENCE).get();
                 if (refConcept.nid() == deviceComponentNid) {
                     return true;
                 }
@@ -380,7 +382,7 @@ public class DataModelHelper {
         //               > Instrument Equipment Semantic
         //               > LIDR Record Semantic
         //
-        Optional<Entity> referenceComponent = EntityService.get().getEntity(referencedComponentPublicId.asUuidList());
+        Optional<Entity<? extends EntityVersion>> referenceComponent = EntityHandle.get(referencedComponentPublicId.asUuidArray()).entity().filter(e -> !e.canceled());
         if (!referenceComponent.isPresent()) {
             throw new RuntimeException("Error reference component does not exist in database: " + referencedComponentPublicId);
         }
@@ -391,7 +393,7 @@ public class DataModelHelper {
         //Get existing Diagnostic Device Semantic
         final AtomicReference<PublicId> diagDeviceSemanticIdReference = new AtomicReference<>();
 
-        int referencedComponentNid = EntityService.get().nidForPublicId(referencedComponentPublicId);
+        long referencedComponentNid = EntityService.get().nidForPublicId(referencedComponentPublicId);
 
         EntityService.get().forEachSemanticForComponentOfPattern(referencedComponentNid, DIAGNOSTIC_DEVICE_PATTERN.nid(), semanticEntity -> {
             diagDeviceSemanticIdReference.set(semanticEntity.publicId());
@@ -402,15 +404,15 @@ public class DataModelHelper {
         SemanticWriter writer = new SemanticWriter(stampEntity);
         Supplier<MutableList<Object>> fieldsSupplier = () -> {
             // Targets into IntLists
-            IntIdSet targetIds = lidrRecord.targets() == null ? IntIds.set.empty() : IntIds.set.of(lidrRecord.targets(),
+            LongIdSet targetIds = lidrRecord.targets() == null ? LongIds.set.empty() : LongIds.set.of(lidrRecord.targets(),
                     (dto) -> PrimitiveData.get().nidForPublicId(dto.targetId()));
 
             // Specimens into IntLists
-            IntIdSet specimenIds = lidrRecord.specimens() == null ? IntIds.set.empty() : IntIds.set.of(lidrRecord.specimens(),
+            LongIdSet specimenIds = lidrRecord.specimens() == null ? LongIds.set.empty() : LongIds.set.of(lidrRecord.specimens(),
                     (dto) -> PrimitiveData.get().nidForPublicId(dto.specimenId()));
 
             // Results conformance into IntLists for
-            IntIdSet resultConfIds = lidrRecord.resultConformances() == null ? IntIds.set.empty() : IntIds.set.of(lidrRecord.resultConformances(),
+            LongIdSet resultConfIds = lidrRecord.resultConformances() == null ? LongIds.set.empty() : LongIds.set.of(lidrRecord.resultConformances(),
                     (resultConf) -> PrimitiveData.get().nidForPublicId(resultConf.resultConformanceId()));
 
             // Create pattern's field definitions
@@ -489,8 +491,8 @@ public class DataModelHelper {
         SemanticWriter allowedResultsWriter = new SemanticWriter(stampId);
         Supplier<MutableList<Object>> allowedResultsFieldsSupplier = () -> {
             // Allowed Results into IntLists
-            IntIdSet allowedResultsIds = allowedResultsList == null ?
-                    IntIds.set.empty() : IntIds.set.of(allowedResultsList, (pubId) -> EntityService.get().nidForPublicId(pubId));
+            LongIdSet allowedResultsIds = allowedResultsList == null ?
+                    LongIds.set.empty() : LongIds.set.of(allowedResultsList, (pubId) -> EntityService.get().nidForPublicId(pubId));
 
             return Lists.mutable.of(allowedResultsIds);
         };
@@ -508,7 +510,7 @@ public class DataModelHelper {
 
         ImmutableList<Object> axiomField = Lists.immutable.of(axiomTreeEntityBuilder.build());
         SemanticRecord statedAxioms = SemanticRecord.build(UUID.randomUUID(),
-                TinkarTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid(),
+                KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid(),
                 conceptRecord.nid(),
                 stampEntity.lastVersion(),
                 axiomField);

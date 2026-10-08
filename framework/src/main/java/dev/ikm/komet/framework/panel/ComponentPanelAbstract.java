@@ -29,10 +29,8 @@ import dev.ikm.komet.framework.panel.pattern.PatternPanel;
 import dev.ikm.komet.framework.panel.semantic.SemanticPanel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.common.service.TinkExecutor;
-import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.Entity;
-import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +40,7 @@ import java.util.Optional;
 
 public abstract class ComponentPanelAbstract {
     private static final Logger LOG = LoggerFactory.getLogger(ComponentPanelAbstract.class);
-    protected final ObservableSet<Integer> referencedNids;
+    protected final ObservableSet<Long> referencedNids;
     protected final BorderPane componentDetailPane = new BorderPane();
     protected final VBox componentPanelBox = new VBox(8);
     protected final ViewProperties viewProperties;
@@ -57,12 +55,12 @@ public abstract class ComponentPanelAbstract {
         this(viewProperties, FXCollections.observableSet(new HashSet<>()));
     }
 
-    protected ComponentPanelAbstract(ViewProperties viewProperties, ObservableSet<Integer> referencedNids) {
+    protected ComponentPanelAbstract(ViewProperties viewProperties, ObservableSet<Long> referencedNids) {
         this.viewProperties = viewProperties;
         this.referencedNids = referencedNids;
     }
 
-    public final ObservableSet<Integer> getReferencedNids() {
+    public final ObservableSet<Long> getReferencedNids() {
         return referencedNids;
     }
 
@@ -79,12 +77,11 @@ public abstract class ComponentPanelAbstract {
     protected void addSemanticReferences(ObservableEntitySnapshot entity, SimpleObjectProperty<EntityFacade> topEnclosingComponentProperty) {
         if (entity != null) {
             TinkExecutor.threadPool().execute(() -> {
-                PrimitiveData.get().forEachSemanticNidForComponent(entity.nid(), semanticNid -> {
-                    Platform.runLater(() -> referencedNids.add(semanticNid));
-                    SemanticEntity semanticEntity = Entity.getFast(semanticNid);
+                EntityService.get().forEachSemanticForComponent(entity.nid(), semanticEntity -> {
+                    Platform.runLater(() -> referencedNids.add(semanticEntity.nid()));
                     if (!semanticEntity.canceled()) {
                         Platform.runLater(() -> {
-                            ObservableSemanticSnapshot semanticSnapshot = (ObservableSemanticSnapshot) ObservableEntity.get(semanticEntity).getSnapshot(this.viewProperties.calculator());
+                            ObservableSemanticSnapshot semanticSnapshot = (ObservableSemanticSnapshot) ObservableEntityHandle.get(semanticEntity.nid()).expectSemantic().getSnapshot(this.viewProperties.calculator());
                             ComponentPanelAbstract semanticPanel = makeComponentPanel(semanticSnapshot, topEnclosingComponentProperty);
                             ComponentPanelAbstract.this.componentPanelBox.getChildren().add(semanticPanel.getComponentDetailPane());
                         });

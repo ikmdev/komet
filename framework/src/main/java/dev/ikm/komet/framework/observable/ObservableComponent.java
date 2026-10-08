@@ -43,5 +43,5 @@ public sealed interface ObservableComponent
      *
      * @return the native identifier (nid) as an integer.
      */
-    int nid();
+    long nid();
 }

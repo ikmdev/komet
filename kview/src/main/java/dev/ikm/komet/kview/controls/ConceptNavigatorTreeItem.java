@@ -1,5 +1,7 @@
 package dev.ikm.komet.kview.controls;
 
+import dev.ikm.tinkar.common.id.Nid;
+
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -144,7 +146,7 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
      * @param conceptFacade The {@link ConceptFacade} that defines the concept for this concept TreeItem
      * @param parentNid the nid of the parent of this concept
      */
-    public ConceptNavigatorTreeItem(Navigator navigator, ConceptFacade conceptFacade, int parentNid) {
+    public ConceptNavigatorTreeItem(Navigator navigator, ConceptFacade conceptFacade, long parentNid) {
         this.navigator = navigator;
         invertedTree = new InvertedTree(new InvertedTree.ConceptItem(conceptFacade.nid(), parentNid, conceptFacade.description()));
         setValue(conceptFacade);
@@ -156,7 +158,7 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
      * concept associated to this concept TreeItem.
      * <p>For the nid of this concept, this value is set based on the following:
      * <pre><code>
-     * getNavigator().getViewCalculator().hasSufficientSet(Entity.getFast(nid))
+     * getNavigator().getViewCalculator().hasSufficientSet(EntityHandle.get(nid).expectConcept())
      * </code></pre>
      */
     private final BooleanProperty definedProperty = new SimpleBooleanProperty(this, "defined");
@@ -282,8 +284,8 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
         if (getValue() == null || navigator == null) {
             return true;
         }
-        int nid = getValue().nid();
-        if (nid == Integer.MAX_VALUE) {
+        long nid = getValue().nid();
+        if (Nid.isNotApplicable(nid)) {
             return false;
         }
         if (isLeaf == null) {

@@ -19,6 +19,7 @@ import static dev.ikm.komet.framework.dnd.KometClipboard.COMPONENT_DRAG_FORMAT;
 import static dev.ikm.komet.framework.dnd.KometClipboard.decodeUuids;
 import static dev.ikm.komet.framework.dnd.KometClipboard.MULTI_PARENT_GRAPH_DRAG_FORMAT;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createFacadeForEntity;
 import static dev.ikm.komet.layout.controls.FilterOptionsPopup.FILTER_TYPE.JOURNAL_VIEW;
 import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
 import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
@@ -148,7 +149,7 @@ import dev.ikm.komet.reasoner.ReasonerResultsNodeFactory;
 import dev.ikm.komet.reasoner.StringWithOptionalConceptFacade;
 import dev.ikm.komet.search.SearchNode;
 import dev.ikm.tinkar.common.alert.AlertStreams;
-import dev.ikm.tinkar.common.id.IntIds;
+import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.service.PluggableService;
@@ -158,6 +159,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.ProxyFactory;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -973,7 +975,7 @@ public class JournalController {
             event.consume();
         });
         navigatorToggleButton.setOnDragDropped(event -> {
-            Integer nid = conceptNidFromDragboard(event.getDragboard());
+            Long nid = conceptNidFromDragboard(event.getDragboard());
             boolean success = false;
             if (nid != null) {
                 journalEventBus.publish(journalTopic, new ShowNavigationalPanelEvent(navigatorToggleButton,
@@ -988,7 +990,7 @@ public class JournalController {
     }
 
     /** The dropped concept's nid from a Komet concept dragboard, or null if it carries no concept. */
-    private static Integer conceptNidFromDragboard(Dragboard dragboard) {
+    private static Long conceptNidFromDragboard(Dragboard dragboard) {
         if (dragboard.hasContent(KometClipboard.KOMET_CONCEPT_PROXY)) {
             try {
                 EntityProxy.Concept proxy = ProxyFactory.fromXmlFragment(
@@ -1135,50 +1137,40 @@ public class JournalController {
     }
 
     /**
-     * Creates and displays a new window from a UUID array using the entity factory.
-     * Delegates to the generic window creation helper with appropriate error context for logging.
-     * The UUID array is used to resolve the entity and determine the appropriate window type.
+     * Opens the window for the entity identified by a UUID array dropped on the workspace, resolving
+     * the entity and delegating to {@link #createWindowFromEntity(EntityFacade)}.
      *
      * @param uuids the UUID array identifying the entity to display in the new window
      */
     public void createWindowFromUuids(UUID[] uuids) {
-        createAndSetupWindow(() -> createFromUuids(uuids, journalTopic,
-                        journalViewProperties, null),
-                "UUID array: " + ArrayIterate.makeString(uuids));
+        Entity<?> entity = EntityHandle.get(uuids).orNull();
+        if (entity == null) {
+            LOG.warn("No entity found for dropped UUID array: {}", ArrayIterate.makeString(uuids));
+            return;
+        }
+        createWindowFromEntity(createFacadeForEntity(entity));
     }
 
     /**
-     * Creates and displays a new window for the specified EntityFacade. Performs null checking and delegates
-     * to the generic window creation helper with appropriate error context. The entity type determines the specific
-     * window implementation.
+     * Opens the window for an entity dropped on the workspace, mirroring what a double-click on the
+     * same entity in the search results and navigators opens (ikmdev/komet-desktop#196): a concept
+     * opens the standard KL {@link StandardEditorWindows#CONCEPT_WINDOW_2}, a pattern the standard KL
+     * {@link StandardEditorWindows#PATTERN_WINDOW_2}, and a semantic the general editing window. The
+     * classic windows remain reachable through shift + double-click.
      *
      * @param entityFacade the entity to display in the new window, or null to skip creation
      */
     private void createWindowFromEntity(EntityFacade entityFacade) {
-        if (entityFacade == null) return;
-
-        createAndSetupWindow(() -> createFromEntity(entityFacade, journalTopic,
-                        journalViewProperties, null),
-                "entity " + entityFacade.nid());
-    }
-
-    /**
-     * Generic window creation helper that handles factory delegation, error handling, and workspace setup.
-     * Successfully created windows are automatically added to the workspace.
-     *
-     * @param windowFactory supplier that creates the window instance using factory methods
-     * @param errorContext descriptive context used in error logging
-     */
-    private void createAndSetupWindow(Supplier<AbstractEntityChapterKlWindow> windowFactory, String errorContext) {
-        try {
-            AbstractEntityChapterKlWindow window = windowFactory.get();
-            if (window != null) {
-                setupWorkspaceWindow(window);
-            } else {
-                LOG.warn("Failed to create window for {}", errorContext);
-            }
-        } catch (Exception e) {
-            LOG.error("Error creating window for {}: {}", errorContext, e.getMessage(), e);
+        switch (entityFacade) {
+            case ConceptFacade conceptFacade ->
+                    newCreateStandardKLWindow(conceptFacade, StandardEditorWindows.CONCEPT_WINDOW_2);
+            case PatternFacade patternFacade ->
+                    newCreateStandardKLWindow(patternFacade, StandardEditorWindows.PATTERN_WINDOW_2);
+            case SemanticFacade semanticFacade ->
+                    createGenEditWindow(semanticFacade, journalViewProperties, false);
+            case null -> { }
+            default -> throw new UnsupportedOperationException(
+                    "Unsupported entity facade type: " + entityFacade.getClass().getSimpleName());
         }
     }
 
@@ -1472,7 +1464,7 @@ public class JournalController {
             NidTextEnum nidTextEnum = null;
             if (treeItemValue instanceof SearchPanelController.NidTextRecord nidTextRecord) {
                 nidTextEnum = NID_TEXT;
-                Entity entity = Entity.getFast(nidTextRecord.nid());
+                Entity entity = EntityHandle.get(nidTextRecord.nid()).orNull();
                 if (entity instanceof ConceptFacade conceptFacade) {
                     createConceptWindow(conceptFacade, nidTextEnum, null);
                 } else if (entity instanceof PatternFacade patternFacade) {
@@ -1508,9 +1500,9 @@ public class JournalController {
                 TreeItem<Object> treeItem = searchTreeView.getSelectionModel().getSelectedItem();
                 switch (treeItem.getValue()) {
                     case LatestVersionSearchResult latestVersionSearchResult -> {
-                        int conceptNid = latestVersionSearchResult.latestVersion().get().nid();
+                        long conceptNid = latestVersionSearchResult.latestVersion().get().nid();
                         getNavigatorNode().getController().showConcept(conceptNid);
-                        getNavigatorNode().getController().expandAndSelect(IntIds.list.of(conceptNid));
+                        getNavigatorNode().getController().expandAndSelect(LongIds.list.of(conceptNid));
                     }
                     default -> {
                     }
@@ -1518,7 +1510,7 @@ public class JournalController {
                 ConceptFacade conceptFacade = null;
                 Object treeItemValue = treeItem.getValue();
                 if (treeItemValue instanceof SearchPanelController.NidTextRecord nidTextRecord) {
-                    conceptFacade = Entity.getFast(nidTextRecord.nid());
+                    conceptFacade = EntityHandle.get(nidTextRecord.nid()).expectConcept();
                 } else if (treeItemValue instanceof SemanticEntityVersion semanticEntityVersion) {
                     conceptFacade = Entity.getConceptForSemantic(semanticEntityVersion.nid()).get();
                 } else {

@@ -1,5 +1,7 @@
 package dev.ikm.komet.kview.controls;
 
+import dev.ikm.komet.terms.KometTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import dev.ikm.komet.framework.view.ObservableCoordinate;
 import dev.ikm.komet.framework.view.ObservableEditCoordinate;
 import dev.ikm.komet.framework.view.ObservableLanguageCoordinate;
@@ -8,7 +10,7 @@ import dev.ikm.komet.framework.view.ObservableStampCoordinate;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.layout.controls.FilterOptions;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
@@ -162,7 +164,7 @@ public class EditCoordinateOptionsUtils {
 //                    }
 //                    // update dialect
 //                    languageFilterCoordinates.getDialect().selectedOptions().clear();
-//                    if (TinkarTerm.ENGLISH_LANGUAGE.equals(lang)) {
+//                    if (KernelTerm.ENGLISH_LANGUAGE.equals(lang)) {
 //                        ObservableList<PatternFacade> list = observableLanguageCoordinate.dialectPatternPreferenceListProperty().get();
 //                        languageFilterCoordinates.getDialect().selectedOptions().addAll(list);
 //                        observableViewForFilterProperty.languageCoordinates().getFirst().dialectPatternPreferenceListProperty().set(list);
@@ -177,7 +179,7 @@ public class EditCoordinateOptionsUtils {
 //                    if (fromFilter) {
 //                        return;
 //                    }
-//                    if (!TinkarTerm.ENGLISH_LANGUAGE.equals(observableLanguageCoordinate.languageConcept())) {
+//                    if (!KernelTerm.ENGLISH_LANGUAGE.equals(observableLanguageCoordinate.languageConcept())) {
 //                        // ignore
 //                        return;
 //                    }
@@ -351,7 +353,7 @@ public class EditCoordinateOptionsUtils {
 //                            if (propertyWithOverride.isOverridden() && !filterOptions.getLanguageCoordinatesList().getFirst().getLanguage().isInOverride()) {
 //                                // force a reset of the property, so it fires a change event when it gets updated
 //                                // to its originalValue, in case parentView and nodeView values are the same
-//                                observableLanguageCoordinate.languageConceptProperty().set(TinkarTerm.LANGUAGE_COORDINATE_NAME); // Dummy, not null
+//                                observableLanguageCoordinate.languageConceptProperty().set(KometTerm.LANGUAGE_COORDINATE_NAME); // Dummy, not null
 //                                propertyWithOverride.removeOverride();
 //                            } else if (!observableLanguageCoordinate.languageConceptProperty().get().equals(lang)) {
 //                                fromFilter = true;
@@ -670,7 +672,7 @@ public class EditCoordinateOptionsUtils {
 //        return sortedSet.stream().toList();
 //    }
 
-//    private static int findNidForDescription(Navigator navigator, int nid, String description) {
+//    private static long findNidForDescription(Navigator navigator, long nid, String description) {
 //        return navigator.getChildEdges(nid).stream()
 //                .filter(edge -> Entity.getFast(edge.destinationNid()).description().equals(description))
 //                .findFirst()
@@ -678,12 +680,12 @@ public class EditCoordinateOptionsUtils {
 //                .orElseThrow();
 //    }
 
-//    public static List<EntityFacade> getDescendentsList(Navigator navigator, int parentNid, String description) {
-//        int nid = parentNid;
+//    public static List<EntityFacade> getDescendentsList(Navigator navigator, long parentNid, String description) {
+//        long nid = parentNid;
 //        for (String s : description.split(", ")) {
 //            nid = findNidForDescription(navigator, nid, s);
 //        }
-//        return navigator.getViewCalculator().descendentsOf(nid).intStream().boxed()
+//        return navigator.getViewCalculator().descendentsOf(nid).longStream().boxed()
 //                .map(i -> (EntityFacade) Entity.getFast(i))
 //                .sorted()
 //                .toList();
@@ -693,7 +695,7 @@ public class EditCoordinateOptionsUtils {
         return switch (t) {
             case String value -> value;
             case State value -> viewCalculator == null ?
-                    Entity.getFast(value.nid()).description() :
+                    EntityHandle.get(value.nid()).expectConcept().description() :
                     getDescriptionTextOrNid(viewCalculator, value.nid());
             case Long value -> String.valueOf(value);
             case EntityFacade value -> {
@@ -707,7 +709,7 @@ public class EditCoordinateOptionsUtils {
         };
     }
 
-    public static String getDescriptionTextOrNid(ViewCalculator viewCalculator, int nid) {
+    public static String getDescriptionTextOrNid(ViewCalculator viewCalculator, long nid) {
         try {
             return viewCalculator.getDescriptionTextOrNid(nid);
         } catch (Exception e) {

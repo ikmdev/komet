@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package dev.ikm.komet.framework.controls;
+import dev.ikm.tinkar.terms.KernelTerm;
 import network.ike.docs.konceptcore.KonceptKind;
 
 import dev.ikm.tinkar.common.service.CachingService;
@@ -24,22 +25,23 @@ import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntity;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.io.File;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Integration tests for {@link KonceptKindResolver} against the Tinkar starter data, per the
+ * Integration tests for {@link KonceptKindResolver} against the IKE starter set, per the
  * coordinate-behaviour testing discipline (resolve real components, don't mock). Confirms the four
  * atoms map from the entity type, that a semantic on the view coordinate's description pattern is
  * {@link KonceptKind#DESCRIPTION} (and a plain {@link KonceptKind#SEMANTIC} otherwise), and that
@@ -49,7 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class KonceptKindResolverITestFX {
 
     private static final File TEST_DATA_DIR = new File("target/data");
-    private static final File PB_STARTER_DATA = new File(TEST_DATA_DIR, "tinkar-starter-data-reasoned-pb.zip");
+    private static final File PB_STARTER_DATA = new File(TEST_DATA_DIR, "ike-starter-set-reasoned-pb.zip");
 
     private ViewCalculator calculator;
 
@@ -68,21 +70,21 @@ class KonceptKindResolverITestFX {
     @Test
     void aConceptResolvesToConcept() {
         assertEquals(KonceptKind.CONCEPT,
-                KonceptKindResolver.resolve(TinkarTerm.ENGLISH_LANGUAGE.nid(), calculator));
+                KonceptKindResolver.resolve(KernelTerm.ENGLISH_LANGUAGE.nid(), calculator));
     }
 
     @Test
     void aPatternResolvesToPattern() {
         assertEquals(KonceptKind.PATTERN,
-                KonceptKindResolver.resolve(TinkarTerm.DESCRIPTION_PATTERN.nid(), calculator));
+                KonceptKindResolver.resolve(KernelTerm.DESCRIPTION_PATTERN.nid(), calculator));
     }
 
     @Test
     void aDescriptionSemanticResolvesToDescriptionViaTheCoordinate() {
-        int[] descriptionNids = EntityService.get().semanticNidsForComponentOfPattern(
-                TinkarTerm.ENGLISH_LANGUAGE.nid(), TinkarTerm.DESCRIPTION_PATTERN.nid());
-        assertTrue(descriptionNids.length > 0, "English Language must carry description semantics");
-        int descriptionNid = descriptionNids[0];
+        Optional<SemanticEntity<SemanticEntityVersion>> description = EntityService.get().semanticsForComponentOfPattern(
+                KernelTerm.ENGLISH_LANGUAGE.nid(), KernelTerm.DESCRIPTION_PATTERN.nid()).findFirst();
+        assertTrue(description.isPresent(), "English Language must carry description semantics");
+        long descriptionNid = description.get().nid();
 
         assertEquals(KonceptKind.DESCRIPTION, KonceptKindResolver.resolve(descriptionNid, calculator),
                 "a semantic on the coordinate's description pattern is a Description");
@@ -94,17 +96,17 @@ class KonceptKindResolverITestFX {
 
     @Test
     void aNonDescriptionSemanticResolvesToSemantic() {
-        int otherSemanticNid = Integer.MIN_VALUE;
+        long otherSemanticNid = Integer.MIN_VALUE;
         outer:
         for (ConceptFacade concept : new ConceptFacade[]{
-                TinkarTerm.ENGLISH_LANGUAGE, TinkarTerm.DEVELOPMENT_PATH, TinkarTerm.USER}) {
-            for (int semanticNid : EntityService.get().semanticNidsForComponent(concept.nid())) {
-                Entity<?> entity = EntityHandle.get(semanticNid).entity().orElse(null);
-                if (entity instanceof SemanticEntity<?> semantic
-                        && semantic.patternNid() != TinkarTerm.DESCRIPTION_PATTERN.nid()) {
-                    otherSemanticNid = semanticNid;
-                    break outer;
-                }
+                KernelTerm.ENGLISH_LANGUAGE, KernelTerm.DEVELOPMENT_PATH, KernelTerm.USER}) {
+            Optional<SemanticEntity<SemanticEntityVersion>> other = EntityService.get()
+                    .semanticsForComponent(concept.nid())
+                    .filter(semantic -> semantic.patternNid() != KernelTerm.DESCRIPTION_PATTERN.nid())
+                    .findFirst();
+            if (other.isPresent()) {
+                otherSemanticNid = other.get().nid();
+                break outer;
             }
         }
         assertNotEquals(Integer.MIN_VALUE, otherSemanticNid,
@@ -114,8 +116,8 @@ class KonceptKindResolverITestFX {
 
     @Test
     void aStampResolvesToStamp() {
-        Entity<?> englishLanguage = EntityHandle.get(TinkarTerm.ENGLISH_LANGUAGE.nid()).entity().orElseThrow();
-        int stampNid = englishLanguage.versions().get(0).stampNid();
+        Entity<?> englishLanguage = EntityHandle.get(KernelTerm.ENGLISH_LANGUAGE.nid()).entity().orElseThrow();
+        long stampNid = englishLanguage.versions().get(0).stampNid();
         assertEquals(KonceptKind.STAMP, KonceptKindResolver.resolve(stampNid, calculator));
     }
 

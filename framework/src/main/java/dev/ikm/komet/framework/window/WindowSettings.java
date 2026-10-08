@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.framework.window;
 
+import dev.ikm.komet.terms.KometSettingTerm;
 import javafx.beans.property.*;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -24,7 +25,6 @@ import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.Coordinates;
-import dev.ikm.tinkar.terms.TinkarTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,33 +38,33 @@ public class WindowSettings {
     private static final HashSet<String> windowIds = new HashSet<>();
 
 
-    private final SimpleBooleanProperty enableLeftPaneProperty = new SimpleBooleanProperty(this, TinkarTerm.ENABLE_LEFT_PANE.toXmlFragment(), true);
-    private final SimpleBooleanProperty enableCenterPaneProperty = new SimpleBooleanProperty(this, TinkarTerm.ENABLE_CENTER_PANE.toXmlFragment(), true);
-    private final SimpleBooleanProperty enableRightPaneProperty = new SimpleBooleanProperty(this, TinkarTerm.ENABLE_RIGHT_PANE.toXmlFragment(), true);
+    private final SimpleBooleanProperty enableLeftPaneProperty = new SimpleBooleanProperty(this, KometSettingTerm.ENABLE_LEFT_PANE.toXmlFragment(), true);
+    private final SimpleBooleanProperty enableCenterPaneProperty = new SimpleBooleanProperty(this, KometSettingTerm.ENABLE_CENTER_PANE.toXmlFragment(), true);
+    private final SimpleBooleanProperty enableRightPaneProperty = new SimpleBooleanProperty(this, KometSettingTerm.ENABLE_RIGHT_PANE.toXmlFragment(), true);
 
     private final SimpleStringProperty windowNameProperty
-            = new SimpleStringProperty(this, TinkarTerm.WINDOW_CONFIGURATION_NAME.toXmlFragment());
+            = new SimpleStringProperty(this, KometSettingTerm.WINDOW_CONFIGURATION_NAME.toXmlFragment());
 
     private final SimpleStringProperty leftTabPreferencesProperty =
-            new SimpleStringProperty(this, TinkarTerm.LEFT_PANE_DAFAULTS.toXmlFragment());
+            new SimpleStringProperty(this, KometSettingTerm.LEFT_PANE_DEFAULTS.toXmlFragment());
 
     private final SimpleStringProperty centerTabPreferencesProperty =
-            new SimpleStringProperty(this, TinkarTerm.CENTER_PANE_DEFAULTS.toXmlFragment());
+            new SimpleStringProperty(this, KometSettingTerm.CENTER_PANE_DEFAULTS.toXmlFragment());
 
     private final SimpleStringProperty rightTabPreferencesProperty =
-            new SimpleStringProperty(this, TinkarTerm.RIGHT_PANE_DEFAULTS.toXmlFragment());
+            new SimpleStringProperty(this, KometSettingTerm.RIGHT_PANE_DEFAULTS.toXmlFragment());
 
     private final SimpleDoubleProperty xLocationProperty =
-            new SimpleDoubleProperty(this, TinkarTerm.WINDOW_X_POSITION.toXmlFragment());
+            new SimpleDoubleProperty(this, KometSettingTerm.WINDOW_X_POSITION.toXmlFragment());
 
     private final SimpleDoubleProperty yLocationProperty =
-            new SimpleDoubleProperty(this, TinkarTerm.WINDOW_Y_POSITION.toXmlFragment());
+            new SimpleDoubleProperty(this, KometSettingTerm.WINDOW_Y_POSITION.toXmlFragment());
 
     private final SimpleDoubleProperty heightProperty =
-            new SimpleDoubleProperty(this, TinkarTerm.WINDOW_HEIGHT.toXmlFragment());
+            new SimpleDoubleProperty(this, KometSettingTerm.WINDOW_HEIGHT.toXmlFragment());
 
     private final SimpleDoubleProperty widthProperty =
-            new SimpleDoubleProperty(this, TinkarTerm.WINDOW_WIDTH.toXmlFragment());
+            new SimpleDoubleProperty(this, KometSettingTerm.WINDOW_WIDTH.toXmlFragment());
 
     private final SimpleIntegerProperty leftTabSelectionProperty = new SimpleIntegerProperty(this, "left tab selection", 0);
     private final SimpleIntegerProperty centerTabSelectionProperty = new SimpleIntegerProperty(this, "center tab selection", 0);

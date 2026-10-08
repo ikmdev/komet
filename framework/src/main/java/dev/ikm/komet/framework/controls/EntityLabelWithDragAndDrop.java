@@ -185,7 +185,7 @@ public class EntityLabelWithDragAndDrop
         Optional<EntityFacade> optionalConcept = Optional.ofNullable(label.entityFocusProperty.getValue());
         if (optionalConcept.isPresent()) {
             label.setText(
-                    label.viewProperties.nodeView().getPreferredDescriptionStringOrNid(optionalConcept.get().nid())
+                    label.viewProperties.nodeView().getPreferredDescriptionTextOrNid(optionalConcept.get().nid())
             );
         } else {
             setLabelToEmptyText(label);

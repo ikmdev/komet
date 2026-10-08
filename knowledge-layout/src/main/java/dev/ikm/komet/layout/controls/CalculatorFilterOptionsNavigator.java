@@ -17,7 +17,7 @@ package dev.ikm.komet.layout.controls;
 
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.terms.TinkarTerm;
+import dev.ikm.tinkar.terms.KernelTerm;
 import org.eclipse.collections.api.list.ImmutableList;
 
 /**
@@ -32,12 +32,12 @@ import org.eclipse.collections.api.list.ImmutableList;
 public record CalculatorFilterOptionsNavigator(ViewCalculator viewCalculator) implements FilterOptionsNavigator {
 
     @Override
-    public int[] getRootNids() {
-        return new int[]{TinkarTerm.ROOT_VERTEX.nid()};
+    public long[] getRootNids() {
+        return new long[]{KernelTerm.ROOT_VERTEX.nid()};
     }
 
     @Override
-    public ImmutableList<Edge> getChildEdges(int parentNid) {
+    public ImmutableList<Edge> getChildEdges(long parentNid) {
         return viewCalculator.childEdges(parentNid);
     }
 
