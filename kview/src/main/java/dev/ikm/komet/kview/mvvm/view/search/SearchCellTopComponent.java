@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.CONCEPT;
+import static dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController.getDragAndDropType;
 import static dev.ikm.komet.kview.mvvm.view.search.NextGenSearchController.setUpDraggable;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
@@ -45,7 +45,7 @@ public class SearchCellTopComponent extends SearchCellBase {
     private final Pane parentPane;
     /**
      * Supplies the current text query so the concept title can be highlighted
-     * against the still-current query each time {@link #updateItem} runs. Read
+     * against the still-current query each time updateItem runs. Read
      * via supplier (not captured at construction) because the cell instance
      * outlives a single search — the {@link javafx.scene.control.ListView}
      * virtual flow reuses cells across repeated searches.
@@ -125,7 +125,9 @@ public class SearchCellTopComponent extends SearchCellBase {
                     }
                     controller.setRetired(!entityVersion.active());
 
-                    setUpDraggable(parentPane, entity, CONCEPT);
+                    // A top component may be a concept or a pattern (ikmdev/komet-desktop#196): tag the
+                    // drag with the entity's real type so a dropped pattern opens as a pattern.
+                    setUpDraggable(parentPane, entity, getDragAndDropType(entity));
 
                     setGraphic(parentPane);
                 } else if (!nidTextRecord.publicIds().isEmpty()) {
