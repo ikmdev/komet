@@ -28,6 +28,7 @@ import dev.ikm.komet.kview.fxutils.ComboBoxHelper;
 import dev.ikm.komet.kview.mvvm.viewmodel.ExportViewModel;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
+import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.entity.export.ExportEntitiesToProtobufFile;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.InvalidationListener;
@@ -209,7 +210,12 @@ public class ExportController {
             @Override
             public String toString(EntityFacade conceptEntity) {
                 ViewCalculator viewCalculator = getViewProperties().calculator();
-                return (conceptEntity != null) ? viewCalculator.getRegularDescriptionText(conceptEntity).get() : "";
+                // orElseGet, not get(): over gRPC a path's descriptions may not be loaded locally
+                // yet, and an empty Optional here threw while the dialog was being built.
+                return (conceptEntity != null)
+                        ? viewCalculator.getRegularDescriptionText(conceptEntity)
+                                .orElseGet(() -> viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(conceptEntity))
+                        : "";
             }
 
             @Override
@@ -347,7 +353,14 @@ public class ExportController {
                 return CompletableFuture.failedFuture(new IllegalArgumentException("Export file cannot be null"));
             }
 
-            ExportEntitiesToProtobufFile exportEntities = new ExportEntitiesToProtobufFile(exportFile, fromDate, toDate);
+            // Connected to a server: export from there, where all the data is, rather than from
+            // this Komet's local view, which holds only what it has loaded.
+            TrackingCallable<dev.ikm.tinkar.common.service.EntityCountSummary> exportEntities = RemoteChangesetTask.remote()
+                    .<TrackingCallable<dev.ikm.tinkar.common.service.EntityCountSummary>>map(remote ->
+                            new RemoteChangesetTask(remote, "Export change set from the server",
+                                    (service, listener, tracker) ->
+                                            service.exportChangeSet(exportFile, fromDate, toDate, listener, tracker)))
+                    .orElseGet(() -> new ExportEntitiesToProtobufFile(exportFile, fromDate, toDate));
             CompletableFuture<dev.ikm.tinkar.common.service.EntityCountSummary> exportFuture = ProgressHelper.progress(exportEntities, "Cancel Export");
 
             exportFuture.handle((result, throwable) -> {
@@ -381,7 +394,12 @@ public class ExportController {
                         // map TagsDataModel to a publicId
                         EntityService.get().getEntityFast(Integer.parseInt(tagsDataModel.tagNid)).publicId()
                     ).toList();
-            ExportEntitiesToProtobufFile exportEntities = new ExportEntitiesToProtobufFile(exportFile, membershipPublicIds);
+            TrackingCallable<dev.ikm.tinkar.common.service.EntityCountSummary> exportEntities = RemoteChangesetTask.remote()
+                    .<TrackingCallable<dev.ikm.tinkar.common.service.EntityCountSummary>>map(remote ->
+                            new RemoteChangesetTask(remote, "Export tagged modules from the server",
+                                    (service, listener, tracker) ->
+                                            service.exportMembership(exportFile, membershipPublicIds, listener, tracker)))
+                    .orElseGet(() -> new ExportEntitiesToProtobufFile(exportFile, membershipPublicIds));
             CompletableFuture<dev.ikm.tinkar.common.service.EntityCountSummary> exportFuture = ProgressHelper.progress(exportEntities, "Cancel Export");
 
             exportFuture.handle((result, throwable) -> {

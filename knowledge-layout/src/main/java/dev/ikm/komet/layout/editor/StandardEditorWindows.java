@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_WINDOWS;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_MAIN_SECTION;
 
 /**
  * Seeds the standard (application-provided) KL Windows into the standard-windows folder of the
@@ -82,13 +83,22 @@ public final class StandardEditorWindows {
             standardWindowsPreferences.putInt(STANDARD_WINDOWS_VERSION_KEY, CURRENT_STANDARD_WINDOWS_VERSION);
         }
 
-        List<String> standardWindows = standardWindowsPreferences.getList(KL_EDITOR_WINDOWS);
-        if (!standardWindows.contains(CONCEPT_WINDOW_2)) {
+        if (!isSaved(standardWindowsPreferences, CONCEPT_WINDOW_2)) {
             saveConceptWindow2(standardWindowsPreferences, viewCalculator);
         }
-        if (!standardWindows.contains(PATTERN_WINDOW_2)) {
+        if (!isSaved(standardWindowsPreferences, PATTERN_WINDOW_2)) {
             savePatternWindow2(standardWindowsPreferences, viewCalculator);
         }
+    }
+
+    /**
+     * Whether the window is both listed and actually written. The list alone is not enough: a
+     * seeding that failed part way can leave the title listed with no window definition behind it,
+     * which then fails every load with "Can't load section (main section) from preferences".
+     */
+    private static boolean isSaved(KometPreferences standardWindowsPreferences, String windowTitle) {
+        return standardWindowsPreferences.getList(KL_EDITOR_WINDOWS).contains(windowTitle)
+                && standardWindowsPreferences.node(windowTitle).get(KL_MAIN_SECTION).isPresent();
     }
 
     /**

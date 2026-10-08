@@ -137,9 +137,15 @@ public class SortResultConceptEntryController extends AbstractBasicController {
                                     patternEntity, StandardEditorWindows.PATTERN_WINDOW_2));
                         }
                     } else if (remotePublicIds != null && !remotePublicIds.isEmpty()) {
-                        // Remote-backed result: fetch full entity graph from the server, load into
-                        // ephemeral store, then open the concept window as normal.
-                        openRemoteConcept();
+                        // Remote-backed result: fetch the concept from the server first, then open
+                        // the same windows a local result does — Concept (2), or classic with shift.
+                        boolean classic = mouseEvent.isShiftDown();
+                        withConcept(conceptEntity -> eventBus.publish(
+                                searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                                classic
+                                        ? new MakeConceptWindowEvent(this, MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity)
+                                        : new MakeKLWindowEvent(this, MakeKLWindowEvent.OPEN_STANDARD_WINDOW,
+                                                conceptEntity, StandardEditorWindows.CONCEPT_WINDOW_2)));
                     }
                 }
             }
@@ -153,22 +159,63 @@ public class SortResultConceptEntryController extends AbstractBasicController {
     }
 
     public void populateConcept(ActionEvent actionEvent) {
-        if (entity instanceof ConceptEntity conceptEntity) {
-            eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new MakeConceptWindowEvent(this,
-                    MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity));
-        }
+        withConcept(conceptEntity -> eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                new MakeConceptWindowEvent(this, MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity)));
     }
 
     public void openInConceptNavigator(ActionEvent actionEvent) {
-        if (entity instanceof ConceptEntity conceptEntity) {
-            eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_CONCEPT, conceptEntity));
-        }
+        withConcept(conceptEntity -> eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
+                new ShowNavigationalPanelEvent(this, ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_CONCEPT, conceptEntity)));
     }
 
     public void openAsKLWindow(ActionEvent actionEvent, String windowTitle) {
         UUID journalTopic = searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
+        if (entity == null) {
+            withConcept(conceptEntity -> eventBus.publish(journalTopic,
+                    new MakeKLWindowEvent(this, MakeKLWindowEvent.OPEN_ENTITY_FROM_ENTITY, conceptEntity, windowTitle)));
+            return;
+        }
         eventBus.publish(journalTopic,
                 new MakeKLWindowEvent(this, MakeKLWindowEvent.OPEN_ENTITY_FROM_ENTITY, entity, windowTitle));
+    }
+
+    /**
+     * Runs {@code action} with this result's concept on the UI thread.
+     *
+     * <p>A local result has its entity already. A result from a remote search (Komet connected over
+     * gRPC) carries only the concept's UUIDs, so the concept is fetched from the server into the
+     * local store first — every action on the row works the same either way, where before only a
+     * double-click fetched it and the menu actions silently did nothing. The fetched concept is kept,
+     * so later actions on the same row do not fetch again.
+     */
+    private void withConcept(java.util.function.Consumer<ConceptEntity> action) {
+        if (entity instanceof ConceptEntity conceptEntity) {
+            action.accept(conceptEntity);
+            return;
+        }
+        if (remotePublicIds == null || remotePublicIds.isEmpty()) {
+            return;
+        }
+        List<UUID> ids = List.copyOf(remotePublicIds);
+        Thread.ofVirtual().start(() -> {
+            try {
+                RemoteConceptSearchService remote = ServiceLifecycleManager.get()
+                        .getRunningService(RemoteConceptSearchService.class)
+                        .orElseThrow(() -> new IllegalStateException("RemoteConceptSearchService not available"));
+                int nid = remote.loadConceptWithSemantics(ids);
+                Entity<?> loaded = Entity.getFast(nid);
+                if (loaded instanceof ConceptEntity loadedConcept) {
+                    Platform.runLater(() -> {
+                        entity = loadedConcept;
+                        action.accept(loadedConcept);
+                    });
+                } else {
+                    LOG.warn("Loaded entity for {} is not a ConceptEntity: {}", ids, loaded);
+                }
+            } catch (Exception ex) {
+                LOG.warn("Failed to load concept details from remote backend for {}: {}", ids, ex.getMessage());
+            }
+        });
     }
 
     public boolean isRetired() {
@@ -247,36 +294,6 @@ public class SortResultConceptEntryController extends AbstractBasicController {
      */
     public void setRemotePublicIds(List<UUID> publicIds) {
         this.remotePublicIds = publicIds;
-    }
-
-    /**
-     * Background-fetches the concept entity graph from the active {@link RemoteConceptSearchService},
-     * loads it into the local ephemeral entity store, then fires {@link MakeConceptWindowEvent}
-     * on the UI thread.
-     */
-    private void openRemoteConcept() {
-        List<UUID> ids = List.copyOf(remotePublicIds);
-        UUID journalTopic = searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);
-        Thread.ofVirtual().start(() -> {
-            try {
-                RemoteConceptSearchService remote = ServiceLifecycleManager.get()
-                        .getRunningService(RemoteConceptSearchService.class)
-                        .orElseThrow(() -> new IllegalStateException("RemoteConceptSearchService not available"));
-                int nid = remote.loadConceptWithSemantics(ids);
-                Entity<?> loaded = Entity.getFast(nid);
-                if (loaded instanceof ConceptEntity loadedConcept) {
-                    Platform.runLater(() ->
-                        eventBus.publish(journalTopic,
-                            new MakeConceptWindowEvent(this,
-                                MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT,
-                                loadedConcept)));
-                } else {
-                    LOG.warn("Loaded entity for {} is not a ConceptEntity: {}", ids, loaded);
-                }
-            } catch (Exception ex) {
-                LOG.warn("Failed to load concept details from remote backend for {}: {}", ids, ex.getMessage());
-            }
-        });
     }
 
     public void setWindowView(ObservableViewNoOverride windowView) {

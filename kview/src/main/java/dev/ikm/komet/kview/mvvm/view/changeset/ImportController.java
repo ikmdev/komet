@@ -28,6 +28,7 @@ import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.EntityCountSummary;
+import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import javafx.application.Platform;
 import javafx.css.PseudoClass;
@@ -216,7 +217,13 @@ public class ImportController {
 
         if (importViewModel.validProperty().get()) {
             File selectedFile = importViewModel.getPropertyValue(SELECTED_FILE);
-            LoadEntitiesFromProtobufFile importTask = new LoadEntitiesFromProtobufFile(selectedFile);
+            // Connected to a server: import there, where the data lives, rather than into this
+            // Komet's local view of it.
+            TrackingCallable<EntityCountSummary> importTask = RemoteChangesetTask.remote()
+                    .<TrackingCallable<EntityCountSummary>>map(remote -> new RemoteChangesetTask(remote,
+                            "Import " + selectedFile.getName() + " on the server",
+                            (service, listener, tracker) -> service.importChangeset(selectedFile, listener, tracker)))
+                    .orElseGet(() -> new LoadEntitiesFromProtobufFile(selectedFile));
             FrameworkTopics destTopic = importViewModel.getPropertyValue(DESTINATION_TOPIC);
             CompletableFuture<EntityCountSummary> future = ProgressHelper.progress(destTopic, importTask, "Cancel Import");
             future.whenComplete((entityCountSummary, throwable) -> {
