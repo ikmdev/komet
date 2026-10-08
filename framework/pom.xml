@@ -146,7 +146,7 @@
         </dependency>
         <dependency>
             <groupId>dev.ikm.tinkar</groupId>
-            <artifactId>data-ephemeral-provider</artifactId>
+            <artifactId>data-spinedarray-provider</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -219,7 +219,7 @@
                                      class reference survives into the bytecode (requires static). -->
                                 <ignoredUnusedDeclaredDependency>dev.ikm.jpms:record-builder-core</ignoredUnusedDeclaredDependency>
                                 <!-- The tests' providers are found through ServiceLoader. -->
-                                <ignoredUnusedDeclaredDependency>dev.ikm.tinkar:data-ephemeral-provider</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>dev.ikm.tinkar:data-spinedarray-provider</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>dev.ikm.tinkar:entity-provider</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>dev.ikm.tinkar:executor-provider</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
