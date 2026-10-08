@@ -49,6 +49,11 @@ public class TaskWrapper<V> extends Task<V> implements TrackingListener<V> {
         }
     };
 
+    /** The callable this task runs, for what a row shows beyond title, message and bar: its time. */
+    public TrackingCallable<V> trackingCallable() {
+        return trackingCallable;
+    }
+
     private TaskWrapper(TrackingCallable<V> trackingCallable) {
         this.trackingCallable = trackingCallable;
         this.appThreadConsumer = null;

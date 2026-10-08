@@ -16,13 +16,21 @@
 package dev.ikm.komet.progress;
 
 
+import dev.ikm.komet.framework.concurrent.TaskWrapper;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
+import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import org.controlsfx.control.TaskProgressView;
@@ -54,6 +62,16 @@ public class ProgressViewSkin<T extends Task<?>> extends
         private ProgressBar progressBar;
         private Label titleText;
         private Label messageText;
+        /** The task's time: elapsed, and about how long remains when the task can say. */
+        private Label timeText;
+        /** Refreshes the time once a second while the task runs; the task pushes nothing for it. */
+        private final Timeline ticker = new Timeline(new KeyFrame(javafx.util.Duration.seconds(1), event -> tick()));
+        private final ChangeListener<Boolean> stopWhenDone = (running, was, isRunning) -> {
+            if (!isRunning) {
+                ticker.stop();
+                tick();
+            }
+        };
         private Button cancelButton;
 
         private T task;
@@ -65,6 +83,10 @@ public class ProgressViewSkin<T extends Task<?>> extends
 
             messageText = new Label();
             messageText.getStyleClass().add("task-message");
+
+            timeText = new Label();
+            timeText.getStyleClass().add("task-message");
+            ticker.setCycleCount(Animation.INDEFINITE);
 
             progressBar = new ProgressBar();
             progressBar.setMaxWidth(Double.MAX_VALUE);
@@ -88,7 +110,9 @@ public class ProgressViewSkin<T extends Task<?>> extends
             vbox.setSpacing(4);
             vbox.getChildren().add(titleText);
             vbox.getChildren().add(progressBar);
-            vbox.getChildren().add(messageText);
+            Region gap = new Region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
+            vbox.getChildren().add(new HBox(messageText, gap, timeText));
 
             BorderPane.setAlignment(cancelButton, Pos.CENTER);
             BorderPane.setMargin(cancelButton, new Insets(0, 0, 0, 4));
@@ -97,6 +121,11 @@ public class ProgressViewSkin<T extends Task<?>> extends
             borderPane.setCenter(vbox);
             borderPane.setRight(cancelButton);
             setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+        }
+
+        /** Shows the task's time, from the callable a wrapped task runs; other tasks show none. */
+        private void tick() {
+            timeText.setText(task instanceof TaskWrapper<?> wrapper ? wrapper.trackingCallable().timeText() : "");
         }
 
         @Override
@@ -117,9 +146,14 @@ public class ProgressViewSkin<T extends Task<?>> extends
         protected void updateItem(T task, boolean empty) {
             super.updateItem(task, empty);
 
+            if (this.task != null) {
+                this.task.runningProperty().removeListener(stopWhenDone);
+            }
+            ticker.stop();
             this.task = task;
 
             if (empty || task == null) {
+                timeText.setText("");
                 getStyleClass().setAll("task-list-cell-empty");
                 setGraphic(null);
             } else if (task != null) {
@@ -129,6 +163,13 @@ public class ProgressViewSkin<T extends Task<?>> extends
                 messageText.textProperty().bind(task.messageProperty());
                 cancelButton.disableProperty().bind(
                         Bindings.not(task.runningProperty()));
+                tick();
+                if (task instanceof TaskWrapper<?>) {
+                    task.runningProperty().addListener(stopWhenDone);
+                    if (task.isRunning()) {
+                        ticker.play();
+                    }
+                }
 
                 Callback<T, Node> factory = getSkinnable().getGraphicFactory();
                 if (factory != null) {
