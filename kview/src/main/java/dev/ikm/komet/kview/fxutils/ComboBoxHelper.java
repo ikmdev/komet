@@ -118,6 +118,9 @@ public class ComboBoxHelper {
         // TODO: might be another way to fix by using CSS to fix this issue or examine height of popup (ListView).
         Platform.runLater(() -> {
             final Node scrollBar = comboBox.lookup(".scroll-bar:vertical");
+            if (scrollBar == null) {
+                return; // no popup scroll bar to hide (yet) — nothing to work around
+            }
             scrollBar.setStyle("-fx-pref-width: 0; -fx-padding: 0;");
             scrollBar.applyCss();
             scrollBar.setVisible(false);
