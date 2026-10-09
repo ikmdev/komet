@@ -86,6 +86,13 @@ public class ProgressViewSkin<T extends Task<?>> extends
 
             timeText = new Label();
             timeText.getStyleClass().add("task-message");
+            timeText.setMinWidth(Region.USE_PREF_SIZE);
+            timeText.setTooltip(new Tooltip());
+            // The title gives way before the time does: a truncated file name is in the tooltip,
+            // a truncated estimate is not.
+            titleText.setMinWidth(0);
+            titleText.setMaxWidth(Double.MAX_VALUE);
+            HBox.setHgrow(titleText, Priority.ALWAYS);
             ticker.setCycleCount(Animation.INDEFINITE);
 
             progressBar = new ProgressBar();
@@ -108,11 +115,9 @@ public class ProgressViewSkin<T extends Task<?>> extends
 
             VBox vbox = new VBox();
             vbox.setSpacing(4);
-            vbox.getChildren().add(titleText);
+            vbox.getChildren().add(new HBox(8, titleText, timeText));
             vbox.getChildren().add(progressBar);
-            Region gap = new Region();
-            HBox.setHgrow(gap, Priority.ALWAYS);
-            vbox.getChildren().add(new HBox(messageText, gap, timeText));
+            vbox.getChildren().add(messageText);
 
             BorderPane.setAlignment(cancelButton, Pos.CENTER);
             BorderPane.setMargin(cancelButton, new Insets(0, 0, 0, 4));
@@ -123,9 +128,14 @@ public class ProgressViewSkin<T extends Task<?>> extends
             setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
         }
 
-        /** Shows the task's time, from the callable a wrapped task runs; other tasks show none. */
+        /** Shows the task's time in the title line's corner, "0:22 · ~6 min left", the sentence as its tooltip. */
         private void tick() {
-            timeText.setText(task instanceof TaskWrapper<?> wrapper ? wrapper.trackingCallable().timeText() : "");
+            if (task instanceof TaskWrapper<?> wrapper) {
+                timeText.setText(wrapper.trackingCallable().timeTextCompact());
+                timeText.getTooltip().setText(wrapper.trackingCallable().timeText());
+            } else {
+                timeText.setText("");
+            }
         }
 
         @Override
