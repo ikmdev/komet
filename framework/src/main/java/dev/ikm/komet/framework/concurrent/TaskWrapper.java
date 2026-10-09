@@ -49,6 +49,11 @@ public class TaskWrapper<V> extends Task<V> implements TrackingListener<V> {
         }
     };
 
+    /** The callable this task runs, for what a row shows beyond title, message and bar: its time. */
+    public TrackingCallable<V> trackingCallable() {
+        return trackingCallable;
+    }
+
     private TaskWrapper(TrackingCallable<V> trackingCallable) {
         this.trackingCallable = trackingCallable;
         this.appThreadConsumer = null;
@@ -134,12 +139,38 @@ public class TaskWrapper<V> extends Task<V> implements TrackingListener<V> {
 
     @Override
     public void updateMessage(String message) {
-        super.updateMessage(message);
+        super.updateMessage(message == null ? "" : message);
     }
 
+    /** {@code LoadDataSourceTask} as "Load data source task". */
+    static String defaultTitle(TrackingCallable<?> trackingCallable) {
+        String name = trackingCallable.getClass().getSimpleName();
+        if (name.isEmpty()) {
+            Class<?> enclosing = trackingCallable.getClass().getEnclosingClass();
+            name = enclosing == null ? "Task" : enclosing.getSimpleName();
+        }
+        StringBuilder words = new StringBuilder();
+        for (char c : name.toCharArray()) {
+            if (Character.isUpperCase(c) && !words.isEmpty()) {
+                words.append(' ').append(Character.toLowerCase(c));
+            } else {
+                words.append(words.isEmpty() ? Character.toUpperCase(c) : c);
+            }
+        }
+        return words.toString();
+    }
+
+    /**
+     * Never passes {@code null} on. {@link Task#updateTitle} and {@link Task#updateMessage}
+     * throttle off the FX thread with a null-means-idle sentinel, and the listener replay at
+     * construction sends the callable's title and message before it has them: a {@code null}
+     * followed by the real value while the FX thread is busy queues two updates, and the second
+     * sets {@code null} again — the untitled rows of the startup Activity view. A callable that
+     * never names itself is titled by its class, in words.
+     */
     @Override
     public void updateTitle(String title) {
-        super.updateTitle(title);
+        super.updateTitle(title == null || title.isBlank() ? defaultTitle(trackingCallable) : title);
     }
 
     @Override
