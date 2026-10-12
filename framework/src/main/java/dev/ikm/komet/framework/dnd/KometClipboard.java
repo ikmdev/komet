@@ -166,7 +166,7 @@ public class KometClipboard extends ClipboardContent {
     /**
      * Builds clipboard content for the concept with the given nid — a convenience over
      * {@link #forProxy(EntityProxy)} for the common concept drag. Resolves the concept's
-     * description from the store (see {@link #forConcept(int, String)} for why a description
+     * description from the store (see {@link #forConcept(long, String)} for why a description
      * is required).
      *
      * @param nid the concept nid
@@ -314,7 +314,7 @@ public class KometClipboard extends ClipboardContent {
     /**
      * The concept nid carried by a Komet concept dragboard, or empty when the board has no
      * {@link #KOMET_CONCEPT_PROXY} content or the payload is malformed. The inverse of
-     * {@link #forConcept(int)} on the drop side.
+     * {@link #forConcept(long)} on the drop side.
      *
      * @param dragboard the drag-and-drop content; may be {@code null}
      * @return the dropped concept nid, or {@link OptionalLong#empty()}

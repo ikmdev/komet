@@ -45,7 +45,7 @@ import java.util.function.IntFunction;
  *     enclosing level.</li>
  * </ul>
  *
- * <p>The protected hooks — {@link #createChipNode(EntityVertex, int, ChipKind)},
+ * <p>The protected hooks — {@link #createChipNode(EntityVertex, long, ChipKind)},
  * {@link #decorateClauseHeader(HBox, VBox, EntityVertex)}, {@link #decorateRoleRow(HBox, EntityVertex)}
  * and {@link #afterRebuild(DiTreeEntity)} — exist for the editing subclass
  * ({@code KLDiTreeControlSkin}) to mount its interactions without re-arranging the layout.</p>

@@ -406,7 +406,7 @@ import java.util.function.Supplier;
  *
  * <h2>Thread Safety Requirements</h2>
  * <p><b>IMPORTANT:</b> All operations must execute on the JavaFX application thread. The underlying
- * lookup behind {@link #get(int)} enforces this requirement. If you need to access
+ * lookup behind {@link #get(long)} enforces this requirement. If you need to access
  * observable entities from a background thread, use {@code Platform.runLater()}:
  *
  * <pre>{@code
@@ -1127,10 +1127,10 @@ public interface ObservableEntityHandle {
      * @param viewCalculator the view calculator to use for computing the snapshot
      * @return Optional containing the appropriate snapshot type, or empty if entity is absent
      * @throws RuntimeException if not called on JavaFX application thread
-     * @see #getConceptSnapshotOrThrow(int, ViewCalculator)
-     * @see #getSemanticSnapshotOrThrow(int, ViewCalculator)
-     * @see #getPatternSnapshotOrThrow(int, ViewCalculator)
-     * @see #getStampSnapshotOrThrow(int, ViewCalculator)
+     * @see #getConceptSnapshotOrThrow(long, ViewCalculator)
+     * @see #getSemanticSnapshotOrThrow(long, ViewCalculator)
+     * @see #getPatternSnapshotOrThrow(long, ViewCalculator)
+     * @see #getStampSnapshotOrThrow(long, ViewCalculator)
      */
     static Optional<ObservableEntitySnapshot<?, ?>> getSnapshot(long nid, ViewCalculator viewCalculator) {
         return get(nid).entity().map(e -> e.getSnapshot(viewCalculator));

@@ -62,7 +62,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *       swap while a run is in flight.</li>
  * </ul>
  *
- * <p>Subclasses implement a single hook, {@link #evaluate(EntityFacade, ViewCalculator)}, which
+ * <p>Subclasses implement a single hook, {@link #evaluate(EntityFacade, ViewProperties)}, which
  * runs off the FX thread and returns a {@link CheckResult}. Distinct backends (Claude, the
  * rules engine, …) are distinct subclasses, each contributing its own
  * {@link dev.ikm.komet.layout.area.KlSupplementalArea.Factory}.

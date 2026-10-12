@@ -59,7 +59,7 @@ public final class PatternRequirementUtils {
     /**
      * Whether a required pattern's requirement is met by the passed in semantics — the pattern's
      * semantics against its section's resolved reference component. See
-     * {@link #isPatternSatisfied(int, List, List, StampCalculator, int)}.
+     * {@link #isPatternSatisfied(long, List, List, StampCalculator, long)}.
      */
     public static boolean isPatternSatisfied(EditorPatternModel pattern, List<EntityFacade> semantics,
                                       StampCalculator calculator, long statedAxiomsPatternNid) {
