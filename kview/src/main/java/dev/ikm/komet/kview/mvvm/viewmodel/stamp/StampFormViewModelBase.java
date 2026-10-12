@@ -78,12 +78,16 @@ public abstract class StampFormViewModelBase extends FormViewModel {
      */
     public void populateDefaults() {
         setPropertyValue(StampFormViewModelBase.Properties.STATUS, State.ACTIVE);
-        // module
-        // @TODO Revisit the bindings because the defaultModuleProperty is returning a module that isn't part of the list of modules available.
-        //       long moduleNid = getViewProperties().nodeView().editCoordinate().defaultModuleProperty().get().nid();
-        long moduleNid = KometTerm.DEVELOPMENT_MODULE.nid();
+        // Module: the edit coordinate's default module, which update() adds to the choices even when it
+        // is not a descendant of Module, so new content lands where the knowledge base directs edits
+        // (a SOLOR knowledge base's extension, the SOLOR overlay module). The development module
+        // only when the default is somehow absent from the choices.
         List<ComponentWithNid> moduleEntities = getObservableList(StampFormViewModelBase.Properties.MODULES);
-        ComponentWithNid module = lookupByNid(moduleNid, moduleEntities);
+        long defaultModuleNid = getViewProperties().nodeView().editCoordinate().defaultModuleProperty().get().nid();
+        ComponentWithNid module = lookupByNid(defaultModuleNid, moduleEntities);
+        if (module == null) {
+            module = lookupByNid(KometTerm.DEVELOPMENT_MODULE.nid(), moduleEntities);
+        }
         setPropertyValue(StampFormViewModelBase.Properties.MODULE, module);
 
         // Path
