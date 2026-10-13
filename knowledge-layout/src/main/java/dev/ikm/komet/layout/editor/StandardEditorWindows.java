@@ -83,11 +83,10 @@ public final class StandardEditorWindows {
             standardWindowsPreferences.putInt(STANDARD_WINDOWS_VERSION_KEY, CURRENT_STANDARD_WINDOWS_VERSION);
         }
 
-        List<String> standardWindows = standardWindowsPreferences.getList(KL_EDITOR_WINDOWS);
-        if (!standardWindows.contains(CONCEPT_WINDOW)) {
+        if (!isSaved(standardWindowsPreferences, CONCEPT_WINDOW)) {
             saveConceptWindow(standardWindowsPreferences, viewCalculator);
         }
-        if (!standardWindows.contains(PATTERN_WINDOW)) {
+        if (!isSaved(standardWindowsPreferences, PATTERN_WINDOW)) {
             savePatternWindow(standardWindowsPreferences, viewCalculator);
         }
     }
