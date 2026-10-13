@@ -16,17 +16,26 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose.control;
 
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
+import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.view.pattern.PatternInstanceDescriptionHelper;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -36,6 +45,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.function.Consumer;
 
 /**
  * A card in the KL Pattern window's INSTANCES list: the instance's identicon, its title, when it
@@ -43,6 +53,11 @@ import java.time.format.FormatStyle;
  * <p>
  * The chip carries the version's {@link State} as a pseudo-class ({@code :active},
  * {@code :inactive}, …) for the stylesheet to colour.
+ * <p>
+ * Double-clicking the card opens the instance (see the constructor), and the card drags like a
+ * next-gen search result or a pattern navigator row: the dragboard carries the instance as a
+ * {@link KometClipboard} and the card's user data its {@link DragAndDropInfo}, so every drop
+ * target that takes a semantic from those takes one from here.
  */
 public class PatternInstanceListCell extends ListCell<Long> {
 
@@ -58,8 +73,31 @@ public class PatternInstanceListCell extends ListCell<Long> {
 
     private State chipState;
 
-    public PatternInstanceListCell(ViewProperties viewProperties) {
+    /** The instance the card shows; null while the cell is empty. */
+    private Entity<?> instance;
+
+    /**
+     * @param viewProperties the view the instance is described and stamped through
+     * @param onOpen         what opens the instance when its card is double-clicked
+     */
+    public PatternInstanceListCell(ViewProperties viewProperties, Consumer<EntityFacade> onOpen) {
         this.viewProperties = viewProperties;
+
+        card.setOnMouseClicked(mouseEvent -> {
+            if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getClickCount() == 2 && instance != null) {
+                onOpen.accept(instance);
+            }
+        });
+        card.setOnDragDetected(mouseEvent -> {
+            if (instance == null) {
+                return;
+            }
+            Dragboard dragboard = card.startDragAndDrop(TransferMode.COPY_OR_MOVE);
+            // Standard-size drag image with canonical cursor placement (right of the identicon).
+            KonceptDragSource.setDragView(dragboard, card);
+            dragboard.setContent(new KometClipboard(EntityFacade.make(instance.nid())));
+            mouseEvent.consume();
+        });
 
         identicon.setFitWidth(24);
         identicon.setFitHeight(24);
@@ -87,12 +125,18 @@ public class PatternInstanceListCell extends ListCell<Long> {
     protected void updateItem(Long nid, boolean empty) {
         super.updateItem(nid, empty);
         if (empty || nid == null) {
+            instance = null;
+            card.setUserData(null);
             setGraphic(null);
             return;
         }
 
+        instance = null;
+        card.setUserData(null);
         title.setText(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(nid));
         EntityHandle.get(nid).ifPresent(entity -> {
+            instance = entity;
+            card.setUserData(new DragAndDropInfo(DragAndDropType.SEMANTIC, entity.publicId()));
             identicon.setImage(Identicon.generateIdenticonImage(entity.publicId()));
             title.setText(PatternInstanceDescriptionHelper.titleFor(viewProperties.calculator(), entity));
 

@@ -40,6 +40,7 @@ import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.controls.SectionEditPopup;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
+import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl.Tab;
@@ -719,6 +720,8 @@ public class GenPurposeDetailsController {
         propertiesController.setOnSemanticSubmitted(this::onSemanticSubmitted);
         propertiesController.setOnSemanticCancelled(this::onSemanticCancelled);
         propertiesController.setOnCloseRequested(this::closePropertiesPanel);
+        // An instance double-clicked on the INSTANCES tab opens in a semantic window of the journal.
+        propertiesController.setOnInstanceOpened(this::openInstanceWindow);
         // The panel's tabs are its drag handle: while the tray is open they drag the window too.
         this.propertiesTray = new PropertiesTray(detailsOuterBorderPane, propertiesSlideoutTrayPane,
                 propertiesController.getNode(), propertiesController.getPropertiesTabs());
@@ -1480,6 +1483,18 @@ public class GenPurposeDetailsController {
         }
         propertiesController.showInstances(session.getComponent());
         openPropertiesPanel();
+    }
+
+    /**
+     * Opens a semantic (an instance listed on the INSTANCES tab) in the journal's gen editing
+     * window — the window the next-gen search opens a semantic in, there being no KL-driven window
+     * showing a single semantic — with its own overridable coordinate derived from the journal's.
+     */
+    private void openInstanceWindow(EntityFacade instance) {
+        ViewProperties windowViewProperties = viewProperties.parentView()
+                .makeOverridableViewProperties("GenPurposeDetailsController.openInstanceWindow");
+        EvtBusFactory.getDefaultEvtBus().publish(journalTopic, new MakeGenEditingWindowEvent(this,
+                MakeGenEditingWindowEvent.OPEN_GEN_EDIT, instance, windowViewProperties));
     }
 
     /**

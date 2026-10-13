@@ -184,6 +184,14 @@ public class GenPurposePropertiesController {
     }
 
     /**
+     * Sets what opens an instance double-clicked on the INSTANCES tab: the window puts it in a
+     * semantic window.
+     */
+    public void setOnInstanceOpened(Consumer<EntityFacade> onInstanceOpened) {
+        instancesPanel.setOnInstanceOpened(onInstanceOpened);
+    }
+
+    /**
      * Lists the pattern's instances under the INSTANCES tab (standard Pattern window only): the
      * instances are read afresh each time, so the list follows what has been published since.
      */

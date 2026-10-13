@@ -38,6 +38,7 @@ import javafx.util.Duration;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Consumer;
 
 /**
  * The INSTANCES tab of the standard Pattern window's properties panel: the semantics of the
@@ -68,6 +69,8 @@ public class PatternInstancesPanel extends BorderPane {
 
     private EntityFacade pattern;
 
+    private Consumer<EntityFacade> onInstanceOpened = _ -> { };
+
     /** Number of the latest search started; an earlier search's results are dropped when they arrive. */
     private int searchGeneration;
 
@@ -76,7 +79,7 @@ public class PatternInstancesPanel extends BorderPane {
      */
     public PatternInstancesPanel(ViewProperties viewProperties) {
         this.viewProperties = viewProperties;
-        instancesListView.setCellFactory(_ -> new PatternInstanceListCell(viewProperties));
+        instancesListView.setCellFactory(_ -> new PatternInstanceListCell(viewProperties, this::openInstance));
         buildView();
 
         searchField.textProperty().subscribe(() -> searchDelay.playFromStart());
@@ -112,6 +115,13 @@ public class PatternInstancesPanel extends BorderPane {
         setPrefWidth(500);
         setTop(header);
         setCenter(instancesListView);
+    }
+
+    /**
+     * Sets what opens an instance the user double-clicks: the window puts it in a semantic window.
+     */
+    public void setOnInstanceOpened(Consumer<EntityFacade> onInstanceOpened) {
+        this.onInstanceOpened = onInstanceOpened;
     }
 
     /**
@@ -152,6 +162,10 @@ public class PatternInstancesPanel extends BorderPane {
                 }
             });
         });
+    }
+
+    private void openInstance(EntityFacade instance) {
+        onInstanceOpened.accept(instance);
     }
 
     private static boolean referencedComponentMatches(ViewCalculator calculator, SemanticEntity<?> semantic, String query) {
