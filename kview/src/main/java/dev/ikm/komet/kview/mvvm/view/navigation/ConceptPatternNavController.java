@@ -303,7 +303,7 @@ public class ConceptPatternNavController {
             journalController.newCreateDynamicComponentCardWindow(conceptFacade, windowTitle);
         });
         conceptNavigatorControl.setOnKLConceptWindowAction(conceptFacade ->
-                journalController.newCreateStandardKLWindow(conceptFacade, StandardEditorWindows.CONCEPT_WINDOW_2));
+                journalController.newCreateStandardKLWindow(conceptFacade, StandardEditorWindows.CONCEPT_WINDOW));
         conceptNavigatorControl.setOnConceptNavigationFailed((conceptFacade, message) -> {
             Toast toast = JournalController.toast();
             if (toast != null) {

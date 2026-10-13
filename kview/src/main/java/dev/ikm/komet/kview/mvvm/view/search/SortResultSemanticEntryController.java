@@ -100,10 +100,10 @@ public class SortResultSemanticEntryController  {
                                 MakeConceptWindowEvent.OPEN_ENTITY_COMPONENT, entity));
                     } else if (entity instanceof ConceptEntity conceptEntity) {
                         eventBus.publish(journalTopic, new MakeKLWindowEvent(this, MakeKLWindowEvent.OPEN_STANDARD_WINDOW,
-                                conceptEntity, StandardEditorWindows.CONCEPT_WINDOW_2));
+                                conceptEntity, StandardEditorWindows.CONCEPT_WINDOW));
                     } else if (entity instanceof PatternEntity patternEntity) {
                         eventBus.publish(journalTopic, new MakeKLWindowEvent(this, MakeKLWindowEvent.OPEN_STANDARD_WINDOW,
-                                patternEntity, StandardEditorWindows.PATTERN_WINDOW_2));
+                                patternEntity, StandardEditorWindows.PATTERN_WINDOW));
                     } else if (entity instanceof SemanticEntity semanticEntity) {
                         eventBus.publish(journalTopic, new MakeGenEditingWindowEvent(this,
                                 MakeGenEditingWindowEvent.OPEN_GEN_EDIT, semanticEntity,

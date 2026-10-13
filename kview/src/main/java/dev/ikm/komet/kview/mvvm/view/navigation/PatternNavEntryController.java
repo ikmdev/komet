@@ -189,7 +189,7 @@ public class PatternNavEntryController {
                     }
                     EvtBusFactory.getDefaultEvtBus().publish(instancesViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
                             new MakeKLWindowEvent(this, MakeKLWindowEvent.OPEN_STANDARD_WINDOW,
-                                    instancesViewModel.getPropertyValue(PATTERN_FACADE), StandardEditorWindows.PATTERN_WINDOW_2));
+                                    instancesViewModel.getPropertyValue(PATTERN_FACADE), StandardEditorWindows.PATTERN_WINDOW));
                 }
             }
         });

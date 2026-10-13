@@ -66,12 +66,12 @@ public class KlLandingPageController {
 
     @FXML
     private void mousePressedOnConceptView(MouseEvent mouseEvent) {
-        loadStandardKLEditorWindow(mouseEvent, StandardEditorWindows.CONCEPT_WINDOW_2);
+        loadStandardKLEditorWindow(mouseEvent, StandardEditorWindows.CONCEPT_WINDOW);
     }
 
     @FXML
     private void mousePressedOnPatternView(MouseEvent mouseEvent) {
-        loadStandardKLEditorWindow(mouseEvent, StandardEditorWindows.PATTERN_WINDOW_2);
+        loadStandardKLEditorWindow(mouseEvent, StandardEditorWindows.PATTERN_WINDOW);
     }
 
     /**

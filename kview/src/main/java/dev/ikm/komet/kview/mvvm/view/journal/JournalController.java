@@ -571,7 +571,7 @@ public class JournalController {
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         final KometPreferences klEditorAppPreferences = appPreferences.node(KL_EDITOR_APP);
 
-        // Seed the standard windows (e.g. "Concept (2)") so their definitions exist on disk before
+        // Seed the standard windows (e.g. "Concept") so their definitions exist on disk before
         // any of their static "+"-menu entries is used.
         StandardEditorWindows.ensureStandardWindows(klEditorAppPreferences.node(KL_STANDARD_WINDOWS_DIR),
                 journalViewProperties.calculator());
@@ -1163,8 +1163,8 @@ public class JournalController {
     /**
      * Opens the window for an entity dropped on the workspace, mirroring what a double-click on the
      * same entity in the search results and navigators opens (ikmdev/komet-desktop#196): a concept
-     * opens the standard KL {@link StandardEditorWindows#CONCEPT_WINDOW_2}, a pattern the standard KL
-     * {@link StandardEditorWindows#PATTERN_WINDOW_2}, and a semantic the general editing window. The
+     * opens the standard KL {@link StandardEditorWindows#CONCEPT_WINDOW}, a pattern the standard KL
+     * {@link StandardEditorWindows#PATTERN_WINDOW}, and a semantic the general editing window. The
      * classic windows remain reachable through shift + double-click.
      *
      * @param entityFacade the entity to display in the new window, or null to skip creation
@@ -1172,9 +1172,9 @@ public class JournalController {
     private void createWindowFromEntity(EntityFacade entityFacade) {
         switch (entityFacade) {
             case ConceptFacade conceptFacade ->
-                    newCreateStandardKLWindow(conceptFacade, StandardEditorWindows.CONCEPT_WINDOW_2);
+                    newCreateStandardKLWindow(conceptFacade, StandardEditorWindows.CONCEPT_WINDOW);
             case PatternFacade patternFacade ->
-                    newCreateStandardKLWindow(patternFacade, StandardEditorWindows.PATTERN_WINDOW_2);
+                    newCreateStandardKLWindow(patternFacade, StandardEditorWindows.PATTERN_WINDOW);
             case SemanticFacade semanticFacade ->
                     createGenEditWindow(semanticFacade, journalViewProperties, false);
             case null -> { }
@@ -2204,36 +2204,36 @@ public class JournalController {
     }
 
     /**
-     * Opens the standard "Concept (2)" window in create mode when triggered from the menu.
+     * Opens the standard "Concept" window in create mode when triggered from the menu.
      * <p>
-     * "Concept (2)" is a standard (application-provided) KL window definition stored under
+     * "Concept" is a standard (application-provided) KL window definition stored under
      * kl-editor-app/standard-windows.
      *
      * @param actionEvent The event triggered by selecting the menu item
      */
     @FXML
     public void newCreateConcept2Window(ActionEvent actionEvent) {
-        newCreateStandardKLWindow(StandardEditorWindows.CONCEPT_WINDOW_2);
+        newCreateStandardKLWindow(StandardEditorWindows.CONCEPT_WINDOW);
     }
 
     /**
-     * Opens the standard "Pattern (2)" window in create mode when triggered from the menu.
+     * Opens the standard "Pattern" window in create mode when triggered from the menu.
      * <p>
-     * "Pattern (2)" is a standard (application-provided) KL window definition stored under
+     * "Pattern" is a standard (application-provided) KL window definition stored under
      * kl-editor-app/standard-windows.
      *
      * @param actionEvent The event triggered by selecting the menu item
      */
     @FXML
     public void newCreatePattern2Window(ActionEvent actionEvent) {
-        newCreateStandardKLWindow(StandardEditorWindows.PATTERN_WINDOW_2);
+        newCreateStandardKLWindow(StandardEditorWindows.PATTERN_WINDOW);
     }
 
     /**
      * Opens the named standard (application-provided) KL window in create mode, seeding the
      * standard window definitions first so the named definition exists on disk.
      *
-     * @param windowTitle the title of the standard window (e.g. {@link StandardEditorWindows#CONCEPT_WINDOW_2})
+     * @param windowTitle the title of the standard window (e.g. {@link StandardEditorWindows#CONCEPT_WINDOW})
      */
     private void newCreateStandardKLWindow(String windowTitle) {
         newCreateStandardKLWindow(null, windowTitle);
@@ -2244,7 +2244,7 @@ public class JournalController {
      * standard window definitions first so the named definition exists on disk.
      *
      * @param entityFacade the entity the window is about, or {@code null} to open in create mode
-     * @param windowTitle  the title of the standard window (e.g. {@link StandardEditorWindows#CONCEPT_WINDOW_2})
+     * @param windowTitle  the title of the standard window (e.g. {@link StandardEditorWindows#CONCEPT_WINDOW})
      */
     public void newCreateStandardKLWindow(EntityFacade entityFacade, String windowTitle) {
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();

@@ -127,14 +127,14 @@ public class SortResultConceptEntryController extends AbstractBasicController {
                                     conceptEntity));
                         } else {
                             eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new MakeKLWindowEvent(this, MakeKLWindowEvent.OPEN_STANDARD_WINDOW,
-                                    conceptEntity, StandardEditorWindows.CONCEPT_WINDOW_2));
+                                    conceptEntity, StandardEditorWindows.CONCEPT_WINDOW));
                         }
                     } else if (entity instanceof PatternEntity patternEntity) {
                         if (mouseEvent.isShiftDown()) {
                             eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new MakePatternWindowEvent(this, MakePatternWindowEvent.OPEN_PATTERN, patternEntity, getViewProperties()));
                         } else {
                             eventBus.publish(searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC), new MakeKLWindowEvent(this, MakeKLWindowEvent.OPEN_STANDARD_WINDOW,
-                                    patternEntity, StandardEditorWindows.PATTERN_WINDOW_2));
+                                    patternEntity, StandardEditorWindows.PATTERN_WINDOW));
                         }
                     } else if (remotePublicIds != null && !remotePublicIds.isEmpty()) {
                         // Remote-backed result: fetch the concept from the server first, then open

@@ -40,10 +40,10 @@ public final class StandardEditorWindows {
     private static final Logger LOG = LoggerFactory.getLogger(StandardEditorWindows.class);
 
     /** Title of the standard Concept window. */
-    public static final String CONCEPT_WINDOW_2 = "Concept (2)";
+    public static final String CONCEPT_WINDOW = "Concept";
 
     /** Title of the standard Pattern window. */
-    public static final String PATTERN_WINDOW_2 = "Pattern (2)";
+    public static final String PATTERN_WINDOW = "Pattern";
 
     /** Name of the section holding the Description pattern, in both standard windows. */
     private static final String DESCRIPTION_SECTION_NAME = "Description";
@@ -54,7 +54,7 @@ public final class StandardEditorWindows {
      * re-seeded from the current code, so application-shipped windows never go stale in the
      * preferences. User-authored windows live in the user-windows folder and are untouched.
      */
-    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 13;
+    private static final int CURRENT_STANDARD_WINDOWS_VERSION = 14;
 
     /** Preferences key holding the version the seeded standard windows were created from. */
     private static final String STANDARD_WINDOWS_VERSION_KEY = "STANDARD-WINDOWS-VERSION";
@@ -83,11 +83,12 @@ public final class StandardEditorWindows {
             standardWindowsPreferences.putInt(STANDARD_WINDOWS_VERSION_KEY, CURRENT_STANDARD_WINDOWS_VERSION);
         }
 
-        if (!isSaved(standardWindowsPreferences, CONCEPT_WINDOW_2)) {
-            saveConceptWindow2(standardWindowsPreferences, viewCalculator);
+        List<String> standardWindows = standardWindowsPreferences.getList(KL_EDITOR_WINDOWS);
+        if (!standardWindows.contains(CONCEPT_WINDOW)) {
+            saveConceptWindow(standardWindowsPreferences, viewCalculator);
         }
-        if (!isSaved(standardWindowsPreferences, PATTERN_WINDOW_2)) {
-            savePatternWindow2(standardWindowsPreferences, viewCalculator);
+        if (!standardWindows.contains(PATTERN_WINDOW)) {
+            savePatternWindow(standardWindowsPreferences, viewCalculator);
         }
     }
 
@@ -125,10 +126,10 @@ public final class StandardEditorWindows {
      * column and the Stated definition pattern are required when the window is opened in the Journal
      * in create mode.
      */
-    private static void saveConceptWindow2(KometPreferences standardWindowsPreferences,
-                                           ViewCalculator viewCalculator) {
+    private static void saveConceptWindow(KometPreferences standardWindowsPreferences,
+                                          ViewCalculator viewCalculator) {
         EditorWindowModel window = new EditorWindowModel();
-        window.setTitle(CONCEPT_WINDOW_2);
+        window.setTitle(CONCEPT_WINDOW);
         window.setWindowType(EditorWindowType.STANDARD_CONCEPT);
         window.setTimelineVisible(true);
 
@@ -289,10 +290,10 @@ public final class StandardEditorWindows {
      * chrome (see the concept-window-theme rules in kview.css, applied only to
      * {@link EditorWindowType#STANDARD_CONCEPT}).
      */
-    private static void savePatternWindow2(KometPreferences standardWindowsPreferences,
-                                           ViewCalculator viewCalculator) {
+    private static void savePatternWindow(KometPreferences standardWindowsPreferences,
+                                          ViewCalculator viewCalculator) {
         EditorWindowModel window = new EditorWindowModel();
-        window.setTitle(PATTERN_WINDOW_2);
+        window.setTitle(PATTERN_WINDOW);
         window.setWindowType(EditorWindowType.STANDARD_PATTERN);
 
         // Definition

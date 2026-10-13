@@ -12,7 +12,7 @@ public class MakeKLWindowEvent extends Evt {
 
     /**
      * Opens the entity in the named standard (application-provided) KL window, e.g.
-     * {@code StandardEditorWindows.CONCEPT_WINDOW_2}, rather than a user-defined window.
+     * {@code StandardEditorWindows.CONCEPT_WINDOW}, rather than a user-defined window.
      */
     public static final EvtType<MakeKLWindowEvent> OPEN_STANDARD_WINDOW = new EvtType<>(Evt.ANY, "OPEN_STANDARD_WINDOW");
 
