@@ -26,6 +26,7 @@ import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.observable.ObservableStamp;
+import dev.ikm.komet.framework.observable.ObservableVersion;
 import dev.ikm.komet.framework.view.ObservableViewWithOverride;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.Toast;
@@ -71,6 +72,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
@@ -173,11 +175,22 @@ public class GenPurposeFieldsController {
      */
     private Function<SemanticEntity<SemanticEntityVersion>, SubmitOutcome> onSubmitted;
 
+    /**
+     * Where a cancelled semantic goes once the form has put its fields back: the window drops the
+     * form's edits from its transaction — or the semantic itself, when the form was creating it.
+     * Not used by the defaults form.
+     */
+    private Consumer<SemanticEntity<SemanticEntityVersion>> onCancelled = _ -> { };
+
     /** Closes the properties panel once the form is done with (submit, cancel). */
     private Runnable onCloseRequested = () -> { };
 
     public void setOnSubmitted(Function<SemanticEntity<SemanticEntityVersion>, SubmitOutcome> onSubmitted) {
         this.onSubmitted = onSubmitted;
+    }
+
+    public void setOnCancelled(Consumer<SemanticEntity<SemanticEntityVersion>> onCancelled) {
+        this.onCancelled = onCancelled;
     }
 
     public void setOnCloseRequested(Runnable onCloseRequested) {
@@ -532,10 +545,27 @@ public class GenPurposeFieldsController {
         return session.getViewProperties();
     }
 
+    /**
+     * Cancels the form: what was edited since it opened is dropped. The fields go back to the
+     * version the form opened on — the editable version is canonical per stamp, so the next form
+     * on this semantic would otherwise come back showing the edits just cancelled — and the window
+     * drops the edits from its transaction, or the semantic itself when the form was creating it.
+     */
     @FXML
     private void cancel(ActionEvent actionEvent) {
-        doTheClearOrResetForm();
+        revertFieldValues();
+        onCancelled.accept(currentEditingSemantic);
         onCloseRequested.run();
+    }
+
+    /**
+     * Puts the fields back to the version the form opened on: the latest version in the view when
+     * the semantic was loaded, published or not — unlike Reset form, which goes back to the latest
+     * published version.
+     */
+    private void revertFieldValues() {
+        ObservableVersion openedVersion = (ObservableVersion) observableEntitySnapshot.getLatestVersion().get();
+        setFieldValuesFrom(openedVersion.getVersionRecord());
     }
 
     @FXML
@@ -562,7 +592,7 @@ public class GenPurposeFieldsController {
 
     private void doTheClearOrResetForm() {
         Latest<EntityVersion> latestCommitted = retrieveCommittedLatestVersion(observableEntitySnapshot);
-        latestCommitted.ifPresentOrElse(this::resetFieldValues, this::clearField);
+        latestCommitted.ifPresentOrElse(this::setFieldValuesFrom, this::clearField);
         clearOrResetFormButton.setDisable(true);
     }
 
@@ -594,11 +624,13 @@ public class GenPurposeFieldsController {
     }
 
     /**
-     * Reset the observable field values in edit mode.
+     * Sets every field editor to the value the version holds for it: what Reset form does with
+     * the latest published version and Cancel with the version the form opened on. Nothing is
+     * saved; the editable fields behind the form take the values.
      *
-     * @param entityVersion
+     * @param entityVersion the semantic version whose field values the form takes
      */
-    private void resetFieldValues(EntityVersion entityVersion) {
+    private void setFieldValuesFrom(EntityVersion entityVersion) {
         if (entityVersion instanceof SemanticEntityVersion semanticEntityVersion) {
             for (int i = 0; i < semanticEntityVersion.fieldValues().size(); i++) {
                 Object object = semanticEntityVersion.fieldValues().get(i);

@@ -46,8 +46,10 @@ import javafx.beans.property.SimpleObjectProperty;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -66,6 +68,14 @@ import java.util.function.Consumer;
  * new or edited semantic, is saved as an uncommitted version in the composer's open transaction
  * and stays there until the session {@link #commit() commits}, which commits everything left uncommitted
  * since the last commit together.
+ *
+ * <p>The one exception is a semantic that exists only so its edit form can show
+ * ({@link #createSemanticInSingleSemanticTransaction}): until the form is submitted it lives in a
+ * <em>single-semantic transaction</em>, a transaction that holds that one semantic and nothing
+ * else, so that cancelling the form can cancel the whole transaction, and the semantic with it,
+ * without touching the window's other edits ({@link #cancelSingleSemanticTransaction}). The store
+ * merges an entity's versions by stamp, so a version only ever leaves it when its stamp is
+ * canceled, and the window transaction's stamp is shared by everything the window edited.
  */
 public final class WindowEditSession {
 
@@ -92,6 +102,22 @@ public final class WindowEditSession {
      * on its next compose.
      */
     private ObservableComposer defaultsComposer;
+
+    /**
+     * The composer of each single-semantic transaction still open, by the nid of the one semantic
+     * it holds: a semantic created by {@link #createSemanticInSingleSemanticTransaction} whose edit
+     * form has not been submitted or cancelled yet. {@link #endSingleSemanticTransactionOnSubmit}
+     * and {@link #cancelSingleSemanticTransaction} take the entry out.
+     */
+    private final Map<Long, ObservableComposer> singleSemanticTransactionComposers = new HashMap<>();
+
+    /**
+     * The composers of the single-semantic transactions that {@link #commit()} commits together
+     * with the window's: their semantic was submitted with its seeded values unchanged, so the
+     * submit saved nothing into the window's transaction and the single-semantic transaction is
+     * the only place the submitted semantic exists.
+     */
+    private final List<ObservableComposer> singleSemanticComposersToCommit = new ArrayList<>();
 
     /**
      * @param viewProperties the window's derived coordinate, which every edit reads and writes through
@@ -123,27 +149,36 @@ public final class WindowEditSession {
      */
     public ObservableComposer createOrGetComposer() {
         if (composer == null) {
-            var editCoordinate = viewProperties.nodeView().editCoordinate();
-            composer = ObservableComposer.create(
-                    viewProperties.calculator(),
-                    State.ACTIVE,
-                    editCoordinate.getAuthorForChanges(),
-                    editCoordinate.getDefaultModule(),
-                    editCoordinate.getDefaultPath(),
-                    "Edit Semantic Details"
-            );
+            composer = newComposer("Edit Semantic Details");
             hasUncommittedChanges.bind(composer.hasUncommittedChangesProperty());
         }
         return composer;
     }
 
+    /** A composer on the edit coordinate's author, default module and path. */
+    private ObservableComposer newComposer(String transactionComment) {
+        var editCoordinate = viewProperties.nodeView().editCoordinate();
+        return ObservableComposer.create(
+                viewProperties.calculator(),
+                State.ACTIVE,
+                editCoordinate.getAuthorForChanges(),
+                editCoordinate.getDefaultModule(),
+                editCoordinate.getDefaultPath(),
+                transactionComment
+        );
+    }
+
     /**
      * Commits the composer's open transaction, finalizing everything uncommitted since the last
      * commit: submitted semantic versions and, in create mode, the lazily created component
-     * itself. The next edit is saved uncommitted in a fresh transaction.
+     * itself — and, with it, the single-semantic transactions of the semantics submitted with
+     * their seeded values unchanged (see {@link #endSingleSemanticTransactionOnSubmit}). The next
+     * edit is saved uncommitted in a fresh transaction.
      */
     public void commit() {
         createOrGetComposer().commit();
+        singleSemanticComposersToCommit.forEach(ObservableComposer::commit);
+        singleSemanticComposersToCommit.clear();
         hasUncommittedChanges.unbind();
         composer = null;
         newPatternComposer = null;
@@ -176,25 +211,113 @@ public final class WindowEditSession {
 
     /**
      * Creates a new, uncommitted semantic of the pattern against the reference component, its
-     * field values seeded by {@code seedFields} before the version is saved.
+     * field values seeded by {@code seedFields} before the version is saved — in the window's
+     * transaction, like a submitted edit, so it commits with the window's other edits and cannot
+     * be dropped on its own. For a semantic that is final as soon as it is created (the seeded
+     * stated definition); a semantic opened in the edit form, which the user may still cancel, is
+     * created by {@link #createSemanticInSingleSemanticTransaction} instead.
      *
      * @param referenceComponent the reference component of the semantic
      * @param patternNid         the pattern of the semantic
      * @param seedFields         sets the new version's field values; given the pattern's fields, in order
      * @return the new uncommitted semantic
      */
-    public SemanticEntity<SemanticEntityVersion> createUncommittedSemantic(EntityFacade referenceComponent, long patternNid,
-                                                                           Consumer<List<ObservableField.Editable<?>>> seedFields) {
+    public SemanticEntity<SemanticEntityVersion> createSemanticInWindowTransaction(EntityFacade referenceComponent, long patternNid,
+                                                                                   Consumer<List<ObservableField.Editable<?>>> seedFields) {
+        return composeNewSemantic(createOrGetComposer(), referenceComponent, patternNid, seedFields);
+    }
+
+    /**
+     * Creates a new semantic of the pattern against the reference component for its edit form to
+     * show, seeded like {@link #createSemanticInWindowTransaction} but saved uncommitted in a
+     * single-semantic transaction: a new transaction that holds this semantic and nothing else,
+     * rather than the window's. It stays there until the form is submitted
+     * ({@link #endSingleSemanticTransactionOnSubmit}) or cancelled
+     * ({@link #cancelSingleSemanticTransaction}), either of which ends that transaction.
+     *
+     * @param referenceComponent the reference component of the semantic
+     * @param patternNid         the pattern of the semantic
+     * @param seedFields         sets the new version's field values; given the pattern's fields, in order
+     * @return the new uncommitted semantic
+     */
+    public SemanticEntity<SemanticEntityVersion> createSemanticInSingleSemanticTransaction(EntityFacade referenceComponent, long patternNid,
+                                                                                           Consumer<List<ObservableField.Editable<?>>> seedFields) {
+        ObservableComposer singleSemanticComposer = newComposer("Single-semantic transaction");
+        SemanticEntity<SemanticEntityVersion> semantic =
+                composeNewSemantic(singleSemanticComposer, referenceComponent, patternNid, seedFields);
+        singleSemanticTransactionComposers.put(semantic.nid(), singleSemanticComposer);
+        return semantic;
+    }
+
+    private SemanticEntity<SemanticEntityVersion> composeNewSemantic(ObservableComposer composer,
+                                                                     EntityFacade referenceComponent, long patternNid,
+                                                                     Consumer<List<ObservableField.Editable<?>>> seedFields) {
         ObservableEntity observableReferenceComponent = ObservableEntityHandle.get(referenceComponent.nid()).expectEntity();
         ObservablePattern observablePattern = ObservableEntityHandle.get(patternNid).expectPattern();
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor =
-                createOrGetComposer().composeSemantic(PublicIds.newRandom(), observableReferenceComponent, observablePattern);
+                composer.composeSemantic(PublicIds.newRandom(), observableReferenceComponent, observablePattern);
 
         seedFields.accept(semanticEditor.getEditableVersion().getEditableFields());
         semanticEditor.save(); // Save to create an uncommitted version
 
         return EntityHandle.get(semanticEditor.getEntity().nid()).asSemantic()
                 .orElseThrow(() -> new IllegalStateException("The new uncommitted semantic is not a semantic"));
+    }
+
+    /**
+     * Ends the single-semantic transaction of a semantic whose edit form was just submitted. The
+     * submit saved the edited values in the window's transaction, the way every submit does, so
+     * the single-semantic transaction, holding only the seeded values, is canceled: the seeded
+     * version goes away, the submitted one stays. Submitted with the seeded values unchanged, the
+     * submit saved nothing in the window's transaction; the single-semantic transaction is then
+     * the only place the submitted semantic exists, so it is kept and commits with the window's
+     * ({@link #commit()}).
+     */
+    public void endSingleSemanticTransactionOnSubmit(SemanticEntity<SemanticEntityVersion> semantic) {
+        ObservableComposer singleSemanticComposer = singleSemanticTransactionComposers.remove(semantic.nid());
+        if (singleSemanticComposer == null || !singleSemanticComposer.getOrCreateTransaction().isOpen()) {
+            return;
+        }
+        if (savedInWindowTransaction(semantic.nid())) {
+            singleSemanticComposer.cancel();
+        } else {
+            singleSemanticComposersToCommit.add(singleSemanticComposer);
+        }
+    }
+
+    /**
+     * Drops the edit form's unsaved edits to a semantic: the form was cancelled. The composer stops
+     * tracking the semantic's editable version, so the next commit neither saves nor commits what
+     * the form left in it, and a semantic whose form was merely opened no longer counts as an
+     * uncommitted change; a version of it submitted earlier stays and publishes as before.
+     */
+    public void discardUnsavedEdits(SemanticEntity<SemanticEntityVersion> semantic) {
+        createOrGetComposer().discardUnsavedEdits(semantic.nid());
+    }
+
+    /**
+     * Cancels the single-semantic transaction of a semantic whose edit form was cancelled before
+     * it was ever submitted. The form's unsaved edits are dropped from the window's transaction
+     * ({@link #discardUnsavedEdits}), and cancelling the single-semantic transaction cancels the
+     * semantic's only version, and so the semantic itself ({@link Entity#canceled()}): gone from
+     * the window and from what the next commit publishes, while the window's edits to every other
+     * entity stay. In create mode the component that creating the semantic brought into existence
+     * stays, uncommitted, for the next semantic to join.
+     */
+    public void cancelSingleSemanticTransaction(SemanticEntity<SemanticEntityVersion> semantic) {
+        discardUnsavedEdits(semantic);
+        ObservableComposer singleSemanticComposer = singleSemanticTransactionComposers.remove(semantic.nid());
+        if (singleSemanticComposer != null && singleSemanticComposer.getOrCreateTransaction().isOpen()) {
+            singleSemanticComposer.cancel();
+        }
+    }
+
+    /** Whether a version of the semantic is saved, uncommitted, in the window's open transaction. */
+    private boolean savedInWindowTransaction(long semanticNid) {
+        Transaction windowTransaction = createOrGetComposer().getOrCreateTransaction();
+        return EntityHandle.get(semanticNid).expectEntity().versions().stream()
+                .filter(EntityVersion::uncommitted)
+                .anyMatch(version -> Transaction.forVersion(version).filter(windowTransaction::equals).isPresent());
     }
 
     /**
@@ -259,6 +382,11 @@ public final class WindowEditSession {
             }
         }
         transactions.forEach(Transaction::commit);
+
+        // A single-semantic transaction whose semantic's form was still open got committed here:
+        // the semantic is published as seeded, and its form, cancelled or submitted later, has no
+        // transaction left to end.
+        singleSemanticTransactionComposers.values().removeIf(singleSemanticComposer -> !singleSemanticComposer.getOrCreateTransaction().isOpen());
 
         return (int) unpublished.stream()
                 .filter(entity -> EntityHandle.get(entity.nid()).expectEntity().uncommitted())

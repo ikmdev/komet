@@ -31,6 +31,7 @@ import javafx.scene.layout.Pane;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class GenPurposePropertiesController {
@@ -131,6 +132,15 @@ public class GenPurposePropertiesController {
      */
     public void setOnSemanticSubmitted(Function<SemanticEntity<SemanticEntityVersion>, SubmitOutcome> onSemanticSubmitted) {
         editForm.controller().setOnSubmitted(onSemanticSubmitted);
+    }
+
+    /**
+     * Sets what happens to a semantic whose ADD/EDIT form is cancelled, once the form has put its
+     * fields back: the window drops the form's edits — or the semantic itself, when the form was
+     * creating it.
+     */
+    public void setOnSemanticCancelled(Consumer<SemanticEntity<SemanticEntityVersion>> onSemanticCancelled) {
+        editForm.controller().setOnCancelled(onSemanticCancelled);
     }
 
     /**

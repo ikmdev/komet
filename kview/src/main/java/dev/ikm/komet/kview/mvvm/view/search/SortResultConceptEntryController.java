@@ -145,7 +145,7 @@ public class SortResultConceptEntryController extends AbstractBasicController {
                                 classic
                                         ? new MakeConceptWindowEvent(this, MakeConceptWindowEvent.OPEN_CONCEPT_FROM_CONCEPT, conceptEntity)
                                         : new MakeKLWindowEvent(this, MakeKLWindowEvent.OPEN_STANDARD_WINDOW,
-                                                conceptEntity, StandardEditorWindows.CONCEPT_WINDOW_2)));
+                                                conceptEntity, StandardEditorWindows.CONCEPT_WINDOW)));
                     }
                 }
             }

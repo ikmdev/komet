@@ -837,6 +837,46 @@ public final class ObservableComposer {
     }
 
     /**
+     * Stops tracking one entity's editable versions, leaving the transaction's edits to every
+     * other entity in place: the next {@link #commit()} neither saves what those editable versions
+     * hold unsaved nor commits them. A version the entity already saved uncommitted in the open
+     * transaction stays and commits with the transaction, as any saved version does. When nothing
+     * of the entity was saved in the transaction, the entity leaves it too, so an entity merely
+     * opened for editing ({@link EntityComposer#getEditableVersion()}) no longer counts as an
+     * uncommitted change ({@link #hasUncommittedChangesProperty()}).
+     * <p>
+     * The editable versions themselves are left as they are: canonical per stamp
+     * ({@link ObservableEntityVersion.Editable}), they come back from the cache still holding the
+     * unsaved edits, so a caller that shows them again puts their fields back first.
+     *
+     * @param entityNid the entity whose unsaved edits are dropped
+     */
+    public void discardUnsavedEdits(long entityNid) {
+        requireJavaFXThread();
+        if (transaction == null) {
+            return;
+        }
+        trackedEditables.removeIf(editable -> editable.getObservableChronology().nid() == entityNid);
+        Entity<?> entity = EntityHandle.get(entityNid).expectEntity();
+        if (versionsSavedInTransaction(entity).isEmpty()) {
+            transaction.removeComponent(entity);
+        }
+        hasUncommittedChangesProperty.set(!trackedEditables.isEmpty());
+    }
+
+    /** The entity's versions saved uncommitted on a stamp of this composer's open transaction. */
+    private List<EntityVersion> versionsSavedInTransaction(Entity<?> entity) {
+        List<EntityVersion> saved = new ArrayList<>();
+        for (EntityVersion version : entity.versions()) {
+            if (version.uncommitted()
+                    && Transaction.forStamp(version.stamp().publicId()).filter(t -> t == transaction).isPresent()) {
+                saved.add(version);
+            }
+        }
+        return saved;
+    }
+
+    /**
      * Creates or retrieves an observable stamp for the current author/module/path/state.
      */
     ObservableStamp createStamp(State state, Entity<?> entity) {

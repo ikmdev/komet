@@ -188,6 +188,13 @@ public class GenPurposeDetailsController {
 
     private PatternSemanticsPresenter previousPatternSemanticsInEditMode;
 
+    /**
+     * The semantics an "Add …" entry created ({@link #onCreateSemantic}) whose edit form has not
+     * been submitted yet, by nid. Cancelling the form of one of them discards the semantic (see
+     * {@link #onSemanticCancelled}); a submit, or the publish that commits it, takes it out.
+     */
+    private final Set<Long> unsubmittedNewSemanticNids = new HashSet<>();
+
     // The parts of the window's view (see GenPurposeWindowView) this controller wires behavior onto.
     private final StampViewControl stampViewControl;
     private final ContentSizedSplitPane mainContent;
@@ -532,7 +539,7 @@ public class GenPurposeDetailsController {
      */
     private SemanticEntity<SemanticEntityVersion> createUncommitedSemantic(EntityFacade referenceComponent, PatternFacade pattern,
             Map<Integer, EntityProxy> fieldSeeds) {
-        return session.createUncommittedSemantic(referenceComponent, pattern.nid(), editableFields -> {
+        return session.createSemanticInSingleSemanticTransaction(referenceComponent, pattern.nid(), editableFields -> {
             // Start from the pattern's field defaults — the values a new semantic of this pattern
             // begins with in every window (see PatternFieldDefaults) — before the create entry's
             // filter seeds below, which take precedence over them.
@@ -589,7 +596,7 @@ public class GenPurposeDetailsController {
 
         DiTreeEntity seededDefinition = StatedDefinitionSeeds.seedDefinition(necessary);
 
-        SemanticEntity<SemanticEntityVersion> semantic = session.createUncommittedSemantic(refComponent,
+        SemanticEntity<SemanticEntityVersion> semantic = session.createSemanticInWindowTransaction(refComponent,
                 patternModel.getNid(), editableFields -> {
                     // The stated axiom pattern's single field holds the definition.
                     @SuppressWarnings("unchecked")
@@ -627,6 +634,10 @@ public class GenPurposeDetailsController {
      * @return what became of the submitted semantic, for the form's toast
      */
     SubmitOutcome onSemanticSubmitted(SemanticEntity<SemanticEntityVersion> semantic) {
+        if (unsubmittedNewSemanticNids.remove(semantic.nid())) {
+            session.endSingleSemanticTransactionOnSubmit(semantic);
+        }
+
         if (usesPublishFlow()) {
             reloadSemanticViews(semantic);
             updateRequiredChips();
@@ -669,11 +680,41 @@ public class GenPurposeDetailsController {
         session.saveUncommittedFieldEdit(semanticNid, fieldIndex, newValue);
     }
 
+    /**
+     * Runs when the properties panel's edit form is cancelled, its fields already put back. A
+     * semantic the form was creating — added by an "Add …" entry and never submitted — is
+     * discarded: canceled in the session's transaction and gone from the details area, from the
+     * reference-component options it was one of, and from the required chips. For any other
+     * semantic only the form's unsaved edits are dropped from the transaction; what the window
+     * shows stays as it is. Either way the semantic stops showing as being edited.
+     */
+    private void onSemanticCancelled(SemanticEntity<SemanticEntityVersion> semantic) {
+        if (unsubmittedNewSemanticNids.remove(semantic.nid())) {
+            session.cancelSingleSemanticTransaction(semantic);
+            reloadSemanticViews(semantic);
+            forEachSectionInWindow(section -> {
+                EditorPatternModel referencePattern = section.getReferenceComponent();
+                if (referencePattern != null && referencePattern.getNid() == semantic.patternNid()) {
+                    refreshSectionReferenceComponents(section);
+                }
+            });
+            updateRequiredChips();
+        } else {
+            session.discardUnsavedEdits(semantic);
+        }
+
+        if (previousPatternSemanticsInEditMode != null) {
+            previousPatternSemanticsInEditMode.setEditingSemantic(null);
+            previousPatternSemanticsInEditMode = null;
+        }
+    }
+
     private void setupProperties() {
         this.propertiesController = new GenPurposePropertiesController(session);
-        // The panel's edit form hands its submitted semantic here, and its forms close the panel
-        // once they are done (submit, cancel).
+        // The panel's edit form hands its submitted or cancelled semantic here, and its forms close
+        // the panel once they are done (submit, cancel).
         propertiesController.setOnSemanticSubmitted(this::onSemanticSubmitted);
+        propertiesController.setOnSemanticCancelled(this::onSemanticCancelled);
         propertiesController.setOnCloseRequested(this::closePropertiesPanel);
         // The panel's tabs are its drag handle: while the tray is open they drag the window too.
         this.propertiesTray = new PropertiesTray(detailsOuterBorderPane, propertiesSlideoutTrayPane,
@@ -992,8 +1033,9 @@ public class GenPurposeDetailsController {
             EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(),
                     editPattern.getNid(), (semantic) -> {
                         // The pattern's defaults semantic is edited through its own entry
-                        // below, never as one of the pattern's semantics.
-                        if (PatternFieldDefaults.isDefaultsSemantic(semantic)) {
+                        // below, never as one of the pattern's semantics; a semantic whose
+                        // creation was cancelled is still in the store, canceled.
+                        if (PatternFieldDefaults.isDefaultsSemantic(semantic) || semantic.canceled()) {
                             return;
                         }
                         KometLabel semanticLabel = new KometLabel(semantic, viewProperties);
@@ -1142,6 +1184,7 @@ public class GenPurposeDetailsController {
 
         // Create uncommited Semantic
         SemanticEntity<SemanticEntityVersion> uncommitedSemantic = createUncommitedSemantic(refComponent, patternFacade, fieldSeeds);
+        unsubmittedNewSemanticNids.add(uncommitedSemantic.nid());
 
         PatternSemanticsPresenter patternSemanticsPresenter = editorPatternModelToPatternPresenter.get(editorPatternModel);
 
@@ -1370,6 +1413,11 @@ public class GenPurposeDetailsController {
                     if (PatternFieldDefaults.isDefaultsSemantic(semantic)) {
                         return;
                     }
+                    // A semantic whose creation was cancelled (see onSemanticCancelled) is still
+                    // in the store, canceled.
+                    if (semantic.canceled()) {
+                        return;
+                    }
                     if (!editorPatternModel.displaysSemantic(semantic.nid(), getViewProperties().calculator())) {
                         return;
                     }
@@ -1441,7 +1489,9 @@ public class GenPurposeDetailsController {
             if (base != null) {
                 EntityService.get().forEachSemanticForComponentOfPattern(base.nid(), sectionReferenceComponent.getNid(),
                         (SemanticEntity<SemanticEntityVersion> semantic) -> {
-                            refComponents.add(semantic);
+                            if (!semantic.canceled()) {
+                                refComponents.add(semantic);
+                            }
                         }
                 );
             }
@@ -1469,7 +1519,10 @@ public class GenPurposeDetailsController {
 
         EntityService.get().forEachSemanticForComponentOfPattern(base.nid(), editorPatternModel.getNid(),
                 (SemanticEntity<SemanticEntityVersion> semantic) -> {
-                    refComponents.add(semantic);
+                    // A semantic whose creation was cancelled stays in the store, canceled.
+                    if (!semantic.canceled()) {
+                        refComponents.add(semantic);
+                    }
                 }
         );
 
@@ -1663,6 +1716,10 @@ public class GenPurposeDetailsController {
         session.commit();
 
         int unpublishable = session.commitUnpublishedTransactions(unpublishedSemantics());
+
+        // A semantic whose form is still open when its creation publishes is published as it
+        // stands; cancelling that form now only drops the form's edits.
+        unsubmittedNewSemanticNids.clear();
 
         if (wasCreateMode) {
             session.enterEditMode();
