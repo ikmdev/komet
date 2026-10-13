@@ -22,6 +22,7 @@ import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl.Ta
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.fxml.FXMLLoader;
@@ -61,6 +62,9 @@ public class GenPurposePropertiesController {
      */
     private final Form defaultsForm;
 
+    /** The INSTANCES tab's panel: the window pattern's instances (standard Pattern window only). */
+    private final PatternInstancesPanel instancesPanel;
+
     /**
      * @param session what the window is editing; the forms read the window's mode and coordinate from it
      */
@@ -72,6 +76,8 @@ public class GenPurposePropertiesController {
         // never disturbs a semantic edit in progress on the ADD/EDIT tab.
         defaultsForm = loadForm(session);
         defaultsForm.controller().setDefaultsForm(true);
+
+        instancesPanel = new PatternInstancesPanel(session.getViewProperties());
     }
 
     private static Form loadForm(WindowEditSession session) {
@@ -175,6 +181,16 @@ public class GenPurposePropertiesController {
         defaultsForm.controller().showSemantic(semantic, null, composer, formTitle);
         propertiesTabs.setSelectedTab(Tab.DEFAULTS);
         contentBorderPane.setCenter(defaultsForm.node());
+    }
+
+    /**
+     * Lists the pattern's instances under the INSTANCES tab (standard Pattern window only): the
+     * instances are read afresh each time, so the list follows what has been published since.
+     */
+    public void showInstances(EntityFacade pattern) {
+        instancesPanel.showInstances(pattern);
+        propertiesTabs.setSelectedTab(Tab.INSTANCES);
+        contentBorderPane.setCenter(instancesPanel);
     }
 
     /**

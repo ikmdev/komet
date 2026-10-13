@@ -339,12 +339,15 @@ public class GenPurposeDetailsController {
         // Setup Properties Bump out view
         setupProperties();
 
-        // Selecting the panel's DEFAULTS tab loads the pattern's field defaults into it (the tab
-        // is only offered in the standard Pattern window once the pattern exists, see init).
+        // Selecting the panel's DEFAULTS tab loads the pattern's field defaults into it, and its
+        // INSTANCES tab the pattern's instances (both tabs are only offered in the standard Pattern
+        // window once the pattern exists, see init).
         PropertiesTabsControl propertiesTabs = propertiesController.getPropertiesTabs();
         propertiesTabs.selectedTabProperty().subscribe(() -> {
             if (propertiesTabs.getSelectedTab() == Tab.DEFAULTS) {
                 showPatternFieldDefaults();
+            } else if (propertiesTabs.getSelectedTab() == Tab.INSTANCES) {
+                showPatternInstances();
             }
         });
 
@@ -765,12 +768,12 @@ public class GenPurposeDetailsController {
         } else if (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN) {
             // The standard Pattern window also edits its pattern's field defaults — the values
             // new semantics of the pattern start with in every KL window (see PatternFieldDefaults)
-            // — once the pattern exists: the DEFAULTS tab and the toolbar's field-defaults button
-            // appear when the window leaves create mode.
+            // — and lists its instances — once the pattern exists: the INSTANCES and DEFAULTS tabs and
+            // the toolbar's field-defaults button appear when the window leaves create mode.
             session.modeProperty().subscribe(mode -> {
                 boolean patternExists = mode == FormMode.EDIT;
                 propertiesController.getPropertiesTabs().getTabs().setAll(patternExists
-                        ? List.of(Tab.ADD_EDIT, Tab.DEFAULTS, Tab.COMMENTS)
+                        ? List.of(Tab.ADD_EDIT, Tab.INSTANCES, Tab.DEFAULTS, Tab.COMMENTS)
                         : List.of(Tab.ADD_EDIT, Tab.COMMENTS));
                 windowControlToolbar.setFieldDefaultsVisible(patternExists);
             });
@@ -1461,6 +1464,21 @@ public class GenPurposeDetailsController {
         }
         propertiesController.showDefaultsForm(session.getOrCreateDefaultsSemantic(), session.getDefaultsComposer(),
                 "Field Default Values");
+        openPropertiesPanel();
+    }
+
+    /**
+     * Opens the properties panel on its INSTANCES tab, listing the window pattern's semantics. Runs
+     * when the panel's INSTANCES tab is selected (see {@link #setupProperties}); only the standard
+     * Pattern window in edit mode offers the tab.
+     */
+    private void showPatternInstances() {
+        if (session.getComponent() == null) {
+            // Create mode: the pattern doesn't exist yet, so it has no instances (the tab only shows
+            // once it does — this is the tab remembered across a panel reopen).
+            return;
+        }
+        propertiesController.showInstances(session.getComponent());
         openPropertiesPanel();
     }
 

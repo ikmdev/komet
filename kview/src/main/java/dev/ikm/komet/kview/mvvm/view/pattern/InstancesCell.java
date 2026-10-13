@@ -3,11 +3,9 @@ package dev.ikm.komet.kview.mvvm.view.pattern;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel;
-import dev.ikm.tinkar.common.util.time.DateTimeUtil;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
-import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.entity.EntityHandle;
+import dev.ikm.tinkar.entity.EntityVersion;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.scene.control.Control;
@@ -17,24 +15,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import org.eclipse.collections.api.list.ImmutableList;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static dev.ikm.tinkar.terms.KernelTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN;
-import static dev.ikm.tinkar.terms.KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN;
-import static dev.ikm.tinkar.terms.KernelTerm.GB_DIALECT_PATTERN;
-import static dev.ikm.tinkar.terms.KernelTerm.IDENTIFIER_PATTERN;
-import static dev.ikm.tinkar.terms.KernelTerm.INFERRED_NAVIGATION_PATTERN;
-import static dev.ikm.tinkar.terms.KernelTerm.PATHS_PATTERN;
-import static dev.ikm.tinkar.terms.KernelTerm.PATH_ORIGINS_PATTERN;
-import static dev.ikm.tinkar.terms.KernelTerm.STATED_NAVIGATION_PATTERN;
-import static dev.ikm.tinkar.terms.KernelTerm.US_DIALECT_PATTERN;
 
 public class InstancesCell<T> extends ListCell<T> {
 
@@ -95,8 +81,7 @@ public class InstancesCell<T> extends ListCell<T> {
             } else if (item instanceof Long nid) {
                 StampCalculator stampCalculator = viewProperties.calculator().stampCalculator();
 
-                final AtomicReference<String> entityDescriptionText =
-                        new AtomicReference<>(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(nid));
+                title.setText(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(nid));
 
                 EntityHandle.get(nid).ifPresent(entity -> {
                     Image identicon = Identicon.generateIdenticonImage(entity.publicId());
@@ -108,44 +93,9 @@ public class InstancesCell<T> extends ListCell<T> {
                     subTitle.setText(latest.stamp().state().toString()
                             + ", Last Updated " + DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).format(date));
 
-                    if (entity instanceof SemanticEntity<?> semanticEntity) {
-                        if (semanticEntity.patternNid() == IDENTIFIER_PATTERN.nid()) {
-                            //TODO Move better string descriptions to language calculator
-                            Latest<? extends SemanticEntityVersion> latestId = viewProperties.calculator().latest(semanticEntity);
-                            ImmutableList fields = latestId.get().fieldValues();
-                            entityDescriptionText.set(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
-                                    ": " + fields.get(1));
-                        } else if (semanticEntity.patternNid() == Entity.nidForPattern(EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.publicId())) {
-                            entityDescriptionText.set("Inferred definition for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()));
-                        } else if (semanticEntity.patternNid() == Entity.nidForPattern(INFERRED_NAVIGATION_PATTERN.publicId())) {
-                            entityDescriptionText.set("Inferred is-a relationships for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()));
-                        } else if (semanticEntity.patternNid() == Entity.nidForPattern(PATHS_PATTERN.publicId())) {
-                            entityDescriptionText.set(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()));
-                        } else if (semanticEntity.patternNid() == Entity.nidForPattern(EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.publicId())) {
-                            entityDescriptionText.set("Stated definition for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()));
-                        } else if (semanticEntity.patternNid() == Entity.nidForPattern(STATED_NAVIGATION_PATTERN.publicId())) {
-                            entityDescriptionText.set("Stated is-a relationships for: " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()));
-                        } else if (semanticEntity.patternNid() == Entity.nidForPattern(GB_DIALECT_PATTERN.publicId())) {
-                            Latest<? extends SemanticEntityVersion> latestAcceptability = viewProperties.calculator().latest(semanticEntity);
-                            ImmutableList fields = latestAcceptability.get().fieldValues();
-                            entityDescriptionText.set("UK dialect " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
-                                            ": " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()));
-                        } else if (semanticEntity.patternNid() == Entity.nidForPattern(US_DIALECT_PATTERN.publicId())) {
-                            Latest<? extends SemanticEntityVersion> latestAcceptability = viewProperties.calculator().latest(semanticEntity);
-                            ImmutableList fields = latestAcceptability.get().fieldValues();
-                            entityDescriptionText.set("US dialect " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)) +
-                                            ": " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()));
-                        } else if (semanticEntity.patternNid() == Entity.nidForPattern(PATH_ORIGINS_PATTERN.publicId())) {
-                            Latest<? extends SemanticEntityVersion> latestPathOrigins = viewProperties.calculator().latest(semanticEntity);
-                            ImmutableList fields = latestPathOrigins.get().fieldValues();
-                            entityDescriptionText.set(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(semanticEntity.referencedComponentNid()) +
-                                            " origin: " + DateTimeUtil.format((Instant) fields.get(1)) +
-                                            " on " + viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid((EntityFacade) fields.get(0)));
-                        }
-                    }
+                    title.setText(PatternInstanceDescriptionHelper.titleFor(viewProperties.calculator(), entity));
                 });
 
-                title.setText(entityDescriptionText.get());
                 setText(null);
                 setGraphic(mainContainer);
             }
