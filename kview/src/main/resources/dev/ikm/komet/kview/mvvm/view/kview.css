@@ -7504,6 +7504,13 @@ Styling a context menu for kview ui/ux controls
     -fx-padding: 0;
 }
 
+/* Shown in place of the list when the pattern has no instances, or none match the search. */
+.gen-purpose-window .pattern-instances .instances-list .instances-placeholder {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 1em; /* 12px */
+    -fx-text-fill: -Grey-7;
+}
+
 /* Clicking a card does nothing, so the list's selection and focus bars stay off: modena's
    selected-cell rules outrank the plain cell rule above by their pseudo-classes. */
 .gen-purpose-window .pattern-instances .instances-list .instance-cell:filled:selected,
