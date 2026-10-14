@@ -42,6 +42,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpressionBuilder;
+import dev.ikm.tinkar.entity.transaction.CancelVersionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.*;
 import javafx.application.Platform;
@@ -862,6 +863,83 @@ public final class ObservableComposer {
             transaction.removeComponent(entity);
         }
         hasUncommittedChangesProperty.set(!trackedEditables.isEmpty());
+    }
+
+    /**
+     * Withdraws the version of one entity saved in this composer's open transaction, leaving the
+     * transaction's versions of every other entity in place: the counterpart of
+     * {@link #discardUnsavedEdits(long)} for a version already {@linkplain EntityComposer#save() saved}.
+     * The store merges an entity's versions by stamp and the transaction's stamp is shared, so the
+     * version cannot simply be dropped: {@link CancelVersionTask} moves it out of this transaction
+     * into a single-version transaction of its own and cancels it there, and the store gives up its
+     * version under the shared stamp in the same write
+     * ({@link dev.ikm.tinkar.entity.EntityService#putEntityReplacingVersion}). The next
+     * {@link #commit()} does not commit it; an {@link ObservableEntity} read afterwards does not
+     * hold it, and the canonical one, when one is held, drops it.
+     * <p>
+     * What the entity held before this transaction stays: what is withdrawn is this transaction's
+     * edit of it, or, for an entity the transaction created, the entity itself. A semantic's or a
+     * pattern's version is withdrawn; a concept's is not ({@link CancelVersionTask} does not move one).
+     * When the withdrawn version was the transaction's only one, the transaction itself is canceled
+     * and the composer starts a new one at its next edit.
+     *
+     * @param entityNid the semantic or pattern whose version saved in this transaction is withdrawn
+     * @return true when a version was withdrawn; false when the transaction saved none of the
+     *         entity, in which case only its unsaved edits are discarded
+     * @throws IllegalArgumentException if the entity is a concept or a stamp
+     */
+    public boolean withdraw(long entityNid) {
+        requireJavaFXThread();
+        if (transaction == null) {
+            return false;
+        }
+        Entity<?> entity = EntityHandle.get(entityNid).expectEntity();
+        List<EntityVersion> saved = versionsSavedInTransaction(entity);
+        if (saved.isEmpty()) {
+            discardUnsavedEdits(entityNid);
+            return false;
+        }
+        trackedEditables.removeIf(editable -> editable.getObservableChronology().nid() == entityNid);
+        for (EntityVersion version : saved) {
+            CancelVersionTask cancel = switch (version) {
+                case SemanticVersionRecord semanticVersion -> new CancelVersionTask(semanticVersion);
+                case PatternVersionRecord patternVersion -> new CancelVersionTask(patternVersion);
+                default -> throw new IllegalArgumentException("Only a semantic's or a pattern's version is withdrawn: "
+                        + EntityText.diagnostic(version));
+            };
+            try {
+                cancel.call();
+            } catch (Exception e) {
+                throw new IllegalStateException("Could not withdraw " + EntityText.diagnostic(version), e);
+            }
+        }
+        // The canonical observable, when one is held, drops the withdrawn version.
+        ObservableEntity.refresh(entityNid);
+        if (transaction.isOpen() && !holdsSavedVersions(transaction)) {
+            // Nothing saved is left in it: end it, as CancelVersionTask does a transaction it empties.
+            transaction.cancel();
+        }
+        if (!transaction.isOpen()) {
+            transaction = null;
+            trackedEditables.clear();
+            transactionStateProperty.set(TransactionState.ROLLED_BACK);
+        }
+        hasUncommittedChangesProperty.set(!trackedEditables.isEmpty());
+        return true;
+    }
+
+    /** Whether any component of the transaction still has a version saved uncommitted in it. */
+    private boolean holdsSavedVersions(Transaction open) {
+        boolean[] holds = {false};
+        open.forEachComponentInTransaction(nid -> {
+            // The transaction's own stamps are components of it too, and hold no saved edit.
+            if (!holds[0] && EntityHandle.get(nid).orNull() instanceof Entity<?> component
+                    && !(component instanceof StampEntity<?>)
+                    && !versionsSavedInTransaction(component).isEmpty()) {
+                holds[0] = true;
+            }
+        });
+        return holds[0];
     }
 
     /** The entity's versions saved uncommitted on a stamp of this composer's open transaction. */

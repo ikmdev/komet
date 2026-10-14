@@ -15,6 +15,8 @@
  */
 package dev.ikm.komet.framework.observable;
 
+import org.eclipse.collections.api.set.primitive.MutableLongSet;
+import org.eclipse.collections.api.factory.primitive.LongSets;
 import org.eclipse.collections.impl.map.mutable.primitive.LongObjectHashMap;
 import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
 import static dev.ikm.tinkar.events.EntityVersionChangeEvent.VERSION_UPDATED;
@@ -441,6 +443,20 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
         observableEntity.updateVersions(entity);
         return (OE) observableEntity;
     }
+    /**
+     * Brings the canonical observable of the entity, when one is held, up to the entity as stored
+     * now. Unlike {@link #packagePrivateGet(long)}, which wraps the stored entity in a new
+     * observable, this updates the instance the UI is bound to.
+     *
+     * @param nid the entity's nid
+     */
+    static void refresh(long nid) {
+        ObservableEntity<?> canonical = CANONICAL_INSTANCES.getIfPresent(nid);
+        if (canonical != null) {
+            canonical.updateVersions(EntityHandle.get(nid).expectEntity());
+        }
+    }
+
     static ObservableStamp packagePrivateGetStamp(StampEntity entity) {
         return packagePrivateGet((Entity<? extends EntityVersion>) entity);
     }
@@ -461,8 +477,8 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
      */
     private void updateVersions(Entity<? extends EntityVersion> newEntity) {
         // Entities are immutable, so if the entity identities are the same, then the versions are also the same.
-        // Versions can never be removed, we are append only. Do not have to check for deletions, just additions or
-        // updates.
+        // Versions are append only, but for one exception: an uncommitted version withdrawn from its
+        // transaction (EntityService.putEntityReplacingVersion) leaves the entity, so it leaves here too.
         if (entityReference.get() != newEntity || versionSetAsList.size() != newEntity.versions().size()) {
             final AtomicBoolean changed = new AtomicBoolean(false);
             // Find if there is a changed version...
@@ -493,6 +509,14 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
                     } else {
                         throw new IllegalStateException("Version time mismatch: " + newVersion.time() + " != " + oldVersion.getVersionRecord().time());
                     }
+                }
+            }
+            MutableLongSet held = LongSets.mutable.empty();
+            newEntity.versions().forEach(version -> held.add(version.stampNid()));
+            for (long stampNid : versionPropertyMap.keySet().toArray()) {
+                if (!held.contains(stampNid)) {
+                    changed.set(true);
+                    versionSetAsList.remove(versionPropertyMap.remove(stampNid));
                 }
             }
             if (changed.get()) {
