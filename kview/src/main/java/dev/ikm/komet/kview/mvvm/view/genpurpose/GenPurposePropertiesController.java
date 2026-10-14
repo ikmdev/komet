@@ -77,7 +77,7 @@ public class GenPurposePropertiesController {
         defaultsForm = loadForm(session);
         defaultsForm.controller().setDefaultsForm(true);
 
-        instancesPanel = new PatternInstancesPanel(session.getViewProperties());
+        instancesPanel = new PatternInstancesPanel(session.getViewProperties().calculator());
     }
 
     private static Form loadForm(WindowEditSession session) {

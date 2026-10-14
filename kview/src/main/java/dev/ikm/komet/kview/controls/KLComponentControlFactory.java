@@ -111,6 +111,26 @@ public class KLComponentControlFactory {
         return componentListControl;
     }
 
+    /**
+     * Creates the inline (type-ahead) search field the component controls use, on its own: the
+     * same completer, name converter and suggestion cells as {@link #createComponentControl}, for a
+     * place that searches for a component without holding one (e.g. the KL Pattern window's
+     * INSTANCES tab). The chosen component lands in the field's {@code valueProperty()}.
+     *
+     * @param viewCalculator the calculator the search runs through and the names are rendered with
+     */
+    public static AutoCompleteTextField<EntityProxy> createInlineSearchField(ViewCalculator viewCalculator) {
+        NavigationCalculator navigationCalculator = viewCalculator.navigationCalculator();
+        AutoCompleteTextField<EntityProxy> searchField = new AutoCompleteTextField<>();
+        searchField.setCompleter(createInlineSearchFunction(navigationCalculator));
+        StringConverter<EntityProxy> stringToEntityProxyConverter = createStringToEntityProxyConverter(navigationCalculator);
+        searchField.setConverter(stringToEntityProxyConverter);
+        searchField.setSuggestionsCellFactory(_ -> createComponentSuggestionNode(stringToEntityProxyConverter));
+        searchField.getPopupStyleClasses().add("component-popup");
+        searchField.setSuggestionsNodeHeight(41);
+        return searchField;
+    }
+
     /***************************************************************************
      *                                                                         *
      * Private Implementation                                                  *
