@@ -19,7 +19,7 @@ package dev.ikm.komet.framework.uncertain;
 
 import javafx.beans.property.*;
 import javafx.beans.value.ObservableValue;
-import dev.ikm.komet.terms.KometTerm;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.komet.framework.view.SimpleEqualityBasedObjectProperty;
 import dev.ikm.tinkar.coordinate.stamp.StampPosition;
 import dev.ikm.tinkar.coordinate.stamp.StampPositionRecord;
@@ -58,7 +58,7 @@ public class ObservableStampPositionNoOverride
 
    protected ObjectProperty<ConceptFacade> makePathConceptProperty(StampPosition stampPosition) {
       return new SimpleEqualityBasedObjectProperty(this,
-              KometTerm.PATH_FOR_PATH_COORDINATE.toXmlFragment(),
+              KometConcept.PATH_FOR_PATH_COORDINATE.toXmlFragment(),
               stampPosition.getPathForPositionConcept());
    }
 
@@ -73,7 +73,7 @@ public class ObservableStampPositionNoOverride
 
    protected LongProperty makeTimeProperty(StampPosition stampPosition) {
       return new SimpleLongProperty(this,
-              KometTerm.POSITION_ON_PATH.toXmlFragment(),
+              KometConcept.POSITION_ON_PATH.toXmlFragment(),
               stampPosition.time());
    }
 

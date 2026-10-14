@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.controls.skin;
 
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
 import dev.ikm.komet.layout.controls.FilterOptionsPopup;
 import dev.ikm.komet.layout.controls.IconRegion;
 import dev.ikm.komet.kview.controls.LangEditCoordinateTitledPane;
@@ -297,7 +297,7 @@ public class LangEditCoordinateTitledPaneSkin extends TitledPaneSkin {
 //                    ObservableList<EntityFacade> dialectOptions = languageOptions.getDialect().selectedOptions();
 //                    // TODO: Dynamically load valid dialects for the selected language
 //                    dialectOption.setText(dialectOptions.isEmpty() || dialectOptions.getFirst() == null ||
-//                            (!langOptions.isEmpty() && !KernelTerm.ENGLISH_LANGUAGE.equals(langOptions.getFirst())) ?
+//                            (!langOptions.isEmpty() && !KernelConcept.ENGLISH_LANGUAGE.equals(langOptions.getFirst())) ?
 //                            resources.getString("dialect.option.empty") : String.join(", ", dialectOptions.stream().map(LangEditCoordinateTitledPaneSkin.this::getDescription).toList()));
 //                    ObservableList<EntityFacade> patternOptions = languageOptions.getPattern().selectedOptions();
 //                    patternOption.setText(patternOptions.isEmpty() || patternOptions.getFirst() == null ?
@@ -455,7 +455,7 @@ public class LangEditCoordinateTitledPaneSkin extends TitledPaneSkin {
 //
 //                    comboSubscription = comboBox.getSelectionModel().selectedItemProperty().subscribe(item -> {
 //                        // TODO: Dynamically load valid dialects for the selected language
-//                        dialectBox.setVisible(KernelTerm.ENGLISH_LANGUAGE.equals(item));
+//                        dialectBox.setVisible(KernelConcept.ENGLISH_LANGUAGE.equals(item));
 //                        dialectBox.setManaged(dialectBox.isVisible());
 //                        if (item != null) {
 //                            dialectBox.setOption(languageOptions.getDialect());

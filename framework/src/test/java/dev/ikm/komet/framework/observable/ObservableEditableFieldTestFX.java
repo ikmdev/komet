@@ -15,7 +15,8 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
+import dev.ikm.tinkar.terms.KernelPattern;
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
@@ -94,9 +95,9 @@ class ObservableEditableFieldTestFX {
         // Create a composer for entity creation
         testComposer = ObservableComposer.builder()
                 .viewCalculator(Calculators.View.Default())
-                .author(KernelTerm.USER)
-                .module(KernelTerm.PRIMORDIAL_MODULE)
-                .path(KernelTerm.DEVELOPMENT_PATH)
+                .author(KernelConcept.USER)
+                .module(KernelConcept.PRIMORDIAL_MODULE)
+                .path(KernelConcept.DEVELOPMENT_PATH)
                 .defaultState(State.ACTIVE)
                 .transactionComment("Create test semantic for field testing")
                 .build();
@@ -114,7 +115,7 @@ class ObservableEditableFieldTestFX {
                 testComposer.composeSemantic(
                         dev.ikm.tinkar.common.id.PublicIds.newRandom(),
                         testConcept,
-                        KernelTerm.DESCRIPTION_PATTERN
+                        KernelPattern.DESCRIPTION_PATTERN
                 );
 
         // Get editable fields and set initial values
@@ -126,9 +127,9 @@ class ObservableEditableFieldTestFX {
 
         // Initialize field values
         ((ObservableField.Editable<String>) fields.get(0)).setValue("Initial description text");
-        ((ObservableField.Editable<Object>) fields.get(1)).setValue(KernelTerm.ENGLISH_LANGUAGE);
-        ((ObservableField.Editable<Object>) fields.get(2)).setValue(KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
-        ((ObservableField.Editable<Object>) fields.get(3)).setValue(KernelTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
+        ((ObservableField.Editable<Object>) fields.get(1)).setValue(KernelConcept.ENGLISH_LANGUAGE);
+        ((ObservableField.Editable<Object>) fields.get(2)).setValue(KernelConcept.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+        ((ObservableField.Editable<Object>) fields.get(3)).setValue(KernelConcept.DESCRIPTION_NOT_CASE_SENSITIVE);
 
         semanticComposer.save();
         testComposer.commit();
@@ -146,7 +147,7 @@ class ObservableEditableFieldTestFX {
 
         ObservableComposer composer = createComposer("Test field index tracking");
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
-                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelTerm.DESCRIPTION_PATTERN);
+                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelPattern.DESCRIPTION_PATTERN);
 
         ObservableList<ObservableField.Editable<?>> fields = editor.getEditableVersion().getEditableFields();
 
@@ -169,7 +170,7 @@ class ObservableEditableFieldTestFX {
 
         ObservableComposer composer = createComposer("Test editable value property");
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
-                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelTerm.DESCRIPTION_PATTERN);
+                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelPattern.DESCRIPTION_PATTERN);
 
         ObservableList<ObservableField.Editable<?>> fields = editor.getEditableVersion().getEditableFields();
 
@@ -190,7 +191,7 @@ class ObservableEditableFieldTestFX {
 
         ObservableComposer composer = createComposer("Test get and set value");
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
-                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelTerm.DESCRIPTION_PATTERN);
+                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelPattern.DESCRIPTION_PATTERN);
 
         ObservableList<ObservableField.Editable<?>> fields = editor.getEditableVersion().getEditableFields();
 
@@ -217,7 +218,7 @@ class ObservableEditableFieldTestFX {
 
         ObservableComposer composer = createComposer("Test property change listener");
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
-                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelTerm.DESCRIPTION_PATTERN);
+                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelPattern.DESCRIPTION_PATTERN);
 
         ObservableList<ObservableField.Editable<?>> fields = editor.getEditableVersion().getEditableFields();
         ObservableField.Editable<String> textField = (ObservableField.Editable<String>) fields.get(0);
@@ -255,7 +256,7 @@ class ObservableEditableFieldTestFX {
 
         ObservableComposer composer = createComposer("Test multiple value changes");
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
-                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelTerm.DESCRIPTION_PATTERN);
+                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelPattern.DESCRIPTION_PATTERN);
 
         ObservableList<ObservableField.Editable<?>> fields = editor.getEditableVersion().getEditableFields();
         ObservableField.Editable<String> textField = (ObservableField.Editable<String>) fields.get(0);
@@ -285,7 +286,7 @@ class ObservableEditableFieldTestFX {
 
         ObservableComposer composer = createComposer("Test bidirectional binding");
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
-                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelTerm.DESCRIPTION_PATTERN);
+                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelPattern.DESCRIPTION_PATTERN);
 
         ObservableList<ObservableField.Editable<?>> fields = editor.getEditableVersion().getEditableFields();
         ObservableField.Editable<String> textField = (ObservableField.Editable<String>) fields.get(0);
@@ -317,7 +318,7 @@ class ObservableEditableFieldTestFX {
 
         ObservableComposer composer = createComposer("Test unidirectional binding");
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
-                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelTerm.DESCRIPTION_PATTERN);
+                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelPattern.DESCRIPTION_PATTERN);
 
         ObservableList<ObservableField.Editable<?>> fields = editor.getEditableVersion().getEditableFields();
         ObservableField.Editable<String> textField = (ObservableField.Editable<String>) fields.get(0);
@@ -344,7 +345,7 @@ class ObservableEditableFieldTestFX {
 
         ObservableComposer composer = createComposer("Test field hasUnsavedChanges");
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
-                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelTerm.DESCRIPTION_PATTERN);
+                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelPattern.DESCRIPTION_PATTERN);
 
         ObservableField.Editable<String> textField =
                 (ObservableField.Editable<String>) editor.getEditableVersion().getEditableFields().get(0);
@@ -375,7 +376,7 @@ class ObservableEditableFieldTestFX {
 
         ObservableComposer composer = createComposer("Test field reset");
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
-                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelTerm.DESCRIPTION_PATTERN);
+                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelPattern.DESCRIPTION_PATTERN);
 
         ObservableList<ObservableField.Editable<?>> fields = editor.getEditableVersion().getEditableFields();
         ObservableField.Editable<String> textField = (ObservableField.Editable<String>) fields.get(0);
@@ -405,7 +406,7 @@ class ObservableEditableFieldTestFX {
 
         ObservableComposer composer = createComposer("Test multiple fields independence");
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
-                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelTerm.DESCRIPTION_PATTERN);
+                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelPattern.DESCRIPTION_PATTERN);
 
         ObservableList<ObservableField.Editable<?>> fields = editor.getEditableVersion().getEditableFields();
 
@@ -442,7 +443,7 @@ class ObservableEditableFieldTestFX {
 
         ObservableComposer composer = createComposer("Test getObservableFeature");
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
-                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelTerm.DESCRIPTION_PATTERN);
+                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelPattern.DESCRIPTION_PATTERN);
 
         ObservableList<ObservableField.Editable<?>> fields = editor.getEditableVersion().getEditableFields();
 
@@ -465,7 +466,7 @@ class ObservableEditableFieldTestFX {
         // Create first composer and modify a field
         ObservableComposer composer1 = createComposer("Test field persistence - modify");
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor1 =
-                composer1.composeSemantic(testSemantic.publicId(), testConcept, KernelTerm.DESCRIPTION_PATTERN);
+                composer1.composeSemantic(testSemantic.publicId(), testConcept, KernelPattern.DESCRIPTION_PATTERN);
 
         ObservableField.Editable<String> field1 =
                 (ObservableField.Editable<String>) editor1.getEditableVersion().getEditableFields().get(0);
@@ -479,7 +480,7 @@ class ObservableEditableFieldTestFX {
         // Create second composer and verify the value persisted
         ObservableComposer composer2 = createComposer("Test field persistence - verify");
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor2 =
-                composer2.composeSemantic(testSemantic.publicId(), testConcept, KernelTerm.DESCRIPTION_PATTERN);
+                composer2.composeSemantic(testSemantic.publicId(), testConcept, KernelPattern.DESCRIPTION_PATTERN);
 
         ObservableField.Editable<String> field2 =
                 (ObservableField.Editable<String>) editor2.getEditableVersion().getEditableFields().get(0);
@@ -496,9 +497,9 @@ class ObservableEditableFieldTestFX {
     private ObservableComposer createComposer(String transactionComment) {
         return ObservableComposer.builder()
                 .viewCalculator(Calculators.View.Default())
-                .author(KernelTerm.USER)
-                .module(KernelTerm.PRIMORDIAL_MODULE)
-                .path(KernelTerm.DEVELOPMENT_PATH)
+                .author(KernelConcept.USER)
+                .module(KernelConcept.PRIMORDIAL_MODULE)
+                .path(KernelConcept.DEVELOPMENT_PATH)
                 .defaultState(State.ACTIVE)
                 .transactionComment(transactionComment)
                 .build();

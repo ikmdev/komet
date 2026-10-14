@@ -26,15 +26,7 @@ import org.eclipse.collections.api.list.ImmutableList;
 
 import java.time.Instant;
 
-import static dev.ikm.tinkar.terms.KernelTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN;
-import static dev.ikm.tinkar.terms.KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN;
-import static dev.ikm.tinkar.terms.KernelTerm.GB_DIALECT_PATTERN;
-import static dev.ikm.tinkar.terms.KernelTerm.IDENTIFIER_PATTERN;
-import static dev.ikm.tinkar.terms.KernelTerm.INFERRED_NAVIGATION_PATTERN;
-import static dev.ikm.tinkar.terms.KernelTerm.PATHS_PATTERN;
-import static dev.ikm.tinkar.terms.KernelTerm.PATH_ORIGINS_PATTERN;
-import static dev.ikm.tinkar.terms.KernelTerm.STATED_NAVIGATION_PATTERN;
-import static dev.ikm.tinkar.terms.KernelTerm.US_DIALECT_PATTERN;
+import static dev.ikm.tinkar.terms.KernelPattern.*;
 
 /**
  * The one-line text a pattern's instance (a semantic) is listed under in an Instances list.

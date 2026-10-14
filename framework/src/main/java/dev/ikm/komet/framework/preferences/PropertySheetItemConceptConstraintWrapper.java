@@ -15,17 +15,17 @@
  */
 package dev.ikm.komet.framework.preferences;
 
-import dev.ikm.komet.terms.KometTerm;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import org.controlsfx.control.PropertySheet;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinate;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.KernelConcept;
 import dev.ikm.tinkar.terms.ProxyFactory;
-import dev.ikm.tinkar.terms.KernelTerm;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +40,7 @@ public class PropertySheetItemConceptConstraintWrapper implements PropertySheet.
 
     ;
     SimpleObjectProperty<PropertySheetItemConceptWrapper> constraint
-            = new SimpleObjectProperty<>(this, KometTerm.CONCEPT_CONSTRAINTS.toXmlFragment());
+            = new SimpleObjectProperty<>(this, KometConcept.CONCEPT_CONSTRAINTS.toXmlFragment());
     ViewCoordinate viewCoordinate;
     String name;
 
@@ -132,9 +132,9 @@ public class PropertySheetItemConceptConstraintWrapper implements PropertySheet.
         List<String> defaultList = new ArrayList<>();
         defaultList.add(Boolean.toString(true)); // allowHistory
         defaultList.add(Boolean.toString(true)); // allowSearch
-        defaultList.add(KernelTerm.UNINITIALIZED_COMPONENT.toXmlFragment()); //Default value
+        defaultList.add(KernelConcept.UNINITIALIZED_COMPONENT.toXmlFragment()); //Default value
         defaultList.add(Integer.toString(1));
-        defaultList.add(KernelTerm.UNINITIALIZED_COMPONENT.toXmlFragment()); //Allowed value
+        defaultList.add(KernelConcept.UNINITIALIZED_COMPONENT.toXmlFragment()); //Allowed value
 
         List<String> constraintList = node.getList(Keys.CONSTRAINT_LIST, defaultList);
         PropertySheetItemConceptWrapper conceptWrapper = constraint.get();

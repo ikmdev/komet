@@ -44,7 +44,9 @@ import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.VersionProxy;
 import dev.ikm.tinkar.entity.VersionProxyFactory;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.ProxyFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,13 +151,13 @@ public abstract class IntIdCollectionEditor<T extends LongIdCollection> implemen
         Dragboard db = event.getDragboard();
         OptionalLong optionalNid = OptionalLong.empty();
         if (db.hasContent(KometClipboard.KOMET_CONCEPT_PROXY)) {
-            EntityProxy.Concept conceptProxy = ProxyFactory.fromXmlFragment((String) db.getContent(KometClipboard.KOMET_CONCEPT_PROXY));
+            ConceptFacade conceptProxy = ProxyFactory.fromXmlFragment((String) db.getContent(KometClipboard.KOMET_CONCEPT_PROXY));
             optionalNid = OptionalLong.of(conceptProxy.nid());
         } else if (db.hasContent(KometClipboard.KOMET_SEMANTIC_PROXY)) {
             EntityProxy.Semantic semanticProxy = ProxyFactory.fromXmlFragment((String) db.getContent(KometClipboard.KOMET_SEMANTIC_PROXY));
             optionalNid = OptionalLong.of(semanticProxy.nid());
         } else if (db.hasContent(KometClipboard.KOMET_PATTERN_PROXY)) {
-            EntityProxy.Pattern patternProxy = ProxyFactory.fromXmlFragment((String) db.getContent(KometClipboard.KOMET_PATTERN_PROXY));
+            PatternFacade patternProxy = ProxyFactory.fromXmlFragment((String) db.getContent(KometClipboard.KOMET_PATTERN_PROXY));
             optionalNid = OptionalLong.of(patternProxy.nid());
         } else if (db.hasContent(KometClipboard.KOMET_CONCEPT_VERSION_PROXY)) {
             VersionProxy.Concept conceptProxy = VersionProxyFactory.fromXmlFragment((String) db.getContent(KometClipboard.KOMET_CONCEPT_VERSION_PROXY));

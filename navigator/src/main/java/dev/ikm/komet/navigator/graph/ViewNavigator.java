@@ -15,12 +15,12 @@
  */
 package dev.ikm.komet.navigator.graph;
 
+import dev.ikm.tinkar.terms.KernelConcept;
 import org.eclipse.collections.api.list.ImmutableList;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinate;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
-import dev.ikm.tinkar.terms.KernelTerm;
 
 public class ViewNavigator implements Navigator {
 
@@ -67,7 +67,7 @@ public class ViewNavigator implements Navigator {
 
     @Override
     public long[] getRootNids() {
-        return new long[]{KernelTerm.ROOT_VERTEX.nid()};
+        return new long[]{KernelConcept.ROOT_VERTEX.nid()};
     }
 
     @Override

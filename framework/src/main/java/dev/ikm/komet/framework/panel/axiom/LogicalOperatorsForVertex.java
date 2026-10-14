@@ -15,12 +15,12 @@
  */
 package dev.ikm.komet.framework.panel.axiom;
 
-import dev.ikm.komet.terms.KometTerm;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
 
 import java.util.Optional;
 
@@ -29,60 +29,60 @@ public enum LogicalOperatorsForVertex {
     /**
      * The necessary set.
      */
-    NECESSARY_SET(KernelTerm.NECESSARY_SET),
+    NECESSARY_SET(KernelConcept.NECESSARY_SET),
 
     /**
      * The sufficient set.
      */
-    SUFFICIENT_SET(KernelTerm.SUFFICIENT_SET),
+    SUFFICIENT_SET(KernelConcept.SUFFICIENT_SET),
 
     /**
      * The and.
      */
-    AND(KernelTerm.AND),
+    AND(KernelConcept.AND),
 
     /**
      * The or.
      */
-    OR(KernelTerm.OR),
+    OR(KernelConcept.OR),
 
     /**
      * The disjoint with.
      */
-    DISJOINT_WITH(KernelTerm.DISJOINT_WITH),
+    DISJOINT_WITH(KernelConcept.DISJOINT_WITH),
 
     /**
      * The definition root.
      */
-    DEFINITION_ROOT(KernelTerm.DEFINITION_ROOT),
+    DEFINITION_ROOT(KernelConcept.DEFINITION_ROOT),
 
     /**
      * A role
      */
-	ROLE(KernelTerm.ROLE),
+	ROLE(KernelConcept.ROLE),
 
-	INTERVAL_ROLE(KernelTerm.INTERVAL_ROLE),
+	INTERVAL_ROLE(KernelConcept.INTERVAL_ROLE),
 
     /**
      * The concept.
      */
-    CONCEPT(KernelTerm.CONCEPT_REFERENCE),
+    CONCEPT(KernelConcept.CONCEPT_REFERENCE),
 
     /**
      * The feature.
      */
-    FEATURE(KernelTerm.FEATURE),
+    FEATURE(KernelConcept.FEATURE),
 
-    PROPERTY_SET(KernelTerm.PROPERTY_SET),
-    DATA_PROPERTY_SET(KernelTerm.DATA_PROPERTY_SET),
-    INTERVAL_PROPERTY_SET(KernelTerm.INTERVAL_PROPERTY_SET),
+    PROPERTY_SET(KernelConcept.PROPERTY_SET),
+    DATA_PROPERTY_SET(KernelConcept.DATA_PROPERTY_SET),
+    INTERVAL_PROPERTY_SET(KernelConcept.INTERVAL_PROPERTY_SET),
 
     // TODO: Retire property pattern implication when starter set stable.
-    PROPERTY_PATTERN_IMPLICATION(KometTerm.PROPERTY_PATTERN_IMPLICATION),
+    PROPERTY_PATTERN_IMPLICATION(KometConcept.PROPERTY_PATTERN_IMPLICATION),
 
-    PROPERTY_SEQUENCE_IMPLICATION(KernelTerm.PROPERTY_SEQUENCE_IMPLICATION),
+    PROPERTY_SEQUENCE_IMPLICATION(KernelConcept.PROPERTY_SEQUENCE_IMPLICATION),
 
-    INCLUSION_SET(KernelTerm.INCLUSION_SET);
+    INCLUSION_SET(KernelConcept.INCLUSION_SET);
 
     final ConceptFacade logicalMeaning;
 

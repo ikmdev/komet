@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
 import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.fixtures.NewEphemeralKeyValueProvider;
@@ -44,16 +44,16 @@ class ObservableComposer2TestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH
         );
 
         assertNotNull(composer);
         assertEquals(State.ACTIVE, composer.getDefaultState());
-        assertEquals(KernelTerm.USER.nid(), composer.getAuthorNid());
-        assertEquals(KernelTerm.PRIMORDIAL_MODULE.nid(), composer.getModuleNid());
-        assertEquals(KernelTerm.DEVELOPMENT_PATH.nid(), composer.getPathNid());
+        assertEquals(KernelConcept.USER.nid(), composer.getAuthorNid());
+        assertEquals(KernelConcept.PRIMORDIAL_MODULE.nid(), composer.getModuleNid());
+        assertEquals(KernelConcept.DEVELOPMENT_PATH.nid(), composer.getPathNid());
     }
 
     @Test
@@ -61,9 +61,9 @@ class ObservableComposer2TestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH,
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH,
                 "Test transaction"
         );
 
@@ -75,24 +75,24 @@ class ObservableComposer2TestFX {
     void testBuilderPattern() {
         ObservableComposer composer = ObservableComposer.builder()
                 .viewCalculator(Calculators.View.Default())
-                .author(KernelTerm.USER)
-                .module(KernelTerm.PRIMORDIAL_MODULE)
-                .path(KernelTerm.DEVELOPMENT_PATH)
+                .author(KernelConcept.USER)
+                .module(KernelConcept.PRIMORDIAL_MODULE)
+                .path(KernelConcept.DEVELOPMENT_PATH)
                 .defaultState(State.INACTIVE)
                 .transactionComment("Builder test")
                 .build();
 
         assertNotNull(composer);
         assertEquals(State.INACTIVE, composer.getDefaultState());
-        assertEquals(KernelTerm.USER.nid(), composer.getAuthorNid());
+        assertEquals(KernelConcept.USER.nid(), composer.getAuthorNid());
     }
 
     @Test
     void testBuilderRequiresAuthor() {
         assertThrows(NullPointerException.class, () -> {
             ObservableComposer.builder()
-                    .module(KernelTerm.PRIMORDIAL_MODULE)
-                    .path(KernelTerm.DEVELOPMENT_PATH)
+                    .module(KernelConcept.PRIMORDIAL_MODULE)
+                    .path(KernelConcept.DEVELOPMENT_PATH)
                     .build();
         });
     }
@@ -101,8 +101,8 @@ class ObservableComposer2TestFX {
     void testBuilderRequiresModule() {
         assertThrows(NullPointerException.class, () -> {
             ObservableComposer.builder()
-                    .author(KernelTerm.USER)
-                    .path(KernelTerm.DEVELOPMENT_PATH)
+                    .author(KernelConcept.USER)
+                    .path(KernelConcept.DEVELOPMENT_PATH)
                     .build();
         });
     }
@@ -111,8 +111,8 @@ class ObservableComposer2TestFX {
     void testBuilderRequiresPath() {
         assertThrows(NullPointerException.class, () -> {
             ObservableComposer.builder()
-                    .author(KernelTerm.USER)
-                    .module(KernelTerm.PRIMORDIAL_MODULE)
+                    .author(KernelConcept.USER)
+                    .module(KernelConcept.PRIMORDIAL_MODULE)
                     .build();
         });
     }
@@ -122,8 +122,8 @@ class ObservableComposer2TestFX {
         assertThrows(NullPointerException.class, () -> {
             ObservableComposer.builder()
                     .author(null)
-                    .module(KernelTerm.PRIMORDIAL_MODULE)
-                    .path(KernelTerm.DEVELOPMENT_PATH)
+                    .module(KernelConcept.PRIMORDIAL_MODULE)
+                    .path(KernelConcept.DEVELOPMENT_PATH)
                     .build();
         });
     }
@@ -132,9 +132,9 @@ class ObservableComposer2TestFX {
     void testBuilderRejectsNullModule() {
         assertThrows(NullPointerException.class, () -> {
             ObservableComposer.builder()
-                    .author(KernelTerm.USER)
+                    .author(KernelConcept.USER)
                     .module(null)
-                    .path(KernelTerm.DEVELOPMENT_PATH)
+                    .path(KernelConcept.DEVELOPMENT_PATH)
                     .build();
         });
     }
@@ -143,8 +143,8 @@ class ObservableComposer2TestFX {
     void testBuilderRejectsNullPath() {
         assertThrows(NullPointerException.class, () -> {
             ObservableComposer.builder()
-                    .author(KernelTerm.USER)
-                    .module(KernelTerm.PRIMORDIAL_MODULE)
+                    .author(KernelConcept.USER)
+                    .module(KernelConcept.PRIMORDIAL_MODULE)
                     .path(null)
                     .build();
         });
@@ -154,9 +154,9 @@ class ObservableComposer2TestFX {
     void testBuilderRejectsNullDefaultState() {
         assertThrows(NullPointerException.class, () -> {
             ObservableComposer.builder()
-                    .author(KernelTerm.USER)
-                    .module(KernelTerm.PRIMORDIAL_MODULE)
-                    .path(KernelTerm.DEVELOPMENT_PATH)
+                    .author(KernelConcept.USER)
+                    .module(KernelConcept.PRIMORDIAL_MODULE)
+                    .path(KernelConcept.DEVELOPMENT_PATH)
                     .defaultState(null)
                     .build();
         });
@@ -167,9 +167,9 @@ class ObservableComposer2TestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH
         );
 
         assertEquals(ObservableComposer.TransactionState.NONE, composer.getTransactionState());
@@ -181,9 +181,9 @@ class ObservableComposer2TestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH
         );
 
         assertNull(composer.getTransaction());
@@ -200,9 +200,9 @@ class ObservableComposer2TestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH
         );
 
         composer.getOrCreateTransaction();
@@ -220,9 +220,9 @@ class ObservableComposer2TestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH
         );
 
         // Should not throw
@@ -237,9 +237,9 @@ class ObservableComposer2TestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH
         );
 
         AtomicReference<ObservableComposer.TransactionState> capturedState = new AtomicReference<>();
@@ -257,9 +257,9 @@ class ObservableComposer2TestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH
         );
 
         assertFalse(composer.hasUncommittedChanges());
@@ -271,9 +271,9 @@ class ObservableComposer2TestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH
         );
 
         assertNotNull(composer.transactionStateProperty());
@@ -286,9 +286,9 @@ class ObservableComposer2TestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH
         );
 
         assertNotNull(composer.hasUncommittedChangesProperty());
@@ -308,9 +308,9 @@ class ObservableComposer2TestFX {
                 ObservableComposer.create(
                         Calculators.View.Default(),
                         State.ACTIVE,
-                        KernelTerm.USER,
-                        KernelTerm.PRIMORDIAL_MODULE,
-                        KernelTerm.DEVELOPMENT_PATH
+                        KernelConcept.USER,
+                        KernelConcept.PRIMORDIAL_MODULE,
+                        KernelConcept.DEVELOPMENT_PATH
                 );
             } catch (RuntimeException e) {
                 exceptionRef.set(e);
@@ -330,9 +330,9 @@ class ObservableComposer2TestFX {
     void testBuilderDefaultState() {
         ObservableComposer composer = ObservableComposer.builder()
                 .viewCalculator(Calculators.View.Default())
-                .author(KernelTerm.USER)
-                .module(KernelTerm.PRIMORDIAL_MODULE)
-                .path(KernelTerm.DEVELOPMENT_PATH)
+                .author(KernelConcept.USER)
+                .module(KernelConcept.PRIMORDIAL_MODULE)
+                .path(KernelConcept.DEVELOPMENT_PATH)
                 .build();
 
         // Default state should be ACTIVE
@@ -343,9 +343,9 @@ class ObservableComposer2TestFX {
     void testBuilderNullTransactionComment() {
         ObservableComposer composer = ObservableComposer.builder()
                 .viewCalculator(Calculators.View.Default())
-                .author(KernelTerm.USER)
-                .module(KernelTerm.PRIMORDIAL_MODULE)
-                .path(KernelTerm.DEVELOPMENT_PATH)
+                .author(KernelConcept.USER)
+                .module(KernelConcept.PRIMORDIAL_MODULE)
+                .path(KernelConcept.DEVELOPMENT_PATH)
                 .transactionComment(null)
                 .build();
 
@@ -357,9 +357,9 @@ class ObservableComposer2TestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH,
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH,
                 null
         );
 
@@ -371,9 +371,9 @@ class ObservableComposer2TestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH
         );
 
         var transaction1 = composer.getOrCreateTransaction();
@@ -388,9 +388,9 @@ class ObservableComposer2TestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH
         );
 
         javafx.beans.property.SimpleObjectProperty<ObservableComposer.TransactionState> boundProperty =
@@ -409,9 +409,9 @@ class ObservableComposer2TestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.INACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH
         );
 
         assertEquals(State.INACTIVE, composer.getDefaultState());
@@ -422,9 +422,9 @@ class ObservableComposer2TestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.CANCELED,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH
         );
 
         assertEquals(State.CANCELED, composer.getDefaultState());
@@ -435,9 +435,9 @@ class ObservableComposer2TestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.PRIMORDIAL,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH
         );
 
         assertEquals(State.PRIMORDIAL, composer.getDefaultState());
@@ -448,9 +448,9 @@ class ObservableComposer2TestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.WITHDRAWN,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH
         );
 
         assertEquals(State.WITHDRAWN, composer.getDefaultState());

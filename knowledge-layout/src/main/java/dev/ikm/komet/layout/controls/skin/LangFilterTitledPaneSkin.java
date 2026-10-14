@@ -6,7 +6,7 @@ import dev.ikm.komet.layout.controls.LangFilterTitledPane;
 import dev.ikm.komet.layout.controls.FilterOptions;
 import dev.ikm.komet.layout.controls.IconRegion;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -387,7 +387,7 @@ public class LangFilterTitledPaneSkin extends TitledPaneSkin {
                 ObservableList<EntityFacade> dialectOptions = languageOptions.getDialect().selectedOptions();
                 // TODO: Dynamically load valid dialects for the selected language
                 dialectOption.setText(dialectOptions.isEmpty() || dialectOptions.getFirst() == null ||
-                        (!langOptions.isEmpty() && !KernelTerm.ENGLISH_LANGUAGE.equals(langOptions.getFirst())) ?
+                        (!langOptions.isEmpty() && !(langOptions.getFirst() instanceof EntityFacade english && english.nid() == KernelConcept.ENGLISH_LANGUAGE.nid())) ?
                         resources.getString("dialect.option.empty") : String.join(", ", dialectOptions.stream().map(LangFilterTitledPaneSkin.this::getDescription).toList()));
                 ObservableList<EntityFacade> patternOptions = languageOptions.getPattern().selectedOptions();
                 patternOption.setText(patternOptions.isEmpty() || patternOptions.getFirst() == null ?
@@ -544,7 +544,7 @@ public class LangFilterTitledPaneSkin extends TitledPaneSkin {
 
                     comboSubscription = comboBox.getSelectionModel().selectedItemProperty().subscribe(item -> {
                         // TODO: Dynamically load valid dialects for the selected language
-                        dialectBox.setVisible(KernelTerm.ENGLISH_LANGUAGE.equals(item));
+                        dialectBox.setVisible((item instanceof EntityFacade english && english.nid() == KernelConcept.ENGLISH_LANGUAGE.nid()));
                         dialectBox.setManaged(dialectBox.isVisible());
                         if (item != null) {
                             dialectBox.setOption(languageOptions.getDialect());

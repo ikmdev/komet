@@ -15,10 +15,10 @@
  */
 package dev.ikm.komet.rules.actions.axiom;
 
-import dev.ikm.tinkar.terms.KernelTerm;
 import dev.ikm.komet.framework.panel.axiom.AxiomSubjectRecord;
 import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalAxiom;
 import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpressionBuilder;
+import dev.ikm.tinkar.terms.KernelConcept;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -34,7 +34,7 @@ public class AddIsA extends AbstractAxiomAction {
         LogicalExpressionBuilder leb = new LogicalExpressionBuilder(axiomSubjectRecord.axiomTree());
         switch (leb.get(axiomSubjectRecord.axiomIndex())) {
             case LogicalAxiom.LogicalSet set -> {
-                LogicalAxiom.Atom.ConceptAxiom conceptAxiom = leb.ConceptAxiom(KernelTerm.ANONYMOUS_CONCEPT);
+                LogicalAxiom.Atom.ConceptAxiom conceptAxiom = leb.ConceptAxiom(KernelConcept.ANONYMOUS_CONCEPT);
                 leb.addToSet(set, conceptAxiom);
             }
             default -> throw new IllegalStateException("Unexpected value: " + leb.get(axiomSubjectRecord.axiomIndex()));

@@ -20,11 +20,7 @@ import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
-import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.ProxyFactory;
-import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
@@ -129,13 +125,13 @@ public final class DynamicComponentCard extends DynamicCard {
         }
         List<SemanticEntity<SemanticEntityVersion>> descriptions = new ArrayList<>();
         EntityService.get().forEachSemanticForComponentOfPattern(
-                component.nid(), KernelTerm.DESCRIPTION_PATTERN.nid(), descriptions::add);
+                component.nid(), KernelPattern.DESCRIPTION_PATTERN.nid(), descriptions::add);
         if (descriptions.isEmpty()) {
             return;
         }
         SemanticEntity<SemanticEntityVersion> descriptionSemantic = descriptions.getFirst();
         ObservableSemanticVersion.Editable editableVersion = composer()
-                .composeSemantic(descriptionSemantic.publicId(), component, KernelTerm.DESCRIPTION_PATTERN)
+                .composeSemantic(descriptionSemantic.publicId(), component, KernelPattern.DESCRIPTION_PATTERN)
                 .getEditableVersion();
         for (ObservableField.Editable<?> editableField : editableVersion.getEditableFields()) {
             if (editableField.getValue() instanceof String) {

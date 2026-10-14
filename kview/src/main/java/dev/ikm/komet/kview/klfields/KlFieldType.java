@@ -1,22 +1,22 @@
 package dev.ikm.komet.kview.klfields;
 
-import dev.ikm.komet.terms.KometTerm;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.komet.terms.KometConcept;
+import dev.ikm.tinkar.terms.KernelConcept;
 
 import java.util.Optional;
 
 public enum KlFieldType {
 
-    STRING(KernelTerm.STRING.nid()),
-    INTEGER(KernelTerm.INTEGER_FIELD.nid()),
-    FLOAT(KernelTerm.FLOAT_FIELD.nid()),
-    BOOLEAN(KernelTerm.BOOLEAN_FIELD.nid()),
+    STRING(KernelConcept.STRING.nid()),
+    INTEGER(KernelConcept.INTEGER_FIELD.nid()),
+    FLOAT(KernelConcept.FLOAT_FIELD.nid()),
+    BOOLEAN(KernelConcept.BOOLEAN_FIELD.nid()),
 
-    IMAGE(KometTerm.IMAGE_FIELD.nid()),
+    IMAGE(KometConcept.IMAGE_FIELD.nid()),
 
-    COMPONENT(KernelTerm.COMPONENT_FIELD.nid()),
-    C_SET(KernelTerm.COMPONENT_ID_SET_FIELD.nid()),
-    C_LIST(KernelTerm.COMPONENT_ID_LIST_FIELD.nid());
+    COMPONENT(KernelConcept.COMPONENT_FIELD.nid()),
+    C_SET(KernelConcept.COMPONENT_ID_SET_FIELD.nid()),
+    C_LIST(KernelConcept.COMPONENT_ID_LIST_FIELD.nid());
 
     private long nid;
 

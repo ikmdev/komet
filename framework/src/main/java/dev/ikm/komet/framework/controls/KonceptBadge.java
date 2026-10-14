@@ -39,8 +39,8 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.KernelConcept;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.beans.value.ObservableValue;
 import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
@@ -1412,7 +1412,7 @@ public class KonceptBadge extends HBox {
      *         logical definition
      */
     public static KonceptStatus computeStatus(long nid, ViewCalculator calculator, PremiseType premiseType) {
-        if (Nid.isNone(nid) || nid == -1 || nid == KernelTerm.UNINITIALIZED_COMPONENT.nid()) {
+        if (Nid.isNone(nid) || nid == -1 || nid == KernelConcept.UNINITIALIZED_COMPONENT.nid()) {
             return KonceptStatus.NONE;
         }
         LongIdList parents;
@@ -1433,7 +1433,7 @@ public class KonceptBadge extends HBox {
             return KonceptStatus.ROOT;
         }
         boolean multiParent = parents.size() > 1;
-        boolean sufficient = definition.get().containsVertexWithMeaning(KernelTerm.SUFFICIENT_SET);
+        boolean sufficient = definition.get().containsVertexWithMeaning(KernelConcept.SUFFICIENT_SET);
         if (sufficient) {
             return multiParent ? KonceptStatus.DEFINED_MULTIPARENT : KonceptStatus.DEFINED;
         }

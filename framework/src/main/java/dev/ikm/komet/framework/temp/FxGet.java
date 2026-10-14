@@ -24,9 +24,7 @@ import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.coordinate.PathService;
 import dev.ikm.tinkar.coordinate.stamp.StampPathImmutable;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.PatternFacade;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,25 +39,25 @@ public class FxGet {
 
     static {
         NAVIGATION_OPTIONS.addAll(
-                Lists.immutable.of(KernelTerm.INFERRED_NAVIGATION_PATTERN),
-                Lists.immutable.of(KernelTerm.STATED_NAVIGATION_PATTERN));
+                Lists.immutable.of(KernelPattern.INFERRED_NAVIGATION_PATTERN),
+                Lists.immutable.of(KernelPattern.STATED_NAVIGATION_PATTERN));
     }
 
     public static Collection<? extends ConceptFacade> allowedLanguages() {
-        return Lists.immutable.of(KernelTerm.ENGLISH_LANGUAGE, KernelTerm.SPANISH_LANGUAGE).castToList();
+        return Lists.immutable.of(KernelConcept.ENGLISH_LANGUAGE, KernelConcept.SPANISH_LANGUAGE).castToList();
     }
 
     public static ImmutableList<ImmutableList<? extends ConceptFacade>> allowedDescriptionTypeOrder() {
 
         return Lists.immutable.of(
-                Lists.immutable.of(KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE, KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE),
-                Lists.immutable.of(KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE, KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE));
+                Lists.immutable.of(KernelConcept.REGULAR_NAME_DESCRIPTION_TYPE, KernelConcept.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE),
+                Lists.immutable.of(KernelConcept.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE, KernelConcept.REGULAR_NAME_DESCRIPTION_TYPE));
     }
 
     public static ImmutableList<ImmutableList<? extends PatternFacade>> allowedDialectTypeOrder() {
         return Lists.immutable.of(
-                Lists.immutable.of(KernelTerm.US_DIALECT_PATTERN, KernelTerm.GB_DIALECT_PATTERN),
-                Lists.immutable.of(KernelTerm.GB_DIALECT_PATTERN, KernelTerm.US_DIALECT_PATTERN));
+                Lists.immutable.of(KernelPattern.US_DIALECT_PATTERN, KernelPattern.GB_DIALECT_PATTERN),
+                Lists.immutable.of(KernelPattern.GB_DIALECT_PATTERN, KernelPattern.US_DIALECT_PATTERN));
     }
 
     public static ObservableList<ImmutableList<PatternFacade>> navigationOptions() {

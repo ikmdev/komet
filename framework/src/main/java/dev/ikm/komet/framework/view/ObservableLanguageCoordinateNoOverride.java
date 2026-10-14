@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.framework.view;
 
-import dev.ikm.komet.terms.KometTerm;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.tinkar.coordinate.language.LanguageCoordinate;
 import dev.ikm.tinkar.coordinate.language.LanguageCoordinateRecord;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -52,28 +52,28 @@ public final class ObservableLanguageCoordinateNoOverride
     @Override
     protected SimpleEqualityBasedObjectProperty<ConceptFacade> makeLanguageProperty(LanguageCoordinate languageCoordinate) {
         return new SimpleEqualityBasedObjectProperty<>(this,
-                KometTerm.LANGUAGE_SPECIFICATION_FOR_LANGUAGE_COORDINATE.toXmlFragment(),
+                KometConcept.LANGUAGE_SPECIFICATION_FOR_LANGUAGE_COORDINATE.toXmlFragment(),
                 languageCoordinate.languageConcept());
     }
 
     @Override
     protected SimpleEqualityBasedObjectProperty<ImmutableList<PatternFacade>> makeDialectPatternPreferenceListProperty(LanguageCoordinate languageCoordinate) {
         return new SimpleEqualityBasedObjectProperty<>(this,
-                KometTerm.DIALECT_ASSEMBLAGE_PREFERENCE_LIST_FOR_LANGUAGE_COORDINATE.toXmlFragment(),
+                KometConcept.DIALECT_ASSEMBLAGE_PREFERENCE_LIST_FOR_LANGUAGE_COORDINATE.toXmlFragment(),
                 languageCoordinate.dialectPatternPreferenceList());
     }
 
     @Override
     protected SimpleEqualityBasedObjectProperty<ImmutableList<ConceptFacade>> makeDescriptionTypePreferenceListProperty(LanguageCoordinate languageCoordinate) {
         return new SimpleEqualityBasedObjectProperty<>(this,
-                KometTerm.DESCRIPTION_TYPE_PREFERENCE_LIST_FOR_LANGUAGE_COORDINATE.toXmlFragment(),
+                KometConcept.DESCRIPTION_TYPE_PREFERENCE_LIST_FOR_LANGUAGE_COORDINATE.toXmlFragment(),
                 languageCoordinate.descriptionTypePreferenceList());
     }
 
     @Override
     protected SimpleEqualityBasedObjectProperty<ImmutableList<ConceptFacade>> makeModulePreferenceListProperty(LanguageCoordinate languageCoordinate) {
         return new SimpleEqualityBasedObjectProperty<>(this,
-                KometTerm.MODULE_PREFERENCE_LIST_FOR_LANGUAGE_COORDINATE.toXmlFragment(),
+                KometConcept.MODULE_PREFERENCE_LIST_FOR_LANGUAGE_COORDINATE.toXmlFragment(),
                 languageCoordinate.modulePreferenceListForLanguage());
     }
 

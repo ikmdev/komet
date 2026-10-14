@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.framework.search;
 
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
 import dev.ikm.komet.framework.ComponentLookup;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
@@ -62,11 +62,11 @@ class IdentifierQueryTest {
                 Files.createTempDirectory("identifier-query-test").toFile());
         PrimitiveData.selectControllerByName("Load Ephemeral Store");
         PrimitiveData.start();
-        englishNid = KernelTerm.ENGLISH_LANGUAGE.nid();
-        languageNid = KernelTerm.LANGUAGE.nid();
+        englishNid = KernelConcept.ENGLISH_LANGUAGE.nid();
+        languageNid = KernelConcept.LANGUAGE.nid();
         // The UUID storedForm writes for each: the least of its UUIDs (ENGLISH_LANGUAGE has three).
-        english = KernelTerm.ENGLISH_LANGUAGE.publicId().leastUuid();
-        language = KernelTerm.LANGUAGE.publicId().leastUuid();
+        english = KernelConcept.ENGLISH_LANGUAGE.publicId().leastUuid();
+        language = KernelConcept.LANGUAGE.publicId().leastUuid();
     }
 
     @AfterAll
@@ -93,7 +93,7 @@ class IdentifierQueryTest {
     @Test
     void aUuidFindsItsComponent() {
         assertArrayEquals(new long[]{englishNid}, IdentifierQuery.parse(english.toString()).orElseThrow().nids());
-        for (UUID any : KernelTerm.ENGLISH_LANGUAGE.publicId().asUuidArray()) {
+        for (UUID any : KernelConcept.ENGLISH_LANGUAGE.publicId().asUuidArray()) {
             assertArrayEquals(new long[]{englishNid}, IdentifierQuery.parse(any.toString()).orElseThrow().nids(),
                     "any of a component's UUIDs finds it: " + any);
         }
@@ -163,6 +163,6 @@ class IdentifierQueryTest {
     @Test
     void aPublicIdTheStoreHoldsIsLookedUpToItsNid() {
         assertEquals(OptionalLong.of(englishNid), ComponentLookup.nid(english));
-        assertEquals(OptionalLong.of(languageNid), ComponentLookup.nid(KernelTerm.LANGUAGE.publicId()));
+        assertEquals(OptionalLong.of(languageNid), ComponentLookup.nid(KernelConcept.LANGUAGE.publicId()));
     }
 }

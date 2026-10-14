@@ -26,7 +26,8 @@ import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.fixtures.StarterDataEphemeralProvider;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
+import dev.ikm.tinkar.terms.KernelPattern;
 import dev.ikm.tinkar.terms.State;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
@@ -49,8 +50,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ObservableEntityCanonicalUTestFX {
 
     private static ObservableComposer newComposer(String comment) {
-        return ObservableComposer.create(Calculators.View.Default(), State.ACTIVE, KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE, KernelTerm.DEVELOPMENT_PATH, comment);
+        return ObservableComposer.create(Calculators.View.Default(), State.ACTIVE, KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE, KernelConcept.DEVELOPMENT_PATH, comment);
     }
 
     /** A committed description semantic with the given text, on a new committed concept. */
@@ -59,7 +60,7 @@ class ObservableEntityCanonicalUTestFX {
         var conceptComposer = composer.composeConcept(PublicIds.newRandom());
         conceptComposer.save();
         var semanticComposer = composer.composeSemantic(PublicIds.newRandom(), conceptComposer.getEntity(),
-                KernelTerm.DESCRIPTION_PATTERN);
+                KernelPattern.DESCRIPTION_PATTERN);
         for (var field : semanticComposer.getEditableVersion().getEditableFields()) {
             if (field.getValue() instanceof String) {
                 field.setObjectValue(text);
@@ -105,8 +106,8 @@ class ObservableEntityCanonicalUTestFX {
             }
         }
         Transaction elsewhere = new Transaction("elsewhere");
-        StampEntity<?> stamp = elsewhere.getStamp(State.ACTIVE, KernelTerm.USER.nid(),
-                KernelTerm.PRIMORDIAL_MODULE.nid(), KernelTerm.DEVELOPMENT_PATH.nid());
+        StampEntity<?> stamp = elsewhere.getStamp(State.ACTIVE, KernelConcept.USER.nid(),
+                KernelConcept.PRIMORDIAL_MODULE.nid(), KernelConcept.DEVELOPMENT_PATH.nid());
         SemanticRecord changed = stored.with(new SemanticVersionRecord(stored, stamp.nid(), fields.toImmutable())).build();
         elsewhere.addComponent(changed);
         Entity.provider().putEntity(changed);

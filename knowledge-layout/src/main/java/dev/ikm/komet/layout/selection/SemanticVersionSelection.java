@@ -8,7 +8,7 @@ import dev.ikm.tinkar.common.binary.DecoderInput;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.ConceptEnumerationFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -34,14 +34,14 @@ public record SemanticVersionSelection(PublicId componentPublicId, PublicId stam
 
         FIELD_VALUE(KlTerms.FIELD_VALUE);
 
-        final EntityProxy.Concept conceptForEnum;
+        final ConceptFacade conceptForEnum;
 
-        FieldValue(EntityProxy.Concept conceptForEnum) {
+        FieldValue(ConceptFacade conceptForEnum) {
             this.conceptForEnum = conceptForEnum;
         }
 
         @Override
-        public EntityProxy.Concept conceptForEnum() {
+        public ConceptFacade conceptForEnum() {
             return conceptForEnum;
         }
 

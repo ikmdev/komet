@@ -18,7 +18,6 @@ package dev.ikm.komet.navigator.graph;
 import org.eclipse.collections.api.list.primitive.MutableLongList;
 import org.eclipse.collections.api.set.primitive.MutableLongSet;
 
-import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.komet.framework.Dialogs;
 import dev.ikm.komet.framework.KometNode;
 import dev.ikm.komet.framework.LayoutAnimator;
@@ -39,6 +38,7 @@ import dev.ikm.komet.framework.view.ViewMenuModel;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.navigator.graph.treetasks.ExpandTask;
 import dev.ikm.komet.preferences.KometPreferences;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.tinkar.common.alert.AlertCategory;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.alert.AlertType;
@@ -592,7 +592,7 @@ public class MultiParentGraphViewController implements RefreshListener {
         Dragboard db = event.getDragboard();
         boolean success = false;
         if (db.hasContent(KometClipboard.KOMET_CONCEPT_PROXY)) {
-            EntityProxy.Concept conceptProxy = ProxyFactory.fromXmlFragment((String) db.getContent(KometClipboard.KOMET_CONCEPT_PROXY));
+            ConceptFacade conceptProxy = ProxyFactory.fromXmlFragment((String) db.getContent(KometClipboard.KOMET_CONCEPT_PROXY));
             showConcept(conceptProxy.nid());
             success = true;
         } else if (db.hasContent(KometClipboard.KOMET_SEMANTIC_PROXY)) {
@@ -601,7 +601,7 @@ public class MultiParentGraphViewController implements RefreshListener {
             optionalConcept.ifPresent(conceptEntity -> showConcept(conceptEntity.nid()));
             success = optionalConcept.isPresent();
         } else if (db.hasContent(KometClipboard.KOMET_PATTERN_PROXY)) {
-            EntityProxy.Pattern patternProxy = ProxyFactory.fromXmlFragment((String) db.getContent(KometClipboard.KOMET_PATTERN_PROXY));
+            PatternFacade patternProxy = ProxyFactory.fromXmlFragment((String) db.getContent(KometClipboard.KOMET_PATTERN_PROXY));
             // don't know what to do with pattern and navigation...
         } else if (db.hasContent(KometClipboard.KOMET_CONCEPT_VERSION_PROXY)) {
             VersionProxy.Concept conceptProxy = VersionProxyFactory.fromXmlFragment((String) db.getContent(KometClipboard.KOMET_CONCEPT_VERSION_PROXY));
@@ -944,7 +944,7 @@ public class MultiParentGraphViewController implements RefreshListener {
             ArrayList<Edge> linkList = new ArrayList<>();
             taxonomyLinks.put(conceptNid, linkList);
             for (Edge link : navigator.getParentEdges(conceptNid)) {
-                if (link.typeNids().contains(KometTerm.IS_A.nid())) {
+                if (link.typeNids().contains(KometConcept.IS_A.nid())) {
                     linkList.add(link);
                 }
                 handleConcept(link.destinationNid(), navigator, conceptNids, taxonomyLinks);

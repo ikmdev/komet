@@ -29,7 +29,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
+import static dev.ikm.komet.terms.KometConcept.BLANK_CONCEPT;
 
 /**
  * <p>KLComponentControl is a custom control that acts as a template capable of populating a single,
@@ -253,7 +253,7 @@ public class KLComponentControl extends Control {
      * A property with an action to be executed when the user clicks on the remove button. By default, it will
      * remove the entity that was added.
      */
-    private final ObjectProperty<EventHandler<ActionEvent>> onRemoveActionProperty = new SimpleObjectProperty<>(this, "onRemoveAction", e -> setEntity(BLANK_CONCEPT));
+    private final ObjectProperty<EventHandler<ActionEvent>> onRemoveActionProperty = new SimpleObjectProperty<>(this, "onRemoveAction", e -> setEntity(BLANK_CONCEPT.toProxy()));
     public final ObjectProperty<EventHandler<ActionEvent>> onRemoveActionProperty() {
        return onRemoveActionProperty;
     }

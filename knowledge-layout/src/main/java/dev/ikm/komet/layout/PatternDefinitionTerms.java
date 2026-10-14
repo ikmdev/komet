@@ -1,6 +1,8 @@
 package dev.ikm.komet.layout;
 
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.PatternFacade;
 
 import java.util.UUID;
 

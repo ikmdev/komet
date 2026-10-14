@@ -9,8 +9,8 @@ import dev.ikm.tinkar.common.binary.DecoderInput;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.ConceptEnumerationFacade;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -49,14 +49,14 @@ public record PatternVersionSelection(PublicId componentPublicId, PublicId stamp
             PATTERN_MEANING(KlTerms.PATTERN_MEANING_ATTRIBUTE),
             PATTERN_PURPOSE(KlTerms.PATTERN_PURPOSE_ATTRIBUTE);
 
-            final EntityProxy.Concept conceptForEnum;
+            final ConceptFacade conceptForEnum;
 
-            PatternAttribute(EntityProxy.Concept conceptForEnum) {
+            PatternAttribute(ConceptFacade conceptForEnum) {
                 this.conceptForEnum = conceptForEnum;
             }
 
             @Override
-            public EntityProxy.Concept conceptForEnum() {
+            public ConceptFacade conceptForEnum() {
                 return conceptForEnum;
             }
 
@@ -73,14 +73,14 @@ public record PatternVersionSelection(PublicId componentPublicId, PublicId stamp
         FIELD_PURPOSE(KlTerms.FIELD_PURPOSE),
         FIELD_DATA_TYPE(KlTerms.FIELD_DATA_TYPE);
 
-        final EntityProxy.Concept conceptForEnum;
+        final ConceptFacade conceptForEnum;
 
-        FieldAttribute(EntityProxy.Concept conceptForEnum) {
+        FieldAttribute(ConceptFacade conceptForEnum) {
             this.conceptForEnum = conceptForEnum;
         }
 
         @Override
-        public EntityProxy.Concept conceptForEnum() {
+        public ConceptFacade conceptForEnum() {
             return conceptForEnum;
         }
 

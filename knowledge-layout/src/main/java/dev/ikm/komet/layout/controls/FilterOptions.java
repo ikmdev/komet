@@ -5,12 +5,7 @@ import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.entity.StampService;
-import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.PatternFacade;
-import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -430,21 +425,21 @@ public class FilterOptions implements Serializable {
 
         private Option<EntityFacade> dialect;
         {
-            List<EntityProxy> dialectPattern = List.of(KernelTerm.US_DIALECT_PATTERN, KernelTerm.GB_DIALECT_PATTERN);
+            List<EntityFacade> dialectPattern = List.of(KernelPattern.US_DIALECT_PATTERN, KernelPattern.GB_DIALECT_PATTERN);
             dialect = new Option<>(OPTION_ITEM.DIALECT, "dialect.option.title",
                     new ArrayList<>(dialectPattern), FXCollections.observableArrayList(dialectPattern), null, true, false, noneSet, false);
         }
 
         private Option<EntityFacade> pattern;
         {
-            EntityFacade patternOption = KernelTerm.DESCRIPTION_PATTERN;
+            EntityFacade patternOption = KernelPattern.DESCRIPTION_PATTERN;
             pattern = new Option<>(OPTION_ITEM.PATTERN, "pattern.option.title",
                     new ArrayList<>(List.of(patternOption)), FXCollections.observableArrayList(List.of(patternOption)), null, false, false, noneSet, false);
         }
 
         private Option<EntityFacade> descriptionType;
         {
-            List<EntityFacade> descriptionTypeOptions = List.of(KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE, KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+            List<EntityFacade> descriptionTypeOptions = List.of(KernelConcept.REGULAR_NAME_DESCRIPTION_TYPE, KernelConcept.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
             descriptionType = new Option<>(OPTION_ITEM.DESCRIPTION_TYPE, "description.option.title",
                     new ArrayList<>(descriptionTypeOptions), FXCollections.observableArrayList(descriptionTypeOptions), null, true, false, noneSet, false);
         }

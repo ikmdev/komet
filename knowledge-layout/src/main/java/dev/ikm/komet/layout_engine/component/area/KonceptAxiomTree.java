@@ -15,18 +15,18 @@
  */
 package dev.ikm.komet.layout_engine.component.area;
 
-import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.komet.framework.StyleClasses;
 import dev.ikm.komet.framework.controls.KonceptBadge;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.panel.axiom.AxiomRulesMenu;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
@@ -83,7 +83,7 @@ public final class KonceptAxiomTree {
     private static DiTreeEntity extractTree(ObservableSemanticVersion axiomVersion, ViewProperties viewProperties) {
         DiTreeEntity[] holder = new DiTreeEntity[1];
         try {
-            viewProperties.calculator().getFieldForSemanticWithPurpose(axiomVersion, KometTerm.LOGICAL_DEFINITION)
+            viewProperties.calculator().getFieldForSemanticWithPurpose(axiomVersion, KometConcept.LOGICAL_DEFINITION)
                     .ifPresent(field -> holder[0] = (DiTreeEntity) field.value());
         } catch (RuntimeException e) {
             LOG.warn("Could not read logical definition from axiom semantic", e);
@@ -98,26 +98,26 @@ public final class KonceptAxiomTree {
         Node content;
         boolean renderChildren = true;
 
-        if (meaning == KernelTerm.DEFINITION_ROOT.nid()) {
+        if (meaning == KernelConcept.DEFINITION_ROOT.nid()) {
             node.getStyleClass().add(StyleClasses.DEF_ROOT.toString());
             content = conceptBadge(subjectNid, viewProperties, premiseType, true);
-        } else if (meaning == KernelTerm.NECESSARY_SET.nid()) {
+        } else if (meaning == KernelConcept.NECESSARY_SET.nid()) {
             node.getStyleClass().add(StyleClasses.DEF_NECESSARY_SET.toString());
             content = clauseLabel("Necessary set");
-        } else if (meaning == KernelTerm.SUFFICIENT_SET.nid()) {
+        } else if (meaning == KernelConcept.SUFFICIENT_SET.nid()) {
             node.getStyleClass().add(StyleClasses.DEF_SUFFICIENT_SET.toString());
             content = clauseLabel("Sufficient set");
-        } else if (meaning == KernelTerm.INCLUSION_SET.nid()) {
+        } else if (meaning == KernelConcept.INCLUSION_SET.nid()) {
             node.getStyleClass().add(StyleClasses.DEF_INCLUSION_SET.toString());
             content = clauseLabel("Inclusion set");
-        } else if (meaning == KernelTerm.CONCEPT_REFERENCE.nid()) {
+        } else if (meaning == KernelConcept.CONCEPT_REFERENCE.nid()) {
             node.getStyleClass().add(StyleClasses.DEF_CONCEPT.toString());
-            ConceptFacade concept = vertex.propertyFast(KernelTerm.CONCEPT_REFERENCE);
+            ConceptFacade concept = vertex.propertyFast(KernelConcept.CONCEPT_REFERENCE);
             content = conceptBadge(concept.nid(), viewProperties, premiseType, true);
             renderChildren = false;
-        } else if (meaning == KernelTerm.ROLE.nid()) {
-            ConceptFacade roleType = vertex.propertyFast(KernelTerm.ROLE_TYPE);
-            if (roleType != null && PublicId.equals(roleType.publicId(), KernelTerm.ROLE_GROUP)) {
+        } else if (meaning == KernelConcept.ROLE.nid()) {
+            ConceptFacade roleType = vertex.propertyFast(KernelConcept.ROLE_TYPE);
+            if (roleType != null && PublicId.equals(roleType.publicId(), KernelConcept.ROLE_GROUP.publicId())) {
                 node.getStyleClass().add(StyleClasses.DEF_ROLE_GROUP.toString());
                 content = clauseLabel("Role group");
             } else {
@@ -135,7 +135,7 @@ public final class KonceptAxiomTree {
             childBox = new VBox();
             childBox.getStyleClass().add("koncept-axiom-children");
             for (EntityVertex child : tree.successors(vertex)) {
-                if (child.getMeaningNid() == KernelTerm.AND.nid()) {
+                if (child.getMeaningNid() == KernelConcept.AND.nid()) {
                     // AND is a transparent operator: flatten its children into this level.
                     for (EntityVertex andChild : tree.successors(child)) {
                         childBox.getChildren().add(buildVertex(andChild, tree, axiomVersion, viewProperties, premiseType, subjectNid));
@@ -224,8 +224,8 @@ public final class KonceptAxiomTree {
         }
         row.getChildren().add(operatorGlyph("→"));
         for (EntityVertex child : tree.successors(vertex)) {
-            if (child.getMeaningNid() == KernelTerm.CONCEPT_REFERENCE.nid()) {
-                ConceptFacade value = child.propertyFast(KernelTerm.CONCEPT_REFERENCE);
+            if (child.getMeaningNid() == KernelConcept.CONCEPT_REFERENCE.nid()) {
+                ConceptFacade value = child.propertyFast(KernelConcept.CONCEPT_REFERENCE);
                 KonceptBadge valueBadge = conceptBadge(value.nid(), viewProperties, premiseType, false);
                 HBox.setHgrow(valueBadge, Priority.ALWAYS);
                 row.getChildren().add(valueBadge);

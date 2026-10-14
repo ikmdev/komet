@@ -15,13 +15,13 @@
  */
 package dev.ikm.komet.kview.lidr.mvvm.viewmodel;
 
-import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.komet.kview.data.schema.STAMPDetail;
 import dev.ikm.komet.kview.data.schema.SemanticDetail;
 import dev.ikm.komet.kview.data.persistence.ConceptWriter;
 import dev.ikm.komet.kview.data.persistence.STAMPWriter;
 import dev.ikm.komet.kview.data.persistence.SemanticWriter;
 import dev.ikm.komet.kview.lidr.mvvm.model.LidrRecord;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.tinkar.common.id.LongIdSet;
 import dev.ikm.tinkar.common.id.LongIds;
@@ -33,10 +33,7 @@ import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpression;
 import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpressionBuilder;
-import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.*;
 import org.carlfx.cognitive.validator.ValidationMessage;
 import org.carlfx.cognitive.viewmodel.ValidationViewModel;
 import org.eclipse.collections.api.factory.Lists;
@@ -120,15 +117,15 @@ public class ViewModelHelper {
             LOG.error("Error(s) with validation message(s)\n" + sb);
         }
         State state = stampViewModel.getValue(STATUS);
-        PublicId statusPublicId = state != null ? state.publicId() : KernelTerm.ACTIVE_STATE.publicId();
+        PublicId statusPublicId = state != null ? state.publicId() : KernelConcept.ACTIVE_STATE.publicId();
         Concept author = stampViewModel.getValue(AUTHOR);
-        PublicId authorPublicId = author != null ? author.publicId() : KernelTerm.USER.publicId();
+        PublicId authorPublicId = author != null ? author.publicId() : KernelConcept.USER.publicId();
         Long time = stampViewModel.getValue(TIME);
         long epochMillis = time == null ? System.currentTimeMillis() : time; // This may change due to when the actual record is written.
         Concept module = stampViewModel.getValue(MODULE);
-        PublicId modulePublicId = module != null ? module.publicId() : KometTerm.DEVELOPMENT_MODULE.publicId();
+        PublicId modulePublicId = module != null ? module.publicId() : KometConcept.DEVELOPMENT_MODULE.publicId();
         Concept path = stampViewModel.getValue(PATH);
-        PublicId pathPublicId = path != null ? path.publicId() : KernelTerm.DEVELOPMENT_PATH.publicId();
+        PublicId pathPublicId = path != null ? path.publicId() : KernelConcept.DEVELOPMENT_PATH.publicId();
 
         return new STAMPDetail(statusPublicId, epochMillis, authorPublicId, modulePublicId, pathPublicId);
 
@@ -188,7 +185,7 @@ public class ViewModelHelper {
         PublicId newAxiomId = PublicIds.newRandom();
         axiomSemantic.semantic(newAxiomId,
                 new SemanticDetail(
-                        KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN,
+                        KernelPattern.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.publicId(),
                         resultPublicId,
                         () -> {
                             MutableList<Object> semanticFields = Lists.mutable.empty();
@@ -207,8 +204,8 @@ public class ViewModelHelper {
         LogicalExpressionBuilder leb = new LogicalExpressionBuilder();
         leb.SufficientSet(leb.And(
                 leb.ConceptAxiom(RESULT_CONFORMANCE_CONCEPT),
-                leb.SomeRole(KernelTerm.ROLE_GROUP, leb.And(leb.SomeRole(LOINC_PROPERTY, leb.ConceptAxiom(LOINC_ACNC)))),
-                leb.SomeRole(KernelTerm.ROLE_GROUP, leb.And(leb.SomeRole(LOINC_SCALE, leb.ConceptAxiom(scaleType.nid()))))));
+                leb.SomeRole(KernelConcept.ROLE_GROUP, leb.And(leb.SomeRole(LOINC_PROPERTY, leb.ConceptAxiom(LOINC_ACNC)))),
+                leb.SomeRole(KernelConcept.ROLE_GROUP, leb.And(leb.SomeRole(LOINC_SCALE, leb.ConceptAxiom(scaleType.nid()))))));
         return leb.build();
     }
     public static PublicId createQuanitativeResultConcept(ResultsViewModel resultsViewModel, STAMPDetail stampDetail) {

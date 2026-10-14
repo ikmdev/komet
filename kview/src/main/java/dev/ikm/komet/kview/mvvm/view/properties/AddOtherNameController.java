@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.properties;
 
-import dev.ikm.komet.terms.KometTerm;
+import dev.ikm.komet.terms.KometConcept;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.CASE_SIGNIFICANCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.IS_SUBMITTED;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.LANGUAGE;
@@ -26,7 +26,8 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.DESCRIPTION_CASE_SIGNIFICANCE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.DESCRIPTION_LANGUAGE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.OtherNameViewModel.OtherNameProperties.HAS_OTHER_NAME;
-import static dev.ikm.tinkar.terms.KernelTerm.DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.KernelConcept.DESCRIPTION_TYPE;
+
 import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
@@ -37,10 +38,7 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.*;
 import javafx.beans.InvalidationListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -113,8 +111,8 @@ public class AddOtherNameController extends AbstractBasicController {
         setAddOtherNameTitleLabel("Add New Description: Other Name");
         // Initialize view models
         otherNameViewModel
-                .setPropertyValue(NAME_TYPE, KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE)
-                .setPropertyValue(STATUS, KernelTerm.ACTIVE_STATE);
+                .setPropertyValue(NAME_TYPE, KernelConcept.REGULAR_NAME_DESCRIPTION_TYPE)
+                .setPropertyValue(STATUS, KernelConcept.ACTIVE_STATE);
         // register listeners
         InvalidationListener formValid = (obs) -> {
             boolean isFormValid = isFormPopulated();
@@ -139,7 +137,7 @@ public class AddOtherNameController extends AbstractBasicController {
     private void copyUIToViewModelProperties() {
         if (otherNameViewModel != null) {
             otherNameViewModel.setPropertyValue(NAME_TEXT, otherNameTextField.getText())
-                    .setPropertyValue(NAME_TYPE, KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE)
+                    .setPropertyValue(NAME_TYPE, KernelConcept.REGULAR_NAME_DESCRIPTION_TYPE)
                     .setPropertyValue(CASE_SIGNIFICANCE, caseSignificanceComboBox.getSelectionModel().getSelectedItem())
                     .setPropertyValue(STATUS, statusComboBox.getSelectionModel().getSelectedItem())
                     .setPropertyValue(MODULE, moduleComboBox.getSelectionModel().getSelectedItem())
@@ -244,26 +242,26 @@ public class AddOtherNameController extends AbstractBasicController {
     public void updateView() {
         // populate form combo fields module, status, case significance, lang.
         populate(typeDisplayComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), DESCRIPTION_TYPE));
-        populate(moduleComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), KometTerm.MODULE));
-        populate(statusComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), KometTerm.STATUS_VALUE));
+        populate(moduleComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), dev.ikm.komet.terms.KometConcept.MODULE));
+        populate(statusComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), KometConcept.STATUS_VALUE));
         populate(caseSignificanceComboBox, otherNameViewModel.findAllCaseSignificants(getViewProperties()));
-        populate(languageComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), KernelTerm.LANGUAGE));
+        populate(languageComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), KernelConcept.LANGUAGE));
 
-        typeDisplayComboBox.setValue(KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE);
+        typeDisplayComboBox.setValue(KernelConcept.REGULAR_NAME_DESCRIPTION_TYPE);
 
         boolean hasOtherName = getViewModel().getValue(HAS_OTHER_NAME);
 
         if (hasOtherName) {
             caseSignificanceComboBox.setValue(getViewModel().getValue(DESCRIPTION_CASE_SIGNIFICANCE));
         } else {
-            caseSignificanceComboBox.setValue(KernelTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
+            caseSignificanceComboBox.setValue(KernelConcept.DESCRIPTION_NOT_CASE_SENSITIVE);
         }
         statusComboBox.setValue(EntityHandle.get(State.ACTIVE.nid()).expectConcept());
-        moduleComboBox.setValue(KometTerm.DEVELOPMENT_MODULE);
+        moduleComboBox.setValue(KometConcept.DEVELOPMENT_MODULE);
         if (hasOtherName) {
             languageComboBox.setValue(getViewModel().getValue(DESCRIPTION_LANGUAGE));
         } else {
-            languageComboBox.setValue(KernelTerm.ENGLISH_LANGUAGE);
+            languageComboBox.setValue(KernelConcept.ENGLISH_LANGUAGE);
         }
     }
 

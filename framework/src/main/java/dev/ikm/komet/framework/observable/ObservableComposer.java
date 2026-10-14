@@ -15,19 +15,12 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.komet.terms.KometTerm;
-import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
+import dev.ikm.komet.terms.KometConcept;
+
+import static dev.ikm.komet.terms.KometConcept.BLANK_CONCEPT;
+import static dev.ikm.komet.terms.KometConcept.IMAGE_FIELD;
 import static dev.ikm.tinkar.common.service.PrimitiveData.SCOPED_PATTERN_PUBLICID_FOR_NID;
-import static dev.ikm.tinkar.terms.KernelTerm.BOOLEAN_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.BYTE_ARRAY_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_ID_LIST_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_ID_SET_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.DITREE_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.FLOAT_FIELD;
-import static dev.ikm.komet.terms.KometTerm.IMAGE_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.INTEGER_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.STRING;
+import static dev.ikm.tinkar.terms.KernelConcept.*;
 
 import dev.ikm.tinkar.common.id.LongIdCollection;
 import dev.ikm.tinkar.common.id.LongIds;
@@ -138,9 +131,9 @@ import java.util.Optional;
  * and the framework handles the rest:
  * <pre>{@code
  * ObservableComposer composer = ObservableComposer.builder()
- *     .author(KernelTerm.USER)
- *     .module(KernelTerm.PRIMORDIAL_MODULE)
- *     .path(KernelTerm.DEVELOPMENT_PATH)
+ *     .author(KernelConcept.USER)
+ *     .module(KernelConcept.PRIMORDIAL_MODULE)
+ *     .path(KernelConcept.DEVELOPMENT_PATH)
  *     .build();
  *
  * // Simple unified API - just provide a PublicId
@@ -177,9 +170,9 @@ import java.util.Optional;
  * <pre>{@code
  * // Create a new concept with observable properties
  * ObservableComposer composer = ObservableComposer.builder()
- *     .author(KernelTerm.USER)
- *     .module(KernelTerm.PRIMORDIAL_MODULE)
- *     .path(KernelTerm.DEVELOPMENT_PATH)
+ *     .author(KernelConcept.USER)
+ *     .module(KernelConcept.PRIMORDIAL_MODULE)
+ *     .path(KernelConcept.DEVELOPMENT_PATH)
  *     .build();
  *
  * // Start building a concept
@@ -215,8 +208,8 @@ import java.util.Optional;
  * // Create composer with editing context
  * ObservableComposer composer = ObservableComposer.builder()
  *     .author(currentUser)
- *     .module(KernelTerm.PRIMORDIAL_MODULE)
- *     .path(KernelTerm.DEVELOPMENT_PATH)
+ *     .module(KernelConcept.PRIMORDIAL_MODULE)
+ *     .path(KernelConcept.DEVELOPMENT_PATH)
  *     .build();
  *
  * // Edit the concept
@@ -239,9 +232,9 @@ import java.util.Optional;
  * <p><b>Pattern 3: Building Semantics with Fields</b>
  * <pre>{@code
  * ObservableComposer composer = ObservableComposer.builder()
- *     .author(KernelTerm.USER)
- *     .module(KernelTerm.PRIMORDIAL_MODULE)
- *     .path(KernelTerm.DEVELOPMENT_PATH)
+ *     .author(KernelConcept.USER)
+ *     .module(KernelConcept.PRIMORDIAL_MODULE)
+ *     .path(KernelConcept.DEVELOPMENT_PATH)
  *     .build();
  *
  * // Create semantic on a concept
@@ -253,8 +246,8 @@ import java.util.Optional;
  * // Set field values
  * semanticBuilder
  *     .setFieldValue(0, "English description text")
- *     .setFieldValue(1, KernelTerm.ENGLISH_LANGUAGE)
- *     .setFieldValue(2, KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+ *     .setFieldValue(1, KernelConcept.ENGLISH_LANGUAGE)
+ *     .setFieldValue(2, KernelConcept.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
  *
  * // Get editable fields for UI binding
  * ObservableList<ObservableField.Editable<?>> fields =
@@ -281,9 +274,9 @@ import java.util.Optional;
  * <p><b>Pattern 4: Transaction State Monitoring</b>
  * <pre>{@code
  * ObservableComposer composer = ObservableComposer.builder()
- *     .author(KernelTerm.USER)
- *     .module(KernelTerm.PRIMORDIAL_MODULE)
- *     .path(KernelTerm.DEVELOPMENT_PATH)
+ *     .author(KernelConcept.USER)
+ *     .module(KernelConcept.PRIMORDIAL_MODULE)
+ *     .path(KernelConcept.DEVELOPMENT_PATH)
  *     .build();
  *
  * // Bind UI to transaction state
@@ -1207,9 +1200,9 @@ public final class ObservableComposer {
      * <p><b>Example Usage</b>
      * <pre>{@code
      * ObservableComposer composer = ObservableComposer.builder()
-     *     .author(KernelTerm.USER)
-     *     .module(KernelTerm.PRIMORDIAL_MODULE)
-     *     .path(KernelTerm.DEVELOPMENT_PATH)
+     *     .author(KernelConcept.USER)
+     *     .module(KernelConcept.PRIMORDIAL_MODULE)
+     *     .path(KernelConcept.DEVELOPMENT_PATH)
      *     .build();
      *
      * // Create a new concept
@@ -1227,7 +1220,7 @@ public final class ObservableComposer {
      *
      * // Use concept as reference for other entities
      * ObservableSemanticBuilder semantic =
-     *     composer.createSemanticBuilder(KernelTerm.DESCRIPTION_PATTERN, concept);
+     *     composer.createSemanticBuilder(KernelPattern.DESCRIPTION_PATTERN, concept);
      *
      * // Commit when ready
      * composer.commit();
@@ -1374,7 +1367,7 @@ public final class ObservableComposer {
      * <pre>{@code
      * // Create a description semantic on a concept
      * ObservableSemanticBuilder builder = composer.createSemanticBuilder(
-     *     KernelTerm.DESCRIPTION_PATTERN,
+     *     KernelPattern.DESCRIPTION_PATTERN,
      *     myConcept
      * );
      *
@@ -1392,7 +1385,7 @@ public final class ObservableComposer {
      *
      * // Or set values programmatically
      * ((ObservableField.Editable<String>) fields.get(0)).setValue("My description");
-     * ((ObservableField.Editable<Object>) fields.get(1)).setValue(KernelTerm.ENGLISH_LANGUAGE);
+     * ((ObservableField.Editable<Object>) fields.get(1)).setValue(KernelConcept.ENGLISH_LANGUAGE);
      *
      * // Check for changes
      * if (builder.hasUnsavedChanges()) {
@@ -1666,7 +1659,7 @@ public final class ObservableComposer {
 
         private void makeEmptyVersion(PatternRecord patternRecord, ObservableStamp stampEntity, RecordListBuilder versions) {
             PatternVersionRecord patternVersionRecord = new PatternVersionRecord(patternRecord, stampEntity.nid(),
-            KometTerm.PURPOSE.nid(), KometTerm.MEANING.nid(),
+            KometConcept.PURPOSE.nid(), KometConcept.MEANING.nid(),
                     Lists.immutable.empty());
             versions.add(patternVersionRecord);
         }
@@ -1760,9 +1753,9 @@ public final class ObservableComposer {
      *
      * // Create composer and start editing
      * ObservableComposer composer = ObservableComposer.builder()
-     *     .author(KernelTerm.USER)
-     *     .module(KernelTerm.PRIMORDIAL_MODULE)
-     *     .path(KernelTerm.DEVELOPMENT_PATH)
+     *     .author(KernelConcept.USER)
+     *     .module(KernelConcept.PRIMORDIAL_MODULE)
+     *     .path(KernelConcept.DEVELOPMENT_PATH)
      *     .build();
      *
      * ObservableConceptEditor editor = composer.editConcept(concept);
@@ -1870,9 +1863,9 @@ public final class ObservableComposer {
      *
      * // Create composer and start editing
      * ObservableComposer composer = ObservableComposer.builder()
-     *     .author(KernelTerm.USER)
-     *     .module(KernelTerm.PRIMORDIAL_MODULE)
-     *     .path(KernelTerm.DEVELOPMENT_PATH)
+     *     .author(KernelConcept.USER)
+     *     .module(KernelConcept.PRIMORDIAL_MODULE)
+     *     .path(KernelConcept.DEVELOPMENT_PATH)
      *     .build();
      *
      * ObservableSemanticEditor editor = composer.editSemantic(semantic);

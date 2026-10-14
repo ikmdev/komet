@@ -32,8 +32,9 @@ import dev.ikm.tinkar.entity.SemanticVersionRecordBuilder;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
+import dev.ikm.tinkar.terms.KernelConcept;
+import dev.ikm.tinkar.terms.KernelPattern;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import org.carlfx.cognitive.validator.ValidationResult;
@@ -121,7 +122,7 @@ public class DescrNameViewModel extends FormViewModel {
     }
 
     public Set<ConceptEntity> findAllCaseSignificants(ViewProperties viewProperties) {
-        //FIXME after connect-a-thon put this query back or call NavigationReads.descendantsOf(getViewProperties().calculator(), KernelTerm.DESCRIPTION_CASE_SIGNIFICANCE)
+        //FIXME after connect-a-thon put this query back or call NavigationReads.descendantsOf(getViewProperties().calculator(), KernelConcept.DESCRIPTION_CASE_SIGNIFICANCE)
         return CASE_SIGNIFICANCE_OPTIONS;
     }
 
@@ -144,7 +145,7 @@ public class DescrNameViewModel extends FormViewModel {
         // the versions that we will first populate with the existing versions of the semantic
         RecordListBuilder versions = RecordListBuilder.make();
 
-        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(publicId, KernelTerm.DESCRIPTION_PATTERN.nid(),
+        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(publicId, KernelPattern.DESCRIPTION_PATTERN.nid(),
                 theSemantic.referencedComponentNid(), versions);
 
         // we are grabbing the form data
@@ -153,7 +154,7 @@ public class DescrNameViewModel extends FormViewModel {
         descriptionFields.add(getValue(LANGUAGE));
         descriptionFields.add(getValue(NAME_TEXT));
         descriptionFields.add(getValue(CASE_SIGNIFICANCE));
-        descriptionFields.add(KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+        descriptionFields.add(KernelConcept.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
 
         // iterating over the existing versions and adding them to a new record list builder
         theSemantic.versions().forEach(version -> versions.add(version));
@@ -219,7 +220,7 @@ public class DescrNameViewModel extends FormViewModel {
         // the versions that we will first populate with the existing versions of the semantic
         RecordListBuilder versions = RecordListBuilder.make();
 
-        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(publicId, KernelTerm.DESCRIPTION_PATTERN.nid(),
+        SemanticRecord descriptionSemantic = SemanticRecord.makeNew(publicId, KernelPattern.DESCRIPTION_PATTERN.nid(),
                 theSemantic.referencedComponentNid(), versions);
 
         // we grabbing the form data
@@ -228,7 +229,7 @@ public class DescrNameViewModel extends FormViewModel {
         descriptionFields.add(getValue(LANGUAGE));
         descriptionFields.add(getValue(NAME_TEXT));
         descriptionFields.add(getValue(CASE_SIGNIFICANCE));
-        descriptionFields.add(KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE);
+        descriptionFields.add(KernelConcept.REGULAR_NAME_DESCRIPTION_TYPE);
 
         // iterating over the existing versions and adding them to a new record list builder
         theSemantic.versions().forEach(version -> versions.add(version));

@@ -23,7 +23,7 @@ import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
 
 import java.util.List;
 import java.util.Map;
@@ -132,8 +132,8 @@ public final class PatternRequirementUtils {
      */
     public static boolean definesNecessaryOrSufficientSet(SemanticEntityVersion version) {
         return version.fieldValues().get(0) instanceof DiTreeEntity definition
-                && (definition.containsVertexWithMeaning(KernelTerm.NECESSARY_SET)
-                        || definition.containsVertexWithMeaning(KernelTerm.SUFFICIENT_SET));
+                && (definition.containsVertexWithMeaning(KernelConcept.NECESSARY_SET)
+                        || definition.containsVertexWithMeaning(KernelConcept.SUFFICIENT_SET));
     }
 
     /**

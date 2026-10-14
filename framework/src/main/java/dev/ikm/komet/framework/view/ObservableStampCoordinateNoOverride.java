@@ -17,7 +17,7 @@ package dev.ikm.komet.framework.view;
 
 import javafx.beans.property.*;
 import javafx.beans.value.ObservableValue;
-import dev.ikm.komet.terms.KometTerm;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinate;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
@@ -59,42 +59,42 @@ public class ObservableStampCoordinateNoOverride extends ObservableStampCoordina
     @Override
     protected SimpleEqualityBasedObjectProperty<ImmutableList<ConceptFacade>> makeModulePriorityOrderProperty(StampCoordinate stampCoordinate) {
         return new SimpleEqualityBasedObjectProperty<>(this,
-                KometTerm.MODULE_PREFERENCE_ORDER_FOR_STAMP_COORDINATE.toXmlFragment(),
+                KometConcept.MODULE_PREFERENCE_ORDER_FOR_STAMP_COORDINATE.toXmlFragment(),
                 stampCoordinate.modulePriorityNidList().map(ConceptFacade::make));
     }
 
     @Override
     protected LongProperty makeTimeProperty(StampCoordinate stampCoordinate) {
         return new SimpleLongProperty(this,
-                KometTerm.POSITION_ON_PATH.toXmlFragment(),
+                KometConcept.POSITION_ON_PATH.toXmlFragment(),
                 stampCoordinate.stampPosition().time());
     }
 
     @Override
     protected ObjectProperty<ConceptFacade> makePathConceptProperty(StampCoordinate stampCoordinate) {
         return new SimpleEqualityBasedObjectProperty<>(this,
-                KometTerm.PATH_FOR_PATH_COORDINATE.toXmlFragment(),
+                KometConcept.PATH_FOR_PATH_COORDINATE.toXmlFragment(),
                 stampCoordinate.pathForFilter());
     }
 
     @Override
     protected ObjectProperty<StateSet> makeAllowedStatusProperty(StampCoordinate stampCoordinate) {
         return new SimpleEqualityBasedObjectProperty<>(this,
-                KometTerm.ALLOWED_STATES_FOR_STAMP_COORDINATE.toXmlFragment(),
+                KometConcept.ALLOWED_STATES_FOR_STAMP_COORDINATE.toXmlFragment(),
                 stampCoordinate.allowedStates());
     }
 
     @Override
     protected SimpleEqualityBasedObjectProperty<ImmutableSet<ConceptFacade>> makeExcludedModuleSpecificationsProperty(StampCoordinate stampCoordinate) {
         return new SimpleEqualityBasedObjectProperty<>(this,
-                KometTerm.MODULE_EXCLUSION_SET_FOR_STAMP_COORDINATE.toXmlFragment(),
+                KometConcept.MODULE_EXCLUSION_SET_FOR_STAMP_COORDINATE.toXmlFragment(),
                 stampCoordinate.excludedModuleNids().map(ConceptFacade::make));
     }
 
     @Override
     protected SimpleEqualityBasedObjectProperty<ImmutableSet<ConceptFacade>> makeModuleSpecificationsProperty(StampCoordinate stampCoordinate) {
         return new SimpleEqualityBasedObjectProperty<>(this,
-                KometTerm.MODULES_FOR_STAMP_COORDINATE.toXmlFragment(),
+                KometConcept.MODULES_FOR_STAMP_COORDINATE.toXmlFragment(),
                 stampCoordinate.moduleNids().map(ConceptFacade::make));
     }
 

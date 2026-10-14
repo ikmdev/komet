@@ -15,10 +15,11 @@
  */
 package dev.ikm.komet.framework.builder;
 
-import dev.ikm.komet.terms.KometTerm;
 import io.soabase.recordbuilder.core.RecordBuilder;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
+import dev.ikm.tinkar.terms.KernelPattern;
 
 @RecordBuilder
 public record DescriptionBuilderRecord(ConceptFacade language, String text,
@@ -27,30 +28,30 @@ public record DescriptionBuilderRecord(ConceptFacade language, String text,
                                        AcceptabilityRecord... acceptabilityRecords)
         implements DescriptionBuilderRecordBuilder.With {
     public static DescriptionBuilderRecord makeRegularName(String text) {
-        return new DescriptionBuilderRecord(KernelTerm.ENGLISH_LANGUAGE,
+        return new DescriptionBuilderRecord(KernelConcept.ENGLISH_LANGUAGE,
                 text,
-                KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE,
-                KernelTerm.DESCRIPTION_NOT_CASE_SENSITIVE,
-                new AcceptabilityRecord(KernelTerm.US_DIALECT_PATTERN, KernelTerm.PREFERRED),
-                new AcceptabilityRecord(KernelTerm.GB_DIALECT_PATTERN, KernelTerm.PREFERRED));
+                KernelConcept.REGULAR_NAME_DESCRIPTION_TYPE,
+                KernelConcept.DESCRIPTION_NOT_CASE_SENSITIVE,
+                new AcceptabilityRecord(KernelPattern.US_DIALECT_PATTERN, KernelConcept.PREFERRED),
+                new AcceptabilityRecord(KernelPattern.GB_DIALECT_PATTERN, KernelConcept.PREFERRED));
     }
 
     public static DescriptionBuilderRecord makeFullyQualifiedName(String text) {
-        return new DescriptionBuilderRecord(KernelTerm.ENGLISH_LANGUAGE,
+        return new DescriptionBuilderRecord(KernelConcept.ENGLISH_LANGUAGE,
                 text,
-                KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE,
-                KernelTerm.DESCRIPTION_NOT_CASE_SENSITIVE,
-                new AcceptabilityRecord(KernelTerm.US_DIALECT_PATTERN, KernelTerm.PREFERRED),
-                new AcceptabilityRecord(KernelTerm.GB_DIALECT_PATTERN, KernelTerm.PREFERRED));
+                KernelConcept.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE,
+                KernelConcept.DESCRIPTION_NOT_CASE_SENSITIVE,
+                new AcceptabilityRecord(KernelPattern.US_DIALECT_PATTERN, KernelConcept.PREFERRED),
+                new AcceptabilityRecord(KernelPattern.GB_DIALECT_PATTERN, KernelConcept.PREFERRED));
     }
 
     public static DescriptionBuilderRecord makeSynonym(String text) {
-        return new DescriptionBuilderRecord(KernelTerm.ENGLISH_LANGUAGE,
+        return new DescriptionBuilderRecord(KernelConcept.ENGLISH_LANGUAGE,
                 text,
-                KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE,
-                KernelTerm.DESCRIPTION_NOT_CASE_SENSITIVE,
-                new AcceptabilityRecord(KernelTerm.US_DIALECT_PATTERN, KometTerm.ACCEPTABLE),
-                new AcceptabilityRecord(KernelTerm.GB_DIALECT_PATTERN, KometTerm.ACCEPTABLE));
+                KernelConcept.REGULAR_NAME_DESCRIPTION_TYPE,
+                KernelConcept.DESCRIPTION_NOT_CASE_SENSITIVE,
+                new AcceptabilityRecord(KernelPattern.US_DIALECT_PATTERN, KometConcept.ACCEPTABLE),
+                new AcceptabilityRecord(KernelPattern.GB_DIALECT_PATTERN, KometConcept.ACCEPTABLE));
     }
 
 }

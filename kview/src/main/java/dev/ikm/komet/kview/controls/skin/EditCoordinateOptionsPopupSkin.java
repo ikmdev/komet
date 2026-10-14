@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.controls.skin;
 
-import dev.ikm.komet.terms.KometTerm;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.komet.framework.view.ObservableEditCoordinate;
 import dev.ikm.komet.kview.controls.EditCoordinateOptionsPopup;
@@ -10,7 +10,7 @@ import dev.ikm.komet.kview.mvvm.model.ViewCoordinateHelper;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelPattern;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.scene.Node;
@@ -61,11 +61,11 @@ public class EditCoordinateOptionsPopupSkin implements Skin<EditCoordinateOption
         ObservableEditCoordinate editCoordinate = control.getViewProperties().parentView().editCoordinate();
 
         ViewCalculator navCalculator = ViewCoordinateHelper.createNavigationCalculatorWithPatternNidsLatest(
-                control.getViewProperties(), KernelTerm.STATED_NAVIGATION_PATTERN.nid());
+                control.getViewProperties(), KernelPattern.STATED_NAVIGATION_PATTERN.nid());
         List<ConceptEntity> sortedModules = sortedByName(
-                NavigationReads.descendantsOf(navCalculator, KometTerm.MODULE), navCalculator);
+                NavigationReads.descendantsOf(navCalculator, KometConcept.MODULE), navCalculator);
         List<ConceptEntity> sortedPaths = sortedByName(
-                NavigationReads.leafDescendantsOf(navCalculator, KometTerm.PATH), navCalculator);
+                NavigationReads.leafDescendantsOf(navCalculator, KometConcept.PATH), navCalculator);
 
         VBox fieldsBox = new VBox(8,
                 createReadOnlyAuthorField(editCoordinate),

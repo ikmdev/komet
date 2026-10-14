@@ -48,12 +48,9 @@ import static dev.ikm.tinkar.coordinate.stamp.StampFields.PATH;
 import static dev.ikm.tinkar.coordinate.stamp.StampFields.STATUS;
 import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
 import static dev.ikm.tinkar.events.FrameworkTopics.RULES_TOPIC;
-import static dev.ikm.tinkar.terms.KernelTerm.DESCRIPTION_CASE_SIGNIFICANCE;
-import static dev.ikm.tinkar.terms.KernelTerm.DESCRIPTION_PATTERN;
-import static dev.ikm.tinkar.terms.KernelTerm.DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.KernelTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
-import static dev.ikm.tinkar.terms.KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.KernelConcept.*;
+import static dev.ikm.tinkar.terms.KernelPattern.DESCRIPTION_PATTERN;
+
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.framework.observable.ObservableComposer;
@@ -108,11 +105,7 @@ import dev.ikm.tinkar.events.AxiomChangeEvent;
 import dev.ikm.tinkar.events.EvtBus;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
-import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.*;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.collections.ObservableList;
@@ -1190,7 +1183,7 @@ public class ConceptController {
 
         // create textflow to hold regular name label
         TextFlow row1 = new TextFlow();
-        String otherNameDescText = getFieldValueByMeaning(semanticEntityVersion, KernelTerm.TEXT_FOR_DESCRIPTION);
+        String otherNameDescText = getFieldValueByMeaning(semanticEntityVersion, KernelConcept.TEXT_FOR_DESCRIPTION);
         Text otherNameLabel = new Text(otherNameDescText);
         otherNameLabel.getStyleClass().add("descr-concept-name");
 
@@ -1403,7 +1396,7 @@ public class ConceptController {
                         return;
                     }
                     // Filter (include) semantics where they contain descr type having FQN, Regular name, Definition Descr.
-                    EntityFacade descriptionTypeConceptValue = getFieldValueByMeaning(semanticEntityVersionLatest.get(), KernelTerm.DESCRIPTION_TYPE);
+                    EntityFacade descriptionTypeConceptValue = getFieldValueByMeaning(semanticEntityVersionLatest.get(), KernelConcept.DESCRIPTION_TYPE);
 
                     PatternEntity<PatternEntityVersion> patternEntity = semanticEntity.pattern();
                     PatternEntityVersion patternEntityVersion = viewCalculator.latest(patternEntity).get();

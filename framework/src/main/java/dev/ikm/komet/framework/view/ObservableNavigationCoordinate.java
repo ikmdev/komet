@@ -22,8 +22,8 @@ import dev.ikm.tinkar.coordinate.logic.PremiseType;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinateRecord;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinateDelegate;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
+import dev.ikm.tinkar.terms.KernelPattern;
 import dev.ikm.tinkar.terms.PatternFacade;
-import dev.ikm.tinkar.terms.KernelTerm;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.set.ImmutableSet;
@@ -60,10 +60,10 @@ public interface ObservableNavigationCoordinate
     default void setPremiseType(PremiseType premiseType) {
         switch (premiseType) {
             case STATED:
-                navigationPatternsProperty().setValue(Sets.immutable.<PatternFacade>of(KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN));
+                navigationPatternsProperty().setValue(Sets.immutable.<PatternFacade>of(KernelPattern.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN));
                 break;
             case INFERRED:
-                navigationPatternsProperty().setValue(Sets.immutable.<PatternFacade>of(KernelTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN));
+                navigationPatternsProperty().setValue(Sets.immutable.<PatternFacade>of(KernelPattern.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN));
                 break;
         }
     }

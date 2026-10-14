@@ -16,9 +16,7 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.common.service.RemoteConceptSearchService;
 import dev.ikm.tinkar.common.service.ServiceLifecycleManager;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -171,7 +169,7 @@ public final class StandardEditorWindows {
 
         // Definition
         EditorPatternModel definitions = createDescriptionColumn(viewCalculator,
-                "Definition:", KernelTerm.DEFINITION_DESCRIPTION_TYPE, 0);
+                "Definition:", KernelConcept.DEFINITION_DESCRIPTION_TYPE, 0);
         definitions.setRowIndex(1);
         definitions.setColumnSpan(2);
         descriptionSection.getPatterns().add(definitions);
@@ -194,7 +192,7 @@ public final class StandardEditorWindows {
      */
     private static void populateDescriptionNameColumns(ViewCalculator viewCalculator,
                                                        EditorSectionModel descriptionSection) {
-        ensureLocallyResolvable(viewCalculator, KernelTerm.DESCRIPTION_PATTERN);
+        ensureLocallyResolvable(viewCalculator, KernelPattern.DESCRIPTION_PATTERN);
 
         // Named here rather than left to the section's auto-naming, which would take the name from the
         // authored title of the first pattern placed in it ("Fully qualified names:").
@@ -204,13 +202,13 @@ public final class StandardEditorWindows {
 
         // FQN
         EditorPatternModel fullyQualifiedNames = createDescriptionColumn(viewCalculator,
-                "Fully qualified names:", KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE, 0);
+                "Fully qualified names:", KernelConcept.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE, 0);
         fullyQualifiedNames.setRequired(true);
         requireFullyQualifiedName(fullyQualifiedNames, viewCalculator);
 
         // Other name
         EditorPatternModel otherNames = createDescriptionColumn(viewCalculator,
-                "Other names:", KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE, 1);
+                "Other names:", KernelConcept.REGULAR_NAME_DESCRIPTION_TYPE, 1);
 
         descriptionSection.getPatterns().addAll(fullyQualifiedNames, otherNames);
     }
@@ -221,10 +219,10 @@ public final class StandardEditorWindows {
      * their text.
      */
     private static EditorPatternModel createDescriptionColumn(ViewCalculator viewCalculator, String title,
-                                                              EntityProxy.Concept descriptionType,
+                                                              ConceptFacade descriptionType,
                                                               int columnIndex) {
         EditorPatternModel descriptionColumn =
-                new EditorPatternModel(viewCalculator, KernelTerm.DESCRIPTION_PATTERN.nid());
+                new EditorPatternModel(viewCalculator, KernelPattern.DESCRIPTION_PATTERN.nid());
         descriptionColumn.setTitle(title);
         descriptionColumn.setTitleVisible(true);
         descriptionColumn.setColumnIndex(columnIndex);
@@ -240,15 +238,15 @@ public final class StandardEditorWindows {
      * "Description type" field (see {@link EditorPatternSemanticFilter}).
      */
     private static void filterByDescriptionType(EditorPatternModel descriptionPattern,
-                                                EntityProxy.Concept descriptionType,
+                                                ConceptFacade descriptionType,
                                                 ViewCalculator viewCalculator) {
         ensureLocallyResolvable(viewCalculator, descriptionType);
 
-        viewCalculator.latestPatternEntityVersion(KernelTerm.DESCRIPTION_PATTERN).ifPresent(patternVersion -> {
+        viewCalculator.latestPatternEntityVersion(KernelPattern.DESCRIPTION_PATTERN).ifPresent(patternVersion -> {
             EditorPatternSemanticFilter descriptionTypeFilter = new EditorPatternSemanticFilter();
             descriptionTypeFilter.getFieldConstraints().put(
-                    patternVersion.indexForMeaning(KernelTerm.DESCRIPTION_TYPE),
-                    descriptionType);
+                    patternVersion.indexForMeaning(KernelConcept.DESCRIPTION_TYPE),
+                    descriptionType.toProxy());
             descriptionPattern.getSemanticFilters().add(descriptionTypeFilter);
         });
     }
@@ -259,8 +257,8 @@ public final class StandardEditorWindows {
      */
     private static void showDescriptionTextOnly(EditorPatternModel descriptionPattern,
                                                 ViewCalculator viewCalculator) {
-        viewCalculator.latestPatternEntityVersion(KernelTerm.DESCRIPTION_PATTERN).ifPresent(patternVersion -> {
-            int textFieldIndex = patternVersion.indexForMeaning(KernelTerm.TEXT_FOR_DESCRIPTION);
+        viewCalculator.latestPatternEntityVersion(KernelPattern.DESCRIPTION_PATTERN).ifPresent(patternVersion -> {
+            int textFieldIndex = patternVersion.indexForMeaning(KernelConcept.TEXT_FOR_DESCRIPTION);
             descriptionPattern.getVisibleFields().removeIf(field -> field.getIndex() != textFieldIndex);
             descriptionPattern.getVisibleFields().forEach(textField -> {
                 // The fields were laid out one per row in pattern order, so the text field kept the row
@@ -315,9 +313,9 @@ public final class StandardEditorWindows {
         axiomSection.setName("Axiom");
 
         EditorPatternModel inferredDefinitionPattern = new EditorPatternModel(viewCalculator,
-                KernelTerm.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid());
+                KernelPattern.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN.nid());
         EditorPatternModel statedDefinitionPattern = new EditorPatternModel(viewCalculator,
-                KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid());
+                KernelPattern.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid());
         // Required like in the classic concept window: the concept can only be created once its
         // stated definition has a necessary or sufficient set (the required check is
         // definition-aware for this pattern, not just semantic-existence).
@@ -335,13 +333,13 @@ public final class StandardEditorWindows {
      */
     private static void requireFullyQualifiedName(EditorPatternModel descriptionPattern,
                                                   ViewCalculator viewCalculator) {
-        ensureLocallyResolvable(viewCalculator, KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+        ensureLocallyResolvable(viewCalculator, KernelConcept.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
 
-        viewCalculator.latestPatternEntityVersion(KernelTerm.DESCRIPTION_PATTERN).ifPresent(patternVersion -> {
+        viewCalculator.latestPatternEntityVersion(KernelPattern.DESCRIPTION_PATTERN).ifPresent(patternVersion -> {
             EditorPatternRequirement fullyQualifiedNameRequirement = new EditorPatternRequirement();
             fullyQualifiedNameRequirement.getFieldConstraints().put(
-                    patternVersion.indexForMeaning(KernelTerm.DESCRIPTION_TYPE),
-                    KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+                    patternVersion.indexForMeaning(KernelConcept.DESCRIPTION_TYPE),
+                    KernelConcept.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.toProxy());
             descriptionPattern.getRequirements().add(fullyQualifiedNameRequirement);
         });
     }

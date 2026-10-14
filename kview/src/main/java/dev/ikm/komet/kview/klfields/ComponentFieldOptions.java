@@ -15,32 +15,24 @@
  */
 package dev.ikm.komet.kview.klfields;
 
-import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.komet.layout.KlTerms;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.tinkar.component.FeatureDefinition;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityHandle;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static dev.ikm.tinkar.terms.KernelTerm.DEFINITION_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.KernelTerm.DESCRIPTION_ACCEPTABILITY;
-import static dev.ikm.tinkar.terms.KernelTerm.DESCRIPTION_CASE_SIGNIFICANCE;
-import static dev.ikm.tinkar.terms.KernelTerm.DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.KernelTerm.LANGUAGE;
-import static dev.ikm.tinkar.terms.KernelTerm.LANGUAGE_CONCEPT_NID_FOR_DESCRIPTION;
-import static dev.ikm.komet.terms.KometTerm.MODULE;
-import static dev.ikm.komet.terms.KometTerm.PATH;
-import static dev.ikm.tinkar.terms.KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.komet.terms.KometTerm.STATUS_VALUE;
+import static dev.ikm.komet.terms.KometConcept.*;
+import static dev.ikm.tinkar.terms.KernelConcept.*;
 
 /**
  * Decides, for a component field of a semantic, whether the user must choose from a
@@ -64,16 +56,16 @@ public final class ComponentFieldOptions {
      * The field data types a pattern field may be given here; the data types with no
      * editor (trees, graphs, arrays, points, instants, UUIDs) are left out.
      */
-    private static final List<EntityProxy.Concept> SUPPORTED_FIELD_DATA_TYPES = List.of(
-            KernelTerm.STRING,
-            KernelTerm.COMPONENT_FIELD,
-            KernelTerm.COMPONENT_ID_SET_FIELD,
-            KernelTerm.COMPONENT_ID_LIST_FIELD,
-            KernelTerm.INTEGER_FIELD,
-            KernelTerm.FLOAT_FIELD,
-            KernelTerm.BOOLEAN_FIELD,
-            KernelTerm.BYTE_ARRAY_FIELD,
-            KometTerm.IMAGE_FIELD);
+    private static final List<ConceptFacade> SUPPORTED_FIELD_DATA_TYPES = List.of(
+            KernelConcept.STRING,
+            KernelConcept.COMPONENT_FIELD,
+            KernelConcept.COMPONENT_ID_SET_FIELD,
+            KernelConcept.COMPONENT_ID_LIST_FIELD,
+            KernelConcept.INTEGER_FIELD,
+            KernelConcept.FLOAT_FIELD,
+            KernelConcept.BOOLEAN_FIELD,
+            KernelConcept.BYTE_ARRAY_FIELD,
+            KometConcept.IMAGE_FIELD);
 
     private ComponentFieldOptions() {
     }
@@ -145,12 +137,12 @@ public final class ComponentFieldOptions {
                 .mapToObj(nid -> EntityHandle.get(nid).expectConcept().toProxy());
     }
 
-    private static List<EntityProxy> sortedByName(ViewCalculator viewCalculator, Stream<? extends EntityProxy> options) {
+    private static List<EntityProxy> sortedByName(ViewCalculator viewCalculator, Stream<? extends EntityFacade> options) {
         return options
                 .sorted(Comparator.comparing(
                         proxy -> viewCalculator.languageCalculator().getDescriptionTextOrNid(proxy.nid()),
                         String.CASE_INSENSITIVE_ORDER))
-                .map(EntityProxy.class::cast)
+                .<EntityProxy>map(EntityFacade::toProxy)
                 .toList();
     }
 }

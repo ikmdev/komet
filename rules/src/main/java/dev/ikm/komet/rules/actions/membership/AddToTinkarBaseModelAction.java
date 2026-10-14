@@ -33,7 +33,7 @@ import dev.ikm.tinkar.terms.State;
 
 import java.util.Optional;
 
-import static dev.ikm.tinkar.terms.KernelTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN;
+import static dev.ikm.tinkar.terms.KernelPattern.TINKAR_BASE_MODEL_COMPONENT_PATTERN;
 
 public class AddToTinkarBaseModelAction extends AbstractActionSuggested {
     final ConceptEntityVersion conceptVersion;
@@ -58,7 +58,7 @@ public class AddToTinkarBaseModelAction extends AbstractActionSuggested {
     }
 
     private SemanticRecord createSemantic(EditCoordinateRecord editCoordinateRecord) {
-        PublicId newSemanticId = PublicIds.singleSemanticId(TINKAR_BASE_MODEL_COMPONENT_PATTERN, conceptVersion.publicId());
+        PublicId newSemanticId = PublicIds.singleSemanticId(TINKAR_BASE_MODEL_COMPONENT_PATTERN.publicId(), conceptVersion.publicId());
         RecordListBuilder versionListBuilder = RecordListBuilder.make();
         SemanticRecord newSemantic = SemanticRecord.makeNew(newSemanticId, TINKAR_BASE_MODEL_COMPONENT_PATTERN, conceptVersion.nid(), versionListBuilder);
         Transaction transaction = Transaction.make();

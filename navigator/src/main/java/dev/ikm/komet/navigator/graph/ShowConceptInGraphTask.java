@@ -22,12 +22,12 @@ import dev.ikm.tinkar.common.id.LongIds;
  import dev.ikm.tinkar.common.id.LongIdList;
  import dev.ikm.tinkar.common.id.LongIds;
  import dev.ikm.tinkar.common.service.PrimitiveData;
- import javafx.application.Platform;
+import dev.ikm.tinkar.terms.KernelConcept;
+import javafx.application.Platform;
  import org.eclipse.collections.api.factory.Lists;
  import org.eclipse.collections.api.list.ImmutableList;
  import org.eclipse.collections.api.list.MutableList;
  import org.eclipse.collections.api.list.primitive.MutableLongList;
-import dev.ikm.tinkar.terms.KernelTerm;
 import org.eclipse.collections.impl.factory.primitive.LongLists;
 import dev.ikm.tinkar.common.alert.AlertObject;
 import dev.ikm.tinkar.common.service.TrackingCallable;
@@ -81,10 +81,10 @@ public class ShowConceptInGraphTask extends TrackingCallable<Void> {
         // There are other options in the list that include SOLOR_CONCEPT, so we will find the lowest score that ends with
         // Solor concept
         LongIdList bestPath = sortedListsForReturn.first().pathToRoot;
-        if (bestPath.get(bestPath.size()-1) != KernelTerm.ROOT_VERTEX.nid()) {
+        if (bestPath.get(bestPath.size()-1) != KernelConcept.ROOT_VERTEX.nid()) {
             for (PathToRootWithScore pathToRootWithScore: sortedListsForReturn) {
                 if (pathToRootWithScore.pathToRoot.get(pathToRootWithScore.pathToRoot.size()-1)
-                        == KernelTerm.ROOT_VERTEX.nid()) {
+                        == KernelConcept.ROOT_VERTEX.nid()) {
                     bestPath = pathToRootWithScore.pathToRoot;
                     break;
                 }

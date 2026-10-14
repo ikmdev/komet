@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.MEANING_ENTITY;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
-import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
+import static dev.ikm.komet.terms.KometConcept.BLANK_CONCEPT;
 
 
 public class PatternDefinitionViewModel extends FormViewModel {

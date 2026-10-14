@@ -23,16 +23,9 @@ import javafx.scene.layout.VBox;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import static dev.ikm.tinkar.terms.KernelTerm.BOOLEAN_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_ID_LIST_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_ID_SET_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.CONCEPT_FIELD;
-import static dev.ikm.komet.terms.KometTerm.FLOAT;
-import static dev.ikm.tinkar.terms.KernelTerm.FLOAT_FIELD;
-import static dev.ikm.komet.terms.KometTerm.IMAGE_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.INTEGER_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.STRING;
+import static dev.ikm.komet.terms.KometConcept.FLOAT;
+import static dev.ikm.komet.terms.KometConcept.IMAGE_FIELD;
+import static dev.ikm.tinkar.terms.KernelConcept.*;
 
 public class FieldPropertiesPane extends GridNodePropertiesPane<EditorFieldModel> {
     public static final String DEFAULT_STYLE_CLASS = "field-properties";

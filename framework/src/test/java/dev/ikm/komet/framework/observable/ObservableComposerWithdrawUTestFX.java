@@ -26,7 +26,8 @@ import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.fixtures.StarterDataEphemeralProvider;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
+import dev.ikm.tinkar.terms.KernelPattern;
 import dev.ikm.tinkar.terms.State;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,8 +52,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ObservableComposerWithdrawUTestFX {
 
     private static ObservableComposer newComposer(String comment) {
-        return ObservableComposer.create(Calculators.View.Default(), State.ACTIVE, KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE, KernelTerm.DEVELOPMENT_PATH, comment);
+        return ObservableComposer.create(Calculators.View.Default(), State.ACTIVE, KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE, KernelConcept.DEVELOPMENT_PATH, comment);
     }
 
     /** A committed concept to hang description semantics on. */
@@ -84,7 +85,7 @@ class ObservableComposerWithdrawUTestFX {
     /** A description semantic of the concept, saved uncommitted in the composer's transaction with the given text. */
     private static ObservableSemantic saveDescription(ObservableComposer composer, ObservableConcept concept, String text) {
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticComposer =
-                composer.composeSemantic(PublicIds.newRandom(), concept, KernelTerm.DESCRIPTION_PATTERN);
+                composer.composeSemantic(PublicIds.newRandom(), concept, KernelPattern.DESCRIPTION_PATTERN);
         setText(semanticComposer, text);
         semanticComposer.save();
         return semanticComposer.getEntity();
@@ -156,7 +157,7 @@ class ObservableComposerWithdrawUTestFX {
         ObservableSemantic held = ObservableEntityHandle.get(description.nid()).expectSemantic();
         ObservableComposer editor = newComposer("edit");
         saveDescription(editor, concept, "other");
-        var semanticComposer = editor.composeSemantic(description.publicId(), concept, KernelTerm.DESCRIPTION_PATTERN);
+        var semanticComposer = editor.composeSemantic(description.publicId(), concept, KernelPattern.DESCRIPTION_PATTERN);
         setText(semanticComposer, "edited, then withdrawn");
         semanticComposer.save();
         assertEquals(2, held.versions().size(), "the held observable shows the saved edit");
@@ -181,7 +182,7 @@ class ObservableComposerWithdrawUTestFX {
 
         ObservableComposer editor = newComposer("edit");
         ObservableSemantic other = saveDescription(editor, concept, "other");
-        var semanticComposer = editor.composeSemantic(description.publicId(), concept, KernelTerm.DESCRIPTION_PATTERN);
+        var semanticComposer = editor.composeSemantic(description.publicId(), concept, KernelPattern.DESCRIPTION_PATTERN);
         setText(semanticComposer, "edited, then withdrawn");
         semanticComposer.save();
         assertEquals("edited, then withdrawn", latestText(description.nid()));

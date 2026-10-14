@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.navigator.graph;
 
+import dev.ikm.tinkar.terms.KernelConcept;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
@@ -23,7 +24,6 @@ import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.KernelTerm;
 
 import java.util.ArrayList;
 
@@ -71,7 +71,7 @@ public class EmptyNavigator implements Navigator {
     @Override
     public long[] getRootNids() {
         if (roots.isEmpty()) {
-            return new long[]{KernelTerm.UNINITIALIZED_COMPONENT.nid()};
+            return new long[]{KernelConcept.UNINITIALIZED_COMPONENT.nid()};
         }
         return roots.stream().mapToLong(value -> value.nid()).toArray();
     }

@@ -1,12 +1,13 @@
 package dev.ikm.komet.framework.observable;
 
 import dev.ikm.tinkar.common.id.LongIds;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
+import static dev.ikm.komet.terms.KometConcept.BLANK_CONCEPT;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -25,7 +26,7 @@ class ObservableComposerDefaultFieldValuesTest {
         assertTrue(ObservableComposer.isDefaultFieldValue(null), "null, an unsupported data type's start");
         assertTrue(ObservableComposer.isDefaultFieldValue(BLANK_CONCEPT), "the blank concept");
         assertTrue(ObservableComposer.isDefaultFieldValue(
-                EntityProxy.Concept.make("Blank", BLANK_CONCEPT.leastUuid())), "any facade of the blank concept");
+                EntityProxy.Concept.make("Blank", BLANK_CONCEPT.publicId().leastUuid())), "any facade of the blank concept");
         assertTrue(ObservableComposer.isDefaultFieldValue(""), "empty string");
         assertTrue(ObservableComposer.isDefaultFieldValue(0), "zero integer");
         assertTrue(ObservableComposer.isDefaultFieldValue(0.0F), "zero float");

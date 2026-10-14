@@ -15,8 +15,8 @@
  */
 package dev.ikm.komet.rules.actions.axiom;
 
-import dev.ikm.komet.terms.KometTerm;
 import dev.ikm.komet.framework.panel.axiom.AxiomSubjectRecord;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalAxiom;
 import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpressionBuilder;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
@@ -36,7 +36,7 @@ public class AddSomeRole extends AbstractAxiomAction {
     @Override
     public void doAction(ActionEvent t, AxiomSubjectRecord axiomSubjectRecord, EditCoordinateRecord editCoordinate) {
         LogicalExpressionBuilder leb = new LogicalExpressionBuilder(axiomSubjectRecord.axiomTree());
-        LogicalAxiom.Atom.TypedAtom.Role role = leb.SomeRole(KometTerm.UNMODELED_ROLE_CONCEPT, leb.ConceptAxiom(KometTerm.UNMODELED_ROLE_CONCEPT));
+        LogicalAxiom.Atom.TypedAtom.Role role = leb.SomeRole(KometConcept.UNMODELED_ROLE_CONCEPT, leb.ConceptAxiom(KometConcept.UNMODELED_ROLE_CONCEPT));
         leb.addToFirstAnd(axiomSubjectRecord.axiomIndex(), role);
         putUpdatedLogicalExpression(editCoordinate, leb.build());
     }

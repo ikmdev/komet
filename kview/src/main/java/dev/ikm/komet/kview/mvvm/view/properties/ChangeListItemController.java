@@ -46,9 +46,9 @@ import java.util.Set;
 import java.util.function.Function;
 
 import static dev.ikm.komet.kview.fxutils.CssHelper.toWebColor;
+import static dev.ikm.komet.terms.KometConcept.MODULE_FOR_VERSION;
 import static dev.ikm.tinkar.common.util.Symbols.HEAVY_TRIANGLE_HEADED_RIGHTWARDS_ARROW;
-import static dev.ikm.tinkar.terms.KernelTerm.*;
-import static dev.ikm.komet.terms.KometTerm.MODULE_FOR_VERSION;
+import static dev.ikm.tinkar.terms.KernelConcept.*;
 
 /**
  * Displays change chronology based on an entity's versions. For example A concept was created and updated over time.

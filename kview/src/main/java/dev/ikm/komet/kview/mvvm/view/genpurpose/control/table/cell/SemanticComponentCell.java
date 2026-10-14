@@ -10,7 +10,7 @@ import javafx.scene.control.TableCell;
 
 import java.util.function.Function;
 
-import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
+import static dev.ikm.komet.terms.KometConcept.BLANK_CONCEPT;
 
 public class SemanticComponentCell extends TableCell<SemanticRow, EntityProxy> {
     private final Function<EntityProxy, ComponentItem> entityProxyToComponentItem;
