@@ -106,10 +106,16 @@ class PatternInstancesPanelUTestFX {
     }
 
     @Test
-    @DisplayName("Renders the empty panel to target/pattern-instances/panel.png for a visual check")
+    @DisplayName("Renders the panel, with text in its search field, to target/pattern-instances/panel.png for a visual check")
     void renderPanel() {
         FxRobot robot = new FxRobot();
         Path path = Path.of("target", "pattern-instances", "panel.png");
+        // Text in the focused field brings up its clear button, next to the filter glyph.
+        robot.interact(() -> {
+            var field = (javafx.scene.control.TextField) window.lookup(".instances-search .auto-complete-text-field");
+            field.requestFocus();
+            field.setText("Double");
+        });
         robot.interact(() -> {
             path.getParent().toFile().mkdirs();
             CaptureSupport capture = FxService.serviceContext().getCaptureSupport();

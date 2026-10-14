@@ -38,6 +38,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.time.Instant;
@@ -106,6 +107,10 @@ public class PatternInstanceListCell extends ListCell<Long> {
         textContainer.getStyleClass().add("text-container");
         textContainer.setMinWidth(0);
         HBox.setHgrow(textContainer, Priority.ALWAYS);
+
+        // A long title gives way (ellipsis), never the chip: when the row is short of room the HBox
+        // shrinks every child towards its minimum, and a label's minimum is its ellipsis alone.
+        statusChip.setMinWidth(Region.USE_PREF_SIZE);
 
         card.getChildren().addAll(identicon, textContainer, statusChip);
         card.setAlignment(Pos.CENTER_LEFT);

@@ -72,6 +72,9 @@ public class PatternInstancesPanel extends BorderPane {
      */
     public PatternInstancesPanel(ViewCalculator viewCalculator) {
         searchField = KLComponentControlFactory.createInlineSearchField(viewCalculator);
+        // The suggestions popup is styled from kview.css under this class: the component controls'
+        // popup rules sit in their own stylesheet, out of the tray's reach.
+        searchField.getPopupStyleClasses().add("instances-search-popup");
         // The component controls' completer suggests any component whose name matches; here a
         // suggestion is only worth picking if the window's pattern has an instance of it, so the
         // others are dropped. Runs on the field's own search thread, like the completer it wraps.

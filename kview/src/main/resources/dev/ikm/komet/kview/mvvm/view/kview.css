@@ -7456,12 +7456,20 @@ Styling a context menu for kview ui/ux controls
     -fx-text-fill: -Grey-12;
     -fx-prompt-text-fill: -Grey-7;
     -fx-pref-height: 30;
-    /* room for the search glyph on the left and the filter glyph on the right */
-    -fx-padding: 0 30 0 32;
+    /* room for the search glyph on the left, and on the right for the field's own clear button
+       (shown while it has focus and text) and then the filter glyph */
+    -fx-padding: 0 60 0 32;
 }
 
 .gen-purpose-window .pattern-instances .instances-search .auto-complete-text-field:focused {
     -fx-border-color: -Secondary-05;
+}
+
+/* The field lays its clear button on its right edge; the filter glyph owns that edge here, so the
+   button moves in by the glyph's footprint (16px glyph, 9px to the edge) and sits just left of it. */
+.gen-purpose-window .pattern-instances .instances-search .auto-complete-text-field > .right-button {
+    -fx-translate-x: -30;
+    -fx-background-radius: 3;
 }
 
 .gen-purpose-window .pattern-instances .instances-search .search-icon {
@@ -7483,6 +7491,40 @@ Styling a context menu for kview ui/ux controls
     -fx-min-height: 16;
     -fx-max-height: 16;
     -fx-translate-x: -9;
+}
+
+/* Suggestions popup of the search field: the component controls' popup look (their rules live in
+   component-control.css, which the tray does not load), restated under the popup's own class —
+   roomy rows (10px above the label, 10px below it, then a hairline) and a green tint on hover. */
+.instances-search-popup.auto-complete-popup > .main-container > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-padding: 10 2 0 4;
+    -fx-background: -fx-control-inner-background;
+}
+
+.instances-search-popup.auto-complete-popup > .main-container > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected,
+.instances-search-popup.auto-complete-popup > .main-container > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover,
+.instances-search-popup.auto-complete-popup > .main-container > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected:hover {
+    -fx-background-color: #f4fbf0;
+}
+
+.instances-search-popup.auto-complete-popup > .main-container > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell .label {
+    -fx-padding: 0 0 10 2;
+    -fx-graphic-text-gap: 8;
+    -fx-font-family: "Noto Sans Semibold";
+    -fx-font-size: 1.083333em; /* 13px */
+}
+
+.instances-search-popup.auto-complete-popup > .main-container > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell .separator {
+    -fx-border-insets: 0;
+    -fx-border-width: 1 0 0 0;
+    -fx-background-insets: 0;
+    -fx-border-color: #eee;
+}
+
+.instances-search-popup.auto-complete-popup > .main-container > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected .separator,
+.instances-search-popup.auto-complete-popup > .main-container > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover .separator,
+.instances-search-popup.auto-complete-popup > .main-container > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected:hover .separator {
+    -fx-border-color: #a0d486;
 }
 
 /* The list is a light wash the white cards sit on; the hairline above it closes the header. */
@@ -7540,6 +7582,11 @@ Styling a context menu for kview ui/ux controls
 
 .gen-purpose-window .pattern-instances .instance-card .text-container {
     -fx-spacing: 1;
+    /* Breathing room between the text and the status chip: the card's spacing (8px) puts the
+       same gap after the identicon and before the chip, so the extra for the chip is this right
+       inset — raise or lower it to move the chip away from or closer to the text. A long title
+       ellipsizes inside this inset, so it never runs into the chip. */
+    -fx-padding: 0 10 0 0;
 }
 
 /* Title and date at the window body's value and label sizes. */
