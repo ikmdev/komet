@@ -37,6 +37,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -141,6 +142,33 @@ class ObservableComposerWithdrawUTestFX {
         assertEquals("kept", latestText(kept.nid()));
         assertTrue(entity(kept.nid()).committed());
         assertTrue(entity(withdrawn.nid()).canceled(), "the commit did not bring the withdrawn semantic back");
+    }
+
+    @Test
+    @DisplayName("Withdrawing an edit updates the observable a caller already holds")
+    void withdrawingUpdatesTheHeldInstance() {
+        ObservableConcept concept = newCommittedConcept();
+        ObservableComposer creator = newComposer("create");
+        ObservableSemantic description = saveDescription(creator, concept, "original");
+        creator.commit();
+
+        // What a KL window holds: the observable looked up before the edit.
+        ObservableSemantic held = ObservableEntityHandle.get(description.nid()).expectSemantic();
+        ObservableComposer editor = newComposer("edit");
+        saveDescription(editor, concept, "other");
+        var semanticComposer = editor.composeSemantic(description.publicId(), concept, KernelTerm.DESCRIPTION_PATTERN);
+        setText(semanticComposer, "edited, then withdrawn");
+        semanticComposer.save();
+        assertEquals(2, held.versions().size(), "the held observable shows the saved edit");
+        assertTrue(held.versions().anySatisfy(version -> version.getVersionRecord().uncommitted()));
+
+        assertTrue(editor.withdraw(description.nid()));
+
+        assertEquals(entity(description.nid()).versions().collect(EntityVersion::stampNid).toSet(),
+                held.versionPropertyMap().keySet().collect(Long::valueOf).toSet(),
+                "the held observable holds the versions the store does");
+        assertTrue(held.versions().noneSatisfy(version -> version.getVersionRecord().uncommitted()));
+        assertSame(held, ObservableEntityHandle.get(description.nid()).expectSemantic());
     }
 
     @Test

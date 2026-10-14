@@ -304,7 +304,11 @@ public final class ObservablePatternVersion
 
         @Override
         protected Entity<?> createAnalogue(PatternVersionRecord version) {
-            return version.chronology().with(version).build();
+            // Build on the entity as stored now: the version's chronology is the entity as it was
+            // when the version was made, and a canonical observable outlives later writes to it.
+            PatternRecord chronology = EntityHandle.get(version.nid()).orNull() instanceof PatternRecord stored
+                    ? stored : version.chronology();
+            return chronology.with(version).build();
         }
 
         @Override

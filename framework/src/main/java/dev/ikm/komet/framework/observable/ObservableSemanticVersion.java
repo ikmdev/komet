@@ -310,7 +310,11 @@ public final class ObservableSemanticVersion
 
         @Override
         protected Entity<?> createAnalogue(SemanticVersionRecord version) {
-            return version.chronology().with(version).build();
+            // Build on the entity as stored now: the version's chronology is the entity as it was
+            // when the version was made, and a canonical observable outlives later writes to it.
+            SemanticRecord chronology = EntityHandle.get(version.nid()).orNull() instanceof SemanticRecord stored
+                    ? stored : version.chronology();
+            return chronology.with(version).build();
         }
 
         @Override

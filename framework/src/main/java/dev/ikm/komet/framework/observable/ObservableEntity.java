@@ -15,8 +15,6 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import org.eclipse.collections.api.set.primitive.MutableLongSet;
-import org.eclipse.collections.api.factory.primitive.LongSets;
 import org.eclipse.collections.impl.map.mutable.primitive.LongObjectHashMap;
 import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
 import static dev.ikm.tinkar.events.EntityVersionChangeEvent.VERSION_UPDATED;
@@ -378,7 +376,16 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
      */
     public void saveToDB(Entity<?> analogue, EntityVersion newVersionRecord , EntityVersion oldVersionRecord) {
         Entity.provider().putEntity(analogue);
-        versionPropertyMap.put(newVersionRecord.stamp().nid(), wrap(newVersionRecord));
+        // The put has refreshed this instance already when it is the canonical one; otherwise take
+        // the version here, in place when it is held, so the map and the version list stay one set.
+        OV held = versionPropertyMap.get(newVersionRecord.stampNid());
+        if (held == null) {
+            OV wrapped = wrap(newVersionRecord);
+            versionPropertyMap.put(newVersionRecord.stampNid(), wrapped);
+            versionSetAsList.add(wrapped);
+        } else if (held.getVersionRecord() != newVersionRecord) {
+            held.setVersionInternal(newVersionRecord);
+        }
         EvtBusFactory.getDefaultEvtBus()
                 .publish(VERSION_CHANGED_TOPIC, new EntityVersionChangeEvent(this, VERSION_UPDATED, newVersionRecord));
     }
@@ -399,11 +406,30 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
                 EntityBinding.Component.pattern(), EntityBinding.Component.versionsFieldDefinitionIndex(), this);
 
         this.entityReference = new AtomicReference<>(entityClone);
+        MutableLongObjectMap<EntityVersion> byStamp = versionsByStamp(entity);
         for (EntityVersion version : entity.versions()) {
-            OV wrappedVersion = wrap(version);
-            versionPropertyMap.put(version.stamp().nid(), wrappedVersion);
-            versionSetAsList.add(wrappedVersion);
+            if (byStamp.get(version.stampNid()) == version) {
+                OV wrappedVersion = wrap(version);
+                versionPropertyMap.put(version.stampNid(), wrappedVersion);
+                versionSetAsList.add(wrappedVersion);
+            }
         }
+    }
+
+    /**
+     * The entity's versions keyed by stamp, one per stamp. Only a stamp holds more than one: a
+     * committed stamp keeps the uncommitted version its transaction began with beside the commit
+     * ({@link StampRecord#withoutSupersededUncommittedVersions()}), and the commit supersedes it.
+     */
+    private static MutableLongObjectMap<EntityVersion> versionsByStamp(Entity<?> entity) {
+        MutableLongObjectMap<EntityVersion> byStamp = new LongObjectHashMap<>();
+        for (EntityVersion version : entity.versions()) {
+            EntityVersion held = byStamp.get(version.stampNid());
+            if (held == null || held.time() == Long.MAX_VALUE) {
+                byStamp.put(version.stampNid(), version);
+            }
+        }
+        return byStamp;
     }
 
     public ReadOnlyProperty<Feature<ObservableChronology>> featureProperty() {
@@ -432,21 +458,29 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
             //Throw exception since we need to get the version using JavaFx thread.
             throw new RuntimeException( "Invalid calling thread.");
         }
-        ObservableEntity observableEntity = switch (entity) {
-            case ObservableEntity oe -> oe;
-            case ConceptEntity conceptEntity -> new ObservableConcept(conceptEntity);
-            case PatternEntity patternEntity -> new ObservablePattern(patternEntity);
-            case SemanticEntity semanticEntity -> new ObservableSemantic(semanticEntity);
-            case StampEntity stampEntity -> new ObservableStamp(stampEntity);
-            default -> throw new UnsupportedOperationException("Can't handle: " + entity);
-        };
+        if (entity instanceof ObservableEntity<?> observableEntity) {
+            return (OE) observableEntity;
+        }
+        // Get-or-create without Caffeine's compute: construction wraps versions, which looks up
+        // other observables, and a compute must not reenter the cache. The JavaFX thread is the
+        // only caller, so the check and the put cannot race.
+        ObservableEntity observableEntity = CANONICAL_INSTANCES.getIfPresent(entity.nid());
+        if (observableEntity == null) {
+            observableEntity = switch (entity) {
+                case ConceptEntity conceptEntity -> new ObservableConcept(conceptEntity);
+                case PatternEntity patternEntity -> new ObservablePattern(patternEntity);
+                case SemanticEntity semanticEntity -> new ObservableSemantic(semanticEntity);
+                case StampEntity stampEntity -> new ObservableStamp(stampEntity);
+                default -> throw new UnsupportedOperationException("Can't handle: " + entity);
+            };
+            CANONICAL_INSTANCES.put(entity.nid(), observableEntity);
+        }
         observableEntity.updateVersions(entity);
         return (OE) observableEntity;
     }
     /**
      * Brings the canonical observable of the entity, when one is held, up to the entity as stored
-     * now. Unlike {@link #packagePrivateGet(long)}, which wraps the stored entity in a new
-     * observable, this updates the instance the UI is bound to.
+     * now; when none is held, nothing is observing the entity and there is nothing to update.
      *
      * @param nid the entity's nid
      */
@@ -479,23 +513,30 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
         // Entities are immutable, so if the entity identities are the same, then the versions are also the same.
         // Versions are append only, but for one exception: an uncommitted version withdrawn from its
         // transaction (EntityService.putEntityReplacingVersion) leaves the entity, so it leaves here too.
-        if (entityReference.get() != newEntity || versionSetAsList.size() != newEntity.versions().size()) {
+        if (entityReference.get() != newEntity) {
             final AtomicBoolean changed = new AtomicBoolean(false);
+            MutableLongObjectMap<EntityVersion> byStamp = versionsByStamp(newEntity);
             // Find if there is a changed version...
             for (EntityVersion newVersion: newEntity.versions()) {
+                if (byStamp.get(newVersion.stampNid()) != newVersion) {
+                    continue; // superseded by the stamp's commit
+                }
                 OV oldVersion = versionPropertyMap.get(newVersion.stampNid());
+                // The time the observable last took. A version's own time() reads its stamp as
+                // stored now, so it has already moved when the stamp is committed or canceled.
+                long observedTime = oldVersion == null ? Long.MIN_VALUE : oldVersion.timeProperty().get();
                 if (oldVersion == null) {
                     // New version - wrap and add
                     changed.set(true);
                     OV newWrappedVersion = wrap(newVersion);
                     versionPropertyMap.put(newVersion.stampNid(), newWrappedVersion);
                     versionSetAsList.add(newWrappedVersion);
-                } else if (oldVersion.getVersionRecord().time() == Long.MAX_VALUE) {
-                    // Uncommitted version being updated - update in place via setVersionInternal
+                } else if (observedTime == Long.MAX_VALUE) {
+                    // Uncommitted version being updated, committed or canceled - update in place via setVersionInternal
                     changed.set(true);
                     OV typedOldVersion = oldVersion;
                     typedOldVersion.setVersionInternal(newVersion);
-                } else if (newVersion.time() != oldVersion.getVersionRecord().time()) {
+                } else if (newVersion.time() != observedTime) {
                     if (newVersion.time() == Long.MAX_VALUE ) {
                         changed.set(true);
                         // We should rewrap the old value? This seems an odd state...
@@ -507,14 +548,12 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
                         LOG.error(errorBuilder.toString());
                         throw new IllegalStateException(errorBuilder.toString());
                     } else {
-                        throw new IllegalStateException("Version time mismatch: " + newVersion.time() + " != " + oldVersion.getVersionRecord().time());
+                        throw new IllegalStateException("Version time mismatch: " + newVersion.time() + " != " + observedTime);
                     }
                 }
             }
-            MutableLongSet held = LongSets.mutable.empty();
-            newEntity.versions().forEach(version -> held.add(version.stampNid()));
             for (long stampNid : versionPropertyMap.keySet().toArray()) {
-                if (!held.contains(stampNid)) {
+                if (!byStamp.containsKey(stampNid)) {
                     changed.set(true);
                     versionSetAsList.remove(versionPropertyMap.remove(stampNid));
                 }
@@ -682,13 +721,22 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
 
         @Override
         public void onNext(Long nid) {
-            // Do nothing with item, but request another...
+            // Only an entity something observes has a canonical instance to bring up to date.
             if (CANONICAL_INSTANCES.getIfPresent(nid) != null) {
                 if (!Platform.isFxApplicationThread()) {
-                    Platform.runLater(() -> packagePrivateGet(nid));
+                    Platform.runLater(() -> refreshLogged(nid));
                 } else {
-                    packagePrivateGet(nid);
+                    refreshLogged(nid);
                 }
+            }
+        }
+
+        /** One entity that cannot be refreshed must not end the subscription for every other one. */
+        private static void refreshLogged(long nid) {
+            try {
+                refresh(nid);
+            } catch (RuntimeException e) {
+                LOG.error("Could not refresh the observable of nid " + nid, e);
             }
         }
     }
