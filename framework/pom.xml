@@ -275,12 +275,16 @@
                             <!-- Lucene 10.5.1 turns its Vector API code on only up to Java 26 and warns on 27.
                                  The property raises that limit; the full suite passes with it. Drop it when
                                  a Lucene release supports Java 27. -->
+                            <!-- log4j's JUL manager defaults to its API adapter, which refuses the JUnit
+                                 provider's Logger.setLevel call and prints three lines in every forked JVM;
+                                 the core adapter honors it. -->
                             <argLine>
                                 @{failsafeArgLine}
                                 --enable-preview
                                 --enable-native-access=ALL-UNNAMED
                                 --sun-misc-unsafe-memory-access=allow
                                 -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+                                -Dlog4j.jul.LoggerAdapter=org.apache.logging.log4j.jul.CoreLoggerAdapter
                                 --add-modules jdk.incubator.vector
                                 -Dorg.apache.lucene.vectorization.upperJavaFeatureVersion=27
                                 -Dtestfx.headless=true
