@@ -41,7 +41,16 @@ public final class ObservablePatternVersion
 
     final SimpleObjectProperty<EntityFacade> purposeProperty = new SimpleObjectProperty<>(this, "Pattern purpose");
     final SimpleObjectProperty<EntityFacade> meaningProperty = new SimpleObjectProperty<>(this, "Pattern meaning");
-    final ImmutableList<ObservableFeatureDefinition> observableFieldDefinitions;
+    /**
+     * The field definitions of the version this wrapper holds now. Rebuilt whenever the record is
+     * replaced in place ({@link #setVersionInternal}): the canonical observable of a pattern
+     * outlives its versions' records, and an uncommitted version saved again in its transaction,
+     * as a pattern given its fields after it was created is, keeps its stamp and its wrapper.
+     */
+    private volatile ImmutableList<ObservableFeatureDefinition> observableFieldDefinitions;
+
+    /** True while the properties follow a replaced record, so their listeners write nothing. */
+    private boolean followingRecord;
 
     ObservablePatternVersion(ObservablePattern observablePattern, PatternVersionRecord patternVersionRecord) {
         super(observablePattern, patternVersionRecord);
@@ -49,12 +58,34 @@ public final class ObservablePatternVersion
         purposeProperty.addListener(this::purposeChanged);
         meaningProperty.set(EntityHandle.getConceptOrThrow(patternVersionRecord.semanticMeaningNid()));
         meaningProperty.addListener(this::meaningChanged);
-        MutableList<ObservableFeatureDefinition> mutableFieldDefinitions = Lists.mutable.ofInitialCapacity(patternVersionRecord.fieldDefinitions().size());
-        for (FieldDefinitionRecord fieldDefinition : patternVersionRecord.fieldDefinitions()) {
-            mutableFieldDefinitions.add(new ObservableFeatureDefinition(fieldDefinition, this,
-                    FeatureKey.Version.PatternFieldDefinitionListItem(nid(), fieldDefinition.indexInPattern(), fieldDefinition.patternNid(), stampNid())));
+        this.observableFieldDefinitions = fieldDefinitionsOf(patternVersionRecord);
+    }
+
+    @Override
+    void setVersionInternal(EntityVersion entityVersion) {
+        super.setVersionInternal(entityVersion);
+        if (meaningProperty == null) {
+            return; // the superclass constructor: this version's own state is set by its constructor
         }
-        this.observableFieldDefinitions = mutableFieldDefinitions.toImmutable();
+        PatternVersionRecord record = (PatternVersionRecord) entityVersion;
+        followingRecord = true;
+        try {
+            purposeProperty.set(EntityHandle.getConceptOrThrow(record.semanticPurposeNid()));
+            meaningProperty.set(EntityHandle.getConceptOrThrow(record.semanticMeaningNid()));
+        } finally {
+            followingRecord = false;
+        }
+        this.observableFieldDefinitions = fieldDefinitionsOf(record);
+        fieldDefinitionListReference.set(null); // the feature list is built over the definitions
+    }
+
+    private ImmutableList<ObservableFeatureDefinition> fieldDefinitionsOf(PatternVersionRecord record) {
+        MutableList<ObservableFeatureDefinition> definitions = Lists.mutable.ofInitialCapacity(record.fieldDefinitions().size());
+        for (FieldDefinitionRecord fieldDefinition : record.fieldDefinitions()) {
+            definitions.add(new ObservableFeatureDefinition(fieldDefinition, this,
+                    FeatureKey.Version.PatternFieldDefinitionListItem(nid(), fieldDefinition.indexInPattern(), fieldDefinition.patternNid(), record.stampNid())));
+        }
+        return definitions.toImmutable();
     }
 
     private void purposeChanged(ObservableValue<? extends EntityFacade> observableValue, EntityFacade oldValue, EntityFacade newValue) {
@@ -66,6 +97,9 @@ public final class ObservablePatternVersion
     }
 
     private void handleChange(FIELDS field, ObservableValue<? extends EntityFacade> observableValue, EntityFacade newValue) {
+        if (followingRecord) {
+            return;
+        }
         StampRecord stamp = Entity.getStamp(getVersionRecord().stampNid());
         PatternVersionRecord version = getVersionRecord();
         if (stamp.lastVersion().committed()) {
