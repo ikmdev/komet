@@ -58,6 +58,9 @@ module dev.ikm.komet.kview.test {
     exports dev.ikm.komet.kview.mvvm.view.genpurpose.test;
     opens dev.ikm.komet.kview.mvvm.view.genpurpose.test;
 
+    exports dev.ikm.komet.kview.mvvm.view.navigation.test;
+    opens dev.ikm.komet.kview.mvvm.view.navigation.test;
+
     exports dev.ikm.komet.kview.mvvm.view.settings.test;
     opens dev.ikm.komet.kview.mvvm.view.settings.test;
 

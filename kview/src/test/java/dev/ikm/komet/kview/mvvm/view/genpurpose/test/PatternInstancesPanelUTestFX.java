@@ -55,10 +55,10 @@ class PatternInstancesPanelUTestFX {
             ".instances-header .instances-title-bar",
             ".instances-title-bar .lidr-device-title-label",
             ".instances-title-bar .instances-count",
-            ".instances-header .instances-search",
-            ".instances-search .auto-complete-text-field",
-            ".instances-search .search-icon",
-            ".instances-search .filter-icon",
+            ".instances-header .component-search-text-field",
+            ".component-search-text-field .auto-complete-text-field",
+            ".component-search-text-field .search-icon",
+            ".component-search-text-field .filter-icon",
             ".pattern-instances .instances-list");
 
     private StackPane window;
@@ -112,7 +112,7 @@ class PatternInstancesPanelUTestFX {
         Path path = Path.of("target", "pattern-instances", "panel.png");
         // Text in the focused field brings up its clear button, next to the filter glyph.
         robot.interact(() -> {
-            var field = (javafx.scene.control.TextField) window.lookup(".instances-search .auto-complete-text-field");
+            var field = (javafx.scene.control.TextField) window.lookup(".component-search-text-field .auto-complete-text-field");
             field.requestFocus();
             field.setText("Double");
         });
