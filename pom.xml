@@ -53,6 +53,7 @@
     </organization>
     <subprojects>
         <subproject>komet-terms</subproject>
+        <subproject>actions</subproject>
         <subproject>preferences</subproject>
         <subproject>artifact-resolution</subproject>
         <subproject>framework</subproject>

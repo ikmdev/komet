@@ -24,12 +24,17 @@ import dev.ikm.komet.framework.rulebase.Consequence;
 import dev.ikm.komet.framework.rulebase.ConsequenceAction;
 import dev.ikm.komet.framework.rulebase.ConsequenceMenu;
 import dev.ikm.komet.framework.rulebase.GeneratedAction;
+import dev.ikm.komet.actions.KometActionOffer;
+import dev.ikm.komet.actions.KometActions;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.rules.actions.KometActionMenuItem;
 import dev.ikm.tinkar.common.sets.ConcurrentHashSet;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntityVersion;
 import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.KernelConcept;
 import javafx.scene.control.Menu;
 import org.evrete.api.annotations.RuleElement;
@@ -90,6 +95,21 @@ public abstract class RulesBase {
         for (GeneratedAction action : actions) {
             Objects.requireNonNull(consequences).add(new ConsequenceAction(UUID.randomUUID(), ruleMethod, action));
         }
+    }
+
+    /**
+     * Offers an action on a subject: a {@link KometActionOffer} presented as a menu item. The
+     * action is the implementation bound to the action concept (dev-komet-actions).
+     *
+     * @param action  an action concept Komet implements
+     * @param subject what the action would be performed on
+     */
+    protected void offer(ConceptFacade action, EntityFacade subject) {
+        // The stacktrace index is 2 here as in addGeneratedActions: the rule method called this one.
+        String ruleMethod = Thread.currentThread().getStackTrace()[2].toString();
+        KometActionMenuItem item = new KometActionMenuItem(
+                new KometActionOffer(KometActions.expect(action), subject), calculator(), editCoordinate());
+        Objects.requireNonNull(consequences).add(new ConsequenceAction(UUID.randomUUID(), ruleMethod, item));
     }
 
     protected void addConsequenceMenu(Menu... menus) {

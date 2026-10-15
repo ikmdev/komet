@@ -361,7 +361,37 @@ public enum KometConcept implements ConceptEnumerationFacade<KometConcept> {
     /**
      * A sentinel concept used as a field value in place of a real concept reference — a placeholder meaning no meaningful value applies here, not a modeled domain concept itself.
      */
-    BLANK_CONCEPT("Blank Concept", "cd23d88d-2fcd-4007-8829-97e37bf336aa");
+    BLANK_CONCEPT("Blank Concept", "cd23d88d-2fcd-4007-8829-97e37bf336aa"),
+
+    /**
+     * The run did what it was asked, and its result says what it wrote or found.
+     */
+    ACTION_COMPLETED("Action completed (IkeFoundation)", "a0bdab4e-69db-559d-ac82-24e3f1af7702"),
+
+    /**
+     * The run did not start, because its subject or inputs did not allow it — a component already inactive, a value outside the allowed ones. Nothing was written.
+     */
+    ACTION_REFUSED("Action refused (IkeFoundation)", "f72d46df-3a28-5d99-b89a-2fc45311803d"),
+
+    /**
+     * The run started and could not finish. Nothing it began was committed.
+     */
+    ACTION_FAILED("Action failed (IkeFoundation)", "2b555975-4639-5c58-bea4-8288e281cffa"),
+
+    /**
+     * Something a person or the assistant does to the knowledge base through Komet, with a defined input and result: offered in a menu by the rules that decide when it makes sense, and offered to the assistant as a tool under the same rules.
+     */
+    KOMET_ACTION("Komet action (IkeFoundation)", "bc394f75-e8c9-5f9e-aa30-d9db1523fb32"),
+
+    /**
+     * Makes an inactive component active again: writes a new version of the subject with state active and every field as the latest version has it. Earlier versions, including the inactive one, remain.
+     */
+    ACTIVATE_COMPONENT("Activate component (IkeFoundation)", "d79be663-33f0-5208-923f-2245e67b6cca"),
+
+    /**
+     * Retires a component: writes a new version of the subject with state inactive and every field as the latest version has it. Nothing is deleted; earlier versions remain, and the component can be activated again.
+     */
+    INACTIVATE_COMPONENT("Inactivate component (IkeFoundation)", "e258555e-fe67-5bfc-8340-7707177e1dbc");
 
     private final EntityProxy.Concept proxy;
 

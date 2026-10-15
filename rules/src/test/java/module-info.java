@@ -21,4 +21,8 @@ open module dev.ikm.komet.rules.test {
     requires org.evrete.core;
     requires org.junit.jupiter.api;
     requires dev.ikm.komet.rules;
+    requires dev.ikm.komet.actions;
+    requires dev.ikm.komet.terms;
+    requires dev.ikm.tinkar.common;
+    requires org.eclipse.collections.api;
 }
