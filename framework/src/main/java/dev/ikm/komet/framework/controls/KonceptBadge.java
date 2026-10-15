@@ -256,6 +256,8 @@ public class KonceptBadge extends HBox {
     private PremiseType premiseType = PremiseType.INFERRED;
     private KonceptStatus status = KonceptStatus.NONE;
     private KonceptKind kind = KonceptKind.CONCEPT;
+    /** See {@link #setKindSigilShown}. */
+    private boolean kindSigilShown = true;
     /** Letter-sigil size (px), {@link #SIGIL_TO_NAME} of the current name font. */
     private double letterSigilSize = SC_FONT_SIZE * SIGIL_TO_NAME;
     /** Pentagon edge (px), {@link #PENTAGON_TO_ICON} of the current identicon edge. */
@@ -712,11 +714,25 @@ public class KonceptBadge extends HBox {
     }
 
     /**
-     * Shows the sigil slot when the kind has a sigil and the glyph settings show sigils
-     * (ikmdev/komet-desktop#153); an empty or hidden slot collapses so it opens no gap.
+     * Whether this badge shows its kind sigil at all, on top of the glyph settings: a surface that
+     * lists one kind only (the pattern browser lists patterns and nothing else) turns it off, since
+     * the letter would say nothing there. On by default. The drag glyph keeps the sigil either way:
+     * dragged into a surface that mixes kinds, the badge states its kind again.
+     *
+     * @param shown {@code false} hides the sigil on this badge; {@code true} leaves it to the settings
+     */
+    public final void setKindSigilShown(boolean shown) {
+        this.kindSigilShown = shown;
+        applySigilVisibility();
+    }
+
+    /**
+     * Shows the sigil slot when the kind has a sigil, the glyph settings show sigils
+     * (ikmdev/komet-desktop#153) and the badge {@link #setKindSigilShown shows it}; an empty or
+     * hidden slot collapses so it opens no gap.
      */
     private void applySigilVisibility() {
-        boolean visible = kind.hasSigil() && showKindSigil.getValue();
+        boolean visible = kind.hasSigil() && showKindSigil.getValue() && kindSigilShown;
         sigilBox.setManaged(visible);
         sigilBox.setVisible(visible);
     }

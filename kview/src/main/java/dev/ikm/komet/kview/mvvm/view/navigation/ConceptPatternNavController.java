@@ -435,6 +435,7 @@ public class ConceptPatternNavController {
         StackPane searchContainer = new StackPane(searchTextField);
         searchContainer.getStyleClass().add("pattern-navigation-search");
         VBox panel = new VBox(searchContainer, patternList);
+        panel.getStyleClass().add("pattern-browser");
         VBox.setVgrow(patternList, Priority.ALWAYS);
         return panel;
     }

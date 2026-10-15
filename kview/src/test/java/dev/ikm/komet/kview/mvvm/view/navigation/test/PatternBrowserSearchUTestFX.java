@@ -23,9 +23,16 @@ import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.common.service.ServiceKeys;
 import dev.ikm.tinkar.common.service.ServiceProperties;
 import dev.ikm.tinkar.coordinate.Calculators;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import org.junit.jupiter.api.AfterAll;
@@ -74,18 +81,23 @@ class PatternBrowserSearchUTestFX {
         FxToolkit.setupStage(stage -> {
             ComponentSearchTextField searchTextField = KLComponentControlFactory.createComponentSearchTextField(Calculators.View.Default());
             searchTextField.setPromptText("Search instances by component");
-            // A list far taller than the column, as the real browser's is: the search row must not
-            // be squeezed to make room for it.
+            // Two stand-in cards in the entry FXML's shape (pattern-nav-entry.fxml), one expanded with
+            // a filter count, to see the browser's card styling — then a list far taller than the
+            // column, as the real browser's is: the search row must not be squeezed to make room.
+            VBox cards = new VBox(card("Description Pattern", true), card("Identifier Pattern", false));
+            cards.getStyleClass().add("pattern-navigation-container");
             Region tallList = new Region();
             tallList.setPrefHeight(4000);
-            ScrollPane patternList = new ScrollPane(tallList);
+            cards.getChildren().add(tallList);
+            ScrollPane patternList = new ScrollPane(cards);
+            patternList.setFitToWidth(true);
             patternList.getStyleClass().add("pattern-navigation-scroll-pane");
             VBox patternsPanel = ConceptPatternNavController.createPatternsPanel(searchTextField, patternList);
             column = new VBox(patternsPanel);
             column.getStyleClass().addAll("concept-pattern-container", "grey-vertical-scroll-area");
             column.getStylesheets().add(ComponentSearchTextField.class
                     .getResource("/dev/ikm/komet/kview/mvvm/view/kview.css").toExternalForm());
-            stage.setScene(new Scene(column, 430, 300));
+            stage.setScene(new Scene(column, 430, 420));
             stage.show();
         });
         FxToolkit.setupFixture(() -> column.applyCss());
@@ -94,6 +106,36 @@ class PatternBrowserSearchUTestFX {
     @AfterEach
     void hideBrowser() throws Exception {
         FxToolkit.cleanupStages();
+    }
+
+    /** A pattern card as pattern-nav-entry.fxml and PatternNavEntryController build one, by style class. */
+    private static HBox card(String name, boolean expanded) {
+        Label title = new Label(name);
+        HBox titleRow = new HBox(title);
+        titleRow.getStyleClass().add("pattern-title-container");
+
+        ListView<String> instances = new ListView<>();
+        instances.getStyleClass().add("pattern-instances-list-view");
+        instances.setPrefHeight(90);
+        TitledPane pane = new TitledPane("SEMANTIC ELEMENTS", instances);
+        pane.getStyleClass().add("search-entry-title-pane");
+        pane.setAnimated(false);
+        VBox.setMargin(pane, new Insets(0, 8, 8, 8));
+
+        VBox main = new VBox(titleRow, pane);
+        if (expanded) {
+            main.getStyleClass().add("search-entry-title-pane-pattern");
+            Label count = new Label("3");
+            count.getStyleClass().add("semantic-elements-count");
+            pane.setContentDisplay(ContentDisplay.RIGHT);
+            pane.setGraphic(count);
+        }
+        pane.setExpanded(expanded);
+
+        HBox card = new HBox(main);
+        HBox.setHgrow(main, Priority.ALWAYS);
+        card.getStyleClass().addAll("search-entry-hbox", "pattern-instance-container");
+        return card;
     }
 
     @Test

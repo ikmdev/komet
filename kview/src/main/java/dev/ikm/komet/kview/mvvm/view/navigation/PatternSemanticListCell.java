@@ -50,6 +50,10 @@ public class PatternSemanticListCell extends ListCell<Object> {
         this.viewProperties = viewProperties;
 
         setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+        // The row takes the list's width rather than asking for its content's: a long title would
+        // otherwise widen the list and bring in a horizontal scrollbar, which steals height and
+        // then a vertical one.
+        setPrefWidth(0);
 
         label = new Label();
         label.setMaxWidth(Double.MAX_VALUE);

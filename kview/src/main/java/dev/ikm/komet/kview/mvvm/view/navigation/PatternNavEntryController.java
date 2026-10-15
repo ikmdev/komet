@@ -177,6 +177,9 @@ public class PatternNavEntryController {
         // to the raw nid and the row would read "-2147477853".
         patternBadge.setConceptName(
                 ViewCalculatorUtils.retrieveDisplayName((PatternFacade) patternFacade, vProperties));
+        // The browser lists patterns and nothing else, so the P sigil would only repeat the column's
+        // title; the badge still drags with it, into surfaces that mix kinds.
+        patternBadge.setKindSigilShown(false);
         // Sized to this row rather than the badge's inline default, which is scaled for sitting
         // beside body text and renders far too small in a navigation list. The badge sets its
         // fonts in code, so the stylesheet's root size cannot reach it: the row follows the text
@@ -331,8 +334,10 @@ public class PatternNavEntryController {
 
     private void updateListViewPrefHeight() {
         int itemsNumber = patternInstancesListView.getItems().size();
-        /* adding a number to LIST_VIEW_CELL_SIZE to account for padding, etc */
-        double newPrefHeight = itemsNumber * (LIST_VIEW_CELL_SIZE + 10);
+        // The rows plus the list's own insets, so the list is exactly as tall as its content: any
+        // slack shows as a blank band, and any shortfall as a scrollbar.
+        double newPrefHeight = itemsNumber * LIST_VIEW_CELL_SIZE
+                + patternInstancesListView.snappedTopInset() + patternInstancesListView.snappedBottomInset();
         double maxHeight = patternInstancesListView.getMaxHeight();
 
         patternInstancesListView.setPrefHeight(Math.min(newPrefHeight, maxHeight));

@@ -3765,12 +3765,10 @@ Timeline Year line segment (will overlay change circles)
     -fx-graphic-text-gap: 9px;
 }
 
+/* The row's title takes the width the row gives it (it grows in the row and ellipsizes); a fixed
+   354px here used to overflow the browser's tiles and bring in a horizontal scrollbar. */
 .pattern-instance-hbox .pattern-instance {
-    width: 354px;
-
-    -fx-min-width: width;
-    -fx-pref-width: width;
-    -fx-max-width: width;
+    -fx-min-width: 0;
 
     -fx-padding: 0 10 0 0;
 
@@ -5530,9 +5528,14 @@ Styling a context menu for kview ui/ux controls
 
 /* Pattern Browser ScrollPane */
 
+/* The PATTERNS side of the navigator: a light column (the mockup's), the scroll pane showing it through. */
+.pattern-browser {
+    -fx-background-color: #E7EBF1;
+}
+
 .pattern-navigation-scroll-pane,
 .pattern-navigation-scroll-pane > .viewport {
-    -fx-background-color: #545d72;
+    -fx-background-color: transparent;
 }
 
 .pattern-navigation-scroll-pane > .scroll-bar:vertical {
@@ -5556,8 +5559,59 @@ Styling a context menu for kview ui/ux controls
 }
 
 .pattern-navigation-container {
-    -fx-spacing: 4px;
-    -fx-padding: 0 2px 0 12px;
+    -fx-spacing: 6px;
+    -fx-padding: 0 2px 8px 12px;
+}
+
+/* A pattern card: white, a hairline border, softly rounded. */
+.pattern-instance-container {
+    -fx-background-color: white;
+    -fx-background-radius: 3px;
+    -fx-border-color: -Grey-5;
+    -fx-border-width: 1;
+    -fx-border-radius: 3px;
+}
+
+/* The card's SEMANTIC ELEMENTS pane: one thin blue rounded frame around the bar and, when
+   expanded, the light wash the instance rows sit on. Scoped to the browser — the same titled-pane
+   class also dresses the next-gen search's result entries, which keep their look. */
+.pattern-browser .search-entry-title-pane {
+    -fx-border-color: -Secondary-05;
+    -fx-border-width: 1;
+    -fx-border-radius: 4px;
+    -fx-background-color: transparent;
+    -fx-background-radius: 4px;
+}
+
+.pattern-browser .titled-pane.search-entry-title-pane > .title {
+    -fx-background-color: white;
+    -fx-background-radius: 4px;
+    -fx-padding: 5 8 5 8;
+}
+
+.pattern-browser .titled-pane.search-entry-title-pane:expanded > .title {
+    -fx-background-radius: 4px 4px 0 0;
+}
+
+.pattern-browser .titled-pane.search-entry-title-pane > .title > .arrow-button .arrow {
+    -fx-background-color: -Secondary-05;
+}
+
+.pattern-browser .titled-pane.search-entry-title-pane > .title > .text {
+    -fx-fill: -Grey-9;
+    -fx-background-color: transparent;
+}
+
+/* Expanding a card used to wrap it in a 3px blue frame on a grey wash; here the card stays a white
+   card and only the pane below the bar takes the wash. */
+.pattern-browser .search-entry-title-pane-pattern {
+    -fx-border-width: 0;
+    -fx-background-color: transparent;
+}
+
+.pattern-browser .search-entry-title-pane > .content {
+    -fx-background-color: -Grey-2;
+    -fx-background-radius: 0 0 4px 4px;
 }
 
 /* The reference-component search over the pattern list (a ComponentSearchTextField, styled with the
