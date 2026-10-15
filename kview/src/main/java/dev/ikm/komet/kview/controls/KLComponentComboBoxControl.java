@@ -1,7 +1,7 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.KLComponentComboBoxControlSkin;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -55,26 +55,26 @@ public class KLComponentComboBoxControl extends Control {
     /**
      * This property holds the component that is currently chosen in the control
      */
-    private final ObjectProperty<EntityProxy> value = new SimpleObjectProperty<>(this, "value", null);
-    public final ObjectProperty<EntityProxy> valueProperty() { return value; }
-    public final EntityProxy getValue() { return value.get(); }
-    public final void setValue(EntityProxy value) { this.value.set(value); }
+    private final ObjectProperty<EntityFacade> value = new SimpleObjectProperty<>(this, "value", null);
+    public final ObjectProperty<EntityFacade> valueProperty() { return value; }
+    public final EntityFacade getValue() { return value.get(); }
+    public final void setValue(EntityFacade value) { this.value.set(value); }
 
     // -- items
     /**
      * The predefined set of components the user may choose from
      */
-    private final ObservableList<EntityProxy> items = FXCollections.observableArrayList();
-    public final ObservableList<EntityProxy> getItems() { return items; }
+    private final ObservableList<EntityFacade> items = FXCollections.observableArrayList();
+    public final ObservableList<EntityFacade> getItems() { return items; }
 
     // -- function to render the component's name and avoid entity.description()
-    private final ObjectProperty<Function<EntityProxy, String>> componentNameRenderer =
-            new SimpleObjectProperty<>(this, "componentNameRenderer", EntityProxy::toString);
-    public final Function<EntityProxy, String> getComponentNameRenderer() { return componentNameRenderer.get(); }
-    public final void setComponentNameRenderer(Function<EntityProxy, String> nameHandler) {
+    private final ObjectProperty<Function<EntityFacade, String>> componentNameRenderer =
+            new SimpleObjectProperty<>(this, "componentNameRenderer", EntityFacade::toString);
+    public final Function<EntityFacade, String> getComponentNameRenderer() { return componentNameRenderer.get(); }
+    public final void setComponentNameRenderer(Function<EntityFacade, String> nameHandler) {
         componentNameRenderer.set(nameHandler);
     }
-    public final ObjectProperty<Function<EntityProxy, String>> componentNameRendererProperty() {
+    public final ObjectProperty<Function<EntityFacade, String>> componentNameRendererProperty() {
         return componentNameRenderer;
     }
 

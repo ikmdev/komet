@@ -249,7 +249,8 @@ public class GenPurposeFieldsController {
             if (fieldDefinition.dataTypeNid() == IMAGE_FIELD.nid()) {
                 invalid.set(observableField.valueProperty().get() == null || (((byte[]) observableField.valueProperty().get()).length == 0));
             } else if (fieldDefinition.dataTypeNid() == COMPONENT_FIELD.nid()) {
-                invalid.set(observableField.valueProperty().get() == null || observableField.valueProperty().get() == BLANK_CONCEPT);
+                invalid.set(observableField.valueProperty().get() == null
+                        || observableField.valueProperty().get() instanceof EntityFacade component && component.nid() == BLANK_CONCEPT.nid());
             }
             if (!invalid.get()) {
                 invalid.set((observableField.value() == null || observableField.value().toString().isEmpty()));

@@ -641,7 +641,7 @@ public final class ObservableComposer {
         MutableList<Object> fieldsValues = Lists.mutable.ofInitialCapacity(patternVersion.fieldDefinitions().size());
         patternVersion.fieldDefinitions().forEach(f -> {
             if (f.dataTypeNid() == COMPONENT_FIELD.nid()) {
-                fieldsValues.add(BLANK_CONCEPT);
+                fieldsValues.add(defaultComponentFieldValue());
             } else if (f.dataTypeNid() == STRING.nid()) {
                 fieldsValues.add("");
             } else if (f.dataTypeNid() == INTEGER_FIELD.nid()) {
@@ -677,6 +677,17 @@ public final class ObservableComposer {
             }
         });
         return (T) fieldsValues;
+    }
+
+    /**
+     * The value a new component field starts with: the blank concept as an {@link EntityProxy}.
+     * Field values reach the component controls through untyped lists, so the seed must be the
+     * form those controls hold, never the {@code KometConcept} enum itself.
+     *
+     * @return the blank concept, as a proxy
+     */
+    public static EntityProxy.Concept defaultComponentFieldValue() {
+        return BLANK_CONCEPT.toProxy();
     }
 
     /**

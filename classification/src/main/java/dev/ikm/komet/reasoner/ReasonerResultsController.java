@@ -152,13 +152,8 @@ public class ReasonerResultsController {
         if (!change.getList().isEmpty()) {
             MutableList<EntityFacade> changeList = Lists.mutable.ofInitialCapacity(change.getList().size());
             for (TreeItem<StringWithOptionalConceptFacade> treeItem: change.getList()) {
-                treeItem.getValue().getOptionalConceptSpecification().ifPresent(conceptFacade -> {
-                    if (conceptFacade instanceof EntityProxy.Concept conceptProxy) {
-                        changeList.add(conceptProxy);
-                    } else {
-                        changeList.add(EntityProxy.Concept.make(conceptFacade));
-                    }
-                });
+                treeItem.getValue().getOptionalConceptSpecification()
+                        .ifPresent(conceptFacade -> changeList.add(conceptFacade.toProxy()));
             }
             this.activityStream.dispatch(changeList.toImmutable());
         }

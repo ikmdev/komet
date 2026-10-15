@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import static dev.ikm.komet.terms.KometConcept.BLANK_CONCEPT;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -34,6 +35,15 @@ class ObservableComposerDefaultFieldValuesTest {
         assertTrue(ObservableComposer.isDefaultFieldValue(LongIds.list.empty()), "empty component list");
         assertTrue(ObservableComposer.isDefaultFieldValue(LongIds.set.empty()), "empty component set");
         assertTrue(ObservableComposer.isDefaultFieldValue(new byte[0]), "empty byte array");
+    }
+
+    @Test
+    void aNewComponentFieldStartsWithTheBlankConceptAsAProxy() {
+        Object seed = ObservableComposer.defaultComponentFieldValue();
+        // The component controls hold EntityProxy values; the seed reaches them through an untyped
+        // List<Object>, so the raw KometConcept enum there fails at the first cast in a skin.
+        assertInstanceOf(EntityProxy.Concept.class, seed);
+        assertTrue(ObservableComposer.isDefaultFieldValue(seed), "the seed counts as a default");
     }
 
     @Test

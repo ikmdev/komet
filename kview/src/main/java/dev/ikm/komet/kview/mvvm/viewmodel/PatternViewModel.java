@@ -381,12 +381,8 @@ public class PatternViewModel extends FormViewModel {
         State state = stampFormViewModel.getPropertyValue(STATUS);
 
         Object authorObject = stampFormViewModel.getPropertyValue(AUTHOR);
-        ConceptFacade authorConcept = null;
-        if (authorObject instanceof EntityProxy.Concept concept) {
-            authorConcept = concept;
-        } else if (authorObject instanceof ConceptRecord authorConceptRecord) {
-            authorConcept = EntityProxy.Concept.make(authorConceptRecord.nid());
-        }
+        // Any concept form: a proxy, a binding enum or a record
+        ConceptFacade authorConcept = authorObject instanceof ConceptFacade concept ? concept : null;
 
         ConceptEntity module = stampFormViewModel.getPropertyValue(MODULE);
         ConceptEntity path = stampFormViewModel.getPropertyValue(PATH);

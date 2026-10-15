@@ -56,7 +56,6 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;
@@ -121,8 +120,8 @@ public class PatternFieldsController {
         ObservableList<Integer> fieldOrderOptions = patternFieldsViewModel.getObservableList(FIELD_ORDER_OPTIONS);
 
         ObjectProperty<ConceptEntity> dataTypeProp = patternFieldsViewModel.getProperty(DATA_TYPE);
-        ObjectProperty<EntityProxy> purposeProp = patternFieldsViewModel.getProperty(PURPOSE_ENTITY);
-        ObjectProperty<EntityProxy> meaningProp = patternFieldsViewModel.getProperty(MEANING_ENTITY);
+        ObjectProperty<EntityFacade> purposeProp = patternFieldsViewModel.getProperty(PURPOSE_ENTITY);
+        ObjectProperty<EntityFacade> meaningProp = patternFieldsViewModel.getProperty(MEANING_ENTITY);
         ObjectProperty<PatternField> previousPatternFieldProperty = patternFieldsViewModel.getProperty(PREVIOUS_PATTERN_FIELD);
 
 
@@ -220,13 +219,13 @@ public class PatternFieldsController {
           LongIdSet dataTypeFields = viewCalculator.descendentsOf(KometConcept.DISPLAY_FIELDS);
             Set<ConceptEntity> allDataTypes =
                     dataTypeFields.longStream()
-                            .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
+                            .mapToObj(moduleNid -> EntityHandle.get(moduleNid).expectConcept())
                             .collect(Collectors.toSet());
 
             LongIdSet dataTypeDynamic = viewCalculator.descendentsOf(KometConcept.DYNAMIC_COLUMN_DATA_TYPES);
 
             allDataTypes.addAll(dataTypeDynamic.longStream()
-                    .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
+                    .mapToObj(moduleNid -> EntityHandle.get(moduleNid).expectConcept())
                     .collect(Collectors.toSet()));
 
             dataTypeComboBox.setConverter((new StringConverter<ConceptEntity>() {

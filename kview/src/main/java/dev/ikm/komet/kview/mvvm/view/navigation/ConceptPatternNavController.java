@@ -31,7 +31,6 @@ import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 
 import org.carlfx.cognitive.loader.Config;
 import org.carlfx.cognitive.loader.FXMLMvvmLoader;
@@ -241,7 +240,7 @@ public class ConceptPatternNavController {
                     PatternRow row = new PatternRow(patternHBox, patternNavEntryJFXNode.controller());
                     patternRows.add(row);
                     // A search already chosen applies to a row loaded after it.
-                    EntityProxy searched = referenceComponentSearch.getSearchedComponent();
+                    EntityFacade searched = referenceComponentSearch.getSearchedComponent();
                     if (searched != null) {
                         row.controller().setReferenceComponentFilter(searched);
                         orderRowsByMatch();
@@ -445,7 +444,7 @@ public class ConceptPatternNavController {
      * SEMANTIC ELEMENTS to the instances referencing the component, and the rows with matches move
      * ahead of those without. A null component lifts it, restoring the name order.
      */
-    private void applyReferenceComponentFilter(EntityProxy component) {
+    private void applyReferenceComponentFilter(EntityFacade component) {
         patternRows.forEach(row -> row.controller().setReferenceComponentFilter(component));
         if (component == null) {
             patternsVBox.getChildren().setAll(patternRows.stream().map(PatternRow::node).toList());
@@ -466,7 +465,7 @@ public class ConceptPatternNavController {
      * Whether some pattern has an instance referencing the component. Runs on the search text field's
      * thread, so it reads a copy of the pattern list the FX thread fills.
      */
-    private boolean isReferencedByAnyPattern(EntityProxy component) {
+    private boolean isReferencedByAnyPattern(EntityFacade component) {
         List<EntityFacade> patterns = List.copyOf(patternNavViewModel.getObservableList(PATTERN_COLLECTION));
         return patterns.stream().anyMatch(pattern ->
                 EntityService.get().semanticsForComponentOfPattern(component.nid(), pattern.nid()).findAny().isPresent());

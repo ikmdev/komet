@@ -163,7 +163,7 @@ public class DataModelHelper {
 
     public static boolean isLidrRecord(Entity entity) {
         if (entity instanceof SemanticEntity semantic) {
-            return semantic.pattern().equals(LIDR_RECORD_PATTERN);
+            return EntityFacade.same(semantic.pattern(), LIDR_RECORD_PATTERN);
         }
         return false;
     }

@@ -1319,7 +1319,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
      * Builds a {@code ∃ ( [type slot] ) → [ [restriction slot] ]} template row. The completion
      * action runs once both concepts are picked.
      */
-    private HBox roleTemplateRow(BiConsumer<EntityProxy, EntityProxy> onComplete) {
+    private HBox roleTemplateRow(BiConsumer<EntityFacade, EntityFacade> onComplete) {
         KLComponentControl typeSlot = newSlot();
         KLComponentControl restrictionSlot = newSlot();
 

@@ -8,6 +8,7 @@ import dev.ikm.tinkar.common.id.LongIdSet;
 import dev.ikm.tinkar.common.id.LongIds;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.css.PseudoClass;
 import javafx.event.Event;
 import javafx.geometry.Insets;
@@ -102,7 +103,7 @@ public class KLComponentCollectionControlSkin<T extends LongIdCollection> extend
         clearComponents();
         getSkinnable().getValue().forEach(nid -> {
             if (nid != 0) {
-                EntityProxy entityProxy = EntityProxy.make(nid);
+                EntityFacade entityProxy = EntityProxy.make(nid);
                 createComponentUI(entityProxy.nid());
             }
         });
@@ -231,7 +232,7 @@ public class KLComponentCollectionControlSkin<T extends LongIdCollection> extend
 
         KLComponentControl componentControl = new KLComponentControl();
         if (nid != 0) {
-            EntityProxy entityProxy = EntityProxy.make(nid);
+            EntityFacade entityProxy = EntityProxy.make(nid);
             componentControl.setEntity(entityProxy);
         }
 

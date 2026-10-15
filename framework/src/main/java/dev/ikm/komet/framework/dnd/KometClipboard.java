@@ -27,9 +27,13 @@ import javafx.scene.input.Dragboard;
 import dev.ikm.tinkar.component.Component;
 import dev.ikm.tinkar.component.Version;
 import dev.ikm.tinkar.entity.*;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.ProxyFactory;
+import dev.ikm.tinkar.terms.SemanticFacade;
+import dev.ikm.tinkar.terms.StampFacade;
 
 import java.util.*;
 import java.util.function.Function;
@@ -151,12 +155,14 @@ public class KometClipboard extends ClipboardContent {
      * <em>unconditionally</em> from the proxy's serialized form — there is no
      * {@link EntityHandle} presence gate, so the payload is present even when the component
      * is not yet loaded (the gate that made drops silently fail). The format is chosen by
-     * the proxy's concrete component type (concept / pattern / semantic / stamp).
+     * the component's kind (concept / pattern / semantic / stamp).
      *
-     * @param proxy the component proxy to place on the clipboard; must not be {@code null}
-     * @return clipboard content carrying {@code proxy}
+     * @param component the component to place on the clipboard, in any facade form (a proxy, a
+     *                  binding enum, an entity); must not be {@code null}
+     * @return clipboard content carrying {@code component} as a proxy
      */
-    public static KometClipboard forProxy(EntityProxy proxy) {
+    public static KometClipboard forProxy(EntityFacade component) {
+        EntityProxy proxy = component.toProxy();
         KometClipboard content = new KometClipboard();
         content.put(formatFor(proxy), proxy.toXmlFragment());
         content.put(DataFormat.PLAIN_TEXT, proxy.publicId().toString());
@@ -165,7 +171,7 @@ public class KometClipboard extends ClipboardContent {
 
     /**
      * Builds clipboard content for the concept with the given nid — a convenience over
-     * {@link #forProxy(EntityProxy)} for the common concept drag. Resolves the concept's
+     * {@link #forProxy(EntityFacade)} for the common concept drag. Resolves the concept's
      * description from the store (see {@link #forConcept(long, String)} for why a description
      * is required).
      *
@@ -270,26 +276,22 @@ public class KometClipboard extends ClipboardContent {
     }
 
     /**
-     * The atom clipboard format for a proxy's concrete component type, falling back to
-     * {@link #COMPONENT_DRAG_FORMAT} for a bare (untyped) {@link EntityProxy}.
+     * The atom clipboard format for a component's kind, falling back to
+     * {@link #COMPONENT_DRAG_FORMAT} for a bare (untyped) {@link EntityProxy}. The kind is read from
+     * the facade interface, so a binding enum or an entity record gets the same format as a proxy
+     * of the same component.
      *
-     * @param proxy the component proxy
+     * @param component the component, in any facade form
      * @return the matching {@link DataFormat}
      */
-    static DataFormat formatFor(EntityProxy proxy) {
-        if (proxy instanceof EntityProxy.Concept) {
-            return KOMET_CONCEPT_PROXY;
-        }
-        if (proxy instanceof EntityProxy.Pattern) {
-            return KOMET_PATTERN_PROXY;
-        }
-        if (proxy instanceof EntityProxy.Semantic) {
-            return KOMET_SEMANTIC_PROXY;
-        }
-        if (proxy instanceof EntityProxy.Stamp) {
-            return KOMET_STAMP_PROXY;
-        }
-        return COMPONENT_DRAG_FORMAT;
+    static DataFormat formatFor(EntityFacade component) {
+        return switch (component) {
+            case ConceptFacade _ -> KOMET_CONCEPT_PROXY;
+            case PatternFacade _ -> KOMET_PATTERN_PROXY;
+            case SemanticFacade _ -> KOMET_SEMANTIC_PROXY;
+            case StampFacade _ -> KOMET_STAMP_PROXY;
+            default -> COMPONENT_DRAG_FORMAT;
+        };
     }
 
     public static boolean containsAny(Collection<?> c1,

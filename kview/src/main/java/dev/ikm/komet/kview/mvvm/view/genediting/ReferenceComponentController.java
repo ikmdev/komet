@@ -68,7 +68,7 @@ public class ReferenceComponentController {
         confirmButton.setDisable(true);
         klComponentControl = KLComponentControlFactory.createComponentControl(genEditingViewModel.getViewProperties().calculator());
         klComponentControl.setTitle("Reference component");
-        ObjectProperty<EntityProxy> refComponentProperty = genEditingViewModel.getProperty(REF_COMPONENT);
+        ObjectProperty<EntityFacade> refComponentProperty = genEditingViewModel.getProperty(REF_COMPONENT);
         klComponentControl.entityProperty().bindBidirectional(refComponentProperty);
         referenceComponentVBox.getChildren().add(klComponentControl);
         confirmButton.disableProperty().bind(refComponentProperty.isNull());
@@ -134,7 +134,7 @@ public class ReferenceComponentController {
         }
         RecordListBuilder<SemanticVersionRecord> versions = RecordListBuilder.make();
         UUID semanticUUID = UUID.randomUUID();
-        EntityProxy referencedComponent = genEditingViewModel.getPropertyValue(REF_COMPONENT);
+        EntityFacade referencedComponent = genEditingViewModel.getPropertyValue(REF_COMPONENT);
 
         long semanticNid = Entity.nidForSemantic(patternFacade, PublicIds.of(semanticUUID));
 

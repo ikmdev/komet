@@ -2,6 +2,7 @@ package dev.ikm.komet.kview.klfields;
 
 import static dev.ikm.komet.terms.KometConcept.*;
 import static dev.ikm.tinkar.terms.KernelConcept.*;
+import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
@@ -317,7 +318,7 @@ public class KlFieldHelper {
         MutableList<Object> fieldsValues = Lists.mutable.ofInitialCapacity(patternVersion.fieldDefinitions().size());
         patternVersion.fieldDefinitions().forEach(f -> {
             if (f.dataTypeNid() == COMPONENT_FIELD.nid()) {
-                fieldsValues.add(BLANK_CONCEPT);
+                fieldsValues.add(ObservableComposer.defaultComponentFieldValue());
             } else if (f.dataTypeNid() == STRING.nid()) {
                 fieldsValues.add("");
             } else if (f.dataTypeNid() == INTEGER_FIELD.nid()) {
@@ -358,7 +359,7 @@ public class KlFieldHelper {
     public static Object defaultFieldValue(FeatureDefinition fieldDefinition) {
 
         if (fieldDefinition.dataTypeNid() == COMPONENT_FIELD.nid()) {
-            return BLANK_CONCEPT;
+            return ObservableComposer.defaultComponentFieldValue();
         } else if (fieldDefinition.dataTypeNid() == STRING.nid()) {
             return "";
         } else if (fieldDefinition.dataTypeNid() == INTEGER_FIELD.nid()) {

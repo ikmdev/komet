@@ -15,7 +15,6 @@ import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.PatternFacade;
 
 import org.carlfx.cognitive.loader.InjectViewModel;
@@ -292,7 +291,7 @@ public class PatternNavEntryController {
      * component lifts the filter: the full list comes back, and the pane goes back to how it was
      * before the first filter.
      */
-    public void setReferenceComponentFilter(EntityProxy component) {
+    public void setReferenceComponentFilter(EntityFacade component) {
         if (component == null) {
             if (filtered) {
                 filtered = false;

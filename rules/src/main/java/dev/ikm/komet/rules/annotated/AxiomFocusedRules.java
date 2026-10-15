@@ -50,6 +50,7 @@ import dev.ikm.komet.rules.actions.axiom.ChooseConcreteOperatorMenu;
 import dev.ikm.komet.rules.actions.axiom.RemoveAxiomAction;
 import dev.ikm.komet.rules.actions.axiom.SetValueMenu;
 import dev.ikm.tinkar.ext.lang.owl.IntervalUtil;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.KernelConcept;
 import javafx.scene.control.MenuItem;
 
@@ -117,11 +118,11 @@ public class AxiomFocusedRules extends RulesBase {
 			@MethodPredicate(method = "isAxiomSet", args = { "$observation" }) })
 	public void axiomIsSet(ObservationRecord $observation) {
 		if ($observation.subject() instanceof AxiomSubjectRecord axiomSubject) {
-			if (axiomSubject.axiomMeaning().equals(KernelConcept.NECESSARY_SET)) {
+			if (EntityFacade.same(axiomSubject.axiomMeaning(), KernelConcept.NECESSARY_SET)) {
 				ChangeSetType changeToSufficientSet = new ChangeSetType(KernelConcept.SUFFICIENT_SET,
 						"Change to sufficient set", axiomSubject, calculator(), editCoordinate());
 				addGeneratedActions(changeToSufficientSet);
-			} else if (axiomSubject.axiomMeaning().equals(KernelConcept.SUFFICIENT_SET)) {
+			} else if (EntityFacade.same(axiomSubject.axiomMeaning(), KernelConcept.SUFFICIENT_SET)) {
 				ChangeSetType changeToNecessarySet = new ChangeSetType(KernelConcept.NECESSARY_SET,
 						"Change to necessary set", axiomSubject, calculator(), editCoordinate());
 				addGeneratedActions(changeToNecessarySet);

@@ -723,12 +723,12 @@ public class ConceptController {
 
     @SuppressWarnings("removal")
     private void showAddAnotherNameUI() {
-        ConceptEntity currentConcept = null;
-        if (getConceptViewModel().getPropertyValue(CURRENT_ENTITY) instanceof EntityProxy.Concept concept) {
-            currentConcept = EntityHandle.get(concept.nid()).expectConcept();
-        } else {
-            currentConcept = getConceptViewModel().getPropertyValue(CURRENT_ENTITY);
-        }
+        ConceptEntity currentConcept = switch (getConceptViewModel().getPropertyValue(CURRENT_ENTITY)) {
+            case ConceptEntity concept -> concept;
+            // a proxy or a binding enum
+            case ConceptFacade concept -> EntityHandle.get(concept.nid()).expectConcept();
+            case null, default -> null;
+        };
         if (currentConcept != null) {
             // in edit mode, will have a concept and public id
             eventBus.publish(conceptTopic, new AddOtherNameToConceptEvent(addDescriptionButton,

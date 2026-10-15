@@ -7,6 +7,7 @@ import dev.ikm.komet.kview.klfields.ComponentFieldOptions;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.FieldDefinitionRecord;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.collections.ObservableMap;
 import javafx.scene.Node;
@@ -69,7 +70,7 @@ class FieldConstraintsEditor extends VBox {
         }
 
         ViewCalculator viewCalculator = pattern.getViewCalculator();
-        Optional<List<EntityProxy>> componentOptions = ComponentFieldOptions.componentOptions(viewCalculator, field);
+        Optional<List<EntityFacade>> componentOptions = ComponentFieldOptions.componentOptions(viewCalculator, field);
         return componentOptions
                 .map(options -> createComboBoxNode(viewCalculator, constraints, field, options))
                 .orElseGet(() -> createComponentControlNode(viewCalculator, constraints, field));
@@ -82,7 +83,7 @@ class FieldConstraintsEditor extends VBox {
     private static Node createComboBoxNode(ViewCalculator viewCalculator,
                                            ObservableMap<Integer, EntityProxy> constraints,
                                            FieldDefinitionRecord field,
-                                           List<EntityProxy> options) {
+                                           List<EntityFacade> options) {
         KLComponentComboBoxControl comboBoxControl =
                 KLComponentControlFactory.createComponentComboBoxControl(viewCalculator, options);
         comboBoxControl.setPromptText("Any value");
@@ -92,11 +93,11 @@ class FieldConstraintsEditor extends VBox {
         comboBoxControl.setValue(constraints.get(field.indexInPattern()));
 
         comboBoxControl.valueProperty().subscribe(() -> {
-            EntityProxy value = comboBoxControl.getValue();
+            EntityFacade value = comboBoxControl.getValue();
             if (value == null) {
                 constraints.remove(field.indexInPattern());
             } else {
-                constraints.put(field.indexInPattern(), value);
+                constraints.put(field.indexInPattern(), value.toProxy());
             }
         });
 
@@ -118,11 +119,11 @@ class FieldConstraintsEditor extends VBox {
         }
 
         componentControl.entityProperty().subscribe(() -> {
-            EntityProxy entity = componentControl.getEntity();
+            EntityFacade entity = componentControl.getEntity();
             if (KLComponentControl.isEmpty(entity)) {
                 constraints.remove(field.indexInPattern());
             } else {
-                constraints.put(field.indexInPattern(), entity);
+                constraints.put(field.indexInPattern(), entity.toProxy());
             }
         });
 

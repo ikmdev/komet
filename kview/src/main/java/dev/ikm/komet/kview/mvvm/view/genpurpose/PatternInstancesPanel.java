@@ -23,7 +23,6 @@ import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.BorderPane;
@@ -122,7 +121,7 @@ public class PatternInstancesPanel extends BorderPane {
         if (pattern == null) {
             return;
         }
-        EntityProxy component = searchTextField.getSearchedComponent();
+        EntityFacade component = searchTextField.getSearchedComponent();
         placeholder.setText(component == null ? "No instances" : "No instances match");
         Stream<SemanticEntity<SemanticEntityVersion>> instances = component == null
                 ? EntityService.get().semanticsOfPattern(pattern.nid())
@@ -140,7 +139,7 @@ public class PatternInstancesPanel extends BorderPane {
     }
 
     /** Whether at least one instance of the window's pattern references the component. */
-    private boolean hasInstanceReferencing(EntityProxy component) {
+    private boolean hasInstanceReferencing(EntityFacade component) {
         return EntityService.get().semanticsForComponentOfPattern(component.nid(), pattern.nid())
                 .findAny()
                 .isPresent();

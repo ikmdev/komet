@@ -4,7 +4,6 @@ import dev.ikm.komet.kview.controls.skin.KLComponentControlSkin;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
@@ -87,13 +86,13 @@ public class KLComponentControl extends Control {
      **************************************************************************/
 
     /**
-     * Returns whether the EntityProxy means empty.
+     * Returns whether a component value means empty.
      *
-     * @param entityProxy the EntityProxy
-     * @return true if the EntityProxy means empty.
+     * @param entity the component, or {@code null}
+     * @return true if the value is {@code null} or the blank concept
      */
-    public static boolean isEmpty(EntityProxy entityProxy) {
-        return entityProxy == null || entityProxy.nid() == BLANK_CONCEPT.nid();
+    public static boolean isEmpty(EntityFacade entity) {
+        return entity == null || EntityFacade.same(entity, BLANK_CONCEPT);
     }
 
     /** {@inheritDoc} */
@@ -138,19 +137,16 @@ public class KLComponentControl extends Control {
     /**
      * This property holds the {@link Entity} that has been added to the control
      */
-    private final ObjectProperty<EntityProxy> entityProperty = new SimpleObjectProperty<>(this, "entity", null);
-    public final ObjectProperty<EntityProxy> entityProperty() { return entityProperty; }
+    private final ObjectProperty<EntityFacade> entityProperty = new SimpleObjectProperty<>(this, "entity", null);
+    public final ObjectProperty<EntityFacade> entityProperty() { return entityProperty; }
 
     /**
-     * This method returns an EntityProxy object which extends EntityFacade.
-     * If the entityProperty.get() is a ConceptEntity or SemanticEntity or PatternEntity, they too extend from EntityFacade.
-     * However since both EntityProxy and Entity are separate classes we have to case it into EntityFacade to avoid CastException.
-     * @return EntityProxy
+     * The component the control holds, in whatever facade form it was given: a proxy, a binding
+     * enum or an entity. Compare it with {@link EntityFacade#same}, never with {@code ==}.
+     *
+     * @return the component, or {@code null}
      */
-    public final EntityProxy getEntity() {
-        if (entityProperty.get() instanceof EntityFacade entityFacade) {
-            entityProperty.set(entityFacade.toProxy());
-        }
+    public final EntityFacade getEntity() {
         return entityProperty.get();
     }
 
@@ -158,7 +154,7 @@ public class KLComponentControl extends Control {
      *
      * @param value
      */
-    public final void setEntity(EntityProxy value) {
+    public final void setEntity(EntityFacade value) {
         entityProperty.set(value);
     }
 
@@ -167,18 +163,18 @@ public class KLComponentControl extends Control {
      * The auto-complete function. It will receive the string the user has input and should return the list of
      * auto-complete suggestions. This function runs on a background thread.
      */
-    private final ObjectProperty<Function<String, List<EntityProxy>>> completer = new SimpleObjectProperty<>();
-    public final void setTypeAheadCompleter(Function<String, List<EntityProxy>> handler) { completer.set(handler); }
-    public final Function<String, List<EntityProxy>> getCompleter() { return completer.get(); }
-    public final ObjectProperty<Function<String, List<EntityProxy>>> completerProperty() { return completer; }
+    private final ObjectProperty<Function<String, List<EntityFacade>>> completer = new SimpleObjectProperty<>();
+    public final void setTypeAheadCompleter(Function<String, List<EntityFacade>> handler) { completer.set(handler); }
+    public final Function<String, List<EntityFacade>> getCompleter() { return completer.get(); }
+    public final ObjectProperty<Function<String, List<EntityFacade>>> completerProperty() { return completer; }
 
     // -- function to render the component's name and avoid entity.description()
-    private final ObjectProperty<Function<EntityProxy, String>> componentNameRenderer = new SimpleObjectProperty<>();
-    public final Function<EntityProxy, String> getComponentNameRenderer() { return componentNameRenderer.get(); }
-    public final void setComponentNameRenderer(Function<EntityProxy, String> nameHandler) {
+    private final ObjectProperty<Function<EntityFacade, String>> componentNameRenderer = new SimpleObjectProperty<>();
+    public final Function<EntityFacade, String> getComponentNameRenderer() { return componentNameRenderer.get(); }
+    public final void setComponentNameRenderer(Function<EntityFacade, String> nameHandler) {
         componentNameRenderer.set(nameHandler);
     }
-    public final ObjectProperty<Function<EntityProxy, String>> componentNameRendererProperty() {
+    public final ObjectProperty<Function<EntityFacade, String>> componentNameRendererProperty() {
         return componentNameRenderer;
     }
 
@@ -186,20 +182,20 @@ public class KLComponentControl extends Control {
     /**
      * Converts the user-typed input to an object of type T, or the object of type T to a String.
      */
-    private final ObjectProperty<StringConverter<EntityProxy>> typeAheadStringConverter = new SimpleObjectProperty<>(this, "converter");
-    public final ObjectProperty<StringConverter<EntityProxy>> typeAheadStringConverterProperty() { return typeAheadStringConverter; }
-    public final void setTypeAheadStringConverter(StringConverter<EntityProxy> value) { typeAheadStringConverterProperty().set(value); }
-    public final StringConverter<EntityProxy> getTypeAheadStringConverter() {return typeAheadStringConverterProperty().get(); }
+    private final ObjectProperty<StringConverter<EntityFacade>> typeAheadStringConverter = new SimpleObjectProperty<>(this, "converter");
+    public final ObjectProperty<StringConverter<EntityFacade>> typeAheadStringConverterProperty() { return typeAheadStringConverter; }
+    public final void setTypeAheadStringConverter(StringConverter<EntityFacade> value) { typeAheadStringConverterProperty().set(value); }
+    public final StringConverter<EntityFacade> getTypeAheadStringConverter() {return typeAheadStringConverterProperty().get(); }
 
     // -- suggestions node factory
     /**
      * This will return a Cell to be shown in the auto-complete popup for each result returned
      * by the 'completer'.
      */
-    private final ObjectProperty<Callback<ListView<EntityProxy>, ListCell<EntityProxy>>> suggestionsCellFactory = new SimpleObjectProperty<>();
-    public final void setSuggestionsCellFactory(Callback<ListView<EntityProxy>, ListCell<EntityProxy>> factory) { suggestionsCellFactory.set(factory); }
-    public final Callback<ListView<EntityProxy>, ListCell<EntityProxy>> getSuggestionsCellFactory() { return suggestionsCellFactory.get(); }
-    public final ObjectProperty<Callback<ListView<EntityProxy>, ListCell<EntityProxy>>> suggestionsCellFactoryProperty() { return suggestionsCellFactory; }
+    private final ObjectProperty<Callback<ListView<EntityFacade>, ListCell<EntityFacade>>> suggestionsCellFactory = new SimpleObjectProperty<>();
+    public final void setSuggestionsCellFactory(Callback<ListView<EntityFacade>, ListCell<EntityFacade>> factory) { suggestionsCellFactory.set(factory); }
+    public final Callback<ListView<EntityFacade>, ListCell<EntityFacade>> getSuggestionsCellFactory() { return suggestionsCellFactory.get(); }
+    public final ObjectProperty<Callback<ListView<EntityFacade>, ListCell<EntityFacade>>> suggestionsCellFactoryProperty() { return suggestionsCellFactory; }
 
     // -- search text
     /**
@@ -253,7 +249,7 @@ public class KLComponentControl extends Control {
      * A property with an action to be executed when the user clicks on the remove button. By default, it will
      * remove the entity that was added.
      */
-    private final ObjectProperty<EventHandler<ActionEvent>> onRemoveActionProperty = new SimpleObjectProperty<>(this, "onRemoveAction", e -> setEntity(BLANK_CONCEPT.toProxy()));
+    private final ObjectProperty<EventHandler<ActionEvent>> onRemoveActionProperty = new SimpleObjectProperty<>(this, "onRemoveAction", e -> setEntity(BLANK_CONCEPT));
     public final ObjectProperty<EventHandler<ActionEvent>> onRemoveActionProperty() {
        return onRemoveActionProperty;
     }

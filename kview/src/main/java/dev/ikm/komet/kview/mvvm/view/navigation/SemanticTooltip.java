@@ -10,6 +10,7 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
@@ -133,7 +134,7 @@ public class SemanticTooltip extends Tooltip {
                 }
 
                 case COMPONENT -> {
-                    nodeToAdd = createComponentFieldValue((EntityProxy) field);
+                    nodeToAdd = createComponentFieldValue((EntityFacade) field);
                 }
                 case C_LIST, C_SET -> {
                     nodeToAdd = createCListOrCSetFieldValue((LongIdCollection) field);
@@ -164,7 +165,7 @@ public class SemanticTooltip extends Tooltip {
         return flowPane;
     }
 
-    private ComponentItemNode createComponentFieldValue(EntityProxy field) {
+    private ComponentItemNode createComponentFieldValue(EntityFacade field) {
         ComponentItemNode componentItemNode = createComponentItemNode(field);
 
         componentItemNode.getStyleClass().add("single-component");
@@ -205,7 +206,7 @@ public class SemanticTooltip extends Tooltip {
         return valueLabel;
     }
 
-    private ComponentItemNode createComponentItemNode(EntityProxy entityProxy) {
+    private ComponentItemNode createComponentItemNode(EntityFacade entityProxy) {
         String description = viewProperties.calculator().languageCalculator()
                 .getFullyQualifiedDescriptionTextWithFallbackOrNid(entityProxy.nid());
         Image identicon = Identicon.generateIdenticonImage(entityProxy.publicId());

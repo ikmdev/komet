@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.kview.controls;
 
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -59,11 +59,11 @@ public class ComponentSearchTextField extends Region {
     /** The popup's row height, as the component controls set it. */
     private static final double SUGGESTION_ROW_HEIGHT = 41;
 
-    private final AutoCompleteTextField<EntityProxy> searchField = new AutoCompleteTextField<>();
+    private final AutoCompleteTextField<EntityFacade> searchField = new AutoCompleteTextField<>();
     private final Region searchIcon = new Region();
     private final Region filterIcon = new Region();
 
-    private final ReadOnlyObjectWrapper<EntityProxy> searchedComponent =
+    private final ReadOnlyObjectWrapper<EntityFacade> searchedComponent =
             new ReadOnlyObjectWrapper<>(this, "searchedComponent");
 
     public ComponentSearchTextField() {
@@ -86,8 +86,8 @@ public class ComponentSearchTextField extends Region {
     }
 
     private void updateFieldCompleter() {
-        Function<String, List<EntityProxy>> completer = getCompleter();
-        Predicate<EntityProxy> filter = getSuggestionFilter();
+        Function<String, List<EntityFacade>> completer = getCompleter();
+        Predicate<EntityFacade> filter = getSuggestionFilter();
         if (completer == null) {
             searchField.setCompleter(null);
         } else if (filter == null) {
@@ -181,41 +181,41 @@ public class ComponentSearchTextField extends Region {
      * Finds the components to suggest for the typed text. Runs on the field's own search thread,
      * not the FX thread.
      */
-    private final ObjectProperty<Function<String, List<EntityProxy>>> completer = new SimpleObjectProperty<>(this, "completer");
-    public final void setCompleter(Function<String, List<EntityProxy>> completer) { this.completer.set(completer); }
-    public final Function<String, List<EntityProxy>> getCompleter() { return completer.get(); }
-    public final ObjectProperty<Function<String, List<EntityProxy>>> completerProperty() { return completer; }
+    private final ObjectProperty<Function<String, List<EntityFacade>>> completer = new SimpleObjectProperty<>(this, "completer");
+    public final void setCompleter(Function<String, List<EntityFacade>> completer) { this.completer.set(completer); }
+    public final Function<String, List<EntityFacade>> getCompleter() { return completer.get(); }
+    public final ObjectProperty<Function<String, List<EntityFacade>>> completerProperty() { return completer; }
 
     // -- suggestion filter
     /**
      * Keeps only the suggestions worth picking, out of those the completer finds; null keeps them
      * all. Runs where the completer runs: on the field's own search thread.
      */
-    private final ObjectProperty<Predicate<EntityProxy>> suggestionFilter = new SimpleObjectProperty<>(this, "suggestionFilter");
-    public final void setSuggestionFilter(Predicate<EntityProxy> filter) { suggestionFilter.set(filter); }
-    public final Predicate<EntityProxy> getSuggestionFilter() { return suggestionFilter.get(); }
-    public final ObjectProperty<Predicate<EntityProxy>> suggestionFilterProperty() { return suggestionFilter; }
+    private final ObjectProperty<Predicate<EntityFacade>> suggestionFilter = new SimpleObjectProperty<>(this, "suggestionFilter");
+    public final void setSuggestionFilter(Predicate<EntityFacade> filter) { suggestionFilter.set(filter); }
+    public final Predicate<EntityFacade> getSuggestionFilter() { return suggestionFilter.get(); }
+    public final ObjectProperty<Predicate<EntityFacade>> suggestionFilterProperty() { return suggestionFilter; }
 
     // -- converter
     /** Names a component, in the field once chosen and in the popup's default cells. */
-    private final ObjectProperty<StringConverter<EntityProxy>> converter = new SimpleObjectProperty<>(this, "converter");
-    public final void setConverter(StringConverter<EntityProxy> converter) { this.converter.set(converter); }
-    public final StringConverter<EntityProxy> getConverter() { return converter.get(); }
-    public final ObjectProperty<StringConverter<EntityProxy>> converterProperty() { return converter; }
+    private final ObjectProperty<StringConverter<EntityFacade>> converter = new SimpleObjectProperty<>(this, "converter");
+    public final void setConverter(StringConverter<EntityFacade> converter) { this.converter.set(converter); }
+    public final StringConverter<EntityFacade> getConverter() { return converter.get(); }
+    public final ObjectProperty<StringConverter<EntityFacade>> converterProperty() { return converter; }
 
     // -- suggestions cell factory
     /** Draws a suggestion in the popup; null leaves the field's default cell, the converter's text. */
-    private final ObjectProperty<Callback<ListView<EntityProxy>, ListCell<EntityProxy>>> suggestionsCellFactory =
+    private final ObjectProperty<Callback<ListView<EntityFacade>, ListCell<EntityFacade>>> suggestionsCellFactory =
             new SimpleObjectProperty<>(this, "suggestionsCellFactory");
-    public final void setSuggestionsCellFactory(Callback<ListView<EntityProxy>, ListCell<EntityProxy>> factory) { suggestionsCellFactory.set(factory); }
-    public final Callback<ListView<EntityProxy>, ListCell<EntityProxy>> getSuggestionsCellFactory() { return suggestionsCellFactory.get(); }
-    public final ObjectProperty<Callback<ListView<EntityProxy>, ListCell<EntityProxy>>> suggestionsCellFactoryProperty() { return suggestionsCellFactory; }
+    public final void setSuggestionsCellFactory(Callback<ListView<EntityFacade>, ListCell<EntityFacade>> factory) { suggestionsCellFactory.set(factory); }
+    public final Callback<ListView<EntityFacade>, ListCell<EntityFacade>> getSuggestionsCellFactory() { return suggestionsCellFactory.get(); }
+    public final ObjectProperty<Callback<ListView<EntityFacade>, ListCell<EntityFacade>>> suggestionsCellFactoryProperty() { return suggestionsCellFactory; }
 
     // -- searched component
     /**
      * The component to search for: the suggestion last chosen, while the field shows text; null
      * while the field is empty.
      */
-    public ReadOnlyObjectProperty<EntityProxy> searchedComponentProperty() { return searchedComponent.getReadOnlyProperty(); }
-    public EntityProxy getSearchedComponent() { return searchedComponent.get(); }
+    public ReadOnlyObjectProperty<EntityFacade> searchedComponentProperty() { return searchedComponent.getReadOnlyProperty(); }
+    public EntityFacade getSearchedComponent() { return searchedComponent.get(); }
 }

@@ -23,7 +23,6 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.KernelConcept;
 
 import java.util.Comparator;
@@ -79,13 +78,13 @@ public final class ComponentFieldOptions {
      *                        field index, meaning and purpose)
      * @return the allowed choices sorted by their description text, or empty for a free-form field
      */
-    public static Optional<List<EntityProxy>> componentOptions(ViewCalculator viewCalculator,
+    public static Optional<List<EntityFacade>> componentOptions(ViewCalculator viewCalculator,
                                                                FeatureDefinition fieldDefinition) {
         return optionsForConcept(viewCalculator, fieldDefinition.meaningNid())
                 .or(() -> optionsForConcept(viewCalculator, fieldDefinition.purposeNid()));
     }
 
-    private static Optional<List<EntityProxy>> optionsForConcept(ViewCalculator viewCalculator, long conceptNid) {
+    private static Optional<List<EntityFacade>> optionsForConcept(ViewCalculator viewCalculator, long conceptNid) {
         // Description types are deliberately NOT the descendants of DESCRIPTION_TYPE — that subtree
         // also holds unrelated metadata concepts (extended relationship type, inferred navigation, ...).
         // Use a fixed set instead: the classic windows' pair
@@ -132,17 +131,17 @@ public final class ComponentFieldOptions {
         return Optional.empty();
     }
 
-    private static Stream<EntityProxy> fetchDescendents(ViewCalculator viewCalculator, ConceptFacade parent) {
+    private static Stream<EntityFacade> fetchDescendents(ViewCalculator viewCalculator, ConceptFacade parent) {
         return viewCalculator.descendentsOf(parent.nid()).longStream()
                 .mapToObj(nid -> EntityHandle.get(nid).expectConcept().toProxy());
     }
 
-    private static List<EntityProxy> sortedByName(ViewCalculator viewCalculator, Stream<? extends EntityFacade> options) {
+    private static List<EntityFacade> sortedByName(ViewCalculator viewCalculator, Stream<? extends EntityFacade> options) {
         return options
                 .sorted(Comparator.comparing(
                         proxy -> viewCalculator.languageCalculator().getDescriptionTextOrNid(proxy.nid()),
                         String.CASE_INSENSITIVE_ORDER))
-                .<EntityProxy>map(EntityFacade::toProxy)
+                .<EntityFacade>map(EntityFacade::toProxy)
                 .toList();
     }
 }
