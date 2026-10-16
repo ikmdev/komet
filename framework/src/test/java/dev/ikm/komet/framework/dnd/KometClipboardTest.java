@@ -16,6 +16,8 @@
 package dev.ikm.komet.framework.dnd;
 
 import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.KernelConcept;
+import dev.ikm.tinkar.terms.KernelPattern;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -71,6 +73,13 @@ class KometClipboardTest {
         @DisplayName("stamp proxy → stamp format")
         void stamp() {
             assertEquals(KOMET_STAMP_PROXY, KometClipboard.formatFor(EntityProxy.Stamp.make(1)));
+        }
+
+        @Test
+        @DisplayName("binding enums → the format of their kind, as a proxy of the same component")
+        void bindingEnumsTakeTheirKindsFormat() {
+            assertEquals(KOMET_CONCEPT_PROXY, KometClipboard.formatFor(KernelConcept.ENGLISH_LANGUAGE));
+            assertEquals(KOMET_PATTERN_PROXY, KometClipboard.formatFor(KernelPattern.DESCRIPTION_PATTERN));
         }
 
         @Test

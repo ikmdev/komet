@@ -80,10 +80,10 @@ import static dev.ikm.komet.kview.klfields.KlFieldHelper.createDefaultFieldValue
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.createEditableKlField;
 import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
-import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
+import static dev.ikm.komet.terms.KometConcept.BLANK_CONCEPT;
+import static dev.ikm.komet.terms.KometConcept.IMAGE_FIELD;
 import static dev.ikm.tinkar.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
-import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_FIELD;
-import static dev.ikm.komet.terms.KometTerm.IMAGE_FIELD;
+import static dev.ikm.tinkar.terms.KernelConcept.COMPONENT_FIELD;
 
 public class GenPurposeFieldsController {
 
@@ -249,7 +249,8 @@ public class GenPurposeFieldsController {
             if (fieldDefinition.dataTypeNid() == IMAGE_FIELD.nid()) {
                 invalid.set(observableField.valueProperty().get() == null || (((byte[]) observableField.valueProperty().get()).length == 0));
             } else if (fieldDefinition.dataTypeNid() == COMPONENT_FIELD.nid()) {
-                invalid.set(observableField.valueProperty().get() == null || observableField.valueProperty().get() == BLANK_CONCEPT);
+                invalid.set(observableField.valueProperty().get() == null
+                        || observableField.valueProperty().get() instanceof EntityFacade component && component.nid() == BLANK_CONCEPT.nid());
             }
             if (!invalid.get()) {
                 invalid.set((observableField.value() == null || observableField.value().toString().isEmpty()));

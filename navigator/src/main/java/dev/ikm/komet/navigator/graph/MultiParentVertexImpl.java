@@ -34,7 +34,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,7 +84,7 @@ public class MultiParentVertexImpl
         super();
         this.graphController = graphController;
         this.nid = Integer.MAX_VALUE;
-        this.typeNids = LongIds.set.of(KernelTerm.UNINITIALIZED_COMPONENT.nid());
+        this.typeNids = LongIds.set.of(KernelConcept.UNINITIALIZED_COMPONENT.nid());
     }
 
     public MultiParentVertexImpl(long conceptNid, MultiParentGraphViewController graphController, LongIdSet typeNids) {
@@ -352,7 +352,7 @@ public class MultiParentVertexImpl
         if (Nid.isNotApplicable(this.nid)) {
             return true;
         }
-        if (KernelTerm.ROOT_VERTEX.nid() == this.nid) {
+        if (KernelConcept.ROOT_VERTEX.nid() == this.nid) {
             return true;
         } else if (this.getParent() == null) {
             return true;

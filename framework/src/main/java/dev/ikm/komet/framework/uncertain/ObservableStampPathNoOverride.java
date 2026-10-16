@@ -23,7 +23,7 @@ import javafx.beans.property.SetProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import org.eclipse.collections.api.set.ImmutableSet;
-import dev.ikm.komet.terms.KometTerm;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.komet.framework.view.SimpleEqualityBasedListProperty;
 import dev.ikm.komet.framework.view.SimpleEqualityBasedObjectProperty;
 import dev.ikm.komet.framework.view.SimpleEqualityBasedSetProperty;
@@ -77,21 +77,21 @@ public class ObservableStampPathNoOverride
     @Override
     protected ListProperty<StampPositionRecord> makePathOriginsAsListProperty(StampPath stampPath) {
         return new SimpleEqualityBasedListProperty<StampPositionRecord>(this,
-                KometTerm.PATH_ORIGINS_FOR_STAMP_PATH.toXmlFragment(),
+                KometConcept.PATH_ORIGINS_FOR_STAMP_PATH.toXmlFragment(),
                 FXCollections.observableList(stampPath.getPathOrigins().toList()));
     }
 
     @Override
     protected SetProperty<StampPositionRecord> makePathOriginsProperty(StampPath stampPath) {
         return new SimpleEqualityBasedSetProperty<StampPositionRecord>(this,
-                KometTerm.PATH_ORIGINS_FOR_STAMP_PATH.toXmlFragment(),
+                KometConcept.PATH_ORIGINS_FOR_STAMP_PATH.toXmlFragment(),
                 FXCollections.observableSet(stampPath.getPathOrigins().toSet()));
     }
 
     @Override
     protected ObjectProperty<ConceptFacade> makePathConceptProperty(StampPath stampPath) {
         return new SimpleEqualityBasedObjectProperty<>(this,
-                KometTerm.PATH_FOR_PATH_COORDINATE.toXmlFragment(),
+                KometConcept.PATH_FOR_PATH_COORDINATE.toXmlFragment(),
                 stampPath.pathConcept());
     }
 

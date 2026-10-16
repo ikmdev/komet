@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.kview.klwindows.lidr;
 
-import dev.ikm.komet.terms.KometTerm;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
@@ -67,8 +67,8 @@ public class LidrKlWindow extends AbstractEntityChapterKlWindow {
         // Prefetch modules and paths for the view
         StampViewModel stampViewModel = new StampViewModel();
         stampViewModel
-                .setPropertyValue(PATHS_PROPERTY, NavigationReads.descendantsOf(viewProperties.calculator(), KometTerm.PATH), true)
-                .setPropertyValue(MODULES_PROPERTY, NavigationReads.descendantsOf(viewProperties.calculator(), KometTerm.MODULE), true);
+                .setPropertyValue(PATHS_PROPERTY, NavigationReads.descendantsOf(viewProperties.calculator(), KometConcept.PATH), true)
+                .setPropertyValue(MODULES_PROPERTY, NavigationReads.descendantsOf(viewProperties.calculator(), KometConcept.MODULE), true);
 
         // In create mode, set up LIDR view model for injection
         ValidationViewModel lidrViewModel = new LidrViewModel()

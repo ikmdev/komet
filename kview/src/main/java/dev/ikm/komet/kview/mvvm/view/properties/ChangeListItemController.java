@@ -30,6 +30,7 @@ import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.entity.graph.isomorphic.IsomorphicResultsLeafHash;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -46,9 +47,9 @@ import java.util.Set;
 import java.util.function.Function;
 
 import static dev.ikm.komet.kview.fxutils.CssHelper.toWebColor;
+import static dev.ikm.komet.terms.KometConcept.MODULE_FOR_VERSION;
 import static dev.ikm.tinkar.common.util.Symbols.HEAVY_TRIANGLE_HEADED_RIGHTWARDS_ARROW;
-import static dev.ikm.tinkar.terms.KernelTerm.*;
-import static dev.ikm.komet.terms.KometTerm.MODULE_FOR_VERSION;
+import static dev.ikm.tinkar.terms.KernelConcept.*;
 
 /**
  * Displays change chronology based on an entity's versions. For example A concept was created and updated over time.
@@ -189,7 +190,7 @@ public class ChangeListItemController {
             FieldRecord priorFieldRecord = fieldChange.priorValue();
             Object priorFieldValue = priorFieldRecord.value();
             // Indicate previous value was an unitialized entity.
-            newlyCreated = priorFieldValue == State.PRIMORDIAL || UNINITIALIZED_COMPONENT.equals(priorFieldValue);
+            newlyCreated = priorFieldValue == State.PRIMORDIAL || priorFieldValue instanceof EntityFacade priorEntity && EntityFacade.same(priorEntity, UNINITIALIZED_COMPONENT);
 
             // detect if it's a field value of DiTreeEntity
             isItAnAxiom = isItAnAxiom || currentFieldRecord.value() instanceof DiTreeEntity;

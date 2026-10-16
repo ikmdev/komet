@@ -15,7 +15,8 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genpurpose.test;
 
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
+import dev.ikm.tinkar.terms.KernelPattern;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.PatternRequirementUtils;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.StatedDefinitionSeeds;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
@@ -76,12 +77,12 @@ class PatternRequirementUtilsTest {
                 Files.createTempDirectory("pattern-requirements-test").toFile());
         PrimitiveData.selectControllerByName("Load Ephemeral Store");
         PrimitiveData.start();
-        DESCRIPTION_PATTERN = KernelTerm.DESCRIPTION_PATTERN.nid();
-        STATED_PATTERN = KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
-        FQN = KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid();
-        REGULAR = KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE.nid();
-        STAMP = KernelTerm.ACTIVE_STATE.nid();
-        COMPONENT = KernelTerm.ANONYMOUS_CONCEPT.nid();
+        DESCRIPTION_PATTERN = KernelPattern.DESCRIPTION_PATTERN.nid();
+        STATED_PATTERN = KernelPattern.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();
+        FQN = KernelConcept.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid();
+        REGULAR = KernelConcept.REGULAR_NAME_DESCRIPTION_TYPE.nid();
+        STAMP = KernelConcept.ACTIVE_STATE.nid();
+        COMPONENT = KernelConcept.ANONYMOUS_CONCEPT.nid();
     }
 
     @AfterAll

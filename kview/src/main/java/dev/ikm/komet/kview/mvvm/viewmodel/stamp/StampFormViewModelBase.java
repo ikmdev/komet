@@ -1,6 +1,5 @@
 package dev.ikm.komet.kview.mvvm.viewmodel.stamp;
 
-import dev.ikm.komet.terms.KometTerm;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.AUTHOR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TIME_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.FORM_TITLE;
@@ -18,6 +17,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.ClosePropertiesPanelEvent;
 import dev.ikm.komet.kview.mvvm.view.genediting.ConfirmationDialogController;
 import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.ComponentWithNid;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -86,7 +86,7 @@ public abstract class StampFormViewModelBase extends FormViewModel {
         long defaultModuleNid = getViewProperties().nodeView().editCoordinate().defaultModuleProperty().get().nid();
         ComponentWithNid module = lookupByNid(defaultModuleNid, moduleEntities);
         if (module == null) {
-            module = lookupByNid(KometTerm.DEVELOPMENT_MODULE.nid(), moduleEntities);
+            module = lookupByNid(KometConcept.DEVELOPMENT_MODULE.nid(), moduleEntities);
         }
         setPropertyValue(StampFormViewModelBase.Properties.MODULE, module);
 
@@ -110,10 +110,10 @@ public abstract class StampFormViewModelBase extends FormViewModel {
         this.topic = topic;
 
         // initialize observable lists
-        Set<ComponentWithNid> modules = NavigationReads.descendantsOf(viewProperties.calculator(), KometTerm.MODULE).stream().map(conceptEntity -> (ComponentWithNid) conceptEntity).collect(Collectors.toSet());
+        Set<ComponentWithNid> modules = NavigationReads.descendantsOf(viewProperties.calculator(), KometConcept.MODULE).stream().map(conceptEntity -> (ComponentWithNid) conceptEntity).collect(Collectors.toSet());
         // add default module just in case it isn't a descendent
         modules.add(viewProperties.nodeView().editCoordinate().defaultModuleProperty().get());
-        Set<ComponentWithNid> paths = NavigationReads.descendantsOf(viewProperties.calculator(), KometTerm.PATH).stream().map(conceptEntity -> (ComponentWithNid) conceptEntity).collect(Collectors.toSet());
+        Set<ComponentWithNid> paths = NavigationReads.descendantsOf(viewProperties.calculator(), KometConcept.PATH).stream().map(conceptEntity -> (ComponentWithNid) conceptEntity).collect(Collectors.toSet());
 
         if (getObservableList(MODULES).isEmpty()) {
             setPropertyValues(MODULES, modules);

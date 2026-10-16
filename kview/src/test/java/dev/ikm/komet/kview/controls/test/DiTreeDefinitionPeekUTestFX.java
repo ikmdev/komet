@@ -1,6 +1,6 @@
 package dev.ikm.komet.kview.controls.test;
 
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
@@ -74,9 +74,9 @@ class DiTreeDefinitionPeekUTestFX {
                 Files.createTempDirectory("ditree-peek-test").toFile());
         PrimitiveData.selectControllerByName("Load Ephemeral Store");
         PrimitiveData.start();
-        A = KernelTerm.ANONYMOUS_CONCEPT.nid();
-        B = KernelTerm.ACTIVE_STATE.nid();
-        C = KernelTerm.INACTIVE_STATE.nid();
+        A = KernelConcept.ANONYMOUS_CONCEPT.nid();
+        B = KernelConcept.ACTIVE_STATE.nid();
+        C = KernelConcept.INACTIVE_STATE.nid();
     }
 
     @AfterAll
@@ -95,7 +95,7 @@ class DiTreeDefinitionPeekUTestFX {
             control.setTitle("Definition");
             // No public id: the chip's glyph resolution stays off the (empty) store.
             control.setComponentItemResolver(nid -> new ComponentItem(names.get(nid),
-                    Identicon.generateIdenticonImage(KernelTerm.ANONYMOUS_CONCEPT.publicId()), null, true));
+                    Identicon.generateIdenticonImage(KernelConcept.ANONYMOUS_CONCEPT.publicId()), null, true));
             control.setDescriptionResolver(names::get);
             control.setDefinitionResolver(definitions::get);
             control.setValue(definitionNaming(A));

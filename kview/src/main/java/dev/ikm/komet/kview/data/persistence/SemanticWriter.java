@@ -20,7 +20,8 @@ import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
+import dev.ikm.tinkar.terms.KernelPattern;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 
@@ -45,12 +46,12 @@ public class SemanticWriter {
         final ConceptFacade descriptionTypeFacade = ConceptFacade.make(descriptionTypeNid);
 
         //Create Semantic Detail
-        SemanticDetail semanticDetail = new SemanticDetail(KernelTerm.DESCRIPTION_PATTERN, referencedComponent, () -> {
+        SemanticDetail semanticDetail = new SemanticDetail(KernelPattern.DESCRIPTION_PATTERN.publicId(), referencedComponent, () -> {
             //Semantic Field Object values
             MutableList<Object> descriptionFields = Lists.mutable.empty();
-            descriptionFields.add(KernelTerm.ENGLISH_LANGUAGE);
+            descriptionFields.add(KernelConcept.ENGLISH_LANGUAGE);
             descriptionFields.add(text);
-            descriptionFields.add(KernelTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
+            descriptionFields.add(KernelConcept.DESCRIPTION_NOT_CASE_SENSITIVE);
             descriptionFields.add(descriptionTypeFacade);
             return descriptionFields;
         });
@@ -86,7 +87,7 @@ public class SemanticWriter {
         final ConceptFacade dialectFacade = ConceptFacade.make(dialectNid);
 
         //Create Semantic Detail
-        SemanticDetail semanticDetail = new SemanticDetail(KernelTerm.US_DIALECT_PATTERN, referencedComponent, () -> {
+        SemanticDetail semanticDetail = new SemanticDetail(KernelPattern.US_DIALECT_PATTERN.publicId(), referencedComponent, () -> {
             //Semantic Field Object values
             MutableList<Object> dialectFields = Lists.mutable.empty();
             dialectFields.add(dialectFacade);
@@ -115,7 +116,7 @@ public class SemanticWriter {
 
     public void comment(PublicId semantic, PublicId referencedComponent, String comment, PublicId stamp){
         //Create Semantic Detail
-        SemanticDetail semanticDetail = new SemanticDetail(KernelTerm.COMMENT_PATTERN, referencedComponent, () -> {
+        SemanticDetail semanticDetail = new SemanticDetail(KernelPattern.COMMENT_PATTERN.publicId(), referencedComponent, () -> {
             //Semantic Field Object values
             MutableList<Object> commentFields = Lists.mutable.empty();
             commentFields.add(comment);
@@ -161,7 +162,7 @@ public class SemanticWriter {
 
 //    public void statedAxiom(PublicId semantic, PublicId referencedComponent, List<PublicId> origins){
 //        //Create Semantic Detail
-//        SemanticDetail semanticDetail = new SemanticDetail(KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, referencedComponent, () -> {
+//        SemanticDetail semanticDetail = new SemanticDetail(KernelPattern.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, referencedComponent, () -> {
 //            //Semantic Field Object values
 //            MutableList<Object> statedAxiomFields = Lists.mutable.empty();
 //            MutableList<EntityVertex> vertexMap = Lists.mutable.empty();
@@ -176,7 +177,7 @@ public class SemanticWriter {
 //                    definitionRootUUID.getMostSignificantBits(),
 //                    definitionRootUUID.getLeastSignificantBits(),
 //                    vertexIdx.getAndIncrement(),
-//                    ConceptDTO.make(KernelTerm.DEFINITION_ROOT.idString()),
+//                    ConceptDTO.make(KernelConcept.DEFINITION_ROOT.idString()),
 //                    definitionRootProperty.toImmutable());
 //            EntityVertex definitionRootVertex = EntityVertex.make(definitionVertexDTO);
 //            vertexMap.add(definitionRootVertex);
@@ -192,12 +193,12 @@ public class SemanticWriter {
 //
 //                        UUID referenceUUID = UUID.randomUUID();
 //                        MutableMap<ConceptDTO, Object> referenceProperty = Maps.mutable.empty();
-//                        referenceProperty.put(ConceptDTO.make(KernelTerm.CONCEPT_REFERENCE.idString()),conceptFacade);
+//                        referenceProperty.put(ConceptDTO.make(KernelConcept.CONCEPT_REFERENCE.idString()),conceptFacade);
 //                        EntityVertex referenceVertex = EntityVertex.make(new VertexDTO(
 //                                referenceUUID.getMostSignificantBits(),
 //                                referenceUUID.getLeastSignificantBits(),
 //                                referenceIdx,
-//                                ConceptDTO.make(KernelTerm.CONCEPT_REFERENCE.idString()),
+//                                ConceptDTO.make(KernelConcept.CONCEPT_REFERENCE.idString()),
 //                                referenceProperty.toImmutable()));
 //                        vertexMap.add(referenceVertex);
 //                    });
@@ -209,7 +210,7 @@ public class SemanticWriter {
 //                    andUUID.getMostSignificantBits(),
 //                    andUUID.getLeastSignificantBits(),
 //                    vertexIdx.getAndIncrement(),
-//                    ConceptDTO.make(KernelTerm.AND.idString()),
+//                    ConceptDTO.make(KernelConcept.AND.idString()),
 //                    andProperty.toImmutable()));
 //            vertexMap.add(andVertex);
 //
@@ -220,7 +221,7 @@ public class SemanticWriter {
 //                    necessarySetUUID.getMostSignificantBits(),
 //                    necessarySetUUID.getLeastSignificantBits(),
 //                    vertexIdx.get(),
-//                    ConceptDTO.make(KernelTerm.NECESSARY_SET.idString()),
+//                    ConceptDTO.make(KernelConcept.NECESSARY_SET.idString()),
 //                    necessarySetProperty.toImmutable()));
 //            vertexMap.add(necessarySetVertex);
 //

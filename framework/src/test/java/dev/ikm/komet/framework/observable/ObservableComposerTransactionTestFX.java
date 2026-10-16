@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
 import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.fixtures.NewEphemeralKeyValueProvider;
@@ -167,9 +167,9 @@ class ObservableComposerTransactionTestFX {
             ObservableComposer composer = ObservableComposer.create(
                     Calculators.View.Default(),
                     State.ACTIVE,
-                    KernelTerm.USER,
-                    KernelTerm.PRIMORDIAL_MODULE,
-                    KernelTerm.DEVELOPMENT_PATH,
+                    KernelConcept.USER,
+                    KernelConcept.PRIMORDIAL_MODULE,
+                    KernelConcept.DEVELOPMENT_PATH,
                     comment
             );
 
@@ -185,9 +185,9 @@ class ObservableComposerTransactionTestFX {
             String comment = "Builder transaction comment";
             ObservableComposer composer = ObservableComposer.builder()
                     .viewCalculator(Calculators.View.Default())
-                    .author(KernelTerm.USER)
-                    .module(KernelTerm.PRIMORDIAL_MODULE)
-                    .path(KernelTerm.DEVELOPMENT_PATH)
+                    .author(KernelConcept.USER)
+                    .module(KernelConcept.PRIMORDIAL_MODULE)
+                    .path(KernelConcept.DEVELOPMENT_PATH)
                     .transactionComment(comment)
                     .build();
 
@@ -201,9 +201,9 @@ class ObservableComposerTransactionTestFX {
     void testEmptyTransactionComment() {
             ObservableComposer composer = ObservableComposer.builder()
                     .viewCalculator(Calculators.View.Default())
-                    .author(KernelTerm.USER)
-                    .module(KernelTerm.PRIMORDIAL_MODULE)
-                    .path(KernelTerm.DEVELOPMENT_PATH)
+                    .author(KernelConcept.USER)
+                    .module(KernelConcept.PRIMORDIAL_MODULE)
+                    .path(KernelConcept.DEVELOPMENT_PATH)
                     .transactionComment("")
                     .build();
 
@@ -306,9 +306,9 @@ class ObservableComposerTransactionTestFX {
         return ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH
         );
     }
 }

@@ -18,6 +18,9 @@ import dev.ikm.komet.framework.rulebase.RuleService;
 
 open module dev.ikm.komet.rules {
     requires transitive dev.ikm.komet.framework;
+    // Komet's actions (dev-komet-actions): rules offer them through RulesBase.offer, and plugins
+    // that author rules see the offer and the action types.
+    requires transitive dev.ikm.komet.actions;
     requires org.evrete.core;
     requires org.slf4j;
     requires org.evrete.dsl.java;

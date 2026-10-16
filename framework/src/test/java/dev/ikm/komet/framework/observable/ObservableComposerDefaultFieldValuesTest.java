@@ -1,13 +1,15 @@
 package dev.ikm.komet.framework.observable;
 
 import dev.ikm.tinkar.common.id.LongIds;
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
+import static dev.ikm.komet.terms.KometConcept.BLANK_CONCEPT;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -25,7 +27,7 @@ class ObservableComposerDefaultFieldValuesTest {
         assertTrue(ObservableComposer.isDefaultFieldValue(null), "null, an unsupported data type's start");
         assertTrue(ObservableComposer.isDefaultFieldValue(BLANK_CONCEPT), "the blank concept");
         assertTrue(ObservableComposer.isDefaultFieldValue(
-                EntityProxy.Concept.make("Blank", BLANK_CONCEPT.leastUuid())), "any facade of the blank concept");
+                EntityProxy.Concept.make("Blank", BLANK_CONCEPT.publicId().leastUuid())), "any facade of the blank concept");
         assertTrue(ObservableComposer.isDefaultFieldValue(""), "empty string");
         assertTrue(ObservableComposer.isDefaultFieldValue(0), "zero integer");
         assertTrue(ObservableComposer.isDefaultFieldValue(0.0F), "zero float");
@@ -33,6 +35,15 @@ class ObservableComposerDefaultFieldValuesTest {
         assertTrue(ObservableComposer.isDefaultFieldValue(LongIds.list.empty()), "empty component list");
         assertTrue(ObservableComposer.isDefaultFieldValue(LongIds.set.empty()), "empty component set");
         assertTrue(ObservableComposer.isDefaultFieldValue(new byte[0]), "empty byte array");
+    }
+
+    @Test
+    void aNewComponentFieldStartsWithTheBlankConceptAsAProxy() {
+        Object seed = ObservableComposer.defaultComponentFieldValue();
+        // The component controls hold EntityProxy values; the seed reaches them through an untyped
+        // List<Object>, so the raw KometConcept enum there fails at the first cast in a skin.
+        assertInstanceOf(EntityProxy.Concept.class, seed);
+        assertTrue(ObservableComposer.isDefaultFieldValue(seed), "the seed counts as a default");
     }
 
     @Test

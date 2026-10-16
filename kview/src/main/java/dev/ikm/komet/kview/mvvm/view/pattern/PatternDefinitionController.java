@@ -31,7 +31,7 @@ import dev.ikm.komet.kview.events.pattern.PropertyPanelEvent;
 import dev.ikm.komet.kview.mvvm.model.PatternDefinition;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternDefinitionViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
@@ -86,8 +86,8 @@ public class PatternDefinitionController {
 
         doneButton.disableProperty().bind(patternDefinitionViewModel.getProperty(IS_INVALID));
 
-        ObjectProperty<EntityProxy> purposeProp = patternDefinitionViewModel.getProperty(PURPOSE_ENTITY);
-        ObjectProperty<EntityProxy> meaningProp = patternDefinitionViewModel.getProperty(MEANING_ENTITY);
+        ObjectProperty<EntityFacade> purposeProp = patternDefinitionViewModel.getProperty(PURPOSE_ENTITY);
+        ObjectProperty<EntityFacade> meaningProp = patternDefinitionViewModel.getProperty(MEANING_ENTITY);
 
         purposeProp.addListener(fieldsValidationListener);
         meaningProp.addListener(fieldsValidationListener);

@@ -16,8 +16,14 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose.test;
 
 import dev.ikm.komet.kview.mvvm.view.genpurpose.PatternInstancesPanel;
+import dev.ikm.tinkar.common.service.CachingService;
+import dev.ikm.tinkar.common.service.PrimitiveData;
+import dev.ikm.tinkar.common.service.ServiceKeys;
+import dev.ikm.tinkar.common.service.ServiceProperties;
+import dev.ikm.tinkar.coordinate.Calculators;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +34,7 @@ import org.testfx.api.FxService;
 import org.testfx.api.FxToolkit;
 import org.testfx.service.support.CaptureSupport;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -37,7 +44,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * Every selector chain kview.css styles the INSTANCES tab's panel with resolves on the code-built
  * tree — the panel is only styled under the window's {@code .gen-purpose-window} class, so the
  * test wraps it the way the window does, with the stylesheet (and its palette on {@code .root})
- * on the scene root as the window has it.
+ * on the scene root as the window has it. The panel's search field is built from a view
+ * calculator, so the ephemeral store backs a default one.
  */
 class PatternInstancesPanelUTestFX {
 
@@ -47,24 +55,33 @@ class PatternInstancesPanelUTestFX {
             ".instances-header .instances-title-bar",
             ".instances-title-bar .lidr-device-title-label",
             ".instances-title-bar .instances-count",
-            ".instances-header .instances-search",
-            ".instances-search .text-field",
-            ".instances-search .search-icon",
-            ".instances-search .filter-icon",
+            ".instances-header .component-search-text-field",
+            ".component-search-text-field .auto-complete-text-field",
+            ".component-search-text-field .search-icon",
+            ".component-search-text-field .filter-icon",
             ".pattern-instances .instances-list");
 
     private StackPane window;
 
     @BeforeAll
-    static void startToolkit() throws Exception {
+    static void startStoreAndToolkit() throws Exception {
+        CachingService.clearAll();
+        ServiceProperties.set(ServiceKeys.DATA_STORE_ROOT,
+                Files.createTempDirectory("pattern-instances-test").toFile());
+        PrimitiveData.selectControllerByName("Load Ephemeral Store");
+        PrimitiveData.start();
         FxToolkit.registerPrimaryStage();
+    }
+
+    @AfterAll
+    static void stopStore() {
+        PrimitiveData.stop();
     }
 
     @BeforeEach
     void showPanel() throws Exception {
         FxToolkit.setupStage(stage -> {
-            // No view: the cells only read it when an instance is listed, and none is here.
-            PatternInstancesPanel panel = new PatternInstancesPanel(null);
+            PatternInstancesPanel panel = new PatternInstancesPanel(Calculators.View.Default());
             window = new StackPane(panel);
             window.getStyleClass().add("gen-purpose-window");
             window.getStylesheets().add(PatternInstancesPanel.class
@@ -89,10 +106,16 @@ class PatternInstancesPanelUTestFX {
     }
 
     @Test
-    @DisplayName("Renders the empty panel to target/pattern-instances/panel.png for a visual check")
+    @DisplayName("Renders the panel, with text in its search field, to target/pattern-instances/panel.png for a visual check")
     void renderPanel() {
         FxRobot robot = new FxRobot();
         Path path = Path.of("target", "pattern-instances", "panel.png");
+        // Text in the focused field brings up its clear button, next to the filter glyph.
+        robot.interact(() -> {
+            var field = (javafx.scene.control.TextField) window.lookup(".component-search-text-field .auto-complete-text-field");
+            field.requestFocus();
+            field.setText("Double");
+        });
         robot.interact(() -> {
             path.getParent().toFile().mkdirs();
             CaptureSupport capture = FxService.serviceContext().getCaptureSupport();

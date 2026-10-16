@@ -105,6 +105,24 @@ class KonceptBadgeKindUTestFX {
     }
 
     @Test
+    void aBadgeCanHideItsSigilWhereTheKindIsAGiven() {
+        KonceptBadge badge = badge();
+        badge.setKind(KonceptKind.PATTERN);
+        assertTrue(sigilBox(badge).isManaged(), "a pattern shows its P by default");
+
+        // A surface listing one kind only (the pattern browser) turns the sigil off; the kind and
+        // its sigil node stay, so the badge still drags with its P.
+        badge.setKindSigilShown(false);
+        assertFalse(sigilBox(badge).isManaged(), "the hidden slot collapses");
+        assertFalse(sigilBox(badge).isVisible());
+        assertEquals(KonceptKind.PATTERN, badge.getKind());
+        assertFalse(sigilBox(badge).getChildrenUnmodifiable().isEmpty(), "the sigil node is kept");
+
+        badge.setKindSigilShown(true);
+        assertTrue(sigilBox(badge).isManaged(), "shown again, the settings decide");
+    }
+
+    @Test
     void alarmTriggersOnlyForANonConceptInAConceptExpectingContext() {
         KonceptBadge badge = badge();
 

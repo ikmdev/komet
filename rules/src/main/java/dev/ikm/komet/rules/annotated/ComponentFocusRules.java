@@ -15,10 +15,9 @@
  */
 package dev.ikm.komet.rules.annotated;
 
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.komet.terms.KometConcept;
+import dev.ikm.tinkar.terms.KernelPattern;
 import dev.ikm.komet.framework.performance.impl.ObservationRecord;
-import dev.ikm.komet.rules.actions.component.ActivateComponentAction;
-import dev.ikm.komet.rules.actions.component.InactivateComponentAction;
 import dev.ikm.komet.rules.actions.membership.AddToKometBaseModelAction;
 import dev.ikm.komet.rules.actions.membership.AddToTinkarBaseModelAction;
 import dev.ikm.komet.rules.actions.membership.RemoveFromKometBaseModelAction;
@@ -54,9 +53,7 @@ public class ComponentFocusRules extends RulesBase {
     })
     public void componentFocusedAndActive(ObservationRecord $observation) {
         if ($observation.subject() instanceof EntityVersion entityVersion) {
-            InactivateComponentAction generatedAction
-                    = new InactivateComponentAction(entityVersion, calculator(), editCoordinate());
-            addGeneratedActions(generatedAction);
+            offer(KometConcept.INACTIVATE_COMPONENT, entityVersion.entity());
         }
     }
 
@@ -71,9 +68,7 @@ public class ComponentFocusRules extends RulesBase {
     })
     public void componentFocusedAndInactive(ObservationRecord $observation) {
         if ($observation.subject() instanceof EntityVersion entityVersion) {
-            ActivateComponentAction generatedAction
-                    = new ActivateComponentAction(entityVersion, calculator(), editCoordinate());
-            addGeneratedActions(generatedAction);
+            offer(KometConcept.ACTIVATE_COMPONENT, entityVersion.entity());
         }
     }
 
@@ -91,9 +86,9 @@ public class ComponentFocusRules extends RulesBase {
         if ($observation.subject() instanceof ConceptEntityVersion conceptVersion) {
             // At most two of each: enough to tell none, one, and more than one apart.
             List<SemanticEntity<SemanticEntityVersion>> tinkarSemanticsForComponent = EntityService.get().semanticsForComponentOfPattern(conceptVersion.nid(),
-                    KernelTerm.TINKAR_BASE_MODEL_COMPONENT_PATTERN.nid()).limit(2).toList();
+                    KernelPattern.TINKAR_BASE_MODEL_COMPONENT_PATTERN.nid()).limit(2).toList();
             List<SemanticEntity<SemanticEntityVersion>> kometSemanticsForComponent = EntityService.get().semanticsForComponentOfPattern(conceptVersion.nid(),
-                    KernelTerm.KOMET_BASE_MODEL_COMPONENT_PATTERN.nid()).limit(2).toList();
+                    KernelPattern.KOMET_BASE_MODEL_COMPONENT_PATTERN.nid()).limit(2).toList();
             // case 1: never a member of tinkar or komet
             if (tinkarSemanticsForComponent.isEmpty() && kometSemanticsForComponent.isEmpty()) {
                 addToTinkar(conceptVersion);

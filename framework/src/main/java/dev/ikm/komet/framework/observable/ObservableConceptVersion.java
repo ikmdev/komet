@@ -16,8 +16,10 @@
 package dev.ikm.komet.framework.observable;
 
 import dev.ikm.tinkar.entity.ConceptEntityVersion;
+import dev.ikm.tinkar.entity.ConceptRecord;
 import dev.ikm.tinkar.entity.ConceptVersionRecord;
 import dev.ikm.tinkar.entity.Entity;
+import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import org.eclipse.collections.api.list.MutableList;
 
@@ -118,7 +120,11 @@ public final class ObservableConceptVersion
 
         @Override
         protected Entity<?> createAnalogue(ConceptVersionRecord version) {
-            return version.chronology().with(version).build();
+            // Build on the entity as stored now: the version's chronology is the entity as it was
+            // when the version was made, and a canonical observable outlives later writes to it.
+            ConceptRecord chronology = EntityHandle.get(version.nid()).orNull() instanceof ConceptRecord stored
+                    ? stored : version.chronology();
+            return chronology.with(version).build();
         }
     }
 }

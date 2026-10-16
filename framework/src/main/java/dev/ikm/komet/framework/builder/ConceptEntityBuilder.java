@@ -23,7 +23,7 @@ import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.EntityVertex;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelPattern;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -84,7 +84,7 @@ Field 4: ‹Description type: Fully specified name›
                     descriptionToBuild.caseSensitivity(),
                     descriptionToBuild.descriptionType());
             SemanticRecord description = SemanticRecord.build(UUID.randomUUID(),
-                    KernelTerm.DESCRIPTION_PATTERN.nid(),
+                    KernelPattern.DESCRIPTION_PATTERN.nid(),
                     concept.nid(),
                     stampEntity.lastVersion(),
                     descriptionFields);
@@ -115,7 +115,7 @@ Field 1: ‹US English: Preferred›
 
             ImmutableList<Object> axiomField = Lists.immutable.of(axiomTreeEntityBuilder.build());
             SemanticRecord statedAxioms = SemanticRecord.build(UUID.randomUUID(),
-                    KernelTerm.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid(),
+                    KernelPattern.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid(),
                     concept.nid(),
                     stampEntity.lastVersion(),
                     axiomField);

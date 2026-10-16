@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.kview.mvvm.view.pattern;
 
-import dev.ikm.komet.terms.KometTerm;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.ADD_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PatternFieldsPanelEvent.EDIT_FIELD;
 import static dev.ikm.komet.kview.events.pattern.PropertyPanelEvent.CLOSE_PANEL;
@@ -36,6 +35,7 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PURPOSE_ENTITY;
 
 import dev.ikm.komet.framework.observable.read.NavigationReads;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.tinkar.coordinate.language.calculator.LanguageCalculator;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.*;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.*;
@@ -56,7 +56,6 @@ import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;
@@ -121,8 +120,8 @@ public class PatternFieldsController {
         ObservableList<Integer> fieldOrderOptions = patternFieldsViewModel.getObservableList(FIELD_ORDER_OPTIONS);
 
         ObjectProperty<ConceptEntity> dataTypeProp = patternFieldsViewModel.getProperty(DATA_TYPE);
-        ObjectProperty<EntityProxy> purposeProp = patternFieldsViewModel.getProperty(PURPOSE_ENTITY);
-        ObjectProperty<EntityProxy> meaningProp = patternFieldsViewModel.getProperty(MEANING_ENTITY);
+        ObjectProperty<EntityFacade> purposeProp = patternFieldsViewModel.getProperty(PURPOSE_ENTITY);
+        ObjectProperty<EntityFacade> meaningProp = patternFieldsViewModel.getProperty(MEANING_ENTITY);
         ObjectProperty<PatternField> previousPatternFieldProperty = patternFieldsViewModel.getProperty(PREVIOUS_PATTERN_FIELD);
 
 
@@ -217,16 +216,16 @@ public class PatternFieldsController {
     private void loadDataTypeComboBox(){
       /*
           ViewCalculator viewCalculator = viewProperties.calculator();
-          LongIdSet dataTypeFields = viewCalculator.descendentsOf(KometTerm.DISPLAY_FIELDS);
+          LongIdSet dataTypeFields = viewCalculator.descendentsOf(KometConcept.DISPLAY_FIELDS);
             Set<ConceptEntity> allDataTypes =
                     dataTypeFields.longStream()
-                            .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
+                            .mapToObj(moduleNid -> EntityHandle.get(moduleNid).expectConcept())
                             .collect(Collectors.toSet());
 
-            LongIdSet dataTypeDynamic = viewCalculator.descendentsOf(KometTerm.DYNAMIC_COLUMN_DATA_TYPES);
+            LongIdSet dataTypeDynamic = viewCalculator.descendentsOf(KometConcept.DYNAMIC_COLUMN_DATA_TYPES);
 
             allDataTypes.addAll(dataTypeDynamic.longStream()
-                    .mapToObj(moduleNid -> (ConceptEntity) Entity.getFast(moduleNid))
+                    .mapToObj(moduleNid -> EntityHandle.get(moduleNid).expectConcept())
                     .collect(Collectors.toSet()));
 
             dataTypeComboBox.setConverter((new StringConverter<ConceptEntity>() {
@@ -255,7 +254,7 @@ public class PatternFieldsController {
             }
         }));
 
-        dataTypeComboBox.getItems().addAll(NavigationReads.childrenOf(getViewProperties().calculator(), KometTerm.DISPLAY_FIELDS).stream().sorted((entityFacade1, entityFacade2) -> {
+        dataTypeComboBox.getItems().addAll(NavigationReads.childrenOf(getViewProperties().calculator(), KometConcept.DISPLAY_FIELDS).stream().sorted((entityFacade1, entityFacade2) -> {
             ViewCalculator viewCalculator = getViewProperties().calculator();
             return viewCalculator.getRegularDescriptionText(entityFacade1).get()
                             .compareToIgnoreCase(viewCalculator.getRegularDescriptionText(entityFacade2).get());

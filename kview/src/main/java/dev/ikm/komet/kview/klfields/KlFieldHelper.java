@@ -1,27 +1,8 @@
 package dev.ikm.komet.kview.klfields;
 
-import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
-import static dev.ikm.tinkar.terms.KernelTerm.ARRAY_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.BOOLEAN_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.BYTE_ARRAY_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_ID_LIST_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_ID_SET_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.CONCEPT_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.DECIMAL_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.DIGRAPH_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.DITREE_FIELD;
-import static dev.ikm.komet.terms.KometTerm.DOUBLE_FIELD;
-import static dev.ikm.komet.terms.KometTerm.FLOAT;
-import static dev.ikm.tinkar.terms.KernelTerm.FLOAT_FIELD;
-import static dev.ikm.komet.terms.KometTerm.IMAGE_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.INSTANT_LITERAL;
-import static dev.ikm.tinkar.terms.KernelTerm.INTEGER_FIELD;
-import static dev.ikm.komet.terms.KometTerm.LOGICAL_EXPRESSION_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.LONG;
-import static dev.ikm.tinkar.terms.KernelTerm.STRING;
-import static dev.ikm.komet.terms.KometTerm.UUID_FIELD;
-import static dev.ikm.komet.terms.KometTerm.VERTEX_FIELD;
+import static dev.ikm.komet.terms.KometConcept.*;
+import static dev.ikm.tinkar.terms.KernelConcept.*;
+import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.framework.observable.ObservableEntity;
 import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
@@ -337,7 +318,7 @@ public class KlFieldHelper {
         MutableList<Object> fieldsValues = Lists.mutable.ofInitialCapacity(patternVersion.fieldDefinitions().size());
         patternVersion.fieldDefinitions().forEach(f -> {
             if (f.dataTypeNid() == COMPONENT_FIELD.nid()) {
-                fieldsValues.add(BLANK_CONCEPT);
+                fieldsValues.add(ObservableComposer.defaultComponentFieldValue());
             } else if (f.dataTypeNid() == STRING.nid()) {
                 fieldsValues.add("");
             } else if (f.dataTypeNid() == INTEGER_FIELD.nid()) {
@@ -378,7 +359,7 @@ public class KlFieldHelper {
     public static Object defaultFieldValue(FeatureDefinition fieldDefinition) {
 
         if (fieldDefinition.dataTypeNid() == COMPONENT_FIELD.nid()) {
-            return BLANK_CONCEPT;
+            return ObservableComposer.defaultComponentFieldValue();
         } else if (fieldDefinition.dataTypeNid() == STRING.nid()) {
             return "";
         } else if (fieldDefinition.dataTypeNid() == INTEGER_FIELD.nid()) {
@@ -456,7 +437,7 @@ public class KlFieldHelper {
      *
      * TODO: This method could move to a framework read helper.
      *  During create (new Semantic) the user can change the reference component.
-     *  the hash is stating any change. By default a reference component during created would be KernelTerm.ANONYMOUS_CONCEPT (I can't remember).
+     *  the hash is stating any change. By default a reference component during created would be KernelConcept.ANONYMOUS_CONCEPT (I can't remember).
      */
     public static int calculateHashValue(List<ObservableField.Editable> observableFieldEditablesList, StampCalculator stampCalculator) {
         StringBuilder stringBuilder = new StringBuilder();

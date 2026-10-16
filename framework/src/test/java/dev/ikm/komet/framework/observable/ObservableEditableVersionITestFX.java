@@ -15,7 +15,8 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
+import dev.ikm.tinkar.terms.KernelPattern;
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
@@ -84,9 +85,9 @@ class ObservableEditableVersionITestFX {
         // Create composer for entity creation
             ObservableComposer composer = ObservableComposer.builder()
                     .viewCalculator(Calculators.View.Default())
-                    .author(KernelTerm.USER)
-                    .module(KernelTerm.PRIMORDIAL_MODULE)
-                    .path(KernelTerm.DEVELOPMENT_PATH)
+                    .author(KernelConcept.USER)
+                    .module(KernelConcept.PRIMORDIAL_MODULE)
+                    .path(KernelConcept.DEVELOPMENT_PATH)
                     .defaultState(State.ACTIVE)
                     .transactionComment("Create test entities")
                     .build();
@@ -106,25 +107,25 @@ class ObservableEditableVersionITestFX {
             // Create a new composer for the semantic
             ObservableComposer composer2 = ObservableComposer.builder()
                     .viewCalculator(Calculators.View.Default())
-                    .author(KernelTerm.USER)
-                    .module(KernelTerm.PRIMORDIAL_MODULE)
-                    .path(KernelTerm.DEVELOPMENT_PATH)
+                    .author(KernelConcept.USER)
+                    .module(KernelConcept.PRIMORDIAL_MODULE)
+                    .path(KernelConcept.DEVELOPMENT_PATH)
                     .defaultState(State.ACTIVE)
                     .transactionComment("Create test semantic")
                     .build();
 
             // Create a test semantic on the concept using the composer
             ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticComposer =
-                    composer2.composeSemantic(dev.ikm.tinkar.common.id.PublicIds.newRandom(), testConcept, KernelTerm.DESCRIPTION_PATTERN);
+                    composer2.composeSemantic(dev.ikm.tinkar.common.id.PublicIds.newRandom(), testConcept, KernelPattern.DESCRIPTION_PATTERN);
             ObservableSemanticVersion.Editable semanticVersion = semanticComposer.getEditableVersion();
 
             // Set field values for the description semantic
             javafx.collections.ObservableList<ObservableField.Editable<?>> fields = semanticVersion.getEditableFields();
             if (fields.size() >= 3) {
                 ((ObservableField.Editable<String>) fields.get(0)).setValue("Test semantic description");
-                ((ObservableField.Editable<Object>) fields.get(1)).setValue(KernelTerm.ENGLISH_LANGUAGE);
-                ((ObservableField.Editable<Object>) fields.get(2)).setValue(KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
-                ((ObservableField.Editable<Object>) fields.get(3)).setValue(KernelTerm.DESCRIPTION_NOT_CASE_SENSITIVE);
+                ((ObservableField.Editable<Object>) fields.get(1)).setValue(KernelConcept.ENGLISH_LANGUAGE);
+                ((ObservableField.Editable<Object>) fields.get(2)).setValue(KernelConcept.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+                ((ObservableField.Editable<Object>) fields.get(3)).setValue(KernelConcept.DESCRIPTION_NOT_CASE_SENSITIVE);
             }
 
             semanticVersion.save();
@@ -156,9 +157,9 @@ class ObservableEditableVersionITestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH,
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH,
                 "Test editable concept version"
         );
 
@@ -198,14 +199,14 @@ class ObservableEditableVersionITestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH,
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH,
                 "Test editable semantic version"
         );
 
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
-                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelTerm.DESCRIPTION_PATTERN);
+                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelPattern.DESCRIPTION_PATTERN);
         assertNotNull(editor);
 
         ObservableSemanticVersion.Editable editableVersion = editor.getEditableVersion();
@@ -226,13 +227,13 @@ class ObservableEditableVersionITestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH
         );
 
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
-                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelTerm.DESCRIPTION_PATTERN);
+                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelPattern.DESCRIPTION_PATTERN);
         ObservableSemanticVersion.Editable editableVersion = editor.getEditableVersion();
 
         // Get editable fields
@@ -264,13 +265,13 @@ class ObservableEditableVersionITestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH
         );
 
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
-                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelTerm.DESCRIPTION_PATTERN);
+                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelPattern.DESCRIPTION_PATTERN);
         ObservableSemanticVersion.Editable editableVersion = editor.getEditableVersion();
 
         javafx.collections.ObservableList<ObservableField.Editable<?>> fields = editableVersion.getEditableFields();
@@ -301,13 +302,13 @@ class ObservableEditableVersionITestFX {
         ObservableComposer composer = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH
         );
 
         ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> editor =
-                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelTerm.DESCRIPTION_PATTERN);
+                composer.composeSemantic(testSemantic.publicId(), testConcept, KernelPattern.DESCRIPTION_PATTERN);
         ObservableSemanticVersion.Editable editableVersion = editor.getEditableVersion();
 
         // Initially should not be changed
@@ -343,18 +344,18 @@ class ObservableEditableVersionITestFX {
         ObservableComposer composer1 = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH,
+                KernelConcept.USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH,
                 "Composer 1"
         );
 
         ObservableComposer composer2 = ObservableComposer.create(
                 Calculators.View.Default(),
                 State.ACTIVE,
-                KernelTerm.KOMET_USER,
-                KernelTerm.PRIMORDIAL_MODULE,
-                KernelTerm.DEVELOPMENT_PATH,
+                KernelConcept.KOMET_USER,
+                KernelConcept.PRIMORDIAL_MODULE,
+                KernelConcept.DEVELOPMENT_PATH,
                 "Composer 2"
         );
 

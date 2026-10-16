@@ -1002,7 +1002,7 @@ public class JournalController {
     private static Long conceptNidFromDragboard(Dragboard dragboard) {
         if (dragboard.hasContent(KometClipboard.KOMET_CONCEPT_PROXY)) {
             try {
-                EntityProxy.Concept proxy = ProxyFactory.fromXmlFragment(
+                ConceptFacade proxy = ProxyFactory.fromXmlFragment(
                         (String) dragboard.getContent(KometClipboard.KOMET_CONCEPT_PROXY));
                 return proxy.nid();
             } catch (RuntimeException ignored) {

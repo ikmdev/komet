@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.kview.klwindows.test;
 
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowState;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -86,7 +86,7 @@ class WindowStateEntityTest {
 
     @Test
     void theEntityIsStoredByUuidAndNoNidIsWritten() {
-        UUID uuid = uuidOf(KernelTerm.ENGLISH_LANGUAGE);
+        UUID uuid = uuidOf(KernelConcept.ENGLISH_LANGUAGE);
 
         assertTrue(stateFor(uuid).saveToPreferences(preferences));
 
@@ -96,8 +96,8 @@ class WindowStateEntityTest {
 
     @Test
     void aRestoredWindowFindsItsEntityThroughTheUuid() {
-        long nid = KernelTerm.ENGLISH_LANGUAGE.nid();
-        stateFor(uuidOf(KernelTerm.ENGLISH_LANGUAGE)).saveToPreferences(preferences);
+        long nid = KernelConcept.ENGLISH_LANGUAGE.nid();
+        stateFor(uuidOf(KernelConcept.ENGLISH_LANGUAGE)).saveToPreferences(preferences);
 
         EntityKlWindowState restored = EntityKlWindowState.fromPreferences(preferences);
 
@@ -106,8 +106,8 @@ class WindowStateEntityTest {
 
     @Test
     void anyOfTheEntitysUuidsFindsIt() {
-        long nid = KernelTerm.ENGLISH_LANGUAGE.nid();
-        for (UUID any : KernelTerm.ENGLISH_LANGUAGE.publicId().asUuidArray()) {
+        long nid = KernelConcept.ENGLISH_LANGUAGE.nid();
+        for (UUID any : KernelConcept.ENGLISH_LANGUAGE.publicId().asUuidArray()) {
             stateFor(any).saveToPreferences(preferences);
 
             assertEquals(OptionalLong.of(nid), EntityKlWindowState.fromPreferences(preferences).resolveEntityNid(),
@@ -120,11 +120,11 @@ class WindowStateEntityTest {
         // Preferences as an earlier build left them, read against a knowledge base in which the
         // stored nid belongs to a different component: the UUID is English Language, and the
         // nid is the one this knowledge base gives Language.
-        long english = KernelTerm.ENGLISH_LANGUAGE.nid();
-        long language = KernelTerm.LANGUAGE.nid();
+        long english = KernelConcept.ENGLISH_LANGUAGE.nid();
+        long language = KernelConcept.LANGUAGE.nid();
         preferences.put(EntityKlWindowState.WINDOW_ID, UUID.randomUUID().toString());
         preferences.put(EntityKlWindowState.WINDOW_TYPE, EntityKlWindowTypes.CONCEPT.toString());
-        preferences.put(EntityKlWindowState.ENTITY_UUID, uuidOf(KernelTerm.ENGLISH_LANGUAGE).toString());
+        preferences.put(EntityKlWindowState.ENTITY_UUID, uuidOf(KernelConcept.ENGLISH_LANGUAGE).toString());
         preferences.putInt(ENTITY_NID_KEY_OF_EARLIER_BUILDS, Math.toIntExact(language));
 
         EntityKlWindowState restored = EntityKlWindowState.fromPreferences(preferences);
@@ -135,7 +135,7 @@ class WindowStateEntityTest {
         assertTrue(restored.saveToPreferences(preferences));
         assertTrue(preferences.get(ENTITY_NID_KEY_OF_EARLIER_BUILDS).isEmpty(),
                 "saving removes the nid an earlier build stored");
-        assertEquals(Optional.of(uuidOf(KernelTerm.ENGLISH_LANGUAGE).toString()),
+        assertEquals(Optional.of(uuidOf(KernelConcept.ENGLISH_LANGUAGE).toString()),
                 preferences.get(EntityKlWindowState.ENTITY_UUID));
     }
 

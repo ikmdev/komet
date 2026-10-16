@@ -15,36 +15,36 @@
  */
 package dev.ikm.komet.framework.panel.axiom;
 
-import dev.ikm.komet.terms.KometTerm;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
 
 public enum ConcreteDomainOperators {
     /**
      * The equals.
      */
-    EQUALS("=", KernelTerm.EQUAL_TO),
+    EQUALS("=", KernelConcept.EQUAL_TO),
 
     /**
      * The less than.
      */
-    LESS_THAN("<", KometTerm.LESS_THAN),
+    LESS_THAN("<", KometConcept.LESS_THAN),
 
     /**
      * The less than equals.
      */
-    LESS_THAN_EQUALS("≤", KometTerm.LESS_THAN_OR_EQUAL_TO),
+    LESS_THAN_EQUALS("≤", KometConcept.LESS_THAN_OR_EQUAL_TO),
 
     /**
      * The greater than.
      */
-    GREATER_THAN(">", KometTerm.GREATER_THAN),
+    GREATER_THAN(">", KometConcept.GREATER_THAN),
 
     /**
      * The greater than equals.
      */
-    GREATER_THAN_EQUALS("≥", KometTerm.GREATER_THAN_OR_EQUAL_TO);
+    GREATER_THAN_EQUALS("≥", KometConcept.GREATER_THAN_OR_EQUAL_TO);
 
     public final ConceptFacade conceptRepresentation;
 

@@ -1,16 +1,15 @@
 package dev.ikm.komet.kview.mvvm.view.navigation;
 
-
+import dev.ikm.komet.framework.controls.KonceptKindResolver;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
-import dev.ikm.komet.framework.controls.KonceptKindResolver;
 import dev.ikm.komet.framework.settings.KonceptGlyphSettings;
-import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.komet.framework.view.ViewProperties;
+import dev.ikm.komet.kview.controls.ComponentSearchTextField;
 import dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem;
 import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.InvertedTree;
+import dev.ikm.komet.kview.controls.KLComponentControlFactory;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.kview.controls.KLSearchControl;
 import dev.ikm.komet.kview.controls.Toast;
@@ -18,8 +17,8 @@ import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.view.journal.JournalController;
-import dev.ikm.komet.layout.editor.StandardEditorWindows;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternNavViewModel;
+import dev.ikm.komet.layout.editor.StandardEditorWindows;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.tinkar.common.service.PrimitiveData;
@@ -28,8 +27,18 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.events.EvtBusFactory;
+import dev.ikm.tinkar.events.Subscriber;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
+
+import org.carlfx.cognitive.loader.Config;
+import org.carlfx.cognitive.loader.FXMLMvvmLoader;
+import org.carlfx.cognitive.loader.InjectViewModel;
+import org.carlfx.cognitive.loader.JFXNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javafx.application.Platform;
 import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
@@ -41,25 +50,23 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.TreeItem;
-import javafx.scene.image.Image;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
-import org.carlfx.cognitive.loader.Config;
-import org.carlfx.cognitive.loader.FXMLMvvmLoader;
-import org.carlfx.cognitive.loader.InjectViewModel;
-import org.carlfx.cognitive.loader.JFXNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static dev.ikm.komet.kview.mvvm.viewmodel.PatternNavViewModel.PATTERN_COLLECTION;
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.kview.mvvm.model.DragAndDropType.PATTERN;
 import static dev.ikm.komet.kview.mvvm.view.navigation.PatternNavEntryController.PatternNavEntry.INSTANCES;
@@ -89,6 +96,19 @@ public class ConceptPatternNavController {
     private ScrollPane patternNavigationPane;
 
     private VBox patternsVBox;
+
+    /** The PATTERNS side: the reference-component search text field over the scrolling pattern list. */
+    private VBox patternsPanel;
+
+    /** Narrows every pattern's SEMANTIC ELEMENTS to the instances referencing the chosen component. */
+    private ComponentSearchTextField referenceComponentSearch;
+
+    /** A pattern's row in the list and the controller behind it. */
+    private record PatternRow(HBox node, PatternNavEntryController controller) {
+    }
+
+    /** The pattern rows in their loaded (name) order. */
+    private final List<PatternRow> patternRows = new ArrayList<>();
 
 
     private Pane conceptNavigator;
@@ -162,11 +182,22 @@ public class ConceptPatternNavController {
         patternCreationEventSubscriber = _ -> {
             LOG.info("A New Pattern has been added/created. Reloading all the Patterns.");
             patternsVBox.getChildren().clear();
+            patternRows.clear();
             patternNavViewModel.reload();
         };
         EvtBusFactory.getDefaultEvtBus().subscribe(SAVE_PATTERN_TOPIC, PatternSavedEvent.class, patternCreationEventSubscriber);
 
         ViewProperties viewProperties = patternNavViewModel.getPropertyValue(VIEW_PROPERTIES);
+
+        // The reference-component search over the pattern list (the KL Pattern window's instances
+        // search, browser-wide): choosing a component narrows every pattern's SEMANTIC ELEMENTS to
+        // the instances referencing it, and only components some pattern references are suggested.
+        referenceComponentSearch = KLComponentControlFactory.createComponentSearchTextField(viewProperties.calculator());
+        referenceComponentSearch.setPromptText("Search instances by component");
+        referenceComponentSearch.setSuggestionFilter(this::isReferencedByAnyPattern);
+        referenceComponentSearch.searchedComponentProperty().subscribe(this::applyReferenceComponentFilter);
+
+        patternsPanel = createPatternsPanel(referenceComponentSearch, patternNavigationPane);
 
         // callback when all patterns are loaded. For each build up children instances.
         patternNavViewModel.setOnReload(stream -> {
@@ -204,6 +235,15 @@ public class ConceptPatternNavController {
                     setUpDraggable(patternHBox, patternItem, PATTERN);
 
                     patternsVBox.getChildren().add(patternHBox);
+
+                    PatternRow row = new PatternRow(patternHBox, patternNavEntryJFXNode.controller());
+                    patternRows.add(row);
+                    // A search already chosen applies to a row loaded after it.
+                    EntityFacade searched = referenceComponentSearch.getSearchedComponent();
+                    if (searched != null) {
+                        row.controller().setReferenceComponentFilter(searched);
+                        orderRowsByMatch();
+                    }
                 });
             });
         });
@@ -339,7 +379,7 @@ public class ConceptPatternNavController {
 
     @FXML
     private void showPatterns() {
-        navContentPane.setCenter(patternNavigationPane);
+        navContentPane.setCenter(patternsPanel);
         patternsToggleButton.setSelected(true);
     }
 
@@ -378,6 +418,56 @@ public class ConceptPatternNavController {
             // Consume the mouse event to prevent further processing
             mouseEvent.consume();
         });
+    }
+
+    /**
+     * Assembles the PATTERNS side: the search text field in its own row over the scrolling pattern list.
+     * The list asks for more height than the column has, and a VBox short of room shrinks every
+     * child towards its minimum; the search text field keeps its minimum at its preferred height, so the
+     * scroll pane takes the whole shortfall.
+     *
+     * @param searchTextField   the reference-component search text field
+     * @param patternList the scroll pane holding the pattern rows
+     */
+    public static VBox createPatternsPanel(Node searchTextField, ScrollPane patternList) {
+        StackPane searchContainer = new StackPane(searchTextField);
+        searchContainer.getStyleClass().add("pattern-navigation-search");
+        VBox panel = new VBox(searchContainer, patternList);
+        panel.getStyleClass().add("pattern-browser");
+        VBox.setVgrow(patternList, Priority.ALWAYS);
+        return panel;
+    }
+
+    /**
+     * Applies the browser-wide reference-component search to every pattern row: each narrows its
+     * SEMANTIC ELEMENTS to the instances referencing the component, and the rows with matches move
+     * ahead of those without. A null component lifts it, restoring the name order.
+     */
+    private void applyReferenceComponentFilter(EntityFacade component) {
+        patternRows.forEach(row -> row.controller().setReferenceComponentFilter(component));
+        if (component == null) {
+            patternsVBox.getChildren().setAll(patternRows.stream().map(PatternRow::node).toList());
+        } else {
+            orderRowsByMatch();
+        }
+    }
+
+    /** Rows with matches first, each group in name order. */
+    private void orderRowsByMatch() {
+        patternsVBox.getChildren().setAll(patternRows.stream()
+                .sorted(Comparator.comparing(row -> !row.controller().hasFilterMatches()))
+                .map(PatternRow::node)
+                .toList());
+    }
+
+    /**
+     * Whether some pattern has an instance referencing the component. Runs on the search text field's
+     * thread, so it reads a copy of the pattern list the FX thread fills.
+     */
+    private boolean isReferencedByAnyPattern(EntityFacade component) {
+        List<EntityFacade> patterns = List.copyOf(patternNavViewModel.getObservableList(PATTERN_COLLECTION));
+        return patterns.stream().anyMatch(pattern ->
+                EntityService.get().semanticsForComponentOfPattern(component.nid(), pattern.nid()).findAny().isPresent());
     }
 
     public void toggleConcepts() {

@@ -15,7 +15,6 @@
  */
 package dev.ikm.komet.kview.lidr.mvvm.view.details;
 
-import dev.ikm.komet.terms.KometTerm;
 import static dev.ikm.komet.kview.fxutils.CssHelper.defaultStyleSheet;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isClosed;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.isOpen;
@@ -521,8 +520,8 @@ public class LidrDetailsController {
                         .setPropertyValue(AUTHOR, stamp.author())
                         .setPropertyValue(MODULE, stamp.module())
                         .setPropertyValue(PATH, stamp.path())
-                        .setPropertyValues(MODULES_PROPERTY, NavigationReads.descendantsOf(getViewProperties().calculator(), KometTerm.MODULE), true)
-                        .setPropertyValues(PATHS_PROPERTY, NavigationReads.descendantsOf(getViewProperties().calculator(), KometTerm.PATH), true);
+                        .setPropertyValues(MODULES_PROPERTY, NavigationReads.descendantsOf(getViewProperties().calculator(), dev.ikm.komet.terms.KometConcept.MODULE), true)
+                        .setPropertyValues(PATHS_PROPERTY, NavigationReads.descendantsOf(getViewProperties().calculator(), dev.ikm.komet.terms.KometConcept.PATH), true);
 
                 getLidrViewModel().setPropertyValue(STAMP_VIEW_MODEL,stampViewModel);
             } else {
@@ -752,11 +751,11 @@ public class LidrDetailsController {
         if (stampEdit !=null && stampEditController != null) {
             // refresh modules
             getStampViewModel().getObservableList(MODULES_PROPERTY).clear();
-            getStampViewModel().getObservableList(MODULES_PROPERTY).addAll(NavigationReads.descendantsOf(getViewProperties().calculator(), KometTerm.MODULE));
+            getStampViewModel().getObservableList(MODULES_PROPERTY).addAll(NavigationReads.descendantsOf(getViewProperties().calculator(), dev.ikm.komet.terms.KometConcept.MODULE));
 
             // refresh path
             getStampViewModel().getObservableList(PATHS_PROPERTY).clear();
-            getStampViewModel().getObservableList(PATHS_PROPERTY).addAll(NavigationReads.descendantsOf(getViewProperties().calculator(), KometTerm.PATH));
+            getStampViewModel().getObservableList(PATHS_PROPERTY).addAll(NavigationReads.descendantsOf(getViewProperties().calculator(), dev.ikm.komet.terms.KometConcept.PATH));
 
             stampEdit.show((Node) event.getSource());
             stampEditController.selectActiveStatusToggle();

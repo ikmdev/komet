@@ -9,7 +9,7 @@ import dev.ikm.tinkar.coordinate.navigation.calculator.NavigationCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.LatestVersionSearchResult;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityHandle;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -48,7 +48,7 @@ public class KLComponentControlFactory {
         componentControl.setComponentNameRenderer(createComponentNameRenderer(viewCalculator));
 
         // String converter
-        StringConverter<EntityProxy> stringToEntityProxyConverter = createStringToEntityProxyConverter(navigationCalculator);
+        StringConverter<EntityFacade> stringToEntityProxyConverter = createStringToEntityProxyConverter(navigationCalculator);
         componentControl.setTypeAheadStringConverter(stringToEntityProxyConverter);
 
         // suggestions cell factory
@@ -66,7 +66,7 @@ public class KLComponentControlFactory {
      * @param componentOptions the components the user may choose from
      */
     public static KLComponentComboBoxControl createComponentComboBoxControl(ViewCalculator viewCalculator,
-                                                                            List<EntityProxy> componentOptions) {
+                                                                            List<EntityFacade> componentOptions) {
         KLComponentComboBoxControl componentComboBoxControl = new KLComponentComboBoxControl();
 
         // add the function to render the component name
@@ -86,7 +86,7 @@ public class KLComponentControlFactory {
         // add the function to render the component name
         componentListControl.setComponentNameRenderer(createComponentNameRenderer(viewCalculator));
 
-        StringConverter<EntityProxy> stringToEntityProxyConverter = createStringToEntityProxyConverter(navigationCalculator);
+        StringConverter<EntityFacade> stringToEntityProxyConverter = createStringToEntityProxyConverter(navigationCalculator);
         componentListControl.setTypeAheadStringConverter(stringToEntityProxyConverter);
 
         componentListControl.setSuggestionsCellFactory(_ -> createComponentSuggestionNode(stringToEntityProxyConverter));
@@ -111,6 +111,24 @@ public class KLComponentControlFactory {
         return componentListControl;
     }
 
+    /**
+     * Creates a {@link ComponentSearchTextField} that searches the way the component controls'
+     * inline search does — the same completer, name converter and suggestion cells as
+     * {@link #createComponentControl} — for a place that searches for a component to filter by
+     * (the KL Pattern window's INSTANCES tab, the pattern browser).
+     *
+     * @param viewCalculator the calculator the search runs through and the names are rendered with
+     */
+    public static ComponentSearchTextField createComponentSearchTextField(ViewCalculator viewCalculator) {
+        NavigationCalculator navigationCalculator = viewCalculator.navigationCalculator();
+        ComponentSearchTextField searchTextField = new ComponentSearchTextField();
+        searchTextField.setCompleter(createInlineSearchFunction(navigationCalculator));
+        StringConverter<EntityFacade> stringToEntityProxyConverter = createStringToEntityProxyConverter(navigationCalculator);
+        searchTextField.setConverter(stringToEntityProxyConverter);
+        searchTextField.setSuggestionsCellFactory(_ -> createComponentSuggestionNode(stringToEntityProxyConverter));
+        return searchTextField;
+    }
+
     /***************************************************************************
      *                                                                         *
      * Private Implementation                                                  *
@@ -123,9 +141,9 @@ public class KLComponentControlFactory {
      * @param navigationCalculator the navigation calculator.
      * @return a List containing the associated concept or an empty list if there is no Concept associated with the UUID
      */
-    private static Function<String, List<EntityProxy>> createUUIDConverterFunction(NavigationCalculator navigationCalculator) {
+    private static Function<String, List<EntityFacade>> createUUIDConverterFunction(NavigationCalculator navigationCalculator) {
         return newSearchText -> {
-            List<EntityProxy> entityProxyResults = new ArrayList<>();
+            List<EntityFacade> entityProxyResults = new ArrayList<>();
 
             UuidUtil.getUUID(newSearchText).ifPresent(
                     uuid -> EntityHandle.get(PrimitiveData.nid(PublicIds.of(uuid))).ifPresent(
@@ -143,9 +161,9 @@ public class KLComponentControlFactory {
      * @param navigationCalculator the navigation calculator.
      * @return a List containing the associated concept or an empty list if there is no Concept associated with the UUID
      */
-    private static Function<String, List<EntityProxy>> createInlineSearchFunction(NavigationCalculator navigationCalculator) {
+    private static Function<String, List<EntityFacade>> createInlineSearchFunction(NavigationCalculator navigationCalculator) {
         return newSearchText -> {
-            List<EntityProxy> entityProxyResults = new ArrayList<>();
+            List<EntityFacade> entityProxyResults = new ArrayList<>();
 
             if (UuidUtil.isUUID(newSearchText)) {
                 UuidUtil.getUUID(newSearchText).ifPresent(
@@ -171,26 +189,26 @@ public class KLComponentControlFactory {
         };
     }
 
-    private static Function<EntityProxy, String> createComponentNameRenderer(ViewCalculator viewCalculator) {
+    private static Function<EntityFacade, String> createComponentNameRenderer(ViewCalculator viewCalculator) {
         return (entityProxy) ->
             viewCalculator.languageCalculator().getDescriptionTextOrNid(entityProxy.nid());
     }
 
-    private static StringConverter<EntityProxy> createStringToEntityProxyConverter(NavigationCalculator navigationCalculator) {
+    private static StringConverter<EntityFacade> createStringToEntityProxyConverter(NavigationCalculator navigationCalculator) {
         return new StringConverter<>() {
             @Override
-            public String toString(EntityProxy conceptFacade) {
+            public String toString(EntityFacade conceptFacade) {
                 return navigationCalculator.getDescriptionTextOrNid(conceptFacade.nid());
             }
 
             @Override
-            public EntityProxy fromString(String string) {
+            public EntityFacade fromString(String string) {
                 return null;
             }
         };
     }
 
-    private static ListCell<EntityProxy> createComponentSuggestionNode(StringConverter<EntityProxy> stringConverter) {
+    private static ListCell<EntityFacade> createComponentSuggestionNode(StringConverter<EntityFacade> stringConverter) {
         return new ListCell<>() {
             StackPane stackPane;
             Label label;
@@ -219,7 +237,7 @@ public class KLComponentControlFactory {
             }
 
             @Override
-            protected void updateItem(EntityProxy item, boolean empty) {
+            protected void updateItem(EntityFacade item, boolean empty) {
                 super.updateItem(item, empty);
 
                 if (item == null) {
@@ -238,7 +256,7 @@ public class KLComponentControlFactory {
     }
 
     private static AutoCompleteTextField.HeaderPane createTypeAheadHeaderPane() {
-        return new AutoCompleteTextField.HeaderPane<EntityProxy>() {
+        return new AutoCompleteTextField.HeaderPane<EntityFacade>() {
             Label headerLabel = new Label();
             {
                 headerLabel.getStyleClass().add("header");
@@ -250,7 +268,7 @@ public class KLComponentControlFactory {
             }
 
             @Override
-            public void updateContent(List<EntityProxy> suggestions) {
+            public void updateContent(List<EntityFacade> suggestions) {
                 headerLabel.setText(suggestions.size() + " results");
             }
         };

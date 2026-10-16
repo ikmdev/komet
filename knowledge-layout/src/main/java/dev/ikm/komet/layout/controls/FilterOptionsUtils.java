@@ -17,9 +17,9 @@ import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.set.ImmutableSet;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.KernelConcept;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.util.Subscription;
@@ -178,7 +178,7 @@ public class FilterOptionsUtils {
                     }
                     // update dialect
                     languageFilterCoordinates.getDialect().selectedOptions().clear();
-                    if (KernelTerm.ENGLISH_LANGUAGE.equals(lang)) {
+                    if ((lang instanceof EntityFacade english && english.nid() == KernelConcept.ENGLISH_LANGUAGE.nid())) {
                         ImmutableList<PatternFacade> list = observableLanguageCoordinate.dialectPatternPreferenceListProperty().get();
                         languageFilterCoordinates.getDialect().selectedOptions().addAll(list.castToList());
                         observableViewForFilterProperty.languageCoordinates().getFirst().dialectPatternPreferenceListProperty().set(list);
@@ -193,7 +193,7 @@ public class FilterOptionsUtils {
                     if (fromFilter) {
                         return;
                     }
-                    if (!KernelTerm.ENGLISH_LANGUAGE.equals(observableLanguageCoordinate.languageConcept())) {
+                    if (!(observableLanguageCoordinate.languageConcept() instanceof EntityFacade english && english.nid() == KernelConcept.ENGLISH_LANGUAGE.nid())) {
                         // ignore
                         return;
                     }

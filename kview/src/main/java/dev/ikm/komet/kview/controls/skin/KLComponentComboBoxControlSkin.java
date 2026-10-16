@@ -3,7 +3,7 @@ package dev.ikm.komet.kview.controls.skin;
 import dev.ikm.komet.kview.controls.FilterComboBox;
 import dev.ikm.komet.kview.controls.KLComponentComboBoxControl;
 import dev.ikm.komet.kview.controls.KLComponentControl;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
@@ -25,7 +25,7 @@ public class KLComponentComboBoxControlSkin extends SkinBase<KLComponentComboBox
     private final VBox mainContainer = new VBox();
 
     private final Label titleLabel = new Label();
-    private final FilterComboBox<EntityProxy> comboBox = new FilterComboBox<>();
+    private final FilterComboBox<EntityFacade> comboBox = new FilterComboBox<>();
     private final Button clearButton = new Button();
 
     /**
@@ -68,7 +68,7 @@ public class KLComponentComboBoxControlSkin extends SkinBase<KLComponentComboBox
         comboBox.promptTextProperty().bind(control.promptTextProperty());
         comboBox.setConverter(new StringConverter<>() {
             @Override
-            public String toString(EntityProxy entityProxy) {
+            public String toString(EntityFacade entityProxy) {
                 if (KLComponentControl.isEmpty(entityProxy)) {
                     return control.getPromptText();
                 }
@@ -76,7 +76,7 @@ public class KLComponentComboBoxControlSkin extends SkinBase<KLComponentComboBox
             }
 
             @Override
-            public EntityProxy fromString(String string) {
+            public EntityFacade fromString(String string) {
                 return null;
             }
         });

@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
@@ -55,11 +55,11 @@ class ObservableEntitySemanticListITestFX {
      * so the set collectively exercises the non-empty enumeration path.
      */
     private static final ConceptFacade[] SAMPLE_CONCEPTS = {
-            KernelTerm.ENGLISH_LANGUAGE,
-            KernelTerm.DEVELOPMENT_PATH,
-            KernelTerm.PRIMORDIAL_MODULE,
-            KernelTerm.USER,
-            KernelTerm.KOMET_USER
+            KernelConcept.ENGLISH_LANGUAGE,
+            KernelConcept.DEVELOPMENT_PATH,
+            KernelConcept.PRIMORDIAL_MODULE,
+            KernelConcept.USER,
+            KernelConcept.KOMET_USER
     };
 
     @BeforeAll

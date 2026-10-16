@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 package dev.ikm.komet.framework.controls;
-import dev.ikm.tinkar.terms.KernelTerm;
+
+import dev.ikm.tinkar.terms.KernelConcept;
+import dev.ikm.tinkar.terms.KernelPattern;
 import network.ike.docs.konceptcore.KonceptKind;
 
 import dev.ikm.tinkar.common.service.CachingService;
@@ -70,19 +72,19 @@ class KonceptKindResolverITestFX {
     @Test
     void aConceptResolvesToConcept() {
         assertEquals(KonceptKind.CONCEPT,
-                KonceptKindResolver.resolve(KernelTerm.ENGLISH_LANGUAGE.nid(), calculator));
+                KonceptKindResolver.resolve(KernelConcept.ENGLISH_LANGUAGE.nid(), calculator));
     }
 
     @Test
     void aPatternResolvesToPattern() {
         assertEquals(KonceptKind.PATTERN,
-                KonceptKindResolver.resolve(KernelTerm.DESCRIPTION_PATTERN.nid(), calculator));
+                KonceptKindResolver.resolve(KernelPattern.DESCRIPTION_PATTERN.nid(), calculator));
     }
 
     @Test
     void aDescriptionSemanticResolvesToDescriptionViaTheCoordinate() {
         Optional<SemanticEntity<SemanticEntityVersion>> description = EntityService.get().semanticsForComponentOfPattern(
-                KernelTerm.ENGLISH_LANGUAGE.nid(), KernelTerm.DESCRIPTION_PATTERN.nid()).findFirst();
+                KernelConcept.ENGLISH_LANGUAGE.nid(), KernelPattern.DESCRIPTION_PATTERN.nid()).findFirst();
         assertTrue(description.isPresent(), "English Language must carry description semantics");
         long descriptionNid = description.get().nid();
 
@@ -99,10 +101,10 @@ class KonceptKindResolverITestFX {
         long otherSemanticNid = Integer.MIN_VALUE;
         outer:
         for (ConceptFacade concept : new ConceptFacade[]{
-                KernelTerm.ENGLISH_LANGUAGE, KernelTerm.DEVELOPMENT_PATH, KernelTerm.USER}) {
+                KernelConcept.ENGLISH_LANGUAGE, KernelConcept.DEVELOPMENT_PATH, KernelConcept.USER}) {
             Optional<SemanticEntity<SemanticEntityVersion>> other = EntityService.get()
                     .semanticsForComponent(concept.nid())
-                    .filter(semantic -> semantic.patternNid() != KernelTerm.DESCRIPTION_PATTERN.nid())
+                    .filter(semantic -> semantic.patternNid() != KernelPattern.DESCRIPTION_PATTERN.nid())
                     .findFirst();
             if (other.isPresent()) {
                 otherSemanticNid = other.get().nid();
@@ -116,7 +118,7 @@ class KonceptKindResolverITestFX {
 
     @Test
     void aStampResolvesToStamp() {
-        Entity<?> englishLanguage = EntityHandle.get(KernelTerm.ENGLISH_LANGUAGE.nid()).entity().orElseThrow();
+        Entity<?> englishLanguage = EntityHandle.get(KernelConcept.ENGLISH_LANGUAGE.nid()).entity().orElseThrow();
         long stampNid = englishLanguage.versions().get(0).stampNid();
         assertEquals(KonceptKind.STAMP, KonceptKindResolver.resolve(stampNid, calculator));
     }

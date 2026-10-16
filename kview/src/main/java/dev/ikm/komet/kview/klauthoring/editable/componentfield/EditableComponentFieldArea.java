@@ -7,7 +7,7 @@ import dev.ikm.komet.layout.area.KlAreaForComponent;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.layout_engine.blueprint.EditableFieldAreaBlueprint;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.Property;
 
 /**
@@ -20,7 +20,7 @@ import javafx.beans.property.Property;
  * EditableComponentFieldArea componentArea = EditableComponentFieldArea.create(preferencesFactory);
  *
  * // Get an editable field from ObservableComposer
- * ObservableField.Editable<EntityProxy> editable = ...;
+ * ObservableField.Editable<EntityFacade> editable = ...;
  *
  * // Connect the area to the editable
  * componentArea.setEditable(editable);
@@ -29,7 +29,7 @@ import javafx.beans.property.Property;
  * parentPane.getChildren().add(componentArea.fxObject());
  * }</pre>
  */
-public final class EditableComponentFieldArea extends EditableFieldAreaBlueprint<EntityProxy, KLComponentControl>
+public final class EditableComponentFieldArea extends EditableFieldAreaBlueprint<EntityFacade, KLComponentControl>
         implements KlAreaForComponent<KLComponentControl> {
 
     /**
@@ -52,19 +52,19 @@ public final class EditableComponentFieldArea extends EditableFieldAreaBlueprint
     }
 
     @Override
-    protected Property<EntityProxy> getControlValueProperty() {
+    protected Property<EntityFacade> getControlValueProperty() {
         return getFxPeer().entityProperty();
     }
 
     @Override
-    protected void bindControlToEditable(ObservableField.Editable<EntityProxy> editable) {
+    protected void bindControlToEditable(ObservableField.Editable<EntityFacade> editable) {
         getFxPeer()
                 .entityProperty()
                 .bindBidirectional(editable.editableValueProperty());
 
         addEditableSubscription(
                 editable.editableValueProperty().subscribe((oldVal, newVal) -> {
-                    if (newVal != null && !newVal.equals(oldVal)) {
+                    if (newVal != null && !EntityFacade.same(newVal, oldVal)) {
                         editable.setValue(newVal);
                     }
                 })

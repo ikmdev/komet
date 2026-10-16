@@ -4,7 +4,7 @@ import dev.ikm.komet.framework.observable.Feature;
 import dev.ikm.tinkar.common.bind.annotations.axioms.ParentConcept;
 import dev.ikm.tinkar.common.bind.annotations.names.FullyQualifiedName;
 import dev.ikm.tinkar.common.bind.annotations.names.RegularName;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.scene.layout.Region;
 
 /**
@@ -23,7 +23,7 @@ import javafx.scene.layout.Region;
 @RegularName("Component (EntityProxy) area")
 @ParentConcept(KlAreaForFeature.class)
 public non-sealed interface KlAreaForComponent<FX extends Region>
-        extends KlAreaForFeature<EntityProxy, Feature<EntityProxy>, FX> {
+        extends KlAreaForFeature<EntityFacade, Feature<EntityFacade>, FX> {
 
 
     /**
@@ -33,14 +33,14 @@ public non-sealed interface KlAreaForComponent<FX extends Region>
      * field areas associated with entities.
      *
      * This interface defines the contract for building and initializing components that bind
-     * {@code EntityProxy}-related observable fields to JavaFX regions of a specified type.
+     * component-valued observable fields (any {@code EntityFacade}) to JavaFX regions of a specified type.
      * It enables property observation and manipulation with type-safe operations, maintaining
      * specialized behavior for entity-focused field management.
      *
      * @param <FX> the type of JavaFX {@link Region} associated with the field area, extending {@code Region}.
      */
     interface Factory<FX extends Region, KL extends KlAreaForComponent<FX>>
-            extends KlAreaForFeature.Factory<EntityProxy, Feature<EntityProxy>, FX, KL> {
+            extends KlAreaForFeature.Factory<EntityFacade, Feature<EntityFacade>, FX, KL> {
     }
 
 }

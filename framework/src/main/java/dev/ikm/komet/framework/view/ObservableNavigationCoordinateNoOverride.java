@@ -17,7 +17,7 @@ package dev.ikm.komet.framework.view;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
-import dev.ikm.komet.terms.KometTerm;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinate;
 import dev.ikm.tinkar.coordinate.navigation.NavigationCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
@@ -43,18 +43,18 @@ public class ObservableNavigationCoordinateNoOverride extends ObservableNavigati
     @Override
     protected SimpleEqualityBasedObjectProperty<ImmutableSet<PatternFacade>> makeNavigationPatternsProperty(NavigationCoordinate navigationCoordinate) {
         return new SimpleEqualityBasedObjectProperty<>(this,
-                KometTerm.NAVIGATION_CONCEPT_SET.toXmlFragment(),
+                KometConcept.NAVIGATION_CONCEPT_SET.toXmlFragment(),
                 navigationCoordinate.navigationPatternNids().map(PatternFacade::make));
     }
 
     @Override
     protected ObjectProperty<StateSet> makeVertexStatesProperty(NavigationCoordinate navigationCoordinate) {
-        return new SimpleEqualityBasedObjectProperty<>(this, KometTerm.VERTEX_STATE_SET.toXmlFragment(), navigationCoordinate.vertexStates());
+        return new SimpleEqualityBasedObjectProperty<>(this, KometConcept.VERTEX_STATE_SET.toXmlFragment(), navigationCoordinate.vertexStates());
     }
 
     @Override
     protected ObjectProperty<Boolean> makeSortVerticesProperty(NavigationCoordinate navigationCoordinate) {
-        return new SimpleEqualityBasedObjectProperty<>(this, KometTerm.VERTEX_SORT.toXmlFragment(),
+        return new SimpleEqualityBasedObjectProperty<>(this, KometConcept.VERTEX_SORT.toXmlFragment(),
                 navigationCoordinate.sortVertices());
     }
 

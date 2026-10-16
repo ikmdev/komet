@@ -2146,7 +2146,7 @@ public interface KometPreferences {
      * @param defaultValue the default concept proxy to be returned if no matching association is found
      * @return the concept proxy associated with the specified enum key, or the specified default value
      */
-    default EntityProxy.Concept getConceptProxy(Enum key, EntityProxy.Concept defaultValue) {
+    default ConceptFacade getConceptProxy(Enum key, ConceptFacade defaultValue) {
         return getConceptProxy(enumToGeneralKey(key), defaultValue);
     }
 
@@ -2158,7 +2158,7 @@ public interface KometPreferences {
      * @param defaultValue the default concept proxy to return if the key is not found
      * @return the concept proxy corresponding to the key, or the default value if the key is not found
      */
-    default EntityProxy.Concept getConceptProxy(String key, EntityProxy.Concept defaultValue) {
+    default ConceptFacade getConceptProxy(String key, ConceptFacade defaultValue) {
         Optional<String> spec = get(key);
         if (spec.isPresent()) {
             return ProxyFactory.fromXmlFragment(spec.get());
@@ -2173,7 +2173,7 @@ public interface KometPreferences {
      * @param key the key with which the specified concept proxy is to be associated
      * @param conceptProxy the concept proxy to be stored
      */
-    default void putConceptProxy(String key, EntityProxy.Concept conceptProxy) {
+    default void putConceptProxy(String key, ConceptFacade conceptProxy) {
         put(key, conceptProxy.toXmlFragment());
     }
 
@@ -2185,7 +2185,7 @@ public interface KometPreferences {
      * @param key the enumeration key used to generate the general key for mapping
      * @param conceptProxy the concept proxy to be stored, whose XML fragment will be used
      */
-    default void putConceptProxy(Enum key, EntityProxy.Concept conceptProxy) {
+    default void putConceptProxy(Enum key, ConceptFacade conceptProxy) {
         put(enumToGeneralKey(key), conceptProxy.toXmlFragment());
     }
 

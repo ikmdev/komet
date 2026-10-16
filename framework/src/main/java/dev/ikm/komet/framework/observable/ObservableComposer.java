@@ -15,19 +15,12 @@
  */
 package dev.ikm.komet.framework.observable;
 
-import dev.ikm.komet.terms.KometTerm;
-import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
+import dev.ikm.komet.terms.KometConcept;
+
+import static dev.ikm.komet.terms.KometConcept.BLANK_CONCEPT;
+import static dev.ikm.komet.terms.KometConcept.IMAGE_FIELD;
 import static dev.ikm.tinkar.common.service.PrimitiveData.SCOPED_PATTERN_PUBLICID_FOR_NID;
-import static dev.ikm.tinkar.terms.KernelTerm.BOOLEAN_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.BYTE_ARRAY_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_ID_LIST_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_ID_SET_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.DITREE_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.FLOAT_FIELD;
-import static dev.ikm.komet.terms.KometTerm.IMAGE_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.INTEGER_FIELD;
-import static dev.ikm.tinkar.terms.KernelTerm.STRING;
+import static dev.ikm.tinkar.terms.KernelConcept.*;
 
 import dev.ikm.tinkar.common.id.LongIdCollection;
 import dev.ikm.tinkar.common.id.LongIds;
@@ -42,6 +35,7 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.entity.graph.adaptor.axiom.LogicalExpressionBuilder;
+import dev.ikm.tinkar.entity.transaction.CancelVersionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.*;
 import javafx.application.Platform;
@@ -137,9 +131,9 @@ import java.util.Optional;
  * and the framework handles the rest:
  * <pre>{@code
  * ObservableComposer composer = ObservableComposer.builder()
- *     .author(KernelTerm.USER)
- *     .module(KernelTerm.PRIMORDIAL_MODULE)
- *     .path(KernelTerm.DEVELOPMENT_PATH)
+ *     .author(KernelConcept.USER)
+ *     .module(KernelConcept.PRIMORDIAL_MODULE)
+ *     .path(KernelConcept.DEVELOPMENT_PATH)
  *     .build();
  *
  * // Simple unified API - just provide a PublicId
@@ -176,9 +170,9 @@ import java.util.Optional;
  * <pre>{@code
  * // Create a new concept with observable properties
  * ObservableComposer composer = ObservableComposer.builder()
- *     .author(KernelTerm.USER)
- *     .module(KernelTerm.PRIMORDIAL_MODULE)
- *     .path(KernelTerm.DEVELOPMENT_PATH)
+ *     .author(KernelConcept.USER)
+ *     .module(KernelConcept.PRIMORDIAL_MODULE)
+ *     .path(KernelConcept.DEVELOPMENT_PATH)
  *     .build();
  *
  * // Start building a concept
@@ -214,8 +208,8 @@ import java.util.Optional;
  * // Create composer with editing context
  * ObservableComposer composer = ObservableComposer.builder()
  *     .author(currentUser)
- *     .module(KernelTerm.PRIMORDIAL_MODULE)
- *     .path(KernelTerm.DEVELOPMENT_PATH)
+ *     .module(KernelConcept.PRIMORDIAL_MODULE)
+ *     .path(KernelConcept.DEVELOPMENT_PATH)
  *     .build();
  *
  * // Edit the concept
@@ -238,9 +232,9 @@ import java.util.Optional;
  * <p><b>Pattern 3: Building Semantics with Fields</b>
  * <pre>{@code
  * ObservableComposer composer = ObservableComposer.builder()
- *     .author(KernelTerm.USER)
- *     .module(KernelTerm.PRIMORDIAL_MODULE)
- *     .path(KernelTerm.DEVELOPMENT_PATH)
+ *     .author(KernelConcept.USER)
+ *     .module(KernelConcept.PRIMORDIAL_MODULE)
+ *     .path(KernelConcept.DEVELOPMENT_PATH)
  *     .build();
  *
  * // Create semantic on a concept
@@ -252,8 +246,8 @@ import java.util.Optional;
  * // Set field values
  * semanticBuilder
  *     .setFieldValue(0, "English description text")
- *     .setFieldValue(1, KernelTerm.ENGLISH_LANGUAGE)
- *     .setFieldValue(2, KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+ *     .setFieldValue(1, KernelConcept.ENGLISH_LANGUAGE)
+ *     .setFieldValue(2, KernelConcept.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
  *
  * // Get editable fields for UI binding
  * ObservableList<ObservableField.Editable<?>> fields =
@@ -280,9 +274,9 @@ import java.util.Optional;
  * <p><b>Pattern 4: Transaction State Monitoring</b>
  * <pre>{@code
  * ObservableComposer composer = ObservableComposer.builder()
- *     .author(KernelTerm.USER)
- *     .module(KernelTerm.PRIMORDIAL_MODULE)
- *     .path(KernelTerm.DEVELOPMENT_PATH)
+ *     .author(KernelConcept.USER)
+ *     .module(KernelConcept.PRIMORDIAL_MODULE)
+ *     .path(KernelConcept.DEVELOPMENT_PATH)
  *     .build();
  *
  * // Bind UI to transaction state
@@ -647,7 +641,7 @@ public final class ObservableComposer {
         MutableList<Object> fieldsValues = Lists.mutable.ofInitialCapacity(patternVersion.fieldDefinitions().size());
         patternVersion.fieldDefinitions().forEach(f -> {
             if (f.dataTypeNid() == COMPONENT_FIELD.nid()) {
-                fieldsValues.add(BLANK_CONCEPT);
+                fieldsValues.add(defaultComponentFieldValue());
             } else if (f.dataTypeNid() == STRING.nid()) {
                 fieldsValues.add("");
             } else if (f.dataTypeNid() == INTEGER_FIELD.nid()) {
@@ -683,6 +677,17 @@ public final class ObservableComposer {
             }
         });
         return (T) fieldsValues;
+    }
+
+    /**
+     * The value a new component field starts with: the blank concept as an {@link EntityProxy}.
+     * Field values reach the component controls through untyped lists, so the seed must be the
+     * form those controls hold, never the {@code KometConcept} enum itself.
+     *
+     * @return the blank concept, as a proxy
+     */
+    public static EntityProxy.Concept defaultComponentFieldValue() {
+        return BLANK_CONCEPT.toProxy();
     }
 
     /**
@@ -862,6 +867,83 @@ public final class ObservableComposer {
             transaction.removeComponent(entity);
         }
         hasUncommittedChangesProperty.set(!trackedEditables.isEmpty());
+    }
+
+    /**
+     * Withdraws the version of one entity saved in this composer's open transaction, leaving the
+     * transaction's versions of every other entity in place: the counterpart of
+     * {@link #discardUnsavedEdits(long)} for a version already {@linkplain EntityComposer#save() saved}.
+     * The store merges an entity's versions by stamp and the transaction's stamp is shared, so the
+     * version cannot simply be dropped: {@link CancelVersionTask} moves it out of this transaction
+     * into a single-version transaction of its own and cancels it there, and the store gives up its
+     * version under the shared stamp in the same write
+     * ({@link dev.ikm.tinkar.entity.EntityService#putEntityReplacingVersion}). The next
+     * {@link #commit()} does not commit it; an {@link ObservableEntity} read afterwards does not
+     * hold it, and the canonical one, when one is held, drops it.
+     * <p>
+     * What the entity held before this transaction stays: what is withdrawn is this transaction's
+     * edit of it, or, for an entity the transaction created, the entity itself. A semantic's or a
+     * pattern's version is withdrawn; a concept's is not ({@link CancelVersionTask} does not move one).
+     * When the withdrawn version was the transaction's only one, the transaction itself is canceled
+     * and the composer starts a new one at its next edit.
+     *
+     * @param entityNid the semantic or pattern whose version saved in this transaction is withdrawn
+     * @return true when a version was withdrawn; false when the transaction saved none of the
+     *         entity, in which case only its unsaved edits are discarded
+     * @throws IllegalArgumentException if the entity is a concept or a stamp
+     */
+    public boolean withdraw(long entityNid) {
+        requireJavaFXThread();
+        if (transaction == null) {
+            return false;
+        }
+        Entity<?> entity = EntityHandle.get(entityNid).expectEntity();
+        List<EntityVersion> saved = versionsSavedInTransaction(entity);
+        if (saved.isEmpty()) {
+            discardUnsavedEdits(entityNid);
+            return false;
+        }
+        trackedEditables.removeIf(editable -> editable.getObservableChronology().nid() == entityNid);
+        for (EntityVersion version : saved) {
+            CancelVersionTask cancel = switch (version) {
+                case SemanticVersionRecord semanticVersion -> new CancelVersionTask(semanticVersion);
+                case PatternVersionRecord patternVersion -> new CancelVersionTask(patternVersion);
+                default -> throw new IllegalArgumentException("Only a semantic's or a pattern's version is withdrawn: "
+                        + EntityText.diagnostic(version));
+            };
+            try {
+                cancel.call();
+            } catch (Exception e) {
+                throw new IllegalStateException("Could not withdraw " + EntityText.diagnostic(version), e);
+            }
+        }
+        // The canonical observable, when one is held, drops the withdrawn version.
+        ObservableEntity.refresh(entityNid);
+        if (transaction.isOpen() && !holdsSavedVersions(transaction)) {
+            // Nothing saved is left in it: end it, as CancelVersionTask does a transaction it empties.
+            transaction.cancel();
+        }
+        if (!transaction.isOpen()) {
+            transaction = null;
+            trackedEditables.clear();
+            transactionStateProperty.set(TransactionState.ROLLED_BACK);
+        }
+        hasUncommittedChangesProperty.set(!trackedEditables.isEmpty());
+        return true;
+    }
+
+    /** Whether any component of the transaction still has a version saved uncommitted in it. */
+    private boolean holdsSavedVersions(Transaction open) {
+        boolean[] holds = {false};
+        open.forEachComponentInTransaction(nid -> {
+            // The transaction's own stamps are components of it too, and hold no saved edit.
+            if (!holds[0] && EntityHandle.get(nid).orNull() instanceof Entity<?> component
+                    && !(component instanceof StampEntity<?>)
+                    && !versionsSavedInTransaction(component).isEmpty()) {
+                holds[0] = true;
+            }
+        });
+        return holds[0];
     }
 
     /** The entity's versions saved uncommitted on a stamp of this composer's open transaction. */
@@ -1129,9 +1211,9 @@ public final class ObservableComposer {
      * <p><b>Example Usage</b>
      * <pre>{@code
      * ObservableComposer composer = ObservableComposer.builder()
-     *     .author(KernelTerm.USER)
-     *     .module(KernelTerm.PRIMORDIAL_MODULE)
-     *     .path(KernelTerm.DEVELOPMENT_PATH)
+     *     .author(KernelConcept.USER)
+     *     .module(KernelConcept.PRIMORDIAL_MODULE)
+     *     .path(KernelConcept.DEVELOPMENT_PATH)
      *     .build();
      *
      * // Create a new concept
@@ -1149,7 +1231,7 @@ public final class ObservableComposer {
      *
      * // Use concept as reference for other entities
      * ObservableSemanticBuilder semantic =
-     *     composer.createSemanticBuilder(KernelTerm.DESCRIPTION_PATTERN, concept);
+     *     composer.createSemanticBuilder(KernelPattern.DESCRIPTION_PATTERN, concept);
      *
      * // Commit when ready
      * composer.commit();
@@ -1296,7 +1378,7 @@ public final class ObservableComposer {
      * <pre>{@code
      * // Create a description semantic on a concept
      * ObservableSemanticBuilder builder = composer.createSemanticBuilder(
-     *     KernelTerm.DESCRIPTION_PATTERN,
+     *     KernelPattern.DESCRIPTION_PATTERN,
      *     myConcept
      * );
      *
@@ -1314,7 +1396,7 @@ public final class ObservableComposer {
      *
      * // Or set values programmatically
      * ((ObservableField.Editable<String>) fields.get(0)).setValue("My description");
-     * ((ObservableField.Editable<Object>) fields.get(1)).setValue(KernelTerm.ENGLISH_LANGUAGE);
+     * ((ObservableField.Editable<Object>) fields.get(1)).setValue(KernelConcept.ENGLISH_LANGUAGE);
      *
      * // Check for changes
      * if (builder.hasUnsavedChanges()) {
@@ -1588,7 +1670,7 @@ public final class ObservableComposer {
 
         private void makeEmptyVersion(PatternRecord patternRecord, ObservableStamp stampEntity, RecordListBuilder versions) {
             PatternVersionRecord patternVersionRecord = new PatternVersionRecord(patternRecord, stampEntity.nid(),
-            KometTerm.PURPOSE.nid(), KometTerm.MEANING.nid(),
+            KometConcept.PURPOSE.nid(), KometConcept.MEANING.nid(),
                     Lists.immutable.empty());
             versions.add(patternVersionRecord);
         }
@@ -1682,9 +1764,9 @@ public final class ObservableComposer {
      *
      * // Create composer and start editing
      * ObservableComposer composer = ObservableComposer.builder()
-     *     .author(KernelTerm.USER)
-     *     .module(KernelTerm.PRIMORDIAL_MODULE)
-     *     .path(KernelTerm.DEVELOPMENT_PATH)
+     *     .author(KernelConcept.USER)
+     *     .module(KernelConcept.PRIMORDIAL_MODULE)
+     *     .path(KernelConcept.DEVELOPMENT_PATH)
      *     .build();
      *
      * ObservableConceptEditor editor = composer.editConcept(concept);
@@ -1792,9 +1874,9 @@ public final class ObservableComposer {
      *
      * // Create composer and start editing
      * ObservableComposer composer = ObservableComposer.builder()
-     *     .author(KernelTerm.USER)
-     *     .module(KernelTerm.PRIMORDIAL_MODULE)
-     *     .path(KernelTerm.DEVELOPMENT_PATH)
+     *     .author(KernelConcept.USER)
+     *     .module(KernelConcept.PRIMORDIAL_MODULE)
+     *     .path(KernelConcept.DEVELOPMENT_PATH)
      *     .build();
      *
      * ObservableSemanticEditor editor = composer.editSemantic(semantic);

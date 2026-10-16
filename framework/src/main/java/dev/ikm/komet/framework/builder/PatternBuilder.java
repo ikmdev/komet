@@ -20,7 +20,9 @@ import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
+import dev.ikm.tinkar.terms.KernelPattern;
+
 import java.util.UUID;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -97,8 +99,8 @@ public class PatternBuilder {
             versionRecords.addAndBuild(new PatternVersionRecord(patternRecord,
                     stampEntity.nid(),
                     // basic Patterns can default to an anonymous concept
-                    EntityService.get().nidForPublicId(KernelTerm.ANONYMOUS_CONCEPT),
-                    EntityService.get().nidForPublicId(KernelTerm.ANONYMOUS_CONCEPT),
+                    EntityService.get().nidForPublicId(KernelConcept.ANONYMOUS_CONCEPT.publicId()),
+                    EntityService.get().nidForPublicId(KernelConcept.ANONYMOUS_CONCEPT.publicId()),
                     immutableList
             ));
 
@@ -109,24 +111,24 @@ public class PatternBuilder {
             RecordListBuilder<SemanticVersionRecord> versions = RecordListBuilder.make();
             UUID descriptionSemanticUUID = UUID.randomUUID();
 
-            long semanticNid = Entity.nidForSemantic(KernelTerm.DESCRIPTION_PATTERN.nid(), PublicIds.of(descriptionSemanticUUID));
+            long semanticNid = Entity.nidForSemantic(KernelPattern.DESCRIPTION_PATTERN.nid(), PublicIds.of(descriptionSemanticUUID));
 
             SemanticRecord semanticRecord = SemanticRecordBuilder.builder()
                     .nid(semanticNid)
                     .leastSignificantBits(descriptionSemanticUUID.getLeastSignificantBits())
                     .mostSignificantBits(descriptionSemanticUUID.getMostSignificantBits())
                     .additionalUuidLongs(null)
-                    .patternNid(KernelTerm.DESCRIPTION_PATTERN.nid())
+                    .patternNid(KernelPattern.DESCRIPTION_PATTERN.nid())
                     .referencedComponentNid(patternRecord.nid())
                     // add aforementioned version records to the SemanticRecord
                     .versions(versions.toImmutable())
                     .build();
 
             // default to English, non-case sensitive, fully qualified name
-            ImmutableList<Object> descriptionFields = Lists.immutable.of(KernelTerm.ENGLISH_LANGUAGE,
+            ImmutableList<Object> descriptionFields = Lists.immutable.of(KernelConcept.ENGLISH_LANGUAGE,
                     descriptionToBuild.text(),
-                    KernelTerm.DESCRIPTION_NOT_CASE_SENSITIVE,
-                    KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
+                    KernelConcept.DESCRIPTION_NOT_CASE_SENSITIVE,
+                    KernelConcept.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE);
 
             versions.add(SemanticVersionRecordBuilder.builder()
                     .chronology(semanticRecord)

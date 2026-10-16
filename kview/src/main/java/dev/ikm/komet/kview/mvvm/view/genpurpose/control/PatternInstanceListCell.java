@@ -18,11 +18,11 @@ package dev.ikm.komet.kview.mvvm.view.genpurpose.control;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.dnd.KonceptDragSource;
-import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.komet.kview.mvvm.view.pattern.PatternInstanceDescriptionHelper;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
+import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
@@ -38,6 +38,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.time.Instant;
@@ -63,7 +64,7 @@ public class PatternInstanceListCell extends ListCell<Long> {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM);
 
-    private final ViewProperties viewProperties;
+    private final ViewCalculator viewCalculator;
 
     private final HBox card = new HBox();
     private final ImageView identicon = new ImageView();
@@ -77,11 +78,11 @@ public class PatternInstanceListCell extends ListCell<Long> {
     private Entity<?> instance;
 
     /**
-     * @param viewProperties the view the instance is described and stamped through
+     * @param viewCalculator the view the instance is described and stamped through
      * @param onOpen         what opens the instance when its card is double-clicked
      */
-    public PatternInstanceListCell(ViewProperties viewProperties, Consumer<EntityFacade> onOpen) {
-        this.viewProperties = viewProperties;
+    public PatternInstanceListCell(ViewCalculator viewCalculator, Consumer<EntityFacade> onOpen) {
+        this.viewCalculator = viewCalculator;
 
         card.setOnMouseClicked(mouseEvent -> {
             if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getClickCount() == 2 && instance != null) {
@@ -106,6 +107,10 @@ public class PatternInstanceListCell extends ListCell<Long> {
         textContainer.getStyleClass().add("text-container");
         textContainer.setMinWidth(0);
         HBox.setHgrow(textContainer, Priority.ALWAYS);
+
+        // A long title gives way (ellipsis), never the chip: when the row is short of room the HBox
+        // shrinks every child towards its minimum, and a label's minimum is its ellipsis alone.
+        statusChip.setMinWidth(Region.USE_PREF_SIZE);
 
         card.getChildren().addAll(identicon, textContainer, statusChip);
         card.setAlignment(Pos.CENTER_LEFT);
@@ -133,14 +138,14 @@ public class PatternInstanceListCell extends ListCell<Long> {
 
         instance = null;
         card.setUserData(null);
-        title.setText(viewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(nid));
+        title.setText(viewCalculator.getPreferredDescriptionTextWithFallbackOrNid(nid));
         EntityHandle.get(nid).ifPresent(entity -> {
             instance = entity;
             card.setUserData(new DragAndDropInfo(DragAndDropType.SEMANTIC, entity.publicId()));
             identicon.setImage(Identicon.generateIdenticonImage(entity.publicId()));
-            title.setText(PatternInstanceDescriptionHelper.titleFor(viewProperties.calculator(), entity));
+            title.setText(PatternInstanceDescriptionHelper.titleFor(viewCalculator, entity));
 
-            Latest<EntityVersion> latest = viewProperties.calculator().stampCalculator().latest(nid);
+            Latest<EntityVersion> latest = viewCalculator.stampCalculator().latest(nid);
             EntityVersion latestVersion = latest.get();
             LocalDate date = Instant.ofEpochMilli(latestVersion.stamp().time()).atZone(ZoneId.systemDefault()).toLocalDate();
             subTitle.setText("Last updated " + DATE_FORMAT.format(date));

@@ -15,7 +15,8 @@
  */
 package dev.ikm.komet.framework.dnd;
 
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
+import dev.ikm.tinkar.terms.KernelPattern;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.entity.EntityService;
@@ -71,7 +72,7 @@ class KometClipboardComponentITestFX {
 
     @Test
     void aConceptAdvertisesItsConceptProxyAndNoSemantic() {
-        long conceptNid = KernelTerm.ENGLISH_LANGUAGE.nid();
+        long conceptNid = KernelConcept.ENGLISH_LANGUAGE.nid();
         KometClipboard content = KometClipboard.forComponent(conceptNid);
 
         assertEquals(OptionalLong.of(conceptNid), nidOf(content, KOMET_CONCEPT_PROXY),
@@ -82,9 +83,9 @@ class KometClipboardComponentITestFX {
 
     @Test
     void aDescriptionAdvertisesBothItsSemanticProxyAndTheResolvedConcept() {
-        long conceptNid = KernelTerm.ENGLISH_LANGUAGE.nid();
+        long conceptNid = KernelConcept.ENGLISH_LANGUAGE.nid();
         Optional<SemanticEntity<SemanticEntityVersion>> description = EntityService.get()
-                .semanticsForComponentOfPattern(conceptNid, KernelTerm.DESCRIPTION_PATTERN.nid()).findFirst();
+                .semanticsForComponentOfPattern(conceptNid, KernelPattern.DESCRIPTION_PATTERN.nid()).findFirst();
         assertTrue(description.isPresent(), "English Language must carry description semantics");
         long descriptionNid = description.get().nid();
 
@@ -98,7 +99,7 @@ class KometClipboardComponentITestFX {
 
     @Test
     void aPatternAdvertisesItsPatternProxyButNoConcept() {
-        long patternNid = KernelTerm.DESCRIPTION_PATTERN.nid();
+        long patternNid = KernelPattern.DESCRIPTION_PATTERN.nid();
         KometClipboard content = KometClipboard.forComponent(patternNid);
 
         assertEquals(OptionalLong.of(patternNid), nidOf(content, KOMET_PATTERN_PROXY),

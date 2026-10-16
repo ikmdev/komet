@@ -17,7 +17,7 @@ package dev.ikm.komet.framework.view;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import dev.ikm.komet.terms.KometTerm;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -73,21 +73,21 @@ public class ObservableEditCoordinateNoOverride
     @Override
     protected SimpleEqualityBasedObjectProperty<ConceptFacade> makeAuthorForChangesProperty(EditCoordinate editCoordinate) {
         return new SimpleEqualityBasedObjectProperty<>(this,
-                KometTerm.AUTHOR_FOR_EDIT_COORDINATE.toXmlFragment(),
+                KometConcept.AUTHOR_FOR_EDIT_COORDINATE.toXmlFragment(),
                 editCoordinate.getAuthorForChanges());
     }
 
     @Override
     protected SimpleEqualityBasedObjectProperty<ConceptFacade> makeDefaultModuleProperty(EditCoordinate editCoordinate) {
         return new SimpleEqualityBasedObjectProperty(this,
-                KometTerm.DEFAULT_MODULE_FOR_EDIT_COORDINATE.toXmlFragment(),
+                KometConcept.DEFAULT_MODULE_FOR_EDIT_COORDINATE.toXmlFragment(),
                 editCoordinate.getDefaultModule());
     }
 
     @Override
     protected SimpleEqualityBasedObjectProperty<ConceptFacade> makeDestinationModuleProperty(EditCoordinate editCoordinate) {
         return new SimpleEqualityBasedObjectProperty<>(this,
-                KometTerm.DESTINATION_MODULE_FOR_EDIT_COORDINATE.toXmlFragment(),
+                KometConcept.DESTINATION_MODULE_FOR_EDIT_COORDINATE.toXmlFragment(),
                 editCoordinate.getDestinationModule());
     }
 
@@ -95,14 +95,14 @@ public class ObservableEditCoordinateNoOverride
     protected SimpleEqualityBasedObjectProperty<ConceptFacade> makeDefaultPathProperty(EditCoordinate editCoordinate) {
         return new SimpleEqualityBasedObjectProperty<>(this,
                 //TODO make concept for PATH_FOR_EDIT_COORDINATE
-                KometTerm.PATH_FOR_PATH_COORDINATE.toXmlFragment(),
+                KometConcept.PATH_FOR_PATH_COORDINATE.toXmlFragment(),
                 editCoordinate.getDefaultPath());
     }
 
     @Override
     protected SimpleEqualityBasedObjectProperty<ConceptFacade> makePromotionPathProperty(EditCoordinate editCoordinate) {
         return new SimpleEqualityBasedObjectProperty(this,
-                KometTerm.PROMOTION_PATH_FOR_EDIT_COORDINATE.toXmlFragment(),
+                KometConcept.PROMOTION_PATH_FOR_EDIT_COORDINATE.toXmlFragment(),
                 editCoordinate.getPromotionPath());
     }
 }

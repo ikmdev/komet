@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.descriptionname;
 
-import dev.ikm.komet.terms.KometTerm;
+import dev.ikm.komet.terms.KometConcept;
 import static dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent.PATTERN_ADD_FQN;
 import static dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent.PATTERN_ADD_OTHER_NAME;
 import static dev.ikm.komet.kview.events.pattern.PatternDescriptionEvent.PATTERN_EDIT_OTHER_NAME;
@@ -32,9 +32,9 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.SEMANTIC_PUB
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.STATUS;
 import static dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel.TITLE_TEXT;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
+import static dev.ikm.tinkar.terms.KernelConcept.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
+import static dev.ikm.tinkar.terms.KernelConcept.REGULAR_NAME_DESCRIPTION_TYPE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.PatternViewModel.PATTERN_TOPIC;
-import static dev.ikm.tinkar.terms.KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE;
-import static dev.ikm.tinkar.terms.KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE;
 import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.events.EvtType;
@@ -45,11 +45,11 @@ import dev.ikm.komet.kview.mvvm.model.DescrName;
 import dev.ikm.komet.kview.mvvm.viewmodel.DescrNameViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.PatternPropertiesViewModel;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.KernelConcept;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.terms.KernelTerm;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -146,11 +146,11 @@ public class DescriptionNameController {
 
         //TODO These are temp hard coded values:
         // Can use below code later?
-        // setupComboBox(nameDescriptionType, NavigationReads.descendantsOf(getViewProperties().calculator(), KernelTerm.DESCRIPTION_TYPE));
+        // setupComboBox(nameDescriptionType, NavigationReads.descendantsOf(getViewProperties().calculator(), KernelConcept.DESCRIPTION_TYPE));
 
         setupComboBox(nameDescriptionType, Set.of(
-                EntityHandle.getConceptOrThrow(KernelTerm.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid()),
-                EntityHandle.getConceptOrThrow(KernelTerm.REGULAR_NAME_DESCRIPTION_TYPE.nid()))); // Hard coded
+                EntityHandle.getConceptOrThrow(KernelConcept.FULLY_QUALIFIED_NAME_DESCRIPTION_TYPE.nid()),
+                EntityHandle.getConceptOrThrow(KernelConcept.REGULAR_NAME_DESCRIPTION_TYPE.nid()))); // Hard coded
         ObjectProperty<ConceptEntity> nameTypeProp = descrNameViewModel.getProperty(NAME_TYPE);
         nameDescriptionType.valueProperty().bind(nameTypeProp);
         nameTypeProp.addListener(fieldsValidationListener);
@@ -159,25 +159,25 @@ public class DescriptionNameController {
         nameTextField.textProperty().bindBidirectional(nameTextProp);
         nameTextProp.addListener(fieldsValidationListener);
 
-        setupComboBox(moduleComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), KometTerm.MODULE));
+        setupComboBox(moduleComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), dev.ikm.komet.terms.KometConcept.MODULE));
         ObjectProperty<ConceptEntity> moduleProp = descrNameViewModel.getProperty(MODULE);
         moduleComboBox.valueProperty().bindBidirectional(moduleProp);
         moduleProp.addListener(fieldsValidationListener);
 
-        setupComboBox(statusComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), KometTerm.STATUS_VALUE));
+        setupComboBox(statusComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), KometConcept.STATUS_VALUE));
         ObjectProperty<ConceptEntity> statusProp = descrNameViewModel.getProperty(STATUS);
         statusComboBox.valueProperty().bindBidirectional(statusProp);
         statusProp.addListener(fieldsValidationListener);
 
         //TODO These are temp hard coded values:
         // Can use below code later?
-        // setupComboBox(caseSignificanceComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), KernelTerm.DESCRIPTION_CASE_SIGNIFICANCE)); // Hard Coded
+        // setupComboBox(caseSignificanceComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), KernelConcept.DESCRIPTION_CASE_SIGNIFICANCE)); // Hard Coded
         setupComboBox(caseSignificanceComboBox, descrNameViewModel.findAllCaseSignificants(getViewProperties()));
         ObjectProperty<ConceptEntity> caseSignificanceProp = descrNameViewModel.getProperty(CASE_SIGNIFICANCE);
         caseSignificanceComboBox.valueProperty().bindBidirectional(caseSignificanceProp);
         caseSignificanceProp.addListener(fieldsValidationListener);
 
-        setupComboBox(languageComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), KernelTerm.LANGUAGE));
+        setupComboBox(languageComboBox, NavigationReads.descendantsOf(getViewProperties().calculator(), KernelConcept.LANGUAGE));
         ObjectProperty<ConceptEntity> languageProp = descrNameViewModel.getProperty(LANGUAGE);
         languageComboBox.valueProperty().bindBidirectional(languageProp);
         languageProp.addListener(fieldsValidationListener);
@@ -194,8 +194,8 @@ public class DescriptionNameController {
      @SuppressWarnings("removal")
      private void populateDialectComboBoxes() {
         // currently no UNACCEPTABLE in the kernel
-        Entity<? extends EntityVersion> acceptable = EntityHandle.get(KometTerm.ACCEPTABLE).expectConcept();
-        Entity<? extends EntityVersion> preferred = EntityHandle.get(KernelTerm.PREFERRED).expectConcept();
+        Entity<? extends EntityVersion> acceptable = EntityHandle.get(KometConcept.ACCEPTABLE).expectConcept();
+        Entity<? extends EntityVersion> preferred = EntityHandle.get(KernelConcept.PREFERRED).expectConcept();
 
         // each combo box has a separate list instance
         setupComboBox(dialectComboBox1, Arrays.asList(EntityHandle.get(acceptable.nid()).expectConcept(), EntityHandle.get(preferred.nid()).expectConcept()));

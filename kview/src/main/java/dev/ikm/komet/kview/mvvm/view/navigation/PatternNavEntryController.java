@@ -1,6 +1,9 @@
 package dev.ikm.komet.kview.mvvm.view.navigation;
 
 import dev.ikm.komet.framework.Identicon;
+import dev.ikm.komet.framework.controls.KonceptBadge;
+import dev.ikm.komet.framework.settings.KometSettings;
+import dev.ikm.komet.framework.settings.TextSize;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.KometIcon;
@@ -9,30 +12,35 @@ import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.layout.editor.StandardEditorWindows;
 import dev.ikm.tinkar.entity.EntityHandle;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.PatternFacade;
-import javafx.application.Platform;
-import javafx.collections.ObservableList;
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseButton;
-import javafx.geometry.Pos;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
-import dev.ikm.komet.framework.controls.KonceptBadge;
-import dev.ikm.komet.framework.settings.KometSettings;
-import dev.ikm.komet.framework.settings.TextSize;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-import javafx.util.Subscription;
+
 import org.carlfx.cognitive.loader.InjectViewModel;
 import org.carlfx.cognitive.viewmodel.SimpleViewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.css.PseudoClass;
+import javafx.fxml.FXML;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.util.Subscription;
+
+import java.text.NumberFormat;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -84,6 +92,26 @@ public class PatternNavEntryController {
     @FXML
     private ListView<Object> patternInstancesListView;
 
+    /** How many instances a reference-component filter lists; the rest are counted by the window. */
+    private static final int MAX_FILTERED_INSTANCES = 150;
+
+    private static final PseudoClass NO_MATCH = PseudoClass.getPseudoClass("no-match");
+
+    /** The pattern this entry is for. */
+    private EntityFacade patternFacade;
+
+    /** Count of the instances a reference-component filter kept, shown on the SEMANTIC ELEMENTS bar. */
+    private final Label filterMatchCount = new Label();
+
+    /** The pane's expansion before a reference-component filter expanded or collapsed it. */
+    private boolean expandedBeforeFilter;
+
+    /** Whether a reference-component filter is on the entry. */
+    private boolean filtered;
+
+    /** Whether the current filter kept any instance. */
+    private boolean filterMatches;
+
     @InjectViewModel
     private SimpleViewModel instancesViewModel;
 
@@ -124,7 +152,7 @@ public class PatternNavEntryController {
                 contextMenu.show(semanticElementHBox,contextMenuEvent.getScreenX(),contextMenuEvent.getScreenY())
         );
 
-        EntityFacade patternFacade = instancesViewModel.getPropertyValue(PATTERN_FACADE);
+        patternFacade = instancesViewModel.getPropertyValue(PATTERN_FACADE);
         addNewSemanticElement.setOnAction(actionEvent -> {
             LOG.info("Summon create new Semantic Element. " + patternFacade.description());
             EvtBusFactory.getDefaultEvtBus().publish(instancesViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC),
@@ -148,6 +176,9 @@ public class PatternNavEntryController {
         // to the raw nid and the row would read "-2147477853".
         patternBadge.setConceptName(
                 ViewCalculatorUtils.retrieveDisplayName((PatternFacade) patternFacade, vProperties));
+        // The browser lists patterns and nothing else, so the P sigil would only repeat the column's
+        // title; the badge still drags with it, into surfaces that mix kinds.
+        patternBadge.setKindSigilShown(false);
         // Sized to this row rather than the badge's inline default, which is scaled for sitting
         // beside body text and renders far too small in a navigation list. The badge sets its
         // fonts in code, so the stylesheet's root size cannot reach it: the row follows the text
@@ -239,6 +270,10 @@ public class PatternNavEntryController {
                 instancesTitledPane.setManaged(false);
                 return;
             }
+            if (filtered) {
+                // A reference-component filter already handed the list its items (setReferenceComponentFilter).
+                return;
+            }
             instancesOnFirstExpand = instancesTitledPane.expandedProperty().subscribe(expanded -> {
                 if (expanded) {
                     patternInstancesListView.setItems(items);
@@ -249,10 +284,59 @@ public class PatternNavEntryController {
         });
     }
 
+    /**
+     * Narrows the SEMANTIC ELEMENTS list to the pattern's instances that reference the component —
+     * the first {@value #MAX_FILTERED_INSTANCES} — expanding the pane to show them with their count,
+     * or, when there are none, collapsing it and marking the entry {@code :no-match}. A null
+     * component lifts the filter: the full list comes back, and the pane goes back to how it was
+     * before the first filter.
+     */
+    public void setReferenceComponentFilter(EntityFacade component) {
+        if (component == null) {
+            if (filtered) {
+                filtered = false;
+                filterMatches = false;
+                patternEntryHBox.pseudoClassStateChanged(NO_MATCH, false);
+                instancesTitledPane.setGraphic(null);
+                patternInstancesListView.setItems(instancesViewModel.getObservableList(INSTANCES));
+                instancesTitledPane.setExpanded(expandedBeforeFilter);
+            }
+            return;
+        }
+        if (!filtered) {
+            filtered = true;
+            expandedBeforeFilter = instancesTitledPane.isExpanded();
+            // The list is handed its items here, so the first expansion no longer has to.
+            if (instancesOnFirstExpand != null) {
+                instancesOnFirstExpand.unsubscribe();
+                instancesOnFirstExpand = null;
+            }
+        }
+        ObservableList<Object> matches = FXCollections.observableArrayList();
+        EntityService.get().semanticsForComponentOfPattern(component.nid(), patternFacade.nid())
+                .limit(MAX_FILTERED_INSTANCES)
+                .forEach(semantic -> matches.add(semantic.nid()));
+        filterMatches = !matches.isEmpty();
+        patternEntryHBox.pseudoClassStateChanged(NO_MATCH, !filterMatches);
+        patternInstancesListView.setItems(matches);
+        filterMatchCount.setText(NumberFormat.getIntegerInstance().format(matches.size()));
+        filterMatchCount.getStyleClass().setAll("semantic-elements-count");
+        instancesTitledPane.setContentDisplay(ContentDisplay.RIGHT);
+        instancesTitledPane.setGraphic(filterMatches ? filterMatchCount : null);
+        instancesTitledPane.setExpanded(filterMatches);
+    }
+
+    /** Whether the reference-component filter on the entry kept any instance. */
+    public boolean hasFilterMatches() {
+        return filterMatches;
+    }
+
     private void updateListViewPrefHeight() {
         int itemsNumber = patternInstancesListView.getItems().size();
-        /* adding a number to LIST_VIEW_CELL_SIZE to account for padding, etc */
-        double newPrefHeight = itemsNumber * (LIST_VIEW_CELL_SIZE + 10);
+        // The rows plus the list's own insets, so the list is exactly as tall as its content: any
+        // slack shows as a blank band, and any shortfall as a scrollbar.
+        double newPrefHeight = itemsNumber * LIST_VIEW_CELL_SIZE
+                + patternInstancesListView.snappedTopInset() + patternInstancesListView.snappedBottomInset();
         double maxHeight = patternInstancesListView.getMaxHeight();
 
         patternInstancesListView.setPrefHeight(Math.min(newPrefHeight, maxHeight));

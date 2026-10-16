@@ -18,7 +18,6 @@ import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -77,7 +76,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     private final BorderPane doNotDropBorderPane;
     private final StackPane dragHandleIconContainer;
 
-    private AutoCompleteTextField<EntityProxy> typeAheadSearchField;
+    private AutoCompleteTextField<EntityFacade> typeAheadSearchField;
 
     /** The component currently rendered by the control; null while the control is empty. */
     private ComponentItem componentItem;
@@ -279,7 +278,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
 
             long nid = extractNid(event);
             if (!Nid.isNone(nid)) {  //
-                EntityProxy entity = EntityHandle.get(nid).expectEntity().toProxy();
+                EntityFacade entity = EntityHandle.get(nid).expectEntity().toProxy();
 
                 control.setEntity(entity);
                 addConceptNode(entity, control.getComponentNameRenderer());
@@ -535,7 +534,7 @@ public class KLComponentControlSkin extends SkinBase<KLComponentControl> {
     }
 
 
-    private void addConceptNode(EntityProxy entity, Function<EntityProxy, String> componentNameLabelFunction) {
+    private void addConceptNode(EntityFacade entity, Function<EntityFacade, String> componentNameLabelFunction) {
         ImageView imageView = new ImageView();
         imageView.setFitWidth(16);
         imageView.setFitHeight(16);

@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.terms;
 
+import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 
 import java.util.UUID;
@@ -22,7 +23,7 @@ import java.util.UUID;
 /**
  * Komet's window, pane, configuration and user settings. Each names a JavaFX property (by its
  * {@code toXmlFragment()}); none is a component of any set, and nothing here reaches a store, so
- * these are hand-written, apart from the generated {@link KometTerm}. They keep the UUIDs they
+ * these are hand-written, apart from the generated {@link KometConcept}. They keep the UUIDs they
  * have always had; {@code LEFT_PANE_DEFAULTS} was {@code LEFT_PANE_DAFAULTS}.
  */
 public final class KometSettingTerm {

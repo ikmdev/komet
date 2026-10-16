@@ -15,7 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genpurpose.test;
 
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.StatedDefinitionSeeds;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
@@ -57,8 +57,8 @@ class StatedDefinitionSeedsTest {
     void necessarySeedHoldsANecessarySet() {
         DiTreeEntity definition = StatedDefinitionSeeds.seedDefinition(true);
 
-        assertTrue(definition.containsVertexWithMeaning(KernelTerm.NECESSARY_SET));
-        assertFalse(definition.containsVertexWithMeaning(KernelTerm.SUFFICIENT_SET));
+        assertTrue(definition.containsVertexWithMeaning(KernelConcept.NECESSARY_SET));
+        assertFalse(definition.containsVertexWithMeaning(KernelConcept.SUFFICIENT_SET));
     }
 
     @Test
@@ -66,14 +66,14 @@ class StatedDefinitionSeedsTest {
     void sufficientSeedHoldsASufficientSet() {
         DiTreeEntity definition = StatedDefinitionSeeds.seedDefinition(false);
 
-        assertTrue(definition.containsVertexWithMeaning(KernelTerm.SUFFICIENT_SET));
-        assertFalse(definition.containsVertexWithMeaning(KernelTerm.NECESSARY_SET));
+        assertTrue(definition.containsVertexWithMeaning(KernelConcept.SUFFICIENT_SET));
+        assertFalse(definition.containsVertexWithMeaning(KernelConcept.NECESSARY_SET));
     }
 
     @Test
     @DisplayName("Either seed's set is an is-a to the anonymous placeholder concept")
     void seedsPointAtTheAnonymousConcept() {
-        assertTrue(StatedDefinitionSeeds.seedDefinition(true).containsVertexWithMeaning(KernelTerm.CONCEPT_REFERENCE));
-        assertTrue(StatedDefinitionSeeds.seedDefinition(false).containsVertexWithMeaning(KernelTerm.CONCEPT_REFERENCE));
+        assertTrue(StatedDefinitionSeeds.seedDefinition(true).containsVertexWithMeaning(KernelConcept.CONCEPT_REFERENCE));
+        assertTrue(StatedDefinitionSeeds.seedDefinition(false).containsVertexWithMeaning(KernelConcept.CONCEPT_REFERENCE));
     }
 }

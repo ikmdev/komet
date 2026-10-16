@@ -17,7 +17,7 @@ package dev.ikm.komet.framework.view;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
-import dev.ikm.komet.terms.KometTerm;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.tinkar.coordinate.logic.LogicCoordinate;
 import dev.ikm.tinkar.coordinate.logic.LogicCoordinateRecord;
 import dev.ikm.tinkar.terms.ConceptFacade;
@@ -37,7 +37,7 @@ public class ObservableLogicCoordinateNoOverride extends ObservableLogicCoordina
     @Override
     protected ObjectProperty<ConceptFacade> makeClassifierProperty(LogicCoordinate logicCoordinate) {
         return new SimpleEqualityBasedObjectProperty(this,
-                KometTerm.CLASSIFIER_FOR_LOGIC_COORDINATE.toXmlFragment(),
+                KometConcept.CLASSIFIER_FOR_LOGIC_COORDINATE.toXmlFragment(),
                 logicCoordinate.classifier());
     }
 
@@ -49,28 +49,28 @@ public class ObservableLogicCoordinateNoOverride extends ObservableLogicCoordina
     @Override
     protected ObjectProperty<PatternFacade> makeConceptMemberPattern(LogicCoordinate logicCoordinate) {
         return new SimpleEqualityBasedObjectProperty(this,
-                KometTerm.CONCEPT_ASSEMBLAGE_FOR_LOGIC_COORDINATE.toXmlFragment(),
+                KometConcept.CONCEPT_ASSEMBLAGE_FOR_LOGIC_COORDINATE.toXmlFragment(),
                 EntityProxy.Pattern.make(logicCoordinate.conceptMemberPatternNid()));
     }
 
     @Override
     protected ObjectProperty<ConceptFacade> makeDescriptionLogicProfileProperty(LogicCoordinate logicCoordinate) {
         return new SimpleEqualityBasedObjectProperty(this,
-                KometTerm.DESCRIPTION_LOGIC_PROFILE_FOR_LOGIC_COORDINATE.toXmlFragment(),
+                KometConcept.DESCRIPTION_LOGIC_PROFILE_FOR_LOGIC_COORDINATE.toXmlFragment(),
                 logicCoordinate.descriptionLogicProfile());
     }
 
     @Override
     protected ObjectProperty<PatternFacade> makeInferredAxiomPatternProperty(LogicCoordinate logicCoordinate) {
         return new SimpleEqualityBasedObjectProperty(this,
-                KometTerm.INFERRED_ASSEMBLAGE_FOR_LOGIC_COORDINATE.toXmlFragment(),
+                KometConcept.INFERRED_ASSEMBLAGE_FOR_LOGIC_COORDINATE.toXmlFragment(),
                 logicCoordinate.inferredAxiomsPattern());
     }
 
     @Override
     protected ObjectProperty<PatternFacade> makeStatedAxiomPatternProperty(LogicCoordinate logicCoordinate) {
         return new SimpleEqualityBasedObjectProperty(this,
-                KometTerm.STATED_ASSEMBLAGE_FOR_LOGIC_COORDINATE.toXmlFragment(),
+                KometConcept.STATED_ASSEMBLAGE_FOR_LOGIC_COORDINATE.toXmlFragment(),
                 logicCoordinate.statedAxiomsPattern());
     }
 
@@ -91,7 +91,7 @@ public class ObservableLogicCoordinateNoOverride extends ObservableLogicCoordina
     @Override
     protected ObjectProperty<ConceptFacade> makeRootConceptProperty(LogicCoordinate logicCoordinate) {
         return new SimpleEqualityBasedObjectProperty(this,
-                KometTerm.ROOT_FOR_LOGIC_COORDINATE.toXmlFragment(),
+                KometConcept.ROOT_FOR_LOGIC_COORDINATE.toXmlFragment(),
                 logicCoordinate.root());
     }
 

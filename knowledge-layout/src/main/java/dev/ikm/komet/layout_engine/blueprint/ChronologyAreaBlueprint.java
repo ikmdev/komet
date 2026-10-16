@@ -9,7 +9,8 @@ import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelConcept;
+import dev.ikm.tinkar.terms.KernelPattern;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -53,10 +54,10 @@ public abstract class ChronologyAreaBlueprint<OC extends ObservableChronology>
         tofMenuItem.setOnAction(event -> componentProperty.set((OC) ObservableEntityHandle.get((tofFacade.nid())).expectConcept()));
 
         MenuItem descriptionPattern = new MenuItem("Description Pattern");
-        descriptionPattern.setOnAction(event -> componentProperty.set((OC) ObservableEntityHandle.get((KernelTerm.DESCRIPTION_PATTERN.nid())).expectConcept()));
+        descriptionPattern.setOnAction(event -> componentProperty.set((OC) ObservableEntityHandle.get((KernelPattern.DESCRIPTION_PATTERN.nid())).expectConcept()));
 
         MenuItem description = new MenuItem("English Description");
-        description.setOnAction(event -> componentProperty.set((OC) ObservableEntityHandle.get(KernelTerm.ENGLISH_LANGUAGE.nid()).expectConcept()));
+        description.setOnAction(event -> componentProperty.set((OC) ObservableEntityHandle.get(KernelConcept.ENGLISH_LANGUAGE.nid()).expectConcept()));
 
         MenuItem stamp = new MenuItem("Non-existent Stamp");
         stamp.setOnAction(event -> componentProperty.set((OC) ObservableEntityHandle.get(StampRecord.nonExistentStamp().nid()).expectStamp()));

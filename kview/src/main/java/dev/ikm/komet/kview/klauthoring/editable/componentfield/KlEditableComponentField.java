@@ -9,25 +9,25 @@ import dev.ikm.komet.kview.controls.KLComponentControlFactory;
 import dev.ikm.komet.kview.klfields.BaseDefaultKlField;
 import dev.ikm.komet.kview.klfields.ComponentFieldOptions;
 import dev.ikm.tinkar.component.FeatureDefinition;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.Property;
 import javafx.scene.layout.Region;
 
 import java.util.List;
 import java.util.Optional;
 
-public class KlEditableComponentField extends BaseDefaultKlField<EntityProxy> {
+public class KlEditableComponentField extends BaseDefaultKlField<EntityFacade> {
     /**
      * Constructor for KlEditableComponentField
      * @param observableFieldEditable observable component editable field
      * @param observableView observable view
      * @param stamp4field observable stamp for field
      */
-    public KlEditableComponentField(ObservableField.Editable<EntityProxy> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
+    public KlEditableComponentField(ObservableField.Editable<EntityFacade> observableFieldEditable, ObservableView observableView, ObservableStamp stamp4field) {
         // A field constrained to a predefined set of concepts (like the classic details windows'
         // drop-downs) is edited with a combo box of those options; any other field is free-form.
         FeatureDefinition fieldDefinition = observableFieldEditable.getObservableFeature().definition(observableView.calculator());
-        Optional<List<EntityProxy>> componentOptions = ComponentFieldOptions.componentOptions(observableView.calculator(), fieldDefinition);
+        Optional<List<EntityFacade>> componentOptions = ComponentFieldOptions.componentOptions(observableView.calculator(), fieldDefinition);
         Region node = componentOptions
                 .<Region>map(options -> KLComponentControlFactory.createComponentComboBoxControl(observableView.calculator(), options))
                 .orElseGet(() -> KLComponentControlFactory.createComponentControl(observableView.calculator()));
@@ -48,7 +48,7 @@ public class KlEditableComponentField extends BaseDefaultKlField<EntityProxy> {
     /**
      * The UI control's component value property, whichever control renders this field.
      */
-    private Property<EntityProxy> entityValueProperty() {
+    private Property<EntityFacade> entityValueProperty() {
         return switch (fxObject()) {
             case KLComponentComboBoxControl componentComboBoxControl -> componentComboBoxControl.valueProperty();
             case KLComponentControl componentControl -> componentControl.entityProperty();
@@ -62,7 +62,7 @@ public class KlEditableComponentField extends BaseDefaultKlField<EntityProxy> {
      * @param newFieldEditable A new field editable to rebind with an editable UI control.
      */
     @Override
-    public void rebind(ObservableField.Editable<EntityProxy> newFieldEditable) {
+    public void rebind(ObservableField.Editable<EntityFacade> newFieldEditable) {
         // Unbind both directions editValueProperty <-> uiControl.entityValueProperty
         // Assign new observable field and unsubscribe all previous subscriptions.
         // Rebind bi-directionally UI Control <-> editableValueProperty.

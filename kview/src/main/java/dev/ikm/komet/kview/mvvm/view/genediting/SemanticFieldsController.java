@@ -36,11 +36,11 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.STAMP_VIEW_MODEL;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.WINDOW_TOPIC;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.MODULE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase.Properties.PATH;
-import static dev.ikm.komet.terms.KometTerm.BLANK_CONCEPT;
+import static dev.ikm.komet.terms.KometConcept.BLANK_CONCEPT;
+import static dev.ikm.komet.terms.KometConcept.IMAGE_FIELD;
 import static dev.ikm.tinkar.events.FrameworkTopics.VERSION_CHANGED_TOPIC;
+import static dev.ikm.tinkar.terms.KernelConcept.COMPONENT_FIELD;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.FIELD_INDEX;
-import static dev.ikm.tinkar.terms.KernelTerm.COMPONENT_FIELD;
-import static dev.ikm.komet.terms.KometTerm.IMAGE_FIELD;
 import dev.ikm.komet.framework.observable.ObservableComposer;
 import dev.ikm.komet.framework.observable.ObservableConcept;
 import dev.ikm.komet.framework.observable.ObservableEntity;
@@ -232,7 +232,8 @@ public class SemanticFieldsController {
             if (fieldDefinition.dataTypeNid() == IMAGE_FIELD.nid()) {
                 invalid.set(observableField.valueProperty().get() == null || (((byte[]) observableField.valueProperty().get()).length == 0));
             } else if (fieldDefinition.dataTypeNid() == COMPONENT_FIELD.nid()) {
-                invalid.set(observableField.valueProperty().get() == null || observableField.valueProperty().get() == BLANK_CONCEPT);
+                invalid.set(observableField.valueProperty().get() == null
+                        || observableField.valueProperty().get() instanceof EntityFacade component && component.nid() == BLANK_CONCEPT.nid());
             }
             if (!invalid.get()) {
                 invalid.set((observableField.value() == null || observableField.value().toString().isEmpty()));
@@ -429,11 +430,11 @@ public class SemanticFieldsController {
             ObservableList<ObservableField.Editable<?>> editables =  editableVersion.getEditableFields();
             // Generate UI nodes from editable fields
             for (ObservableField.Editable editableField : editables) {
-                if (genEditingViewModel.getPropertyValue(MODE) == CREATE && editableField.getValue() instanceof EntityProxy) {
+                if (genEditingViewModel.getPropertyValue(MODE) == CREATE && editableField.getValue() instanceof EntityFacade) {
                     // Set default blank concept for new semantics
                     @SuppressWarnings("unchecked")
                     ObservableField.Editable<EntityProxy> proxyField = (ObservableField.Editable<EntityProxy>) editableField;
-                    proxyField.setValue(BLANK_CONCEPT);
+                    proxyField.setValue(BLANK_CONCEPT.toProxy());
                 }
 
                 Field field = editableField.field();

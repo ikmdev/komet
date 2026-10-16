@@ -1,6 +1,6 @@
 package dev.ikm.komet.layout.selection;
 
-import dev.ikm.komet.terms.KometTerm;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.tinkar.common.binary.Decoder;
 import dev.ikm.tinkar.common.binary.DecoderInput;
 import dev.ikm.tinkar.common.binary.Encodable;
@@ -8,7 +8,10 @@ import dev.ikm.tinkar.common.binary.EncoderOutput;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.common.util.uuid.UuidUtil;
-import dev.ikm.tinkar.terms.*;
+import dev.ikm.tinkar.terms.ConceptEnumerationFacade;
+import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityProxy.Concept;
+import dev.ikm.tinkar.terms.KernelConcept;
 import org.eclipse.collections.api.list.ImmutableList;
 
 /**
@@ -31,15 +34,15 @@ public sealed interface VersionSelection
      * - PATH: Represents the path field of a version stamp.
      */
     enum StampElement implements ConceptEnumerationFacade<StampElement> {
-        STATUS(KometTerm.STATUS_FOR_VERSION),
-        TIME(KernelTerm.TIME_FOR_VERSION),
-        AUTHOR(KernelTerm.AUTHOR_FOR_VERSION),
-        MODULE(KometTerm.MODULE_FOR_VERSION),
-        PATH(KometTerm.PATH_FOR_VERSION);
+        STATUS(KometConcept.STATUS_FOR_VERSION),
+        TIME(KernelConcept.TIME_FOR_VERSION),
+        AUTHOR(KernelConcept.AUTHOR_FOR_VERSION),
+        MODULE(KometConcept.MODULE_FOR_VERSION),
+        PATH(KometConcept.PATH_FOR_VERSION);
 
         final ConceptFacade conceptForEnum;
 
-        StampElement(EntityProxy.Concept conceptForEnum) {
+        StampElement(ConceptFacade conceptForEnum) {
             this.conceptForEnum = conceptForEnum;
         }
 

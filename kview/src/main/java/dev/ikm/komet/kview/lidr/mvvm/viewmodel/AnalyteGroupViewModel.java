@@ -23,8 +23,8 @@ import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.KernelConcept;
 import dev.ikm.tinkar.terms.State;
-import dev.ikm.tinkar.terms.KernelTerm;
 import org.carlfx.cognitive.validator.ValidationMessage;
 import org.carlfx.cognitive.validator.ValidationResult;
 import org.carlfx.cognitive.viewmodel.ViewModel;
@@ -94,7 +94,7 @@ public class AnalyteGroupViewModel extends FormViewModel {
         SemanticRecord lidrRecord = getPropertyValue(LIDR_RECORD);
 
         StampEntity stampEntity = transaction.getStamp(
-                State.fromConcept(KernelTerm.ACTIVE_STATE), // default to active
+                State.fromConcept(KernelConcept.ACTIVE_STATE), // default to active
                 System.currentTimeMillis(),
                 // Author/module/path from the edit coordinate — the single write source, so LIDR commits under
                 // the logged-in user, not the generic "Author" (IKE-Network/ike-issues#752).

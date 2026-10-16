@@ -15,8 +15,6 @@
  */
 package dev.ikm.komet.rules.actions.membership;
 
-import static dev.ikm.tinkar.terms.KernelTerm.KOMET_BASE_MODEL_COMPONENT_PATTERN;
-
 import dev.ikm.komet.rules.actions.AbstractActionSuggested;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
@@ -34,6 +32,8 @@ import javafx.event.ActionEvent;
 import org.eclipse.collections.api.factory.Lists;
 
 import java.util.Optional;
+
+import static dev.ikm.tinkar.terms.KernelPattern.KOMET_BASE_MODEL_COMPONENT_PATTERN;
 
 public class AddToKometBaseModelAction extends AbstractActionSuggested {
 
@@ -63,7 +63,7 @@ public class AddToKometBaseModelAction extends AbstractActionSuggested {
     }
 
     private SemanticRecord createSemantic(EditCoordinateRecord editCoordinateRecord) {
-        PublicId newSemanticId = PublicIds.singleSemanticId(KOMET_BASE_MODEL_COMPONENT_PATTERN, conceptVersion.publicId());
+        PublicId newSemanticId = PublicIds.singleSemanticId(KOMET_BASE_MODEL_COMPONENT_PATTERN.publicId(), conceptVersion.publicId());
         RecordListBuilder versionListBuilder = RecordListBuilder.make();
         SemanticRecord newSemantic = SemanticRecord.makeNew(newSemanticId, KOMET_BASE_MODEL_COMPONENT_PATTERN, conceptVersion.nid(), versionListBuilder);
         Transaction transaction = Transaction.make();

@@ -15,14 +15,14 @@
  */
 package dev.ikm.komet.artifact;
 
-import dev.ikm.komet.terms.KometTerm;
+import dev.ikm.komet.terms.KometConcept;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.coordinate.stamp.StampCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.KernelTerm;
+import dev.ikm.tinkar.terms.KernelPattern;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -312,7 +312,7 @@ public class ArtifactExportController {
         List<ConceptEntity<ConceptEntityVersion>> paths = new ArrayList<>();
         //Get all Path semantics from the Paths Pattern
         //For each Path semantic get the concept that the semantic is referencing
-        EntityService.get().forEachSemanticOfPattern(KernelTerm.PATHS_PATTERN.nid(), semanticEntity -> {
+        EntityService.get().forEachSemanticOfPattern(KernelPattern.PATHS_PATTERN.nid(), semanticEntity -> {
             long pathConceptNid = semanticEntity.referencedComponentNid();
             paths.add(EntityHandle.get(pathConceptNid).expectConcept());
         });
@@ -333,11 +333,11 @@ public class ArtifactExportController {
 
                     /*
                      * Using the latest version of the current pattern, check to see if the purpose of the pattern
-                     * is equal to KometTerm.MEMBERSHIP_SEMANTIC.
+                     * is equal to KometConcept.MEMBERSHIP_SEMANTIC.
                      */
                     if (patternEntityVersionLatest.isPresent() && patternEntityVersionLatest.get().active()) {
                         PatternEntityVersion patternEntityVersion = patternEntityVersionLatest.get();
-                        if (patternEntityVersion.semanticPurposeNid() == KometTerm.MEMBERSHIP_SEMANTIC.nid()) {
+                        if (patternEntityVersion.semanticPurposeNid() == KometConcept.MEMBERSHIP_SEMANTIC.nid()) {
                             membershipPatterns.add(patternEntity);
                         }
                     }
