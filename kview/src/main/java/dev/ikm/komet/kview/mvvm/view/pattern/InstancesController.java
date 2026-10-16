@@ -52,8 +52,7 @@ public class InstancesController {
         // populate the collection of instance for each pattern: read only the semantics shown,
         // and count the rest without reading them (IKE-Network/ike-issues#1249)
         int childCount = EntityService.get().countSemanticsOfPattern(patternNid);
-        EntityService.get().semanticsOfPattern(patternNid)
-                .limit(MAX_INSTANCES - 1)
+        EntityService.get().semanticsOfPattern(patternNid, 0, MAX_INSTANCES - 1)
                 .forEach(semantic -> patternChildren.add(semantic.nid()));
         if (childCount >= MAX_INSTANCES) {
             NumberFormat numberFormat = NumberFormat.getInstance();

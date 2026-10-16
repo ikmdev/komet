@@ -130,7 +130,7 @@ public class TableNode extends ExplorationNodeAbstract {
             this.treeTableView.getColumns().add(makeColumn("Path", "Define path that this version is created on", StampFields.PATH));
             if (populate) {
                 TinkExecutor.threadPool().execute(() -> {
-                    EntityService.get().semanticsOfPattern(patternEntity.nid()).limit(5000).forEach(semanticEntity -> {
+                    EntityService.get().semanticsOfPattern(patternEntity.nid(), 0, 5000).forEach(semanticEntity -> {
                         TreeItem semanticParent = new TreeItem(EntityHandle.get(semanticEntity.referencedComponentNid()).orNull());
                         semanticParent.setExpanded(true);
                         Platform.runLater(() -> this.root.getChildren().add(semanticParent));

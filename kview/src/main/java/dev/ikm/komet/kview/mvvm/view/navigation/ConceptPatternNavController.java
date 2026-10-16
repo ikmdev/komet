@@ -177,8 +177,7 @@ public class ConceptPatternNavController {
                 // populate the collection of instance for each pattern: read only the semantics
                 // shown, and count the rest without reading them (on SNOMED CT, millions)
                 int childCount = EntityService.get().countSemanticsOfPattern(patternNid);
-                EntityService.get().semanticsOfPattern(patternNid)
-                        .limit(maxChildrenInPatternViewer - 1)
+                EntityService.get().semanticsOfPattern(patternNid, 0, maxChildrenInPatternViewer - 1)
                         .forEach(semantic -> patternChildren.add(semantic.nid()));
 
                 if (childCount >= maxChildrenInPatternViewer) {

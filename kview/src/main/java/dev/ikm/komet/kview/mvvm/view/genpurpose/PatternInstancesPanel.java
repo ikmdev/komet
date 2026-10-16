@@ -150,9 +150,14 @@ public class PatternInstancesPanel extends BorderPane {
         ViewCalculator calculator = viewProperties.calculator();
         int generation = ++searchGeneration;
         TinkExecutor.threadPool().execute(() -> {
-            List<Long> instanceNids = EntityService.get().semanticsOfPattern(patternNid)
-                    .filter(semantic -> query.isEmpty() || referencedComponentMatches(calculator, semantic, query))
-                    .limit(MAX_INSTANCES)
+            // Unfiltered, just the page shown. Filtered, the store searches if it can (a remote
+            // store asks its server, which holds every instance); otherwise read them all here.
+            List<Long> instanceNids = (query.isEmpty()
+                    ? EntityService.get().semanticsOfPattern(patternNid, 0, MAX_INSTANCES)
+                    : EntityService.get().semanticsOfPatternMatching(patternNid, query, MAX_INSTANCES)
+                            .orElseGet(() -> EntityService.get().semanticsOfPattern(patternNid)
+                                    .filter(semantic -> referencedComponentMatches(calculator, semantic, query))
+                                    .limit(MAX_INSTANCES)))
                     .map(semantic -> semantic.nid())
                     .toList();
             Platform.runLater(() -> {
