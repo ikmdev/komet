@@ -71,6 +71,12 @@ class MavenDataStoreDownloadTaskTest {
         executor = Executors.newSingleThreadExecutor();
     }
 
+    @BeforeEach
+    void shortenStallTimeout() {
+        // The test server leaves a dropped response's connection open, as a stalled proxy can.
+        MavenDataStoreDownloadTask.stallTimeoutMillis = 500;
+    }
+
     @AfterEach
     void stopServer() {
         server.stop(0);
@@ -698,6 +704,142 @@ class MavenDataStoreDownloadTaskTest {
                     return;
                 }
             }
+        }
+    }
+
+    @Test
+    void aTransferThatBreaksOffIsResumedFromWhereItStopped(@TempDir Path destinationRoot) throws Exception {
+        byte[] payload = payload(200_000);
+        RangeServer rangeServer = new RangeServer(payload, "\"v1\"", true);
+        rangeServer.breakFirstFullResponseAfter = 70_000;
+        server.createContext("/resume/kb-1.0.0-pb.zip", rangeServer);
+
+        Path cacheFile = destinationRoot.resolve("cache/kb-1.0.0-pb.zip");
+        MavenDataStoreDownloadTask task = MavenDataStoreDownloadTask.placeAsFileTask(HttpClient.newHttpClient(),
+                URI.create(baseUrl + "resume/kb-1.0.0-pb.zip"), cacheFile, destinationRoot.resolve("kb-1.0.0-pb.zip"),
+                new MavenDataStoreDownloadTask.AssetVerification(Optional.of(sha256Hex(payload)), Optional.empty()));
+
+        task.call();
+
+        assertArrayEquals(payload, Files.readAllBytes(cacheFile), "the resumed download should be byte-identical and pass its checksum");
+        assertEquals(List.of("none", "bytes=70000-"), rangeServer.ranges, "the second request should ask only for the rest");
+        assertEquals(List.of("none", "\"v1\""), rangeServer.ifRanges, "the resume should be conditional on the file being unchanged");
+        assertFalse(Files.exists(MavenDataStoreDownloadTask.partFile(cacheFile)), "the part file becomes the cache file");
+        assertFalse(Files.exists(MavenDataStoreDownloadTask.validatorFile(cacheFile)));
+    }
+
+    @Test
+    void aServerThatIgnoresRangesIsDownloadedAgainFromTheStart(@TempDir Path destinationRoot) throws Exception {
+        byte[] payload = payload(150_000);
+        RangeServer rangeServer = new RangeServer(payload, "\"v1\"", false);
+        rangeServer.breakFirstFullResponseAfter = 50_000;
+        server.createContext("/norange/kb-1.0.0-pb.zip", rangeServer);
+
+        Path cacheFile = destinationRoot.resolve("cache/kb-1.0.0-pb.zip");
+        MavenDataStoreDownloadTask task = MavenDataStoreDownloadTask.placeAsFileTask(HttpClient.newHttpClient(),
+                URI.create(baseUrl + "norange/kb-1.0.0-pb.zip"), cacheFile, destinationRoot.resolve("kb-1.0.0-pb.zip"),
+                new MavenDataStoreDownloadTask.AssetVerification(Optional.of(sha256Hex(payload)), Optional.empty()));
+
+        task.call();
+
+        assertArrayEquals(payload, Files.readAllBytes(cacheFile), "a 200 answer to a range request replaces the part, not appends to it");
+        assertEquals(2, rangeServer.ranges.size());
+    }
+
+    @Test
+    void aPartLeftByAnEarlierDownloadIsResumed(@TempDir Path destinationRoot) throws Exception {
+        byte[] payload = payload(120_000);
+        RangeServer rangeServer = new RangeServer(payload, "\"v1\"", true);
+        server.createContext("/earlier/kb-1.0.0-pb.zip", rangeServer);
+        Path cacheFile = destinationRoot.resolve("cache/kb-1.0.0-pb.zip");
+        Files.createDirectories(cacheFile.getParent());
+        Files.write(MavenDataStoreDownloadTask.partFile(cacheFile), java.util.Arrays.copyOf(payload, 40_000));
+        Files.writeString(MavenDataStoreDownloadTask.validatorFile(cacheFile), "\"v1\"");
+
+        MavenDataStoreDownloadTask.placeAsFileTask(HttpClient.newHttpClient(), URI.create(baseUrl + "earlier/kb-1.0.0-pb.zip"),
+                cacheFile, destinationRoot.resolve("kb-1.0.0-pb.zip"),
+                new MavenDataStoreDownloadTask.AssetVerification(Optional.of(sha256Hex(payload)), Optional.empty())).call();
+
+        assertArrayEquals(payload, Files.readAllBytes(cacheFile));
+        assertEquals(List.of("bytes=40000-"), rangeServer.ranges, "only the missing bytes should be requested");
+    }
+
+    @Test
+    void aPartOfAVersionTheServerNoLongerHasIsDiscarded(@TempDir Path destinationRoot) throws Exception {
+        byte[] payload = payload(90_000);
+        RangeServer rangeServer = new RangeServer(payload, "\"v2\"", true);
+        server.createContext("/changed/kb-1.0.0-pb.zip", rangeServer);
+        Path cacheFile = destinationRoot.resolve("cache/kb-1.0.0-pb.zip");
+        Files.createDirectories(cacheFile.getParent());
+        Files.write(MavenDataStoreDownloadTask.partFile(cacheFile), new byte[30_000]); // bytes of an older version
+        Files.writeString(MavenDataStoreDownloadTask.validatorFile(cacheFile), "\"v1\"");
+
+        MavenDataStoreDownloadTask.placeAsFileTask(HttpClient.newHttpClient(), URI.create(baseUrl + "changed/kb-1.0.0-pb.zip"),
+                cacheFile, destinationRoot.resolve("kb-1.0.0-pb.zip"),
+                new MavenDataStoreDownloadTask.AssetVerification(Optional.of(sha256Hex(payload)), Optional.empty())).call();
+
+        assertArrayEquals(payload, Files.readAllBytes(cacheFile), "If-Range must make a changed file come back whole");
+        assertEquals(List.of("\"v1\""), rangeServer.ifRanges);
+    }
+
+    private static byte[] payload(int length) {
+        byte[] bytes = new byte[length];
+        new java.util.Random(length).nextBytes(bytes);
+        return bytes;
+    }
+
+    /**
+     * Serves one file with an ETag, honouring {@code Range} with {@code If-Range} as Nexus does
+     * (or ignoring ranges, when told to), and optionally breaking off the first full response
+     * after a number of bytes, as a reverse proxy cutting a slow client off does.
+     */
+    private static final class RangeServer implements com.sun.net.httpserver.HttpHandler {
+        private final byte[] payload;
+        private final String etag;
+        private final boolean honoursRanges;
+        int breakFirstFullResponseAfter = -1;
+        final List<String> ranges = new java.util.concurrent.CopyOnWriteArrayList<>();
+        final List<String> ifRanges = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+        RangeServer(byte[] payload, String etag, boolean honoursRanges) {
+            this.payload = payload;
+            this.etag = etag;
+            this.honoursRanges = honoursRanges;
+        }
+
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            String range = exchange.getRequestHeaders().getFirst("Range");
+            String ifRange = exchange.getRequestHeaders().getFirst("If-Range");
+            ranges.add(range == null ? "none" : range);
+            ifRanges.add(ifRange == null ? "none" : ifRange);
+            exchange.getResponseHeaders().add("ETag", etag);
+            if (range != null && honoursRanges && (ifRange == null || ifRange.equals(etag))) {
+                int from = Integer.parseInt(range.substring("bytes=".length(), range.length() - 1));
+                exchange.getResponseHeaders().add("Content-Range",
+                        "bytes " + from + "-" + (payload.length - 1) + "/" + payload.length);
+                exchange.sendResponseHeaders(206, payload.length - from);
+                try (OutputStream out = exchange.getResponseBody()) {
+                    out.write(payload, from, payload.length - from);
+                }
+                return;
+            }
+            exchange.sendResponseHeaders(200, payload.length);
+            OutputStream out = exchange.getResponseBody();
+            if (breakFirstFullResponseAfter > 0) {
+                int cut = breakFirstFullResponseAfter;
+                breakFirstFullResponseAfter = -1;
+                out.write(payload, 0, cut);
+                out.flush();
+                try {
+                    out.close(); // fewer bytes than announced: the connection is dropped
+                } catch (IOException expected) {
+                    // "insufficient bytes written to stream"
+                }
+                return;
+            }
+            out.write(payload);
+            out.close();
         }
     }
 }

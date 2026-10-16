@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Enumeration;
@@ -37,7 +38,11 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -113,6 +118,24 @@ public final class MavenDataStoreDownloadTask extends TrackingCallable<Path> {
     }
 
     private static final int BUFFER_SIZE = 8192;
+
+    /** How many times a broken transfer is resumed before the download fails. */
+    static final int MAX_RESUME_ATTEMPTS = Integer.getInteger("komet.download.resumeAttempts", 8);
+
+    /** The pause before the first resume; it doubles for each further one. */
+    static final long RESUME_PAUSE_MILLIS = Long.getLong("komet.download.resumePauseMillis", 1_000);
+
+    private static final long RESUME_PAUSE_MAX_MILLIS = 30_000;
+
+    /**
+     * How long a transfer may receive nothing before it counts as broken and is resumed. The
+     * HTTP client has no read timeout: a connection that stalls without closing would otherwise
+     * wait forever. Not final, so tests can shorten it.
+     */
+    static volatile long stallTimeoutMillis = Long.getLong("komet.download.stallTimeoutMillis", 60_000);
+
+    /** {@code Content-Range: bytes <first>-<last>/<total or *>}. */
+    private static final Pattern CONTENT_RANGE = Pattern.compile("^bytes (\\d+)-\\d+/(\\d+|\\*)$");
 
     /**
      * Maven's resolved-snapshot version form: a base version, the UTC deploy timestamp
@@ -539,66 +562,215 @@ public final class MavenDataStoreDownloadTask extends TrackingCallable<Path> {
     }
 
     /**
-     * Downloads {@code uri} to {@code cacheFile} (via a same-directory temp file, so a crash or
-     * cancellation never leaves a partial file at {@code cacheFile} itself), verifying against
-     * {@code expectedSha256} once the download completes if a value was given. Reports progress
-     * scaled into {@code [0, progressWeight]} of the overall bar.
+     * Downloads {@code uri} to {@code cacheFile}, verifying against {@code expectedSha256} once the
+     * download completes if a value was given. Reports progress scaled into
+     * {@code [0, progressWeight]} of the overall bar.
+     *
+     * <p>The bytes go to {@link #partFile} beside the cache file, never to the cache file itself,
+     * which appears only once the download is complete and verified. A transfer that breaks
+     * mid-stream is resumed, not restarted: up to {@link #MAX_RESUME_ATTEMPTS} times, after a
+     * growing pause, the request asks for the rest ({@code Range: bytes=<have>-}) on condition
+     * that the file is unchanged ({@code If-Range} with the validator recorded when the part
+     * began, its {@code ETag} or else {@code Last-Modified}). A {@code 206} answer is appended; a
+     * {@code 200} means the file changed or the server ignores ranges, and the part starts over.
+     * The part file and its validator outlive a failed or cancelled download, so the next
+     * download of the same artifact resumes it too. Multi-gigabyte knowledge bases need this: a
+     * reverse proxy that cut a slow client off after about a gigabyte made SOLOR + GUDID
+     * undownloadable from Komet (2026-10-16).
      *
      * @return {@code true} if a checksum was verified successfully; {@code false} if there was
-     *         none to check against ({@code expectedSha256} was empty) — the caller surfaces
-     *         this distinction to the user rather than treating both as silently equivalent
-     * @throws IOException if the request fails, or the downloaded content's SHA-256 doesn't
-     *         match {@code expectedSha256} — a corrupted or tampered download must never be used
+     *         none to check against ({@code expectedSha256} was empty), or the download was
+     *         cancelled — the caller surfaces the distinction to the user rather than treating
+     *         both as silently equivalent
+     * @throws IOException if the request fails with an HTTP error, the transfer still breaks after
+     *         every resume attempt, or the downloaded content's SHA-256 doesn't match
+     *         {@code expectedSha256} — a corrupted or tampered download must never be used
      */
     private boolean downloadToCache(URI uri, Path cacheFile, Optional<String> expectedSha256, double progressWeight)
             throws IOException, InterruptedException {
         Files.createDirectories(cacheFile.getParent());
-        Path tempFile = Files.createTempFile(cacheFile.getParent(), "maven-datastore-download", ".zip.tmp");
-        try {
-            MessageDigest digest = expectedSha256.isPresent() ? sha256Digest() : null;
-            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(uri).GET();
-            credentials.ifPresent(creds -> requestBuilder.header("Authorization", BasicAuth.header(creds)));
-            HttpResponse<InputStream> response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
-            if (response.statusCode() != 200) {
-                throw new IOException("Unexpected HTTP " + response.statusCode() + " downloading " + uri);
-            }
-            long contentLength = response.headers().firstValueAsLong("Content-Length").orElse(-1);
-            long bytesRead = 0;
-            byte[] buffer = new byte[BUFFER_SIZE];
-            try (InputStream in = response.body(); OutputStream out = Files.newOutputStream(tempFile)) {
-                int n = in.read(buffer);
-                while (n != -1) {
-                    if (isCancelled()) {
-                        return false;
-                    }
-                    out.write(buffer, 0, n);
-                    if (digest != null) {
-                        digest.update(buffer, 0, n);
-                    }
-                    bytesRead += n;
-                    if (contentLength > 0) {
-                        reportProgress(progressWeight * (bytesRead / (double) contentLength));
-                    }
-                    n = in.read(buffer);
-                }
-            }
+        Path part = partFile(cacheFile);
+        Path validatorFile = validatorFile(cacheFile);
+        if (Files.exists(part) && !Files.exists(validatorFile)) {
+            // Bytes with no record of which version of the file they came from cannot be resumed.
+            Files.delete(part);
+        }
+        for (int attempt = 0; ; attempt++) {
             if (isCancelled()) {
                 return false;
             }
-            boolean verified = false;
-            if (digest != null) {
-                String actualSha256 = HexFormat.of().formatHex(digest.digest());
-                if (!actualSha256.equalsIgnoreCase(expectedSha256.get())) {
-                    throw new IOException("SHA-256 checksum mismatch downloading " + uri + " — expected "
-                            + expectedSha256.get() + " but got " + actualSha256
-                            + "; refusing to use a download that doesn't match what the repository reported");
+            try {
+                if (transferRemainder(uri, part, validatorFile, progressWeight)) {
+                    break;
                 }
-                verified = true;
+                return false; // cancelled mid-transfer; the part is kept for the next download
+            } catch (InterruptedTransferException broken) {
+                if (attempt + 1 >= MAX_RESUME_ATTEMPTS) {
+                    throw new IOException("Downloading " + uri + " broke off " + MAX_RESUME_ATTEMPTS
+                            + " times; the " + Files.size(part) + " bytes received are kept at " + part
+                            + " and the next download resumes from there", broken.getCause());
+                }
+                long pauseMillis = Math.min(RESUME_PAUSE_MAX_MILLIS, RESUME_PAUSE_MILLIS << attempt);
+                LOG.warn("Download of {} broke off after {} bytes ({}); resuming in {} ms",
+                        uri, Files.size(part), broken.getCause().toString(), pauseMillis);
+                updateMessage("Connection lost after " + Files.size(part) + " bytes — resuming");
+                Thread.sleep(pauseMillis);
             }
-            Files.move(tempFile, cacheFile, StandardCopyOption.REPLACE_EXISTING);
-            return verified;
+        }
+        boolean verified = false;
+        if (expectedSha256.isPresent()) {
+            String actualSha256 = sha256Hex(part);
+            if (!actualSha256.equalsIgnoreCase(expectedSha256.get())) {
+                Files.deleteIfExists(part);
+                Files.deleteIfExists(validatorFile);
+                throw new IOException("SHA-256 checksum mismatch downloading " + uri + " — expected "
+                        + expectedSha256.get() + " but got " + actualSha256
+                        + "; refusing to use a download that doesn't match what the repository reported");
+            }
+            verified = true;
+        }
+        Files.move(part, cacheFile, StandardCopyOption.REPLACE_EXISTING);
+        Files.deleteIfExists(validatorFile);
+        return verified;
+    }
+
+    /**
+     * Requests whatever {@code part} still lacks and appends it, or starts {@code part} over when
+     * the server sends the whole file.
+     *
+     * @return {@code true} once {@code part} holds the whole file; {@code false} if cancelled
+     * @throws InterruptedTransferException if the connection breaks or the response ends early,
+     *         so the caller resumes
+     * @throws IOException if the server answers with an HTTP error
+     */
+    private boolean transferRemainder(URI uri, Path part, Path validatorFile, double progressWeight)
+            throws IOException, InterruptedException {
+        long have = Files.exists(part) ? Files.size(part) : 0;
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(uri).GET();
+        credentials.ifPresent(creds -> requestBuilder.header("Authorization", BasicAuth.header(creds)));
+        if (have > 0) {
+            requestBuilder.header("Range", "bytes=" + have + "-");
+            requestBuilder.header("If-Range", Files.readString(validatorFile, StandardCharsets.UTF_8).strip());
+        }
+        HttpResponse<InputStream> response;
+        try {
+            response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
+        } catch (IOException connectionFailure) {
+            throw new InterruptedTransferException(connectionFailure);
+        }
+        long total;
+        boolean append;
+        switch (response.statusCode()) {
+            case 206 -> {
+                OptionalLong rangeStart = contentRangeStart(response);
+                if (rangeStart.isEmpty() || rangeStart.getAsLong() != have) {
+                    response.body().close();
+                    throw new IOException("Unexpected Content-Range " + response.headers().firstValue("Content-Range").orElse("(none)")
+                            + " resuming " + uri + " at byte " + have);
+                }
+                total = contentRangeTotal(response).orElse(-1);
+                append = true;
+            }
+            case 200 -> {
+                total = response.headers().firstValueAsLong("Content-Length").orElse(-1);
+                have = 0;
+                append = false;
+                Optional<String> validator = response.headers().firstValue("ETag")
+                        .or(() -> response.headers().firstValue("Last-Modified"));
+                if (validator.isPresent()) {
+                    Files.writeString(validatorFile, validator.get(), StandardCharsets.UTF_8);
+                } else {
+                    Files.deleteIfExists(validatorFile); // without one the part cannot be resumed
+                }
+            }
+            default -> {
+                response.body().close();
+                throw new IOException("Unexpected HTTP " + response.statusCode() + " downloading " + uri);
+            }
+        }
+        long received = have;
+        byte[] buffer = new byte[BUFFER_SIZE];
+        InputStream in = response.body();
+        // Closing the body from the watchdog makes a stalled read throw, so the transfer resumes.
+        AtomicLong lastReceived = new AtomicLong(System.nanoTime());
+        AtomicBoolean stalled = new AtomicBoolean();
+        Thread watchdog = Thread.ofVirtual().name("download-stall-watchdog").start(() -> {
+            long limit = TimeUnit.MILLISECONDS.toNanos(stallTimeoutMillis);
+            try {
+                while (!Thread.currentThread().isInterrupted()) {
+                    Thread.sleep(Math.max(50, Math.min(1_000, stallTimeoutMillis / 4)));
+                    if (System.nanoTime() - lastReceived.get() > limit) {
+                        stalled.set(true);
+                        in.close();
+                        return;
+                    }
+                }
+            } catch (InterruptedException | IOException finished) {
+                // the transfer ended first, or the stream is already closed
+            }
+        });
+        try (in; OutputStream out = append
+                ? Files.newOutputStream(part, StandardOpenOption.CREATE, StandardOpenOption.APPEND)
+                : Files.newOutputStream(part)) {
+            int n = in.read(buffer);
+            while (n != -1) {
+                lastReceived.set(System.nanoTime());
+                if (isCancelled()) {
+                    return false;
+                }
+                out.write(buffer, 0, n);
+                received += n;
+                if (total > 0) {
+                    reportProgress(progressWeight * (received / (double) total));
+                }
+                n = in.read(buffer);
+            }
+        } catch (IOException brokenStream) {
+            if (!Files.exists(validatorFile)) {
+                Files.deleteIfExists(part);
+            }
+            throw new InterruptedTransferException(stalled.get()
+                    ? new IOException("No data for " + stallTimeoutMillis + " ms after " + received + " bytes", brokenStream)
+                    : brokenStream);
         } finally {
-            Files.deleteIfExists(tempFile);
+            watchdog.interrupt();
+        }
+        if (total > 0 && received < total) {
+            throw new InterruptedTransferException(new IOException(
+                    "The response ended after " + received + " of " + total + " bytes"));
+        }
+        return true;
+    }
+
+    /** Where a download in progress keeps its bytes: beside the cache file, never at it. */
+    static Path partFile(Path cacheFile) {
+        return cacheFile.resolveSibling(cacheFile.getFileName() + ".part");
+    }
+
+    /** The validator ({@code ETag} or {@code Last-Modified}) of the version {@link #partFile} holds. */
+    static Path validatorFile(Path cacheFile) {
+        return cacheFile.resolveSibling(cacheFile.getFileName() + ".part.validator");
+    }
+
+    /** The first byte position of a {@code 206}'s {@code Content-Range: bytes <first>-<last>/<total>}. */
+    private static OptionalLong contentRangeStart(HttpResponse<?> response) {
+        return response.headers().firstValue("Content-Range")
+                .map(CONTENT_RANGE::matcher).filter(Matcher::matches)
+                .map(m -> OptionalLong.of(Long.parseLong(m.group(1)))).orElse(OptionalLong.empty());
+    }
+
+    /** The whole file's length from a {@code 206}'s {@code Content-Range}, when the server states it. */
+    private static OptionalLong contentRangeTotal(HttpResponse<?> response) {
+        return response.headers().firstValue("Content-Range")
+                .map(CONTENT_RANGE::matcher).filter(Matcher::matches)
+                .filter(m -> !"*".equals(m.group(2)))
+                .map(m -> OptionalLong.of(Long.parseLong(m.group(2)))).orElse(OptionalLong.empty());
+    }
+
+    /** A transfer that broke off with bytes still to come: resumed rather than reported. */
+    private static final class InterruptedTransferException extends IOException {
+        InterruptedTransferException(IOException cause) {
+            super(cause);
         }
     }
 
