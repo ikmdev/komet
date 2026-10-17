@@ -24,6 +24,11 @@ public enum KometPattern implements PatternEnumerationFacade<KometPattern> {
     COMPONENT_ACTION_INPUT_PATTERN("Component action input pattern (IkeFoundation)", "6fde6318-1f30-531c-8b0c-374baaf4a9e5"),
 
     /**
+     * The input of an action that replaces the text of a document block, the referenced component, which is the block's element semantic: the kind of action performed on it and the block's new text.
+     */
+    DOCUMENT_BLOCK_EDIT_INPUT_PATTERN("Document block edit input pattern (IkeFoundation)", "4f7e66dc-ecad-5e59-a684-480a07be21ed"),
+
+    /**
      * The result of an action that writes a new version of its subject, referencing the run's input: the outcome, the STAMP of the version written (the outcome concept itself when nothing was written), and a message.
      */
     VERSION_CHANGE_RESULT_PATTERN("Version change result pattern (IkeFoundation)", "c0f13898-fa2a-5b10-aa22-cf0885144af0");
