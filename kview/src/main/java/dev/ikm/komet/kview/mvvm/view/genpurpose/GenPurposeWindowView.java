@@ -65,6 +65,7 @@ public final class GenPurposeWindowView extends BorderPane {
     private final HBox unpublishedHint = new HBox();
     private final Label unpublishedHintLabel = new Label();
     private final Hyperlink unpublishedShowLink = new Hyperlink("Show");
+    private final Hyperlink unpublishedDiscardLink = new Hyperlink("Discard");
     private final VerticallyFilledPane propertiesSlideoutTrayPane = new VerticallyFilledPane();
     private final VerticallyFilledPane timelineSlideoutTrayPane = new VerticallyFilledPane();
     private final ContentSizedSplitPane mainContent = new ContentSizedSplitPane();
@@ -130,7 +131,7 @@ public final class GenPurposeWindowView extends BorderPane {
 
     /**
      * Strip naming the changes that are saved but not published yet, with a link to the first of
-     * them — the create-mode strip's styling, on the same row layout (see .unpublished-hint in
+     * them and one that discards them — the create-mode strip's styling, on the same row layout (see .unpublished-hint in
      * kview.css). Shown by the controller while the window has such changes.
      */
     private HBox unpublishedHint() {
@@ -141,13 +142,15 @@ public final class GenPurposeWindowView extends BorderPane {
 
         unpublishedShowLink.setId("unpublishedShowLink");
         unpublishedShowLink.getStyleClass().add("unpublished-show-link");
+        unpublishedDiscardLink.setId("unpublishedDiscardLink");
+        unpublishedDiscardLink.getStyleClass().add("unpublished-show-link");
 
         unpublishedHint.setId("unpublishedHint");
         unpublishedHint.getStyleClass().addAll("create-mode-hint", "unpublished-hint");
         unpublishedHint.setAlignment(Pos.CENTER_LEFT);
         unpublishedHint.setVisible(false);
         unpublishedHint.setManaged(false);
-        unpublishedHint.getChildren().addAll(unpublishedHintLabel, unpublishedShowLink);
+        unpublishedHint.getChildren().addAll(unpublishedHintLabel, unpublishedShowLink, unpublishedDiscardLink);
         return unpublishedHint;
     }
 
@@ -260,6 +263,11 @@ public final class GenPurposeWindowView extends BorderPane {
     /** The unpublished strip's text. */
     public Label getUnpublishedHintLabel() {
         return unpublishedHintLabel;
+    }
+
+    /** The unpublished strip's "Discard" link, cancelling the changes not published yet once confirmed. */
+    public Hyperlink getUnpublishedDiscardLink() {
+        return unpublishedDiscardLink;
     }
 
     /** The unpublished strip's "Show" link, taking the user to the first change. */

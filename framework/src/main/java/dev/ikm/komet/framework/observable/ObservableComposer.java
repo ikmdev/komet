@@ -991,25 +991,13 @@ public final class ObservableComposer {
         if (transaction != null && transaction.stampsInTransactionCount() > 0) {
             return;
         }
-        for (EntityVersion version : entity.versions()) {
-            if (!version.uncommitted()) {
-                continue;
+        Transaction.rebuiltOwnerOfPendingVersion(entity.nid(), state, authorNid, moduleNid, pathNid).ifPresent(rebuilt -> {
+            if (transaction != null && transaction != rebuilt) {
+                transaction.cancel();       // empty: it had written nothing
             }
-            StampEntity<?> stamp = version.stamp();
-            if (stamp.authorNid() != authorNid || stamp.moduleNid() != moduleNid
-                    || stamp.pathNid() != pathNid || stamp.state() != state) {
-                continue;
-            }
-            Optional<Transaction> rebuilt = Transaction.forVersion(version).filter(Transaction::rebuiltFromRecord);
-            if (rebuilt.isPresent()) {
-                if (transaction != null && transaction != rebuilt.get()) {
-                    transaction.cancel();       // empty: it had written nothing
-                }
-                transaction = rebuilt.get();
-                transactionStateProperty.set(TransactionState.UNCOMMITTED);
-                return;
-            }
-        }
+            transaction = rebuilt;
+            transactionStateProperty.set(TransactionState.UNCOMMITTED);
+        });
     }
 
     /**

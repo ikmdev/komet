@@ -371,28 +371,76 @@ public final class WindowEditSession {
      * @return how many of them, the component included, still carry an unpublished version afterwards
      */
     public int commitUnpublishedTransactions(Collection<SemanticEntity<SemanticEntityVersion>> unpublishedSemantics) {
-        List<Entity<?>> unpublished = new ArrayList<>(unpublishedSemantics);
-        if (getComponent() != null) {
-            unpublished.add(EntityHandle.get(getComponent().nid()).expectEntity());
-        }
-
-        Set<Transaction> transactions = new HashSet<>();
-        for (Entity<?> entity : unpublished) {
-            for (EntityVersion version : EntityHandle.get(entity.nid()).expectEntity().versions()) {
-                if (version.uncommitted()) {
-                    Transaction.forStamp(version.stamp().publicId()).ifPresent(transactions::add);
-                }
-            }
-        }
-        transactions.forEach(Transaction::commit);
+        List<Entity<?>> unpublished = unpublishedEntities(unpublishedSemantics);
+        owningTransactions(unpublished).forEach(Transaction::commit);
 
         // A single-semantic transaction whose semantic's form was still open got committed here:
         // the semantic is published as seeded, and its form, cancelled or submitted later, has no
         // transaction left to end.
         singleSemanticTransactionComposers.values().removeIf(singleSemanticComposer -> !singleSemanticComposer.getOrCreateTransaction().isOpen());
 
-        return (int) unpublished.stream()
-                .filter(entity -> EntityHandle.get(entity.nid()).expectEntity().uncommitted())
+        return stillUnpublished(unpublished);
+    }
+
+    /**
+     * Cancels the open transactions holding the unpublished versions of the passed in semantics
+     * and of the window's component: the person discards what is not published yet, whether this
+     * window saved it, an earlier instance of the window did, or a session before a restart did
+     * (its transaction rebuilt from its record, IKE-Network/ike-issues#1308). The counterpart of
+     * {@link #commitUnpublishedTransactions}; nothing is cancelled unless the person asks. A
+     * transaction this window's composers hold is cancelled through its composer, which then opens
+     * a fresh one, so the window goes on editing.
+     *
+     * @param unpublishedSemantics the semantics shown whose latest version is not published yet
+     * @return how many of them, the component included, still carry an unpublished version afterwards
+     */
+    public int cancelUnpublishedTransactions(Collection<SemanticEntity<SemanticEntityVersion>> unpublishedSemantics) {
+        List<Entity<?>> unpublished = unpublishedEntities(unpublishedSemantics);
+        Set<Transaction> transactions = owningTransactions(unpublished);
+        if (composer != null && transactions.remove(composer.getOrCreateTransaction())) {
+            composer.cancel();
+            hasUncommittedChanges.unbind();
+            composer = null;
+            newPatternComposer = null;
+            createOrGetComposer();
+        }
+        singleSemanticTransactionComposers.values().removeIf(singleSemanticComposer -> {
+            if (transactions.remove(singleSemanticComposer.getOrCreateTransaction())) {
+                singleSemanticComposer.cancel();
+                return true;
+            }
+            return false;
+        });
+        singleSemanticComposersToCommit.removeIf(composerToCommit -> !composerToCommit.getOrCreateTransaction().isOpen());
+        transactions.forEach(Transaction::cancel);
+        return stillUnpublished(unpublished);
+    }
+
+    /** The semantics passed in and the window's component. */
+    private List<Entity<?>> unpublishedEntities(Collection<SemanticEntity<SemanticEntityVersion>> unpublishedSemantics) {
+        List<Entity<?>> unpublished = new ArrayList<>(unpublishedSemantics);
+        if (getComponent() != null) {
+            unpublished.add(EntityHandle.get(getComponent().nid()).expectEntity());
+        }
+        return unpublished;
+    }
+
+    /** The open transactions owning the entities' uncommitted versions. */
+    private static Set<Transaction> owningTransactions(List<Entity<?>> entities) {
+        Set<Transaction> transactions = new HashSet<>();
+        for (Entity<?> entity : entities) {
+            for (EntityVersion version : EntityHandle.get(entity.nid()).expectEntity().versions()) {
+                if (version.uncommitted()) {
+                    Transaction.forStamp(version.stamp().publicId()).filter(Transaction::isOpen).ifPresent(transactions::add);
+                }
+            }
+        }
+        return transactions;
+    }
+
+    private static int stillUnpublished(List<Entity<?>> entities) {
+        return (int) entities.stream()
+                .filter(entity -> EntityHandle.get(entity.nid()).orNull() instanceof Entity<?> current && current.uncommitted())
                 .count();
     }
 
