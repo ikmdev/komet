@@ -19,6 +19,7 @@ import dev.ikm.komet.framework.KometNodeFactory;
 
 module dev.ikm.komet.artifact {
 
+    requires dev.ikm.tinkar.importer;
     requires transitive dev.ikm.komet.framework;
 
     opens dev.ikm.komet.artifact;

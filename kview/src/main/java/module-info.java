@@ -18,6 +18,7 @@ import dev.ikm.komet.layout.area.KlAreaForComponentChronology;
  * limitations under the License.
  */
 module dev.ikm.komet.kview {
+    requires dev.ikm.tinkar.importer;
     requires transitive dev.ikm.komet.framework;
     requires dev.ikm.komet.search;
     requires dev.ikm.tinkar.provider.search;

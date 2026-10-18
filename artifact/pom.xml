@@ -18,6 +18,10 @@
         </dependency>
         <dependency>
             <groupId>dev.ikm.tinkar</groupId>
+            <artifactId>importer-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>terms</artifactId>
         </dependency>
         <dependency>

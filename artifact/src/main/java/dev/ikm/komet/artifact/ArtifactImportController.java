@@ -24,6 +24,7 @@ import dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent;
 import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.tinkar.common.service.EntityCountSummary;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
+import dev.ikm.tinkar.importer.registry.Registry;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -134,6 +135,8 @@ public class ArtifactImportController {
                            ecs.stampCount())
                    );
                }
+               // What this store is made of now (IKE-Network/ike-issues#1304).
+               Registry.registerLoad(java.util.List.of(selectedFile.toPath()), java.time.Instant.now());
                EvtBusFactory.getDefaultEvtBus().publish(CALCULATOR_CACHE_TOPIC, new RefreshCalculatorCacheEvent(event.getSource(), GLOBAL_REFRESH));
            }
         });
