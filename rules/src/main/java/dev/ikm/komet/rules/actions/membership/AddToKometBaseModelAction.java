@@ -18,14 +18,12 @@ package dev.ikm.komet.rules.actions.membership;
 import dev.ikm.komet.rules.actions.AbstractActionSuggested;
 import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
-import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.State;
 import javafx.event.ActionEvent;
@@ -58,6 +56,7 @@ public class AddToKometBaseModelAction extends AbstractActionSuggested {
             createSemantic(editCoordinate.toEditCoordinateRecord());
         } else {
             // a member, need to change to inactive.
+            PendingMembership.refuseIfPending(semanticForComponent.get(), conceptVersion, "Komet base model", viewCalculator);
             updateSemantic(semanticForComponent.get().nid(), editCoordinate.toEditCoordinateRecord());
         }
     }
@@ -66,7 +65,7 @@ public class AddToKometBaseModelAction extends AbstractActionSuggested {
         PublicId newSemanticId = PublicIds.singleSemanticId(KOMET_BASE_MODEL_COMPONENT_PATTERN.publicId(), conceptVersion.publicId());
         RecordListBuilder versionListBuilder = RecordListBuilder.make();
         SemanticRecord newSemantic = SemanticRecord.makeNew(newSemanticId, KOMET_BASE_MODEL_COMPONENT_PATTERN, conceptVersion.nid(), versionListBuilder);
-        Transaction transaction = Transaction.make();
+        Transaction transaction = Transaction.make(PendingMembership.transactionName(getText(), conceptVersion, viewCalculator));
         ViewCoordinateRecord viewRecord = viewCalculator.viewCoordinateRecord();
 
         Latest<PatternEntityVersion> latestPatternVersion = viewCalculator.latestPatternEntityVersion(KOMET_BASE_MODEL_COMPONENT_PATTERN);
@@ -81,14 +80,12 @@ public class AddToKometBaseModelAction extends AbstractActionSuggested {
         }, () -> {
             throw new IllegalStateException("No latest pattern version for: " + EntityHandle.get(KOMET_BASE_MODEL_COMPONENT_PATTERN).orNull());
         });
-        CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
-        TinkExecutor.threadPool().submit(commitTransactionTask);
         return newSemantic;
     }
 
     private void updateSemantic(long semanticNid, EditCoordinateRecord editCoordinateRecord) {
         SemanticRecord semanticEntity = EntityHandle.get(semanticNid).expectSemanticRecord();
-        Transaction transaction = Transaction.make();
+        Transaction transaction = Transaction.make(PendingMembership.transactionName(getText(), conceptVersion, viewCalculator));
         ViewCoordinateRecord viewRecord = viewCalculator.viewCoordinateRecord();
 
         Latest<PatternEntityVersion> latestPatternVersion = viewCalculator.latestPatternEntityVersion(KOMET_BASE_MODEL_COMPONENT_PATTERN);
@@ -102,7 +99,5 @@ public class AddToKometBaseModelAction extends AbstractActionSuggested {
         }, () -> {
             throw new IllegalStateException("No latest pattern version for: " + EntityHandle.get(KOMET_BASE_MODEL_COMPONENT_PATTERN).orNull());
         });
-        CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
-        TinkExecutor.threadPool().submit(commitTransactionTask);
     }
 }
