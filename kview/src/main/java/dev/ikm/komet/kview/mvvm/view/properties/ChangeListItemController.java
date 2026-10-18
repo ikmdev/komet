@@ -27,8 +27,7 @@ import dev.ikm.tinkar.coordinate.stamp.change.VersionChangeRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
-import dev.ikm.tinkar.entity.graph.EntityVertex;
-import dev.ikm.tinkar.entity.graph.isomorphic.IsomorphicResultsLeafHash;
+import dev.ikm.tinkar.entity.graph.DiTreeEditScript;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
@@ -233,27 +232,10 @@ public class ChangeListItemController {
             // Output changes to Axioms (directed tree entities)
             if (currentFieldRecord.value() instanceof DiTreeEntity currentTree &&
                     fieldChange.priorValue().value() instanceof DiTreeEntity priorTree) {
-                SemanticEntity theSemantic = (SemanticEntity) referencedEntity;
-                IsomorphicResultsLeafHash<?> isomorphicResult = new IsomorphicResultsLeafHash(currentTree, priorTree, theSemantic.referencedComponentNid());
-
                 try {
-                    isomorphicResult.call();
                     sb.append("\n");
-                    if (!isomorphicResult.getAdditionalVertexRoots().isEmpty()) {
-                        sb.append("\nAdditions: \n\n");
-                        isomorphicResult.getAdditionalVertexRoots().forEach((EntityVertex additionRoot) -> {
-                            sb.append("  ").append(isomorphicResult.getReferenceTree().fragmentToString(additionRoot));
-                            sb.append("\n");
-                        });
-                    }
-                    if (!isomorphicResult.getDeletedVertexRoots().isEmpty()) {
-                        sb.append("\nDeletions: \n\n");
-                        isomorphicResult.getDeletedVertexRoots().forEach((EntityVertex deletionRoot) -> {
-                            sb.append("  ").append(isomorphicResult.getComparisonTree().fragmentToString(deletionRoot));
-                            sb.append("\n");
-                        });
-                    }
-                } catch (Exception e) {
+                    sb.append(DiTreeEditScript.ofVersions(priorTree, currentTree).toText());
+                } catch (RuntimeException e) {
                     AlertStreams.dispatchToRoot(e);
                 }
             }
