@@ -127,6 +127,7 @@ import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.JournalNames;
 import dev.ikm.komet.kview.mvvm.view.concept.ConceptNode;
+import dev.ikm.komet.kview.mvvm.view.changes.UnpublishedChangesController;
 import dev.ikm.komet.kview.mvvm.view.navigation.ConceptPatternNavController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
 import dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController;
@@ -178,6 +179,7 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Side;
@@ -187,6 +189,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuButton;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Toggle;
@@ -223,6 +226,8 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.*;
@@ -288,6 +293,8 @@ public class JournalController {
 
     private Pane nextGenReasonerSlideoutTrayPane;
 
+    private Pane unpublishedChangesSlideoutTrayPane;
+
     private NotificationPopup progressNotificationPopup;
 
     @FXML
@@ -323,6 +330,13 @@ public class JournalController {
     private ToggleButton nextGenReasonerToggleButton;
 
     @FXML
+    private ToggleButton unpublishedChangesToggleButton;
+
+    /** The change count on the unpublished-changes toggle; shown once there is a change. */
+    @FXML
+    private Label unpublishedChangesBadge;
+
+    @FXML
     private Button addButton;
 
     @FXML
@@ -347,6 +361,8 @@ public class JournalController {
 
     private Pane nextGenReasonerPanel;
 
+    private Pane unpublishedChangesPanel;
+
     private BorderPane reasonerNodePanel;
 
     private ActivityStream navigatorActivityStream;
@@ -370,9 +386,13 @@ public class JournalController {
 
     private static final String NEXT_GEN_REASONER_FXML_URL = "reasoner.fxml";
 
+    private static final String UNPUBLISHED_CHANGES_FXML_URL = "unpublished-changes.fxml";
+
     private NextGenSearchController nextGenSearchController;
 
     private NextGenReasonerController nextGenReasonserController;
+
+    private UnpublishedChangesController unpublishedChangesController;
 
     private ConceptPatternNavController conceptPatternNavController;
 
@@ -916,13 +936,20 @@ public class JournalController {
         nextGenReasonerSlideoutTrayPane.setLayoutY(10);
         nextGenReasonerSlideoutTrayPane.setMaxHeight(Double.MAX_VALUE);
 
+        // unpublishedChangesSlideoutTrayPane
+        unpublishedChangesSlideoutTrayPane = new VerticallyFilledPane();
+        unpublishedChangesSlideoutTrayPane.setLayoutX(10);
+        unpublishedChangesSlideoutTrayPane.setLayoutY(10);
+        unpublishedChangesSlideoutTrayPane.setMaxHeight(Double.MAX_VALUE);
+
         trayPaneContainer.getChildren().addAll(
                 navSlideoutTrayPane,
                 searchSlideoutTrayPane,
                 reasonerSlideoutTrayPane,
                 conceptNavigatorSlideoutTrayPane,
                 nexGenSearchSlideoutTrayPane,
-                nextGenReasonerSlideoutTrayPane
+                nextGenReasonerSlideoutTrayPane,
+                unpublishedChangesSlideoutTrayPane
         );
     }
 
@@ -1339,6 +1366,10 @@ public class JournalController {
     private void slideOut(Toggle toggleButton) {
         Pane trayPane = getCurrentSideBarSelection(toggleButton);
         if (trayPane == null) return;
+        if (unpublishedChangesToggleButton.equals(toggleButton) && unpublishedChangesController != null) {
+            // The list follows the store, but a look at it starts from a fresh read.
+            unpublishedChangesController.refresh();
+        }
         SlideOutTrayHelper.slideOut(trayPane);
     }
 
@@ -1355,6 +1386,8 @@ public class JournalController {
             return nexGenSearchSlideoutTrayPane;
         } else if (nextGenReasonerToggleButton.equals(selectedToggleButton)) {
             return nextGenReasonerSlideoutTrayPane;
+        } else if (unpublishedChangesToggleButton.equals(selectedToggleButton)) {
+            return unpublishedChangesSlideoutTrayPane;
         }
         return null;
     }
@@ -1390,6 +1423,9 @@ public class JournalController {
         journalEventBus.unsubscribe(JOURNAL_TOPIC, CloseReasonerPanelEvent.class, closeReasonerPanelEventSubscriber);
         journalEventBus.unsubscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
 
+        if (unpublishedChangesController != null) {
+            unpublishedChangesController.shutdown();
+        }
     }
 
     /**
@@ -1458,6 +1494,29 @@ public class JournalController {
         nextGenReasonerPanel = reasonerJFXNode.node();
 
         setupSlideOutTrayPane(nextGenReasonerPanel, nextGenReasonerSlideoutTrayPane);
+    }
+
+    /**
+     * Adds the unpublished-changes tray, tied to the sidebar's pencil toggle: the components with
+     * a version saved in an open transaction, and the buttons that publish or discard them all.
+     * The toggle's badge shows the count.
+     */
+    public void loadUnpublishedChangesPanel() {
+        FXMLLoader loader = new FXMLLoader(UnpublishedChangesController.class.getResource(UNPUBLISHED_CHANGES_FXML_URL));
+        loader.setController(new UnpublishedChangesController(
+                windowView.makeOverridableViewProperties("JournalController.loadUnpublishedChangesPanel"),
+                journalTopic));
+        try {
+            unpublishedChangesPanel = loader.load();
+        } catch (IOException e) {
+            throw new UncheckedIOException("The unpublished-changes tray FXML failed to load", e);
+        }
+        unpublishedChangesController = loader.getController();
+
+        unpublishedChangesBadge.textProperty().bind(unpublishedChangesController.changeCountProperty().asString());
+        unpublishedChangesBadge.visibleProperty().bind(unpublishedChangesController.changeCountProperty().greaterThan(0));
+
+        setupSlideOutTrayPane(unpublishedChangesPanel, unpublishedChangesSlideoutTrayPane);
     }
 
     private void loadSearchPanel(PublicIdStringKey<ActivityStream> searchActivityStreamKey,

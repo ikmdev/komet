@@ -78,6 +78,9 @@ module dev.ikm.komet.kview {
     opens dev.ikm.komet.kview.mvvm.view.reasoner to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.reasoner;
 
+    opens dev.ikm.komet.kview.mvvm.view.changes to javafx.fxml;
+    exports dev.ikm.komet.kview.mvvm.view.changes;
+
     opens dev.ikm.komet.kview.mvvm.view.common to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.common;
 

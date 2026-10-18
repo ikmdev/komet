@@ -209,6 +209,23 @@
                </graphic>
                <tooltip><Tooltip text="Reasoner" /></tooltip>
             </ToggleButton>
+            <ToggleButton fx:id="unpublishedChangesToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+               <graphic>
+                  <!-- The pencil, with the change count riding its top-right corner once there is one. -->
+                  <StackPane styleClass="unpublished-changes-graphic">
+                     <children>
+                        <Region prefHeight="200.0" prefWidth="200.0">
+                           <styleClass>
+                              <String fx:value="icon" />
+                              <String fx:value="unpublished-changes-icon" />
+                           </styleClass>
+                        </Region>
+                        <Label fx:id="unpublishedChangesBadge" styleClass="change-count-badge" text="0" visible="false" StackPane.alignment="TOP_RIGHT" />
+                     </children>
+                  </StackPane>
+               </graphic>
+               <tooltip><Tooltip text="Unpublished Changes" /></tooltip>
+            </ToggleButton>
             <Rectangle fill="DODGERBLUE" height="1.0" stroke="BLACK" strokeType="INSIDE" styleClass="divider" width="36.0" />
             <ToggleButton fx:id="searchToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
                <graphic>
