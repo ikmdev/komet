@@ -962,17 +962,9 @@ public final class ObservableComposer {
      * Creates or retrieves an observable stamp for the current author/module/path/state.
      */
     ObservableStamp createStamp(State state, Entity<?> entity) {
-//        Optional<EntityVersion> existingUncommitedVersion = entity.versions().stream()
-//                .filter(v -> v.uncommitted()
-//                    && v.state() == state
-//                    && v.stamp().authorNid() == getAuthorNid()
-//                    && v.stamp().moduleNid() == getModuleNid()
-//                    && v.stamp().pathNid() == getPathNid())
-//                .findFirst();
-//        if (existingUncommitedVersion.isPresent()) {
-//            Transaction.forVersion(existingUncommitedVersion.get());
-//        } else {
-//        }
+        if (entity != null) {
+            adoptRebuiltTransaction(state, entity);
+        }
         StampEntity stampEntity = transaction.getStampForEntities(
             state,
             getAuthorNid(),
@@ -981,6 +973,43 @@ public final class ObservableComposer {
             entity  // Pass the entity to ensure canonical stamp
         );
         return ObservableEntity.packagePrivateGetStamp(stampEntity);
+    }
+
+    /**
+     * Continues work a restart interrupted (IKE-Network/ike-issues#1308). When this composer has
+     * written nothing yet, and the entity's pending version belongs to a transaction rebuilt from
+     * its record, under this composer's author, module, path and state, the composer takes that
+     * transaction over instead of opening a second one beside it: two uncommitted versions of one
+     * component do not supersede each other, and the edit lands on the pending version's own stamp.
+     * Committing or cancelling the composer then settles what the earlier session left, so a
+     * window reopened after a restart publishes or discards its earlier work.
+     *
+     * @param state  the state of the stamp about to be made
+     * @param entity the existing component about to be edited
+     */
+    private void adoptRebuiltTransaction(State state, Entity<?> entity) {
+        if (transaction != null && transaction.stampsInTransactionCount() > 0) {
+            return;
+        }
+        for (EntityVersion version : entity.versions()) {
+            if (!version.uncommitted()) {
+                continue;
+            }
+            StampEntity<?> stamp = version.stamp();
+            if (stamp.authorNid() != authorNid || stamp.moduleNid() != moduleNid
+                    || stamp.pathNid() != pathNid || stamp.state() != state) {
+                continue;
+            }
+            Optional<Transaction> rebuilt = Transaction.forVersion(version).filter(Transaction::rebuiltFromRecord);
+            if (rebuilt.isPresent()) {
+                if (transaction != null && transaction != rebuilt.get()) {
+                    transaction.cancel();       // empty: it had written nothing
+                }
+                transaction = rebuilt.get();
+                transactionStateProperty.set(TransactionState.UNCOMMITTED);
+                return;
+            }
+        }
     }
 
     /**

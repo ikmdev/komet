@@ -361,8 +361,11 @@ public final class WindowEditSession {
     /**
      * Commits the open transactions holding the unpublished versions of the passed in semantics
      * and of the window's component — versions saved uncommitted by an earlier instance of the window, in
-     * that instance's still-open transactions. Transactions live in memory only, so a version
-     * saved in an earlier session has none to commit; those versions stay unpublished.
+     * that instance's still-open transactions. A transaction persists as a record in a store that
+     * holds the change transaction pattern, and is rebuilt when the store opens
+     * (IKE-Network/ike-issues#1308), so versions saved before a restart are published here too; in
+     * a store without the pattern, a version saved in an earlier session has no transaction to
+     * commit and stays unpublished.
      *
      * @param unpublishedSemantics the semantics shown whose latest version is not published yet
      * @return how many of them, the component included, still carry an unpublished version afterwards

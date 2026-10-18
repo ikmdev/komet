@@ -218,8 +218,14 @@ public abstract class ComponentVersionIsFinalPanel<OV extends ObservableEntityVe
 		return button;
 	}
 
+	/*
+	 * Surrogates are for an uncommitted version no transaction owns. Since transactions persist as
+	 * records (IKE-Network/ike-issues#1308) and are rebuilt when a store opens, that happens only in
+	 * a store without the change transaction pattern, or for a version left by a transaction that
+	 * kept no record (one written in a load phase).
+	 */
 	private static void surrogateTransactionForCommit(ObservableVersion version) {
-		LOG.warn("No transaction for version: " + version + ". Will create surrogate for commit. ");
+		LOG.warn("No transaction for version: " + version + " (a store without transaction records?). Will create surrogate for commit. ");
 		Transaction transaction = Transaction.make("Surrogate to commit missing transaction");
 		transaction.addComponent(version.getVersionRecord().entity());
 		commitTransactionTask(transaction);
@@ -250,7 +256,7 @@ public abstract class ComponentVersionIsFinalPanel<OV extends ObservableEntityVe
 	}
 
 	private static void createSurrogateTransactionToCancel(ObservableVersion version) {
-		LOG.warn("No transaction for version: " + version + ". Will create surrogate. ");
+		LOG.warn("No transaction for version: " + version + " (a store without transaction records?). Will create surrogate. ");
 		Transaction transaction = Transaction.make("Surrogate to cancel missing transaction");
 		transaction.addComponent(version.getVersionRecord().entity());
 		cancelTransactionTask(transaction);
