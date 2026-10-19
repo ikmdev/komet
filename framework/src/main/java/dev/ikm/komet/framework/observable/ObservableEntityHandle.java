@@ -679,6 +679,7 @@ public interface ObservableEntityHandle {
      * @param proxy the entity proxy
      * @return an ObservableEntityHandle representing the entity, or an empty handle if absent
      */
+    @SuppressWarnings("facade-check") // the overload exists to settle a proxy's ambiguity
     static ObservableEntityHandle get(EntityProxy proxy) {
         return get((EntityFacade) proxy);
     }

@@ -2,7 +2,7 @@ package dev.ikm.komet.kview.mvvm.view.genpurpose.control.table;
 
 import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -59,10 +59,10 @@ public class PatternSemanticsTableControl extends Control {
     public void setGridLinesVisible(boolean gridLinesVisible) { this.gridLinesVisible.set(gridLinesVisible); }
 
     // -- entity proxy to component item
-    private final ObjectProperty<Function<EntityProxy, ComponentItem>> entityProxyToComponentItem = new SimpleObjectProperty<>();
-    public Function<EntityProxy, ComponentItem> getEntityProxyToComponentItem() { return entityProxyToComponentItem.get(); }
-    public ObjectProperty<Function<EntityProxy, ComponentItem>> entityProxyToComponentItemProperty() { return entityProxyToComponentItem; }
-    public void setEntityProxyToComponentItem(Function<EntityProxy, ComponentItem> entityProxyToComponentItem) { this.entityProxyToComponentItem.set(entityProxyToComponentItem); }
+    private final ObjectProperty<Function<EntityFacade, ComponentItem>> entityToComponentItem = new SimpleObjectProperty<>();
+    public Function<EntityFacade, ComponentItem> getEntityToComponentItem() { return entityToComponentItem.get(); }
+    public ObjectProperty<Function<EntityFacade, ComponentItem>> entityToComponentItemProperty() { return entityToComponentItem; }
+    public void setEntityToComponentItem(Function<EntityFacade, ComponentItem> entityToComponentItem) { this.entityToComponentItem.set(entityToComponentItem); }
 
     // -- nid to component item
     private final ObjectProperty<Function<Long, ComponentItem>> nidToComponentItem = new SimpleObjectProperty<>();

@@ -5,7 +5,7 @@ import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticCompo
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticIdenticonCell;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticStandardCell;
 import dev.ikm.tinkar.common.id.LongIdCollection;
-import dev.ikm.tinkar.terms.EntityProxy;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
@@ -281,10 +281,10 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
             col.setCellFactory(_ -> new SemanticComponentCollectionCell(getSkinnable().getNidToComponentItem()));
             tableColumn = col;
         } else if (field.dataType() == COMPONENT_FIELD.nid()) {
-            TableColumn<SemanticRow, EntityProxy> col = new TableColumn<>();
+            TableColumn<SemanticRow, EntityFacade> col = new TableColumn<>();
             col.setCellValueFactory(cellData ->
-                    (ObservableValue<EntityProxy>) cellData.getValue().getFields().get(row.getFields().indexOf(field)).observableFieldProperty());
-            col.setCellFactory(_ -> new SemanticComponentCell(getSkinnable().getEntityProxyToComponentItem()));
+                    (ObservableValue<EntityFacade>) cellData.getValue().getFields().get(row.getFields().indexOf(field)).observableFieldProperty());
+            col.setCellFactory(_ -> new SemanticComponentCell(getSkinnable().getEntityToComponentItem()));
             tableColumn = col;
         } else {
             TableColumn<SemanticRow, Object> col = new TableColumn<>();

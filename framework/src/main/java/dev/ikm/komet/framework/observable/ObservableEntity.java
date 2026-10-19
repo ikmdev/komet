@@ -509,6 +509,7 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
      * This is the ONLY method that should update ObservableVersion data, triggered by EvtBus events.
      * @param newEntity
      */
+    @SuppressWarnings("facade-check") // compares record instances, not the components they hold
     private void updateVersions(Entity<? extends EntityVersion> newEntity) {
         // Entities are immutable, so if the entity identities are the same, then the versions are also the same.
         // Versions are append only, but for one exception: an uncommitted version withdrawn from its

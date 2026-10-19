@@ -294,7 +294,7 @@ public class DataModelHelper {
         for (EntityVertex vertex : vertexList) {
             if (LogicalOperatorsForVertex.ROLE.semanticallyEqual((EntityFacade) vertex.meaning())) {
                 ConceptFacade roleTypeProperty = vertex.propertyAsConcept(KernelConcept.ROLE_TYPE).get();
-                if (roleTypeProperty.equals(roleTypeToFind)) {
+                if (PublicId.equals(roleTypeProperty.publicId(), roleTypeToFind)) {
                     EntityVertex manufacturerVertex = logicalDefinition.successors(vertex).get(0);
                     return manufacturerVertex.propertyAsConcept(KernelConcept.CONCEPT_REFERENCE);
                 }

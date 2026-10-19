@@ -686,6 +686,7 @@ public final class ObservableComposer {
      *
      * @return the blank concept, as a proxy
      */
+    @SuppressWarnings("facade-check") // the component controls hold proxies; see above
     public static EntityProxy.Concept defaultComponentFieldValue() {
         return BLANK_CONCEPT.toProxy();
     }

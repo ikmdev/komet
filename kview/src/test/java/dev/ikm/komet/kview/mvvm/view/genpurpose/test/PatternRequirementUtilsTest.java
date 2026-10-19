@@ -234,7 +234,7 @@ class PatternRequirementUtilsTest {
 
     // -- fixtures
 
-    private record Entry(EditorPatternModel pattern, Map<Integer, EntityProxy> fieldSeeds)
+    private record Entry(EditorPatternModel pattern, Map<Integer, EntityFacade> fieldSeeds)
             implements PatternRequirementUtils.SeededEntry {
     }
 

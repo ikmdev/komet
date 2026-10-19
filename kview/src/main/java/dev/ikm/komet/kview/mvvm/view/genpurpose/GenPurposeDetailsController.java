@@ -545,7 +545,7 @@ public class GenPurposeDetailsController {
      * @return The uncommited Semantic
      */
     private SemanticEntity<SemanticEntityVersion> createUncommitedSemantic(EntityFacade referenceComponent, PatternFacade pattern,
-            Map<Integer, EntityProxy> fieldSeeds) {
+            Map<Integer, EntityFacade> fieldSeeds) {
         return session.createSemanticInSingleSemanticTransaction(referenceComponent, pattern.nid(), editableFields -> {
             // Start from the pattern's field defaults — the values a new semantic of this pattern
             // begins with in every window (see PatternFieldDefaults) — before the create entry's
@@ -559,7 +559,7 @@ public class GenPurposeDetailsController {
                 @SuppressWarnings("unchecked")
                 ObservableField.Editable<EntityProxy> editableField = (ObservableField.Editable<EntityProxy>)
                         editableFields.get(fieldIndex);
-                editableField.setValue(filterConcept);
+                editableField.setValue(filterConcept.toProxy());
             });
         });
     }
@@ -1161,7 +1161,7 @@ public class GenPurposeDetailsController {
                     : filterConceptNames;
 
             // Snapshot the constraints at popup-build time; they seed the new semantic's fields.
-            Map<Integer, EntityProxy> fieldSeeds = Map.copyOf(filter.getFieldConstraints());
+            Map<Integer, EntityFacade> fieldSeeds = Map.copyOf(filter.getFieldConstraints());
             createEntries.add(new CreateEntry(patternModel, fieldSeeds, new SectionEditPopup.CreateAction(
                     "Add " + PatternUIUtils.stripPatternSuffix(entryName), () -> {
                         onCreateSemantic(actionEvent, sectionModel, patternModel, refComponent, fieldSeeds);
@@ -1174,14 +1174,14 @@ public class GenPurposeDetailsController {
      * and the field values that new semantic starts out with, so
      * {@link PatternRequirementUtils#getDirectRunEntry} can tell which entry meets a requirement.
      */
-    private record CreateEntry(EditorPatternModel pattern, Map<Integer, EntityProxy> fieldSeeds,
+    private record CreateEntry(EditorPatternModel pattern, Map<Integer, EntityFacade> fieldSeeds,
                                SectionEditPopup.CreateAction createAction)
             implements PatternRequirementUtils.SeededEntry {
     }
 
     private void onCreateSemantic(ActionEvent actionEvent, EditorSectionModel sectionModelOfPattern,
                                   EditorPatternModel editorPatternModel, EntityFacade refComponent,
-                                  Map<Integer, EntityProxy> fieldSeeds) {
+                                  Map<Integer, EntityFacade> fieldSeeds) {
         // Lazy reference-component creation: in create mode the window has no component yet — the
         // first semantic the user authors brings the new component into existence with it. Both
         // join the composer's transaction, so submitting the semantic commits them together.

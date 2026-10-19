@@ -8,7 +8,6 @@ import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.collections.ObservableMap;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -43,7 +42,7 @@ import static dev.ikm.tinkar.terms.KernelConcept.CONCEPT_FIELD;
  */
 class FieldConstraintsEditor extends VBox {
 
-    FieldConstraintsEditor(EditorPatternModel pattern, ObservableMap<Integer, EntityProxy> constraints) {
+    FieldConstraintsEditor(EditorPatternModel pattern, ObservableMap<Integer, EntityFacade> constraints) {
         for (FieldDefinitionRecord field : pattern.getFieldDefinitions()) {
             Label fieldNameLabel = new Label(getFieldTitle(field));
             fieldNameLabel.getStyleClass().add("field-name");
@@ -58,7 +57,7 @@ class FieldConstraintsEditor extends VBox {
     }
 
     private static Node createFieldValueNode(EditorPatternModel pattern,
-                                             ObservableMap<Integer, EntityProxy> constraints,
+                                             ObservableMap<Integer, EntityFacade> constraints,
                                              FieldDefinitionRecord field) {
         long dataTypeNid = field.dataTypeNid();
         if (dataTypeNid != COMPONENT_FIELD.nid() && dataTypeNid != CONCEPT_FIELD.nid()) {
@@ -81,7 +80,7 @@ class FieldConstraintsEditor extends VBox {
      * clearable so the constraint can be lifted again.
      */
     private static Node createComboBoxNode(ViewCalculator viewCalculator,
-                                           ObservableMap<Integer, EntityProxy> constraints,
+                                           ObservableMap<Integer, EntityFacade> constraints,
                                            FieldDefinitionRecord field,
                                            List<EntityFacade> options) {
         KLComponentComboBoxControl comboBoxControl =
@@ -108,12 +107,12 @@ class FieldConstraintsEditor extends VBox {
      * A free-form component control for a field that may be constrained to any concept.
      */
     private static Node createComponentControlNode(ViewCalculator viewCalculator,
-                                                   ObservableMap<Integer, EntityProxy> constraints,
+                                                   ObservableMap<Integer, EntityFacade> constraints,
                                                    FieldDefinitionRecord field) {
         KLComponentControl componentControl = KLComponentControlFactory.createComponentControl(viewCalculator);
         componentControl.setMaxWidth(Double.MAX_VALUE);
 
-        EntityProxy constraint = constraints.get(field.indexInPattern());
+        EntityFacade constraint = constraints.get(field.indexInPattern());
         if (constraint != null) {
             componentControl.setEntity(constraint);
         }
@@ -138,7 +137,7 @@ class FieldConstraintsEditor extends VBox {
      * @param constraints the constrained fields, keyed by field index
      * @return the constraints rendered as text
      */
-    static String describe(EditorPatternModel pattern, ObservableMap<Integer, EntityProxy> constraints) {
+    static String describe(EditorPatternModel pattern, ObservableMap<Integer, EntityFacade> constraints) {
         return constraints.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
                 .map(constraint -> getFieldTitle(pattern, constraint.getKey())
@@ -158,7 +157,7 @@ class FieldConstraintsEditor extends VBox {
         return field.meaning().description();
     }
 
-    private static String conceptName(EditorPatternModel pattern, EntityProxy concept) {
+    private static String conceptName(EditorPatternModel pattern, EntityFacade concept) {
         return pattern.getViewCalculator().languageCalculator().getDescriptionTextOrNid(concept.nid());
     }
 }

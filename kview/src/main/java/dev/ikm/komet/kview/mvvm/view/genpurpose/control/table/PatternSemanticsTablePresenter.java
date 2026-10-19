@@ -75,14 +75,14 @@ public class PatternSemanticsTablePresenter extends AbstractPatternSemanticsPres
 
         ViewCalculator viewCalculator = viewProperties.calculator();
 
-        patternSemanticsControl.setEntityProxyToComponentItem(entityProxy -> {
+        patternSemanticsControl.setEntityToComponentItem(entity -> {
             String description = viewCalculator.languageCalculator()
-                    .getDescriptionTextOrNid(entityProxy.nid());
-            Image identicon = Identicon.generateIdenticonImage(entityProxy.publicId());
+                    .getDescriptionTextOrNid(entity.nid());
+            Image identicon = Identicon.generateIdenticonImage(entity.publicId());
 
-            boolean isConcept = EntityHandle.get(entityProxy.publicId()).isConcept();
+            boolean isConcept = EntityHandle.get(entity.publicId()).isConcept();
 
-            return new ComponentItem(description, identicon, entityProxy.publicId(), isConcept);
+            return new ComponentItem(description, identicon, entity.publicId(), isConcept);
         });
         patternSemanticsControl.setNidToComponentItem(nid -> {
             EntityProxy entityProxy = EntityProxy.make(nid);
