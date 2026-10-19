@@ -166,7 +166,7 @@ class PendingWorkActionsIT {
         Transaction own = restate(definition, edit);
 
         assertFalse(other == own, "an unrelated open transaction is not taken over");
-        assertTrue(own.name().contains("Restate"), "named for the action: " + own.name());
+        assertTrue(own.getTransactionName().contains("Restate"), "named for the action: " + own.getTransactionName());
         assertTrue(own.isOpen());
     }
 
