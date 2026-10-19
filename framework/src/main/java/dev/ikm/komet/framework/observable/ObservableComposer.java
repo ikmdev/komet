@@ -779,6 +779,10 @@ public final class ObservableComposer {
         if (transaction == null) {
             return;
         }
+        if (!transaction.isOpen()) {
+            transactionEndedElsewhere();
+            return;
+        }
 
         // Commit all tracked editable versions first
         for (ObservableEntityVersion.Editable<?, ?, ?> editable : trackedEditables) {
@@ -809,6 +813,10 @@ public final class ObservableComposer {
         if (transaction == null) {
             return;
         }
+        if (!transaction.isOpen()) {
+            transactionEndedElsewhere();
+            return;
+        }
 
         // Reset all tracked editable versions
         for (ObservableEntityVersion.Editable<?, ?, ?> editable : trackedEditables) {
@@ -834,12 +842,27 @@ public final class ObservableComposer {
     public void cancel() {
         requireJavaFXThread();
         if (transaction != null) {
-            transaction.cancel();
+            if (transaction.isOpen()) {
+                transaction.cancel();
+            }
             transaction = null;
             transactionStateProperty.set(TransactionState.NONE);
             hasUncommittedChangesProperty.set(false);
             trackedEditables.clear();
         }
+    }
+
+    /**
+     * Lets go of a transaction that was ended elsewhere: the journal's unpublished-changes panel
+     * publishes or discards every open transaction, this composer's among them. Its versions are
+     * final either way, so nothing tracked is saved or committed again; the composer reports no
+     * uncommitted changes and starts a new transaction at its next edit.
+     */
+    private void transactionEndedElsewhere() {
+        transaction = null;
+        trackedEditables.clear();
+        transactionStateProperty.set(TransactionState.NONE);
+        hasUncommittedChangesProperty.set(false);
     }
 
     /**
@@ -1044,6 +1067,11 @@ public final class ObservableComposer {
     }
 
     private void ensureTransaction() {
+        if (transaction != null && !transaction.isOpen()) {
+            // Ended elsewhere: published or discarded from the journal's unpublished-changes panel.
+            // What it tracked is final; the next edit goes into a transaction of its own.
+            transactionEndedElsewhere();
+        }
         if (transaction == null) {
             transaction = transactionComment.isEmpty()
                 ? Transaction.make()

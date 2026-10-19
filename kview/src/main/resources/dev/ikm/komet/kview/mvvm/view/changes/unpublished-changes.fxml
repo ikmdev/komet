@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- The journal sidebar's unpublished-changes tray: a header with the count, the changes grouped
+     under their component (or the empty state), and a footer that stays in view with the module
+     and path to publish to, the optional note, Discard all and Publish all. The controller is an
+     UnpublishedChangesController the journal constructs with its view and topic, so none is
+     declared here. -->
+<VBox fx:id="root" prefWidth="372.0" styleClass="unpublished-changes-container" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+    <children>
+        <VBox styleClass="header">
+            <children>
+                <HBox styleClass="title-row">
+                    <children>
+                        <Label styleClass="title-label" text="Unpublished changes" />
+                        <Label fx:id="countLabel" styleClass="count-pill" text="0" />
+                    </children>
+                </HBox>
+                <Label styleClass="subtitle-label" text="Edits saved in windows that are not published yet" wrapText="true" />
+            </children>
+        </VBox>
+        <StackPane styleClass="changes-area" VBox.vgrow="ALWAYS">
+            <children>
+                <TreeView fx:id="changesTreeView" styleClass="changes-tree-view" />
+                <VBox fx:id="emptyStateBox" styleClass="empty-state">
+                    <children>
+                        <Region>
+                            <styleClass>
+                                <String fx:value="icon" />
+                                <String fx:value="empty-state-icon" />
+                            </styleClass>
+                        </Region>
+                        <Label styleClass="empty-title" text="Everything is published" />
+                        <Label styleClass="empty-text" text="Edits you save in concept, pattern and semantic windows show up here until you publish them." textAlignment="CENTER" wrapText="true" />
+                    </children>
+                </VBox>
+            </children>
+        </StackPane>
+        <VBox styleClass="footer">
+            <children>
+                <!-- "Publish to <module> · <path>": two quiet combo boxes that read as text until hovered. -->
+                <HBox styleClass="publish-to-line">
+                    <children>
+                        <Label minWidth="-Infinity" styleClass="publish-to-label" text="Publish to" />
+                        <ComboBox fx:id="moduleComboBox" styleClass="quiet-combo-box" />
+                        <Label minWidth="-Infinity" styleClass="publish-to-dot" text="·" />
+                        <ComboBox fx:id="pathComboBox" styleClass="quiet-combo-box" />
+                    </children>
+                </HBox>
+                <TextField fx:id="noteTextField" promptText="Describe these changes (optional)" styleClass="note-text-field" />
+                <HBox styleClass="footer-buttons">
+                    <children>
+                        <Button fx:id="discardAllButton" mnemonicParsing="false" onAction="#discardAll" styleClass="discard-all-button" text="Discard all" />
+                        <Button fx:id="publishAllButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#publishAll" styleClass="publish-all-button" text="Publish all" HBox.hgrow="ALWAYS" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </children>
+</VBox>

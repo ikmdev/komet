@@ -271,7 +271,8 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
         protected final OV observableVersion;
         protected final ObservableStamp editStamp;
         protected V workingVersion;
-        private final Transaction transaction; // Make it final
+        /** The transaction edits are saved in; replaced when it ends elsewhere (see {@link #save()}). */
+        private Transaction transaction;
 
         /**
          * Package-private constructor. Use ObservableVersion.getEditableVersion(stamp) to create instances.
@@ -341,6 +342,13 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
                 return;
             }
             LOG.info("save(): Has unsaved changes, proceeding with save");
+
+            if (!transaction.isOpen()) {
+                // The transaction this editable was opened in ended elsewhere (published or discarded
+                // from the journal's unpublished-changes panel). A stamp minted into an ended
+                // transaction would never commit, so this edit is saved in a transaction of its own.
+                transaction = Transaction.make();
+            }
 
             // Create uncommitted stamp if needed
             // Get or create uncommitted stamp

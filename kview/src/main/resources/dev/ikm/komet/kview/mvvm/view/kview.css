@@ -8238,3 +8238,505 @@ Styling a context menu for kview ui/ux controls
 .settings-dialog .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell:filled:selected:hover {
     -fx-background-color: derive(-Secondary-06, 10%);
 }
+
+/*********************************************************************************
+ *                                                                               *
+ * Unpublished changes (sidebar pencil toggle and its tray)                      *
+ *                                                                               *
+ *********************************************************************************/
+
+/* The pencil over a baseline: the sidebar toggle's icon. */
+.unpublished-changes-icon {
+    -width-size: 20;
+    -height-size: 20;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25ZM5.92 19H5v-.92l9.06-9.06.92.92L5.92 19ZM20.71 5.63l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83a1 1 0 0 0 0-1.41ZM13 19h8v2h-8z";
+}
+
+/* The graphic is the icon's size; the badge rides its top-right corner without widening it. */
+.side-bar .toggle-button .unpublished-changes-graphic {
+    -fx-min-width: 20;
+    -fx-pref-width: 20;
+    -fx-max-width: 20;
+}
+
+.side-bar .toggle-button .change-count-badge {
+    -fx-background-color: -Accent-color-orange;
+    -fx-background-radius: 8;
+    -fx-text-fill: -Grey-12;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 0.75em; /* 9px */
+    -fx-font-weight: 700;
+    -fx-padding: 0 4 0 4;
+    -fx-min-height: 14;
+    -fx-pref-height: 14;
+    -fx-max-height: 14;
+    -fx-alignment: center;
+    /* Rides the pencil's top-right corner: right of the 20px icon, level with its top. */
+    -fx-translate-x: 11;
+    -fx-translate-y: 3;
+}
+
+/* The tray: a white panel with the light palette of the mockups. The colours are named here
+   once so the rows, footer and popups below share them. */
+.unpublished-changes-container {
+    -uc-text: #1F2937;
+    -uc-text-muted: #6B7280;
+    -uc-text-faint: #9CA3AF;
+    -uc-line: #E5E7EB;
+    -uc-surface: #FFFFFF;
+    -uc-surface-tint: #F3F4F6;
+    -uc-surface-row: #F8FAFC;
+    -uc-hover: #F5F8FC;
+    -uc-selected: #E8F0FE;
+    -uc-primary: #3B7DDD;
+    -uc-primary-hover: #2F66B8;
+
+    -fx-background-color: -uc-surface;
+    -fx-font-family: "Noto Sans";
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 6, 0, 2, 0);
+}
+
+.unpublished-changes-container .header {
+    -fx-padding: 14 12 10 12;
+    -fx-spacing: 4;
+    -fx-border-color: -uc-line;
+    -fx-border-width: 0 0 1 0;
+}
+
+.unpublished-changes-container .title-row {
+    -fx-alignment: center-left;
+    -fx-spacing: 8;
+}
+
+.unpublished-changes-container .title-label {
+    -fx-font-size: 1.166667em; /* 14px */
+    -fx-font-weight: 600;
+    -fx-text-fill: -uc-text;
+}
+
+.unpublished-changes-container .count-pill {
+    -fx-background-color: -uc-surface-tint;
+    -fx-background-radius: 10;
+    -fx-padding: 1 8 1 8;
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-font-weight: 600;
+    -fx-text-fill: #4B5563;
+}
+
+.unpublished-changes-container .subtitle-label {
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: -uc-text-muted;
+}
+
+/* ---- The tree: component headings and, indented under them, their changes ---- */
+
+.unpublished-changes-container .changes-tree-view {
+    -fx-background-color: -uc-surface;
+    -fx-background-insets: 0;
+    -fx-padding: 4 0 4 0;
+}
+
+.unpublished-changes-container .changes-tree-view .tree-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-indent: 14;
+}
+
+/* Only rows with content get the hairline under them; empty cells fill the rest of the tree. */
+.unpublished-changes-container .changes-tree-view .tree-cell:filled {
+    -fx-border-color: rgba(0, 0, 0, 0.06);
+    -fx-border-width: 0 0 1 0;
+}
+
+.unpublished-changes-container .changes-tree-view .tree-cell:change-row {
+    -fx-background-color: -uc-surface-row;
+}
+
+.unpublished-changes-container .changes-tree-view .tree-cell:filled:hover {
+    -fx-background-color: -uc-hover;
+}
+
+.unpublished-changes-container .changes-tree-view .tree-cell:filled:selected {
+    -fx-background-color: -uc-selected;
+}
+
+/* The skin's disclosure node sits at the top of a tall row, so it is hidden and the row draws
+   its own fold arrow (.group-caret), centred with the rest of the row. */
+.unpublished-changes-container .changes-tree-view .tree-cell > .tree-disclosure-node {
+    -fx-padding: 0;
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+    -fx-background-color: transparent;
+}
+
+.unpublished-changes-container .changes-tree-view .tree-cell > .tree-disclosure-node > .arrow {
+    -fx-padding: 0;
+    -fx-shape: null;
+    -fx-background-color: transparent;
+}
+
+.unpublished-row .group-caret {
+    /* A small triangle, as in the mockups: pointing right while folded, down when open. */
+    -fx-min-width: 7;
+    -fx-pref-width: 7;
+    -fx-max-width: 7;
+    -fx-min-height: 4;
+    -fx-pref-height: 4;
+    -fx-max-height: 4;
+    -fx-background-color: #9CA3AF;
+    -fx-shape: "M0 0 L7 0 L3.5 4 Z";
+    -fx-rotate: -90;
+}
+
+.tree-cell:expanded .unpublished-row .group-caret {
+    -fx-rotate: 0;
+}
+
+/* Heading rows: the fold arrow's click target is the row's left gutter, so the row has no left
+   padding of its own. A heading with nothing to fold keeps the gutter, empty, so every heading's
+   badge lines up. */
+.tree-cell:group-row .unpublished-row {
+    -fx-padding: 8 8 8 0;
+}
+
+/* The fold arrow's click target: the old 10 px padding plus the 7 px triangle, with the triangle
+   on its right edge where it always was. The row stretches it to the row's height. */
+.unpublished-row .group-caret-hit-area {
+    -fx-min-width: 17;
+    -fx-pref-width: 17;
+    -fx-max-width: 17;
+    -fx-alignment: center-right;
+    -fx-cursor: hand;
+}
+
+.unpublished-changes-container .changes-tree-view .scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.unpublished-changes-container .changes-tree-view .scroll-bar:vertical .increment-button,
+.unpublished-changes-container .changes-tree-view .scroll-bar:vertical .decrement-button,
+.unpublished-changes-container .changes-tree-view .scroll-bar:vertical .increment-arrow,
+.unpublished-changes-container .changes-tree-view .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-padding: 0 2 0 2;
+}
+
+.unpublished-changes-container .changes-tree-view .scroll-bar:vertical .thumb {
+    -fx-background-color: #CBD5E1;
+    -fx-background-insets: 3px 5px 3px 1px;
+    -fx-background-radius: 16px;
+}
+
+/* ---- One row: type badge, title over subtitle, kind tag, count, menu ---- */
+
+.unpublished-row {
+    -fx-padding: 8 8 8 10;
+    -fx-spacing: 10;
+    -fx-alignment: center-left;
+}
+
+.tree-cell:change-row .unpublished-row {
+    -fx-padding: 7 8 7 4;
+}
+
+.unpublished-row .type-glyph {
+    -fx-min-width: 26;
+    -fx-pref-width: 26;
+    -fx-max-width: 26;
+    -fx-min-height: 26;
+    -fx-pref-height: 26;
+    -fx-max-height: 26;
+    -fx-background-radius: 6;
+    -fx-alignment: center;
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-font-weight: 700;
+}
+
+.tree-cell:change-row .unpublished-row .type-glyph {
+    -fx-min-width: 22;
+    -fx-pref-width: 22;
+    -fx-max-width: 22;
+    -fx-min-height: 22;
+    -fx-pref-height: 22;
+    -fx-max-height: 22;
+    -fx-font-size: 0.833333em; /* 10px */
+}
+
+.unpublished-row .type-glyph.concept {
+    -fx-background-color: #DEEBFF; /* a pastel of the concept window bar (-Secondary-06) */
+    -fx-text-fill: #395C9A;
+}
+
+.unpublished-row .type-glyph.pattern {
+    -fx-background-color: #EAE7E2; /* a pastel of the pattern window bar (-Natural-Grey-Main) */
+    -fx-text-fill: #5E5E5E;
+}
+
+.unpublished-row .type-glyph.semantic {
+    -fx-background-color: #DCFCE7; /* a semantic has no window of its own: a pastel green */
+    -fx-text-fill: #15803D;
+}
+
+.unpublished-row .change-text {
+    -fx-spacing: 1;
+}
+
+.unpublished-row .change-title {
+    -fx-font-size: 1.083333em; /* 13px */
+    -fx-text-fill: -uc-text;
+    -fx-text-overrun: ellipsis;
+}
+
+.unpublished-row .change-subtitle {
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: -uc-text-muted;
+    -fx-text-overrun: ellipsis;
+}
+
+.unpublished-row .group-count {
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: -uc-text-muted;
+}
+
+.unpublished-row .kind-tag {
+    -fx-font-size: 0.75em; /* 9px */
+    -fx-font-weight: 700;
+    -fx-background-radius: 4;
+    -fx-padding: 2 6 2 6;
+}
+
+.unpublished-row .kind-tag.new {
+    -fx-background-color: #DCFCE7;
+    -fx-text-fill: #15803D;
+}
+
+.unpublished-row .kind-tag.edited {
+    -fx-background-color: #FEF3C7;
+    -fx-text-fill: #B45309;
+}
+
+.unpublished-row .kind-tag.inactivated {
+    -fx-background-color: #FEE2E2;
+    -fx-text-fill: #B91C1C;
+}
+
+.unpublished-row .row-menu-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4;
+    -fx-padding: 4;
+}
+
+.unpublished-row .row-menu-button:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.06);
+}
+
+/* Three dots, stacked. */
+.unpublished-row .row-menu-button .kebab-icon {
+    -fx-min-width: 4;
+    -fx-pref-width: 4;
+    -fx-max-width: 4;
+    -fx-min-height: 16;
+    -fx-pref-height: 16;
+    -fx-max-height: 16;
+    -fx-background-color: -uc-text-faint;
+    -fx-shape: "M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z";
+}
+
+/* ---- Empty state ---- */
+
+.unpublished-changes-container .empty-state {
+    -fx-alignment: center;
+    -fx-spacing: 6;
+    -fx-padding: 40 24 40 24;
+}
+
+.unpublished-changes-container .empty-state .empty-state-icon {
+    -fx-min-width: 40;
+    -fx-pref-width: 40;
+    -fx-max-width: 40;
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+    -fx-max-height: 40;
+    -fx-background-color: #CBD5E1;
+    -fx-shape: "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm-1-5.59L16.59 9 18 10.41l-7 7-4-4L8.41 12 11 14.41Z";
+}
+
+.unpublished-changes-container .empty-state .empty-title {
+    -fx-font-size: 1.083333em; /* 13px */
+    -fx-font-weight: 600;
+    -fx-text-fill: #4B5563;
+    -fx-padding: 6 0 0 0;
+}
+
+.unpublished-changes-container .empty-state .empty-text {
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: -uc-text-muted;
+    -fx-max-width: 240;
+}
+
+/* ---- Footer: "Publish to", the note, Discard all and Publish all ---- */
+
+.unpublished-changes-container .footer {
+    -fx-padding: 10 12 12 12;
+    -fx-spacing: 8;
+    -fx-border-color: -uc-line;
+    -fx-border-width: 1 0 0 0;
+    -fx-background-color: -uc-surface;
+}
+
+/* "Publish to <module> · <path>": one line; the two values are combo boxes that read as text
+   until hovered, when they take a border and show their arrow. Long names ellipsize. */
+.unpublished-changes-container .publish-to-line {
+    -fx-alignment: center-left;
+    -fx-spacing: 2;
+}
+
+.unpublished-changes-container .publish-to-label,
+.unpublished-changes-container .publish-to-dot {
+    -fx-font-size: 1em; /* 12px */
+    -fx-text-fill: -uc-text-muted;
+}
+
+.unpublished-changes-container .publish-to-label {
+    -fx-padding: 0 4 0 0;
+}
+
+.unpublished-changes-container .quiet-combo-box {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 4;
+    -fx-border-color: transparent;
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+    -fx-padding: 0;
+    -fx-min-width: 40;
+}
+
+.unpublished-changes-container .quiet-combo-box > .list-cell {
+    -fx-padding: 1 0 1 5;
+    -fx-background-color: transparent;
+    -fx-text-fill: -uc-text;
+    -fx-font-size: 1em; /* 12px */
+    -fx-font-weight: 600;
+    -fx-text-overrun: ellipsis;
+}
+
+.unpublished-changes-container .quiet-combo-box > .arrow-button {
+    -fx-padding: 0 3 0 1;
+    -fx-background-color: transparent;
+}
+
+.unpublished-changes-container .quiet-combo-box > .arrow-button > .arrow {
+    -fx-background-color: -uc-text-faint;
+    -fx-opacity: 0;
+}
+
+.unpublished-changes-container .quiet-combo-box:hover,
+.unpublished-changes-container .quiet-combo-box:showing {
+    -fx-border-color: #CBD5E1;
+    -fx-background-color: -uc-surface-row;
+    -fx-cursor: hand;
+}
+
+.unpublished-changes-container .quiet-combo-box:showing {
+    -fx-border-color: -uc-primary;
+}
+
+.unpublished-changes-container .quiet-combo-box:hover > .arrow-button > .arrow,
+.unpublished-changes-container .quiet-combo-box:showing > .arrow-button > .arrow {
+    -fx-opacity: 1;
+}
+
+.unpublished-changes-container .quiet-combo-box:showing > .arrow-button > .arrow {
+    -fx-background-color: -uc-primary;
+}
+
+/* The dropdown. A popup's styleable parent is its owner, so the combo box's class reaches it. */
+.unpublished-changes-container .quiet-combo-box .combo-box-popup > .list-view {
+    -fx-background-color: -uc-surface;
+    -fx-background-radius: 6;
+    -fx-border-color: -uc-line;
+    -fx-border-radius: 6;
+    -fx-padding: 4;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 12, 0, 0, 4);
+}
+
+.unpublished-changes-container .quiet-combo-box .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -uc-text;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 1em; /* 12px */
+    -fx-padding: 5 8 5 8;
+    -fx-background-radius: 4;
+}
+
+.unpublished-changes-container .quiet-combo-box .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:hover {
+    -fx-background-color: -uc-surface-tint;
+}
+
+.unpublished-changes-container .quiet-combo-box .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected {
+    -fx-background-color: -uc-selected;
+    -fx-font-weight: 600;
+}
+
+.unpublished-changes-container .note-text-field {
+    -fx-background-color: -uc-surface;
+    -fx-background-radius: 6;
+    -fx-border-color: -uc-line;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+    -fx-text-fill: -uc-text;
+    -fx-prompt-text-fill: -uc-text-faint;
+    -fx-font-size: 1em; /* 12px */
+    -fx-padding: 5 8 5 8;
+}
+
+.unpublished-changes-container .note-text-field:focused {
+    -fx-border-color: -uc-primary;
+}
+
+.unpublished-changes-container .footer-buttons {
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+}
+
+.unpublished-changes-container .publish-all-button,
+.unpublished-changes-container .discard-all-button {
+    -fx-font-size: 1.083333em; /* 13px */
+    -fx-font-weight: 600;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-padding: 6 14 6 14;
+    -fx-cursor: hand;
+}
+
+.unpublished-changes-container .publish-all-button {
+    -fx-background-color: -uc-primary;
+    -fx-text-fill: white;
+}
+
+.unpublished-changes-container .publish-all-button:hover {
+    -fx-background-color: -uc-primary-hover;
+}
+
+.unpublished-changes-container .discard-all-button {
+    -fx-background-color: -uc-surface;
+    -fx-border-color: -uc-line;
+    -fx-border-width: 1;
+    -fx-text-fill: #4B5563;
+}
+
+.unpublished-changes-container .discard-all-button:hover {
+    -fx-background-color: -uc-surface-tint;
+}
+
+.unpublished-changes-container .publish-all-button:disabled,
+.unpublished-changes-container .discard-all-button:disabled,
+.unpublished-changes-container .note-text-field:disabled {
+    -fx-opacity: 0.5;
+}
