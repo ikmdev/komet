@@ -8391,11 +8391,27 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: #9CA3AF;
     -fx-shape: "M0 0 L7 0 L3.5 4 Z";
     -fx-rotate: -90;
-    -fx-cursor: hand;
 }
 
 .tree-cell:expanded .unpublished-row .group-caret {
     -fx-rotate: 0;
+}
+
+/* Heading rows: the fold arrow's click target is the row's left gutter, so the row has no left
+   padding of its own. A heading with nothing to fold keeps the gutter, empty, so every heading's
+   badge lines up. */
+.tree-cell:group-row .unpublished-row {
+    -fx-padding: 8 8 8 0;
+}
+
+/* The fold arrow's click target: the old 10 px padding plus the 7 px triangle, with the triangle
+   on its right edge where it always was. The row stretches it to the row's height. */
+.unpublished-row .group-caret-hit-area {
+    -fx-min-width: 17;
+    -fx-pref-width: 17;
+    -fx-max-width: 17;
+    -fx-alignment: center-right;
+    -fx-cursor: hand;
 }
 
 .unpublished-changes-container .changes-tree-view .scroll-bar {

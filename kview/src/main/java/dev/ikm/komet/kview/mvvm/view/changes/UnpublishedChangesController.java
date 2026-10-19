@@ -77,6 +77,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import org.slf4j.Logger;
@@ -338,7 +339,15 @@ public class UnpublishedChangesController {
         changes = collected;
         List<TreeItem<UnpublishedRow>> items = new ArrayList<>();
         for (UnpublishedGroup group : groups) {
-            TreeItem<UnpublishedRow> item = new TreeItem<>(group);
+            // A heading is never a leaf, even with nothing under it. The tree cell skin reserves an
+            // 18 px disclosure slot on leaf rows but uses the (zero-width) disclosure node on the
+            // others, so a childless heading would sit 18 px right of the other headings.
+            TreeItem<UnpublishedRow> item = new TreeItem<>(group) {
+                @Override
+                public boolean isLeaf() {
+                    return false;
+                }
+            };
             for (UnpublishedChange change : group.semanticChanges()) {
                 item.getChildren().add(new TreeItem<>(change));
             }
@@ -598,6 +607,11 @@ public class UnpublishedChangesController {
         private final HBox row = new HBox();
         /** The group's fold arrow, drawn in the row so it centres with it; the skin's own is hidden. */
         private final Region caret = new Region();
+        /**
+         * The caret's click target: the heading's left gutter, larger than the triangle so it is easy
+         * to hit. Its size comes from the stylesheet.
+         */
+        private final StackPane caretHitArea = new StackPane(caret);
         private final Label typeGlyph = new Label();
         private final Label title = new Label();
         private final Label subtitle = new Label();
@@ -621,10 +635,10 @@ public class UnpublishedChangesController {
             setDisclosureNode(noDisclosure);
             row.getStyleClass().add("unpublished-row");
             caret.getStyleClass().add("group-caret");
-            caret.setMinSize(7, 4);
-            caret.setPrefSize(7, 4);
-            caret.setMaxSize(7, 4);
-            caret.setOnMouseClicked(event -> {
+            caret.setMouseTransparent(true);
+            caretHitArea.getStyleClass().add("group-caret-hit-area");
+            caretHitArea.setPickOnBounds(true);
+            caretHitArea.setOnMouseClicked(event -> {
                 if (event.getButton() == MouseButton.PRIMARY && getTreeItem() != null) {
                     getTreeItem().setExpanded(!getTreeItem().isExpanded());
                     event.consume();
@@ -641,7 +655,7 @@ public class UnpublishedChangesController {
             HBox.setHgrow(text, Priority.ALWAYS);
             // Only the text gives way when the row is narrow; the chips keep their full width.
             text.setMinWidth(0);
-            for (Region fixed : List.of(caret, typeGlyph, kindTag, count, menuButton)) {
+            for (Region fixed : List.of(caretHitArea, typeGlyph, kindTag, count, menuButton)) {
                 fixed.setMinWidth(Region.USE_PREF_SIZE);
             }
             title.setMinWidth(0);
@@ -662,7 +676,7 @@ public class UnpublishedChangesController {
             publishItem.setOnAction(_ -> publish(changesOf(getItem())));
             discardItem.setOnAction(_ -> discard(changesOf(getItem())));
 
-            row.getChildren().addAll(caret, typeGlyph, text, kindTag, count, menuButton);
+            row.getChildren().addAll(caretHitArea, typeGlyph, text, kindTag, count, menuButton);
             row.setOnMouseClicked(event -> {
                 if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && getItem() != null) {
                     open(getItem());
@@ -680,9 +694,11 @@ public class UnpublishedChangesController {
                 setGraphic(null);
                 return;
             }
+            // Every heading keeps the gutter so the badges line up; only one with something to fold
+            // shows the arrow and takes clicks there.
             boolean folds = item instanceof UnpublishedGroup group && !group.semanticChanges().isEmpty();
-            caret.setVisible(folds);
-            caret.setManaged(folds);
+            caretHitArea.setManaged(item instanceof UnpublishedGroup);
+            caretHitArea.setVisible(folds);
             switch (item) {
                 case UnpublishedGroup group -> {
                     showType(group.type());
@@ -692,8 +708,9 @@ public class UnpublishedChangesController {
                     showTag(group.headingKind().label(), group.headingKind().name().toLowerCase());
                     int n = group.semanticChanges().size();
                     count.setText(Integer.toString(n));
+                    // Every heading keeps the count's room so the tags line up; a zero is not shown.
                     count.setVisible(n > 0);
-                    count.setManaged(n > 0);
+                    count.setManaged(true);
                     publishItem.setText("Publish this component");
                     discardItem.setText("Discard this component");
                 }
