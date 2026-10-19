@@ -587,7 +587,8 @@ public class UnpublishedChangesController {
      **************************************************************************/
 
     /**
-     * A tree row. A group: type badge, the component's title, its own kind tag or "Published",
+     * A tree row. A group: type badge, the component's title, its kind tag (Edited when only
+     * semantics on it changed),
      * the count of semantic changes under it (none for a component changed on its own), and the
      * menu. A change: a smaller badge, title over the
      * pattern name, the kind tag, and the menu.
@@ -688,11 +689,7 @@ public class UnpublishedChangesController {
                     title.setText(group.title());
                     subtitle.setVisible(false);
                     subtitle.setManaged(false);
-                    if (group.isPublished()) {
-                        showTag("Published", "published");
-                    } else {
-                        showTag(group.kind().label(), group.kind().name().toLowerCase());
-                    }
+                    showTag(group.headingKind().label(), group.headingKind().name().toLowerCase());
                     int n = group.semanticChanges().size();
                     count.setText(Integer.toString(n));
                     count.setVisible(n > 0);

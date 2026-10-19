@@ -8509,12 +8509,6 @@ Styling a context menu for kview ui/ux controls
     -fx-text-fill: #B91C1C;
 }
 
-.unpublished-row .kind-tag.published {
-    -fx-background-color: -uc-surface-tint;
-    -fx-text-fill: -uc-text-muted;
-    -fx-font-weight: 500;
-}
-
 .unpublished-row .row-menu-button {
     -fx-background-color: transparent;
     -fx-background-radius: 4;

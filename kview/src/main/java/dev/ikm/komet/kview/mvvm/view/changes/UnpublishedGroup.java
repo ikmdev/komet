@@ -43,9 +43,13 @@ public record UnpublishedGroup(long nid, Entity<?> component, UnpublishedChange.
                                UnpublishedChange.Kind kind, String title,
                                List<UnpublishedChange> changes) implements UnpublishedRow {
 
-    /** Whether the component itself is published: only semantics on it changed. */
-    public boolean isPublished() {
-        return kind == null;
+    /**
+     * The tag on the heading: what happened to the component. Its own change's kind when it has
+     * one; otherwise {@link UnpublishedChange.Kind#EDITED}, since a published component whose
+     * semantics changed was edited, even though its own version is untouched.
+     */
+    public UnpublishedChange.Kind headingKind() {
+        return kind == null ? UnpublishedChange.Kind.EDITED : kind;
     }
 
     /** The changes to the semantics on the component: the rows under the heading. */
