@@ -391,7 +391,12 @@ public enum KometConcept implements ConceptEnumerationFacade<KometConcept> {
     /**
      * Retires a component: writes a new version of the subject with state inactive and every field as the latest version has it. Nothing is deleted; earlier versions remain, and the component can be activated again.
      */
-    INACTIVATE_COMPONENT("Inactivate component (IkeFoundation)", "e258555e-fe67-5bfc-8340-7707177e1dbc");
+    INACTIVATE_COMPONENT("Inactivate component (IkeFoundation)", "e258555e-fe67-5bfc-8340-7707177e1dbc"),
+
+    /**
+     * Replaces the text of one block of a document materialized from git, a block whose members are lines: an unchanged line keeps its element, a changed line gets a new version of it, a new line gets a provisional element until a commit gives it an identity, and a removed line leaves the block. The edit lands as uncommitted versions in the document's one pending edit, and the person's git commit of the file settles it.
+     */
+    EDIT_DOCUMENT_BLOCK("Edit document block (IkeFoundation)", "18d930ea-9ced-5cc2-b19f-257547037d03");
 
     private final EntityProxy.Concept proxy;
 

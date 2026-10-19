@@ -22,8 +22,10 @@ import dev.ikm.tinkar.common.service.PrimitiveData;
 import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import dev.ikm.tinkar.terms.EntityFacade;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -32,6 +34,7 @@ import org.junit.jupiter.api.TestInstance;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -42,13 +45,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Every action the starter set defines has exactly one implementation, and every implementation is
  * an action the starter set defines. An action is defined by an {@code Action definition pattern}
  * semantic on its concept; the categories above the actions (read, change, check, navigate) carry
- * none. Only the actions on this module's path are checked: a plugin's actions are checked where
- * the plugin is built.
+ * none. Only the actions on this module's path are checked: an action a plugin implements is
+ * listed in {@link #IMPLEMENTED_BY_PLUGINS}, has no implementation here, and is checked where the
+ * plugin is built.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class KometActionConsistencyIT {
 
     private static final File PB_STARTER_DATA = new File("target/data/ike-starter-set-reasoned-pb.zip");
+
+    /** Actions the starter set defines that a plugin implements, with the plugin that does. */
+    private static final Map<KometConcept, String> IMPLEMENTED_BY_PLUGINS = Map.of(
+            KometConcept.EDIT_DOCUMENT_BLOCK, "komet-claude-plugin");
 
     private ViewCalculator view;
     private Set<Long> definedActions;
@@ -75,17 +83,48 @@ class KometActionConsistencyIT {
     void theStarterSetDefinesTheActionsKometBinds() {
         assertTrue(definedActions.contains(KometConcept.ACTIVATE_COMPONENT.nid()), "Activate component is defined");
         assertTrue(definedActions.contains(KometConcept.INACTIVATE_COMPONENT.nid()), "Inactivate component is defined");
+        assertTrue(definedActions.contains(KometConcept.EDIT_DOCUMENT_BLOCK.nid()), "Edit document block is defined");
+    }
+
+    @Test
+    void eachActionsDefinitionNamesItsInputAndResultPatterns() {
+        Map<KometConcept, KometPattern> inputs = Map.of(
+                KometConcept.ACTIVATE_COMPONENT, KometPattern.COMPONENT_ACTION_INPUT_PATTERN,
+                KometConcept.INACTIVATE_COMPONENT, KometPattern.COMPONENT_ACTION_INPUT_PATTERN,
+                KometConcept.EDIT_DOCUMENT_BLOCK, KometPattern.DOCUMENT_BLOCK_EDIT_INPUT_PATTERN);
+        List<String> problems = new ArrayList<>();
+        inputs.forEach((action, input) -> {
+            List<SemanticEntityVersion> definitions = EntityService.get()
+                    .semanticsForComponentOfPattern(action.nid(), KometPattern.ACTION_DEFINITION_PATTERN.nid())
+                    .map(definition -> view.latest(definition).get()).toList();
+            if (definitions.size() != 1) {
+                problems.add(action + " has " + definitions.size() + " definitions");
+                return;
+            }
+            ImmutableList<Object> fields = definitions.getFirst().fieldValues();
+            if (((EntityFacade) fields.get(0)).nid() != input.nid()) {
+                problems.add(action + " takes " + view.getDescriptionTextOrNid(((EntityFacade) fields.get(0)).nid()) + ", not " + input);
+            }
+            if (((EntityFacade) fields.get(1)).nid() != KometPattern.VERSION_CHANGE_RESULT_PATTERN.nid()) {
+                problems.add(action + " reports " + view.getDescriptionTextOrNid(((EntityFacade) fields.get(1)).nid()));
+            }
+        });
+        assertEquals(List.of(), problems);
     }
 
     @Test
     void everyDefinedActionHasExactlyOneImplementation() {
         List<String> problems = new ArrayList<>();
+        Set<Long> inPlugins = IMPLEMENTED_BY_PLUGINS.keySet().stream().map(KometConcept::nid).collect(Collectors.toSet());
         for (long action : definedActions) {
             long implementations = KometActions.all().stream().filter(a -> a.concept().nid() == action).count();
-            if (implementations != 1) {
-                problems.add(view.getDescriptionTextOrNid(action) + " has " + implementations + " implementations");
+            long expected = inPlugins.contains(action) ? 0 : 1;
+            if (implementations != expected) {
+                problems.add(view.getDescriptionTextOrNid(action) + " has " + implementations + " implementations here, not " + expected);
             }
         }
+        IMPLEMENTED_BY_PLUGINS.keySet().stream().filter(action -> !definedActions.contains(action.nid()))
+                .forEach(action -> problems.add(action + " is listed as a plugin's action but has no Action definition"));
         assertEquals(List.of(), problems);
     }
 

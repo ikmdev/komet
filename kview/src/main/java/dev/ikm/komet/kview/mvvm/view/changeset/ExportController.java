@@ -31,6 +31,7 @@ import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.entity.export.ExportEntitiesToProtobufFile;
+import dev.ikm.tinkar.importer.registry.Registry;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
@@ -361,6 +362,7 @@ public class ExportController {
                                     (service, listener, tracker) ->
                                             service.exportChangeSet(exportFile, fromDate, toDate, listener, tracker)))
                     .orElseGet(() -> new ExportEntitiesToProtobufFile(exportFile, fromDate, toDate));
+            boolean local = RemoteChangesetTask.remote().isEmpty();
             CompletableFuture<dev.ikm.tinkar.common.service.EntityCountSummary> exportFuture = ProgressHelper.progress(exportEntities, "Cancel Export");
 
             exportFuture.handle((result, throwable) -> {
@@ -375,6 +377,11 @@ public class ExportController {
             return exportFuture.thenAccept(exportResult -> {
                 if (exportResult != null) {
                     logExportResults(exportResult);
+                    // Registered in this store; a server registers its own (IKE-Network/ike-issues#1304).
+                    if (local) {
+                        Registry.registerExport(exportFile.toPath(), "time window " + java.time.Instant.ofEpochMilli(fromDate) + " to " + java.time.Instant.ofEpochMilli(toDate), exportResult.getTotalCount(),
+                                java.time.Instant.now());
+                    }
                 }
             });
         });
@@ -400,6 +407,7 @@ public class ExportController {
                                     (service, listener, tracker) ->
                                             service.exportMembership(exportFile, membershipPublicIds, listener, tracker)))
                     .orElseGet(() -> new ExportEntitiesToProtobufFile(exportFile, membershipPublicIds));
+            boolean local = RemoteChangesetTask.remote().isEmpty();
             CompletableFuture<dev.ikm.tinkar.common.service.EntityCountSummary> exportFuture = ProgressHelper.progress(exportEntities, "Cancel Export");
 
             exportFuture.handle((result, throwable) -> {
@@ -414,6 +422,11 @@ public class ExportController {
             return exportFuture.thenAccept(exportResult -> {
                 if (exportResult != null) {
                     logExportResults(exportResult);
+                    // Registered in this store; a server registers its own (IKE-Network/ike-issues#1304).
+                    if (local) {
+                        Registry.registerExport(exportFile.toPath(), "membership of " + membershipPublicIds.size() + " tagged patterns", exportResult.getTotalCount(),
+                                java.time.Instant.now());
+                    }
                 }
             });
         });

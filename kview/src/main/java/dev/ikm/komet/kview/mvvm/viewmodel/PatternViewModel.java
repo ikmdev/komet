@@ -48,6 +48,7 @@ import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import dev.ikm.tinkar.entity.PatternVersionRecord;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.terms.SemanticFacade;
 import dev.ikm.tinkar.terms.*;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ObservableList;
@@ -148,7 +149,7 @@ public class PatternViewModel extends FormViewModel {
                     .addProperty(SELECTED_PATTERN_FIELD, (PatternField) null)
                     .addProperty(IS_INVALID, true)
                     .addProperty(ViewModelKey.PATTERN, (EntityFacade) null) // once saved, this is the pattern facade
-                    .addProperty(FQN_PROXY, (EntityProxy.Semantic) null)
+                    .addProperty(FQN_PROXY, (SemanticFacade) null)
                     .addProperty(HAS_CHANGED, false)
                     .addValidator(IS_INVALID, "Is Invalid", (ValidationResult vr, ViewModel viewModel) -> {
                         ObjectProperty<EntityFacade> purposeEntity = viewModel.getProperty(PURPOSE_ENTITY);
@@ -421,7 +422,7 @@ public class PatternViewModel extends FormViewModel {
 
         // --- Compose FQN description semantic ---
         // Only compose if creating new, or FQN has changed in edit mode
-        ObjectProperty<EntityProxy.Semantic> fqnProp = getObjectProperty(FQN_PROXY);
+        ObjectProperty<SemanticFacade> fqnProp = getObjectProperty(FQN_PROXY);
         if (!isEdit || generateFqnHash() != changeHash) {
             PublicId fqnPublicId = (fqnProp.get() != null)
                     ? fqnProp.get().publicId()

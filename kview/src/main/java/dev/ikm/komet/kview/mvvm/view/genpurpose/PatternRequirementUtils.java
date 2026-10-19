@@ -22,7 +22,6 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.KernelConcept;
 
 import java.util.List;
@@ -53,7 +52,7 @@ public final class PatternRequirementUtils {
     public interface SeededEntry {
         EditorPatternModel pattern();
 
-        Map<Integer, EntityProxy> fieldSeeds();
+        Map<Integer, EntityFacade> fieldSeeds();
     }
 
     /**
@@ -140,9 +139,9 @@ public final class PatternRequirementUtils {
      * Whether a semantic seeded with the passed in field values (field index to concept) would
      * match the requirement's field constraints.
      */
-    public static boolean seedsWouldMatch(Map<Integer, EntityProxy> fieldSeeds, EditorPatternRequirement requirement) {
+    public static boolean seedsWouldMatch(Map<Integer, EntityFacade> fieldSeeds, EditorPatternRequirement requirement) {
         return requirement.getFieldConstraints().entrySet().stream().allMatch(constraint -> {
-            EntityProxy seed = fieldSeeds.get(constraint.getKey());
+            EntityFacade seed = fieldSeeds.get(constraint.getKey());
             return seed != null && seed.nid() == constraint.getValue().nid();
         });
     }

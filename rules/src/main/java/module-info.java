@@ -35,6 +35,7 @@ open module dev.ikm.komet.rules {
     exports dev.ikm.komet.rules.annotated;
     exports dev.ikm.komet.rules.actions;
     exports dev.ikm.komet.rules.actions.axiom;
+    exports dev.ikm.komet.rules.actions.membership;
 
     provides RuleService with EvreteRulesService;
 

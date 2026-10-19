@@ -18,6 +18,7 @@ package dev.ikm.komet.framework.window;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.ProxyFactory;
 
 import java.util.ArrayList;
@@ -63,7 +64,7 @@ public class TabSpecification {
 
     @Override
     public int hashCode() {
-        return Objects.hash(tabSpecification, preferencesNodeName);
+        return Objects.hash(tabSpecification == null ? 0 : tabSpecification.nid(), preferencesNodeName);
     }
 
     @Override
@@ -71,7 +72,7 @@ public class TabSpecification {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TabSpecification that = (TabSpecification) o;
-        return Objects.equals(tabSpecification, that.tabSpecification) &&
+        return EntityFacade.same(tabSpecification, that.tabSpecification) &&
                 Objects.equals(preferencesNodeName, that.preferencesNodeName);
     }
 

@@ -30,6 +30,7 @@ import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.EntityCountSummary;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
+import dev.ikm.tinkar.importer.registry.Registry;
 import javafx.application.Platform;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
@@ -52,6 +53,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.List;
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
+import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -219,6 +221,7 @@ public class ImportController {
             File selectedFile = importViewModel.getPropertyValue(SELECTED_FILE);
             // Connected to a server: import there, where the data lives, rather than into this
             // Komet's local view of it.
+            boolean local = RemoteChangesetTask.remote().isEmpty();
             TrackingCallable<EntityCountSummary> importTask = RemoteChangesetTask.remote()
                     .<TrackingCallable<EntityCountSummary>>map(remote -> new RemoteChangesetTask(remote,
                             "Import " + selectedFile.getName() + " on the server",
@@ -242,6 +245,11 @@ public class ImportController {
                                 ecs.patternCount(),
                                 ecs.stampCount())
                         );
+                    }
+                    // What this store is made of now: a local load is registered here; a server
+                    // registers its own (IKE-Network/ike-issues#1304).
+                    if (local) {
+                        Registry.registerLoad(List.of(selectedFile.toPath()), Instant.now());
                     }
                     // Refresh the Pattern Navigation
                     EvtBusFactory.getDefaultEvtBus().publish(SAVE_PATTERN_TOPIC,new PatternSavedEvent(event.getSource(), PatternSavedEvent.PATTERN_UPDATE_EVENT));

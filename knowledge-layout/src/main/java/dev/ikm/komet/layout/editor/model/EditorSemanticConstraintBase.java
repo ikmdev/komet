@@ -3,7 +3,6 @@ package dev.ikm.komet.layout.editor.model;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -107,6 +106,6 @@ public abstract class EditorSemanticConstraintBase {
      * The concept each constrained field must hold, keyed by the field's index in the Pattern.
      * Fields with no entry accept any value.
      */
-    private final ObservableMap<Integer, EntityProxy> fieldConstraints = FXCollections.observableHashMap();
-    public ObservableMap<Integer, EntityProxy> getFieldConstraints() { return fieldConstraints; }
+    private final ObservableMap<Integer, EntityFacade> fieldConstraints = FXCollections.observableHashMap();
+    public ObservableMap<Integer, EntityFacade> getFieldConstraints() { return fieldConstraints; }
 }

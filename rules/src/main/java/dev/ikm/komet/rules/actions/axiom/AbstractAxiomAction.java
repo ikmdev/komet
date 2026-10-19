@@ -27,14 +27,9 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
-import dev.ikm.tinkar.entity.transaction.Transaction;
-import dev.ikm.tinkar.terms.State;
 import javafx.event.ActionEvent;
-import org.eclipse.collections.api.factory.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Optional;
 
 import static dev.ikm.tinkar.events.FrameworkTopics.RULES_TOPIC;
 import static dev.ikm.tinkar.terms.KernelPattern.TINKAR_BASE_MODEL_COMPONENT_PATTERN;
@@ -73,30 +68,16 @@ public abstract class AbstractAxiomAction extends AbstractActionSuggested {
             axiomSubjectRecord.updatedTreeHandler().accept(newTree);
             return;
         }
-        SemanticRecord semanticContainingAxiom = EntityHandle.get(axiomSubjectRecord.semanticContainingAxiom().nid()).expectSemanticRecord();
-        Optional<Transaction> optionalTransaction = Transaction.forVersion(axiomSubjectRecord.semanticContainingAxiom().version());
-        Transaction transaction;
-        if (optionalTransaction.isPresent()) {
-            transaction = optionalTransaction.get();
-        } else {
-            transaction = Transaction.make();
-            transaction.addComponent(axiomSubjectRecord.semanticContainingAxiom().nid());
-        }
-
         Latest<PatternEntityVersion> latestAxiomPatternVersion = viewCalculator.latestPatternEntityVersion(axiomSubjectRecord.semanticContainingAxiom().patternNid());
         latestAxiomPatternVersion.ifPresentOrElse(patternEntityVersion -> {
-            StampEntity stampEntity = transaction.getStamp(State.ACTIVE, Long.MAX_VALUE,
-                    editCoordinate.getAuthorNidForChanges(),
+            // Left pending, not committed: pending work ends only when the person publishes or discards it.
+            SemanticVersionRecord newSemanticVersion = PendingDefinition.write(axiomSubjectRecord.semanticContainingAxiom().nid(),
                     axiomSubjectRecord.semanticContainingAxiom().moduleNid(),
-                    axiomSubjectRecord.semanticContainingAxiom().pathNid());
-            SemanticVersionRecord newSemanticVersion = new SemanticVersionRecord(semanticContainingAxiom, stampEntity.nid(), Lists.immutable.of(newTree));
-            SemanticRecord analogue = semanticContainingAxiom.with(newSemanticVersion).build();
-            Entity.provider().putEntity(analogue);
+                    axiomSubjectRecord.semanticContainingAxiom().pathNid(),
+                    newTree, editCoordinate, viewCalculator, getText());
             // Incremental reasoner
         	LOG.info(">>>>>" + "putUpdatedDiTree" + newSemanticVersion);
             EditedConceptTracker.addEdit(newSemanticVersion);
-            //TODO need to surface transactions in the journal, then turn off this "auto commit"...
-            transaction.commit();
         }, () -> {
             throw new IllegalStateException("No latest pattern version for: " + EntityHandle.get(TINKAR_BASE_MODEL_COMPONENT_PATTERN).orNull());
         });

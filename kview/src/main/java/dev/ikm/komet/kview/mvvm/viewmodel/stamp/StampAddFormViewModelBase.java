@@ -47,6 +47,7 @@ public abstract class StampAddFormViewModelBase extends StampFormViewModelBase {
     }
 
     @Override
+    @SuppressWarnings("facade-check") // the same instance has nothing new to load; another reloads
     protected void doUpdate(EntityFacade entity, UUID topic, ViewProperties viewProperties) {
         // entityFocusProperty from DetailsNode often calls init with a null entity.
         if (entity == null || entity == this.entityFacade) {
@@ -98,8 +99,8 @@ public abstract class StampAddFormViewModelBase extends StampFormViewModelBase {
         StampEntity stampEntity = getPropertyValue(CURRENT_STAMP);
 
         boolean same = stampEntity.state() == getPropertyValue(STATUS)
-                && stampEntity.path() == getPropertyValue(PATH)
-                && stampEntity.module() == getPropertyValue(MODULE);
+                && EntityFacade.same(stampEntity.path(), getPropertyValue(PATH))
+                && EntityFacade.same(stampEntity.module(), getPropertyValue(MODULE));
 
         setPropertyValue(IS_STAMP_VALUES_THE_SAME_OR_EMPTY, same);
 

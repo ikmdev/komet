@@ -32,7 +32,6 @@ import dev.ikm.tinkar.coordinate.view.ViewCoordinate;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
-import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.ProxyFactory;
 
 import java.util.Arrays;
@@ -214,7 +213,7 @@ public class PropertySheetItemConceptWrapper implements ConceptFacade, PropertyS
                 + viewCoordinate.languageCalculator().getPreferredDescriptionTextWithFallbackOrNid(getSpecification());
     }
 
-    public EntityProxy.Concept getSpecification() {
+    public ConceptFacade getSpecification() {
         return ProxyFactory.fromXmlFragment(this.conceptProperty.getName());
     }
 

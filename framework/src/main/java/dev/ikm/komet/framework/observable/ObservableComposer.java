@@ -686,6 +686,7 @@ public final class ObservableComposer {
      *
      * @return the blank concept, as a proxy
      */
+    @SuppressWarnings("facade-check") // the component controls hold proxies; see above
     public static EntityProxy.Concept defaultComponentFieldValue() {
         return BLANK_CONCEPT.toProxy();
     }
@@ -962,17 +963,9 @@ public final class ObservableComposer {
      * Creates or retrieves an observable stamp for the current author/module/path/state.
      */
     ObservableStamp createStamp(State state, Entity<?> entity) {
-//        Optional<EntityVersion> existingUncommitedVersion = entity.versions().stream()
-//                .filter(v -> v.uncommitted()
-//                    && v.state() == state
-//                    && v.stamp().authorNid() == getAuthorNid()
-//                    && v.stamp().moduleNid() == getModuleNid()
-//                    && v.stamp().pathNid() == getPathNid())
-//                .findFirst();
-//        if (existingUncommitedVersion.isPresent()) {
-//            Transaction.forVersion(existingUncommitedVersion.get());
-//        } else {
-//        }
+        if (entity != null) {
+            adoptRebuiltTransaction(state, entity);
+        }
         StampEntity stampEntity = transaction.getStampForEntities(
             state,
             getAuthorNid(),
@@ -981,6 +974,31 @@ public final class ObservableComposer {
             entity  // Pass the entity to ensure canonical stamp
         );
         return ObservableEntity.packagePrivateGetStamp(stampEntity);
+    }
+
+    /**
+     * Continues work a restart interrupted (IKE-Network/ike-issues#1308). When this composer has
+     * written nothing yet, and the entity's pending version belongs to a transaction rebuilt from
+     * its record, under this composer's author, module, path and state, the composer takes that
+     * transaction over instead of opening a second one beside it: two uncommitted versions of one
+     * component do not supersede each other, and the edit lands on the pending version's own stamp.
+     * Committing or cancelling the composer then settles what the earlier session left, so a
+     * window reopened after a restart publishes or discards its earlier work.
+     *
+     * @param state  the state of the stamp about to be made
+     * @param entity the existing component about to be edited
+     */
+    private void adoptRebuiltTransaction(State state, Entity<?> entity) {
+        if (transaction != null && transaction.stampsInTransactionCount() > 0) {
+            return;
+        }
+        Transaction.rebuiltOwnerOfPendingVersion(entity.nid(), state, authorNid, moduleNid, pathNid).ifPresent(rebuilt -> {
+            if (transaction != null && transaction != rebuilt) {
+                transaction.cancel();       // empty: it had written nothing
+            }
+            transaction = rebuilt;
+            transactionStateProperty.set(TransactionState.UNCOMMITTED);
+        });
     }
 
     /**

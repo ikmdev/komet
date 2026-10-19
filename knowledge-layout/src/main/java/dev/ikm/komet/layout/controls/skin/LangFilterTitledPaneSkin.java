@@ -565,7 +565,7 @@ public class LangFilterTitledPaneSkin extends TitledPaneSkin {
                                 tb.getStyleClass().add("option-toggle");
                                 tb.setToggleGroup(patternGroup);
                                 tb.setSelected(!languageOptions.getPattern().selectedOptions().isEmpty() &&
-                                        entity.equals(languageOptions.getPattern().selectedOptions().getFirst()));
+                                        EntityFacade.same(entity, languageOptions.getPattern().selectedOptions().getFirst()));
                                 return tb;
                             })
                             .toList());

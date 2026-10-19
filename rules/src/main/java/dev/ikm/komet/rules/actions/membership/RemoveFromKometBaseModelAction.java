@@ -16,14 +16,12 @@
 package dev.ikm.komet.rules.actions.membership;
 
 import dev.ikm.komet.rules.actions.AbstractActionSuggested;
-import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinate;
 import dev.ikm.tinkar.coordinate.edit.EditCoordinateRecord;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.*;
-import dev.ikm.tinkar.entity.transaction.CommitTransactionTask;
 import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.terms.State;
 import javafx.event.ActionEvent;
@@ -49,6 +47,7 @@ public class RemoveFromKometBaseModelAction extends AbstractActionSuggested {
             // case 1: never a member
             throw new IllegalStateException("Asking to retire element that was never a member...");
         } else {
+            PendingMembership.refuseIfPending(semanticForComponent.get(), conceptVersion, "Komet base model", viewCalculator);
             updateSemantic(semanticForComponent.get().nid(), editCoordinate.toEditCoordinateRecord());
         }
     }
@@ -56,7 +55,7 @@ public class RemoveFromKometBaseModelAction extends AbstractActionSuggested {
 
     private void updateSemantic(long semanticNid, EditCoordinateRecord editCoordinateRecord) {
         SemanticRecord semanticEntity = EntityHandle.get(semanticNid).expectSemanticRecord();
-        Transaction transaction = Transaction.make();
+        Transaction transaction = Transaction.make(PendingMembership.transactionName(getText(), conceptVersion, viewCalculator));
         ViewCoordinateRecord viewRecord = viewCalculator.viewCoordinateRecord();
 
         Latest<PatternEntityVersion> latestPatternVersion = viewCalculator.latestPatternEntityVersion(KOMET_BASE_MODEL_COMPONENT_PATTERN);
@@ -70,7 +69,5 @@ public class RemoveFromKometBaseModelAction extends AbstractActionSuggested {
         }, () -> {
             throw new IllegalStateException("No latest pattern version for: " + EntityHandle.get(KOMET_BASE_MODEL_COMPONENT_PATTERN).orNull());
         });
-        CommitTransactionTask commitTransactionTask = new CommitTransactionTask(transaction);
-        TinkExecutor.threadPool().submit(commitTransactionTask);
     }
 }
