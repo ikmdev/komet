@@ -123,8 +123,9 @@ public class PatternInstancesPanel extends BorderPane {
         }
         EntityFacade component = searchTextField.getSearchedComponent();
         placeholder.setText(component == null ? "No instances" : "No instances match");
+        // Unfiltered, only the page shown is read: a remote store fetches just that page.
         Stream<SemanticEntity<SemanticEntityVersion>> instances = component == null
-                ? EntityService.get().semanticsOfPattern(pattern.nid())
+                ? EntityService.get().semanticsOfPattern(pattern.nid(), 0, MAX_INSTANCES)
                 : EntityService.get().semanticsForComponentOfPattern(component.nid(), pattern.nid());
         List<Long> instanceNids = instances
                 .limit(MAX_INSTANCES)
