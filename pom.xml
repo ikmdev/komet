@@ -100,10 +100,10 @@
         <nid-check.report>error</nid-check.report>
         <nid-check.allow></nid-check.allow>
         <!-- The facade build check (FacadeCheck in tinkar-core nid-check): how it reports
-             (warning while the census of its findings is worked down, then error) and which
+             (error, or warning for a census) and which
              top-level classes it skips (prefixes; dev.ikm.tinkar.terms. always is): the
              clipboard and preferences codecs, which store and read proxies. -->
-        <facade-check.report>warning</facade-check.report>
+        <facade-check.report>error</facade-check.report>
         <facade-check.allow>dev.ikm.komet.framework.dnd.ClipboardHelper,dev.ikm.komet.framework.dnd.KometClipboard,dev.ikm.komet.preferences.KometPreferences</facade-check.allow>
         <javac.maxwarns>10000</javac.maxwarns>
     </properties>
