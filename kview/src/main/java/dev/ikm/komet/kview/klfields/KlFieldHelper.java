@@ -99,7 +99,11 @@ public class KlFieldHelper {
             LONG.nid(),
             DOUBLE_FIELD.nid(),
             LOGICAL_EXPRESSION_FIELD.nid(),
-            VERTEX_FIELD.nid()
+            // Two concepts name a vertex field: Komet's display field and the kernel's vertex data type
+            // (the type of a semantic vertex, ike-issues#1313). Both import statically here, so each is
+            // qualified; a vertex field of either is read-only.
+            dev.ikm.komet.terms.KometConcept.VERTEX_FIELD.nid(),
+            dev.ikm.tinkar.terms.KernelConcept.VERTEX_FIELD.nid()
     };
 
     /**
