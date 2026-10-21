@@ -66,7 +66,7 @@ class PatternBrowserSearchUTestFX {
         CachingService.clearAll();
         ServiceProperties.set(ServiceKeys.DATA_STORE_ROOT,
                 Files.createTempDirectory("pattern-browser-search-test").toFile());
-        PrimitiveData.selectControllerByName("Load Ephemeral Store");
+        PrimitiveData.selectControllerByName("Load Memory-Only 64-bit Store");
         PrimitiveData.start();
         FxToolkit.registerPrimaryStage();
     }

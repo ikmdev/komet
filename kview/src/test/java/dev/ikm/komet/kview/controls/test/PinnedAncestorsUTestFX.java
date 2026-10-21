@@ -92,7 +92,7 @@ class PinnedAncestorsUTestFX {
         CachingService.clearAll();
         ServiceProperties.set(ServiceKeys.DATA_STORE_ROOT,
                 Files.createTempDirectory("pinned-ancestors-test").toFile());
-        PrimitiveData.selectControllerByName("Load Ephemeral Store");
+        PrimitiveData.selectControllerByName("Load Memory-Only 64-bit Store");
         PrimitiveData.start();
     }
 

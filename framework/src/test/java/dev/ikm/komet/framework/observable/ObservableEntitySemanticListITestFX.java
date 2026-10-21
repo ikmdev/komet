@@ -65,7 +65,7 @@ class ObservableEntitySemanticListITestFX {
     @BeforeAll
     void setupDatabase() {
         CachingService.clearAll();
-        PrimitiveData.selectControllerByName("Load Ephemeral Store");
+        PrimitiveData.selectControllerByName("Load Memory-Only 64-bit Store");
         PrimitiveData.start();
         LOG.info("Started PrimitiveData with ephemeral store");
     }

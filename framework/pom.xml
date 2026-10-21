@@ -149,6 +149,12 @@
             <artifactId>data-spinedarray-provider</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- The memory-only store the tests run on (IKE-Network/ike-issues#1313). -->
+        <dependency>
+            <groupId>dev.ikm.tinkar</groupId>
+            <artifactId>data-spinedarray64-provider</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>dev.ikm.tinkar</groupId>
             <artifactId>entity-provider</artifactId>

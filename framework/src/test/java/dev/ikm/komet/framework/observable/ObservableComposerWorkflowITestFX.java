@@ -58,7 +58,7 @@ class ObservableComposerWorkflowITestFX {
         CachingService.clearAll();
         LOG.info("Cleared caches");
 
-        PrimitiveData.selectControllerByName("Load Ephemeral Store");
+        PrimitiveData.selectControllerByName("Load Memory-Only 64-bit Store");
         PrimitiveData.start();
         LOG.info("Started PrimitiveData with ephemeral store");
     }

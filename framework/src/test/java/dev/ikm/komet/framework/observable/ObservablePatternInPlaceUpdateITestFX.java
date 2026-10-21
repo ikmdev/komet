@@ -59,7 +59,7 @@ class ObservablePatternInPlaceUpdateITestFX {
     @BeforeAll
     void setupDatabase() {
         CachingService.clearAll();
-        PrimitiveData.selectControllerByName("Load Ephemeral Store");
+        PrimitiveData.selectControllerByName("Load Memory-Only 64-bit Store");
         PrimitiveData.start();
         new LoadEntitiesFromProtobufFile(PB_STARTER_DATA).compute();
     }

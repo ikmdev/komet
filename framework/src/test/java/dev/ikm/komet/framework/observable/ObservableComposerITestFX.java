@@ -61,7 +61,7 @@ class ObservableComposerITestFX {
         LOG.info("Cleared caches");
 
         // Configure for ephemeral store
-        PrimitiveData.selectControllerByName("Load Ephemeral Store");
+        PrimitiveData.selectControllerByName("Load Memory-Only 64-bit Store");
         PrimitiveData.start();
         LOG.info("Started PrimitiveData with ephemeral store");
     }

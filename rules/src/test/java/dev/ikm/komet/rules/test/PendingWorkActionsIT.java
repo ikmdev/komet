@@ -85,7 +85,7 @@ class PendingWorkActionsIT {
     void startStore() throws Exception {
         assertTrue(PB_STARTER_DATA.exists(), "Starter data must be present at " + PB_STARTER_DATA.getAbsolutePath());
         CachingService.clearAll();
-        PrimitiveData.selectControllerByName("Load Ephemeral Store");
+        PrimitiveData.selectControllerByName("Load Memory-Only 64-bit Store");
         PrimitiveData.start();
         new LoadEntitiesFromProtobufFile(PB_STARTER_DATA).compute();
         viewProperties = new ObservableViewNoOverride(Coordinates.View.DefaultView()).makeOverridableViewProperties();
@@ -283,8 +283,15 @@ class PendingWorkActionsIT {
         return concept;
     }
 
+    /**
+     * A stated concept that is not a member of the pattern, searched among every stated definition:
+     * the four kept for editing are the first a pattern enumerates, which is load order in a
+     * 64-bit store and was hash order in the sequential one, so none of them need qualify.
+     */
     private ConceptEntityVersion conceptWithoutMembership(long patternNid) {
-        for (long definition : definitions) {
+        long[] stated = EntityService.get().semanticsOfPattern(view.logicCoordinateRecord().statedAxiomsPatternNid())
+                .mapToLong(SemanticEntity::nid).toArray();
+        for (long definition : stated) {
             long conceptNid = EntityHandle.get(definition).expectSemanticRecord().referencedComponentNid();
             if (EntityService.get().semanticsForComponentOfPattern(conceptNid, patternNid).findFirst().isEmpty()
                     && view.latest(conceptNid).orElse(null) instanceof ConceptEntityVersion concept) {

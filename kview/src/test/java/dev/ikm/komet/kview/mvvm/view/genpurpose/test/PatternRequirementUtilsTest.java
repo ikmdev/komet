@@ -75,7 +75,7 @@ class PatternRequirementUtilsTest {
         CachingService.clearAll();
         ServiceProperties.set(ServiceKeys.DATA_STORE_ROOT,
                 Files.createTempDirectory("pattern-requirements-test").toFile());
-        PrimitiveData.selectControllerByName("Load Ephemeral Store");
+        PrimitiveData.selectControllerByName("Load Memory-Only 64-bit Store");
         PrimitiveData.start();
         DESCRIPTION_PATTERN = KernelPattern.DESCRIPTION_PATTERN.nid();
         STATED_PATTERN = KernelPattern.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN.nid();

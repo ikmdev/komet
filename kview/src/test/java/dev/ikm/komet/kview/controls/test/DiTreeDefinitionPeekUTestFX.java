@@ -72,7 +72,7 @@ class DiTreeDefinitionPeekUTestFX {
         CachingService.clearAll();
         ServiceProperties.set(ServiceKeys.DATA_STORE_ROOT,
                 Files.createTempDirectory("ditree-peek-test").toFile());
-        PrimitiveData.selectControllerByName("Load Ephemeral Store");
+        PrimitiveData.selectControllerByName("Load Memory-Only 64-bit Store");
         PrimitiveData.start();
         A = KernelConcept.ANONYMOUS_CONCEPT.nid();
         B = KernelConcept.ACTIVE_STATE.nid();

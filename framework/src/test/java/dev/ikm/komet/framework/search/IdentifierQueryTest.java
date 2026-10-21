@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class IdentifierQueryTest {
 
-    /** A nid the store has assigned to no component: it numbers components up from the bottom of the int range. */
+    /** A nid no store has assigned: negative, which no 64-bit nid is, and far above where a sequential store mints. */
     private static final long UNASSIGNED_NID = -5;
 
     private static long englishNid;
@@ -60,13 +60,21 @@ class IdentifierQueryTest {
         CachingService.clearAll();
         ServiceProperties.set(ServiceKeys.DATA_STORE_ROOT,
                 Files.createTempDirectory("identifier-query-test").toFile());
-        PrimitiveData.selectControllerByName("Load Ephemeral Store");
+        PrimitiveData.selectControllerByName("Load Memory-Only 64-bit Store");
         PrimitiveData.start();
         englishNid = KernelConcept.ENGLISH_LANGUAGE.nid();
         languageNid = KernelConcept.LANGUAGE.nid();
         // The UUID storedForm writes for each: the least of its UUIDs (ENGLISH_LANGUAGE has three).
         english = KernelConcept.ENGLISH_LANGUAGE.publicId().leastUuid();
         language = KernelConcept.LANGUAGE.publicId().leastUuid();
+    }
+
+    /**
+     * A nid as a person types it in the search field: bare when negative, a sequential store's;
+     * in brackets when positive, a 64-bit store's, since a bare positive number is a text query.
+     */
+    private static String typed(long nid) {
+        return nid < 0 ? Long.toString(nid) : "[" + nid + "]";
     }
 
     @AfterAll
@@ -86,7 +94,7 @@ class IdentifierQueryTest {
     @Test
     void aNegativeIntegerIsANid() {
         assertArrayEquals(new long[]{-42}, IdentifierQuery.parse("-42").orElseThrow().nids());
-        assertArrayEquals(new long[]{englishNid}, IdentifierQuery.parse("  " + englishNid + " ").orElseThrow().nids(),
+        assertArrayEquals(new long[]{englishNid}, IdentifierQuery.parse("  " + typed(englishNid) + " ").orElseThrow().nids(),
                 "surrounding space is ignored");
     }
 
@@ -125,7 +133,7 @@ class IdentifierQueryTest {
 
     @Test
     void aNidQueryIsStoredByUuid() {
-        assertEquals(english.toString(), IdentifierQuery.storedForm(Long.toString(englishNid)));
+        assertEquals(english.toString(), IdentifierQuery.storedForm(typed(englishNid)));
         assertEquals("[" + english + ", " + language + "]",
                 IdentifierQuery.storedForm("[" + englishNid + ", " + languageNid + "]"));
         assertEquals("[" + language + ", " + english + "]",
