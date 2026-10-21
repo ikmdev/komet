@@ -20,6 +20,7 @@ import dev.ikm.komet.framework.view.ObservableEditCoordinate;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.events.MakeKLWindowEvent;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
+import dev.ikm.komet.kview.klwindows.ChapterKlWindow;
 import dev.ikm.komet.kview.mvvm.model.ViewCoordinateHelper;
 import dev.ikm.komet.layout.editor.StandardEditorWindows;
 import dev.ikm.komet.terms.KometConcept;
@@ -75,6 +76,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -94,13 +96,15 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 /**
  * The journal sidebar's unpublished-changes tray: every component with a version saved in an
  * open {@link Transaction}, grouped under the concept or pattern it belongs to, with a footer
  * that names the module and path to publish to and publishes (commits) or discards (cancels)
- * them all. A group's or a row's menu publishes or discards just that; a double-click opens the
- * component in its window.
+ * them all. A group's or a row's menu publishes or discards just that, or opens the component in
+ * its window; a double-click opens the review window ({@link ChangeReviewKlWindow}) on the row's
+ * component, which steps through the components in the tray's order.
  * <p>
  * The tree follows the store: it is rebuilt when any entity is written and when any transaction
  * commits, and again each time the tray slides out ({@link #refresh()}).
@@ -138,6 +142,7 @@ public class UnpublishedChangesController {
 
     private final ViewProperties viewProperties;
     private final UUID journalTopic;
+    private final Consumer<ChapterKlWindow<Pane>> windowHost;
     private final EvtBus eventBus = EvtBusFactory.getDefaultEvtBus();
 
     private final ReadOnlyIntegerWrapper changeCount = new ReadOnlyIntegerWrapper(this, "changeCount", 0);
@@ -157,6 +162,16 @@ public class UnpublishedChangesController {
     /** The changes shown, flat; the tree groups them. */
     private List<UnpublishedChange> changes = List.of();
 
+    /** The groups shown, in the tree's order; the review window steps through them. */
+    private List<UnpublishedGroup> groups = List.of();
+
+    /** The review window while it is open. */
+    private ChangeReviewKlWindow reviewWindow;
+
+    /** The component on the review page, and where it was among the groups when shown. */
+    private long reviewedNid;
+    private int reviewedIndex;
+
     /** Groups the user unfolded; a rebuilt tree unfolds them again. Groups start folded. */
     private final Set<Long> expandedGroups = new HashSet<>();
 
@@ -164,11 +179,14 @@ public class UnpublishedChangesController {
 
     /**
      * @param viewProperties the journal's view, on which the rows' description texts are read
-     * @param journalTopic   the journal's event topic, on which a double-clicked row opens its window
+     * @param journalTopic   the journal's event topic, on which a row's Open opens its window
+     * @param windowHost     adds a window to the journal's workspace; the review window goes there
      */
-    public UnpublishedChangesController(ViewProperties viewProperties, UUID journalTopic) {
+    public UnpublishedChangesController(ViewProperties viewProperties, UUID journalTopic,
+                                        Consumer<ChapterKlWindow<Pane>> windowHost) {
         this.viewProperties = viewProperties;
         this.journalTopic = journalTopic;
+        this.windowHost = windowHost;
     }
 
     @FXML
@@ -337,6 +355,7 @@ public class UnpublishedChangesController {
 
     private void show(List<UnpublishedChange> collected, List<UnpublishedGroup> groups) {
         changes = collected;
+        this.groups = groups;
         List<TreeItem<UnpublishedRow>> items = new ArrayList<>();
         for (UnpublishedGroup group : groups) {
             // A heading is never a leaf, even with nothing under it. The tree cell skin reserves an
@@ -364,7 +383,133 @@ public class UnpublishedChangesController {
         treeRoot.getChildren().setAll(items);
         changeCount.set(collected.size());
         groupCount.set(groups.size());
+        followReview();
     }
+
+    // ---- Review window ------------------------------------------------------------------------
+
+    /**
+     * Opens the review window, or fronts it, on the row's component: a group itself, or the
+     * group a change is under.
+     */
+    private void review(UnpublishedRow row) {
+        long nid = switch (row) {
+            case UnpublishedGroup group -> group.nid();
+            case UnpublishedChange change -> change.rootNid();
+        };
+        int index = indexOfGroup(nid);
+        if (index < 0) {
+            return;
+        }
+        if (reviewWindow == null || !reviewWindow.isShowing()) {
+            // None open, or the workspace let it go without the close button: a fresh one.
+            reviewWindow = new ChangeReviewKlWindow(viewProperties, reviewActions);
+            reviewWindow.busyProperty().bind(busy);
+            windowHost.accept(reviewWindow);
+        } else {
+            reviewWindow.toFront();
+        }
+        showInReview(index);
+    }
+
+    /** Diffs the group's changes off the FX thread and shows the page; the tray selects the row. */
+    private void showInReview(int index) {
+        UnpublishedGroup group = groups.get(index);
+        int total = groups.size();
+        int changeTotal = changes.size();
+        reviewedNid = group.nid();
+        reviewedIndex = index;
+        ViewCalculator calculator = viewProperties.calculator();
+        TinkExecutor.threadPool().execute(() -> {
+            List<ChangeDiff> diffs = group.changes().stream().map(change -> ChangeDiff.of(change, calculator)).toList();
+            String author = diffs.isEmpty() ? "" : calculator.getDescriptionTextOrNid(diffs.getFirst().after().authorNid());
+            Platform.runLater(() -> {
+                if (reviewWindow == null || reviewedNid != group.nid()) {
+                    return; // closed, or moved on, meanwhile
+                }
+                reviewWindow.show(new ChangeReviewKlWindow.Page(group, diffs, index, total, changeTotal, author));
+                selectGroupRow(group.nid());
+            });
+        });
+    }
+
+    /**
+     * Keeps the open review window on the rebuilt tree: the same component when it is still
+     * listed (its changes may differ), else the one now at its place, or the last; nothing left
+     * closes the window.
+     */
+    private void followReview() {
+        if (reviewWindow == null) {
+            return;
+        }
+        if (groups.isEmpty()) {
+            closeReview();
+            return;
+        }
+        int index = indexOfGroup(reviewedNid);
+        showInReview(index < 0 ? Math.min(reviewedIndex, groups.size() - 1) : index);
+    }
+
+    private int indexOfGroup(long nid) {
+        for (int i = 0; i < groups.size(); i++) {
+            if (groups.get(i).nid() == nid) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void selectGroupRow(long nid) {
+        for (TreeItem<UnpublishedRow> item : treeRoot.getChildren()) {
+            if (item.getValue().nid() == nid) {
+                changesTreeView.getSelectionModel().select(item);
+                changesTreeView.scrollTo(changesTreeView.getRow(item));
+                return;
+            }
+        }
+    }
+
+    private void closeReview() {
+        ChangeReviewKlWindow window = reviewWindow;
+        reviewWindow = null;
+        window.close();
+    }
+
+    private final ChangeReviewKlWindow.Actions reviewActions = new ChangeReviewKlWindow.Actions() {
+        @Override
+        public void previous() {
+            if (reviewedIndex > 0) {
+                showInReview(reviewedIndex - 1);
+            }
+        }
+
+        @Override
+        public void next() {
+            if (reviewedIndex < groups.size() - 1) {
+                showInReview(reviewedIndex + 1);
+            }
+        }
+
+        @Override
+        public void open(UnpublishedGroup group) {
+            UnpublishedChangesController.this.open(group);
+        }
+
+        @Override
+        public void publish(UnpublishedGroup group) {
+            UnpublishedChangesController.this.publish(group.changes());
+        }
+
+        @Override
+        public void discard(UnpublishedGroup group) {
+            UnpublishedChangesController.this.discard(group.changes());
+        }
+
+        @Override
+        public void close() {
+            closeReview();
+        }
+    };
 
     // ---- Publish all / Discard all ------------------------------------------------------------
 
@@ -679,7 +824,7 @@ public class UnpublishedChangesController {
             row.getChildren().addAll(caretHitArea, typeGlyph, text, kindTag, count, menuButton);
             row.setOnMouseClicked(event -> {
                 if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && getItem() != null) {
-                    open(getItem());
+                    review(getItem());
                     event.consume();
                 }
             });

@@ -127,6 +127,7 @@ import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.JournalNames;
 import dev.ikm.komet.kview.mvvm.view.concept.ConceptNode;
+import dev.ikm.komet.kview.mvvm.view.changes.ChangeReviewKlWindow;
 import dev.ikm.komet.kview.mvvm.view.changes.UnpublishedChangesController;
 import dev.ikm.komet.kview.mvvm.view.navigation.ConceptPatternNavController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
@@ -1505,7 +1506,8 @@ public class JournalController {
         FXMLLoader loader = new FXMLLoader(UnpublishedChangesController.class.getResource(UNPUBLISHED_CHANGES_FXML_URL));
         loader.setController(new UnpublishedChangesController(
                 windowView.makeOverridableViewProperties("JournalController.loadUnpublishedChangesPanel"),
-                journalTopic));
+                journalTopic,
+                this::setupWorkspaceWindow));
         try {
             unpublishedChangesPanel = loader.load();
         } catch (IOException e) {
@@ -2044,8 +2046,9 @@ public class JournalController {
             }
         });
 
+        // A transient window (the change review) lives only while open and is not restored.
         final ImmutableList<String> windowNames = Lists.immutable.fromStream(workspace.getWindows()
-                .stream().map(window -> {
+                .stream().filter(window -> !ChangeReviewKlWindow.isTransient(window)).map(window -> {
                     final UUID windowTopic = window.getWindowTopic();
                     final String prefix = window.getWindowType().getPrefix();
                     return prefix + shortenUUID(windowTopic);

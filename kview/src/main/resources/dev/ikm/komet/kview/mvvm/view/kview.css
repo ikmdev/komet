@@ -8740,3 +8740,457 @@ Styling a context menu for kview ui/ux controls
 .unpublished-changes-container .note-text-field:disabled {
     -fx-opacity: 0.5;
 }
+
+/*******************************************************************************
+ *                                                                             *
+ * Review changes window (ChangeReviewPane)                                    *
+ *                                                                             *
+ ******************************************************************************/
+
+.change-review-window {
+    -uc-text: #1F2937;
+    -uc-text-muted: #6B7280;
+    -uc-text-faint: #9CA3AF;
+    -uc-line: #E5E7EB;
+    -uc-surface: #FFFFFF;
+    -uc-surface-tint: #F3F4F6;
+    -uc-surface-row: #F8FAFC;
+    -uc-hover: #F5F8FC;
+    -uc-primary: #3B7DDD;
+    -uc-primary-hover: #2F66B8;
+    -del-bg: #FEF2F2;
+    -del-fg: #991B1B;
+    -add-bg: #ECFDF5;
+    -add-fg: #065F46;
+
+    -fx-background-color: transparent;
+    -fx-font-family: "Noto Sans";
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 12, 0.0, 0, 3);
+}
+
+/* Chrome: one blue bar with rounded top corners; the title chip is a darker plate resting on
+   its bottom edge (its top margin is set in code). The bar drags the window. */
+.change-review-window .window-header-control {
+    -fx-background-color: -Secondary-06;
+    -fx-background-radius: 8 8 0 0;
+    -fx-min-height: 36;
+    -fx-pref-height: 36;
+    -fx-max-height: 36;
+    -fx-padding: 0 8 0 10;
+    -fx-spacing: 0;
+    -fx-alignment: center-left;
+    -fx-cursor: open-hand;
+}
+
+.change-review-window .window-header-control:pressed {
+    -fx-cursor: closed-hand;
+}
+
+.change-review-window .lidr-rounded-tab {
+    -fx-background-color: rgba(0, 0, 0, 0.28);
+    -fx-background-radius: 8 8 0 0;
+    -fx-border-radius: 8 8 0 0;
+    -fx-alignment: center-left;
+    -fx-spacing: 8;
+    -fx-padding: 0 14 0 10;
+}
+
+.change-review-window .lidr-rounded-tab .lidr-tab-text {
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 1em; /* 12px */
+}
+
+.change-review-window .lidr-rounded-tab .nine-dots-icon {
+    -fx-min-width: 11px;
+    -fx-min-height: 10px;
+    -fx-pref-width: 11px;
+    -fx-pref-height: 10px;
+    -fx-max-width: 11px;
+    -fx-max-height: 10px;
+}
+
+.change-review-window .window-header-control .button {
+    -fx-background-color: transparent;
+    -fx-cursor: default;
+}
+
+.change-review-window .window-header-control .button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.16);
+    -fx-background-radius: 5;
+}
+
+/* Previous / Next and where the page is among the tray's components. */
+.change-review-window .nav-strip {
+    -fx-padding: 8 12 8 12;
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+    -fx-background-color: -uc-surface-tint;
+    -fx-border-color: -uc-line;
+    -fx-border-width: 0 0 1 0;
+}
+
+.change-review-window .nav-button {
+    -fx-background-color: -uc-surface;
+    -fx-background-radius: 4;
+    -fx-border-color: -Grey-5;
+    -fx-border-radius: 4;
+    -fx-padding: 3 10 3 8;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: -uc-text;
+    -fx-graphic-text-gap: 5;
+    -fx-cursor: hand;
+}
+
+.change-review-window .nav-button:hover {
+    -fx-background-color: -uc-hover;
+}
+
+.change-review-window .nav-button:disabled {
+    -fx-opacity: 0.5;
+}
+
+/* The chevrons: a 6 x 10 arrowhead each, in the button's text color. */
+.change-review-window .nav-button .chevron-left,
+.change-review-window .nav-button .chevron-right {
+    -fx-min-width: 6;
+    -fx-pref-width: 6;
+    -fx-max-width: 6;
+    -fx-min-height: 10;
+    -fx-pref-height: 10;
+    -fx-max-height: 10;
+    -fx-background-color: -uc-text;
+}
+
+.change-review-window .nav-button .chevron-left {
+    -fx-shape: "M6 0 L7.4 1.4 L3.8 5 L7.4 8.6 L6 10 L1 5 Z";
+}
+
+.change-review-window .nav-button .chevron-right {
+    -fx-shape: "M1.4 0 L0 1.4 L3.6 5 L0 8.6 L1.4 10 L6.4 5 Z";
+}
+
+.change-review-window .key-hint {
+    -fx-font-size: 0.833333em; /* 10px */
+    -fx-text-fill: -uc-text-faint;
+}
+
+.change-review-window .position-label {
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: -uc-text-muted;
+}
+
+/* The tray's row header, repeated (its .unpublished-row classes dress the badge and tag). */
+.change-review-window .component-header {
+    -fx-padding: 12 14 12 14;
+    -fx-spacing: 10;
+    -fx-alignment: center-left;
+    -fx-background-color: -uc-surface;
+    -fx-border-color: -uc-line;
+    -fx-border-width: 0 0 1 0;
+}
+
+.change-review-window .component-header .change-title {
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 1.166667em; /* 14px */
+}
+
+.change-review-window .type-glyph,
+.change-review-window .kind-tag {
+    -fx-font-family: "Noto Sans Bold";
+}
+
+/* A new or inactivated component says so above its cards. */
+.change-review-window .banner {
+    -fx-padding: 10 14 10 14;
+    -fx-spacing: 10;
+    -fx-alignment: top-left;
+    -fx-border-color: -uc-line;
+    -fx-border-width: 0 0 1 0;
+}
+
+.change-review-window .banner .banner-text {
+    -fx-font-size: 1em; /* 12px */
+}
+
+.change-review-window .banner .banner-icon {
+    -fx-min-width: 14;
+    -fx-pref-width: 14;
+    -fx-max-width: 14;
+    -fx-min-height: 14;
+    -fx-pref-height: 14;
+    -fx-max-height: 14;
+    -fx-background-radius: 7;
+    -fx-translate-y: 2;
+}
+
+.change-review-window .banner.new {
+    -fx-background-color: #F0FDF4;
+}
+
+.change-review-window .banner.new .banner-text {
+    -fx-text-fill: #166534;
+}
+
+.change-review-window .banner.new .banner-icon {
+    -fx-background-color: #86EFAC;
+}
+
+.change-review-window .banner.inactivated {
+    -fx-background-color: #FEF2F2;
+}
+
+.change-review-window .banner.inactivated .banner-text {
+    -fx-text-fill: #991B1B;
+}
+
+.change-review-window .banner.inactivated .banner-icon {
+    -fx-background-color: #FCA5A5;
+}
+
+.change-review-window .tools-row {
+    -fx-padding: 6 14 6 14;
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+    -fx-background-color: -uc-surface;
+    -fx-border-color: -uc-line;
+    -fx-border-width: 0 0 1 0;
+}
+
+.change-review-window .summary-label {
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: -uc-text-muted;
+}
+
+/* The toggle: a small square with a hairline, filled blue with a white tick when on. */
+.change-review-window .show-unchanged {
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: -uc-text;
+    -fx-label-padding: 0 0 0 6;
+}
+
+.change-review-window .show-unchanged > .box {
+    -fx-background-color: -uc-surface;
+    -fx-background-insets: 0;
+    -fx-background-radius: 3;
+    -fx-border-color: -Grey-5;
+    -fx-border-radius: 3;
+    -fx-padding: 2 1 2 1; /* a 13px box around the 9 x 7 tick, border included */
+}
+
+.change-review-window .show-unchanged:hover > .box {
+    -fx-border-color: -Grey-7;
+}
+
+.change-review-window .show-unchanged:selected > .box {
+    -fx-background-color: -uc-primary;
+    -fx-border-color: -uc-primary;
+}
+
+/* A thin tick (the mark's size is its padding, as in Modena); it shows only when on. */
+.change-review-window .show-unchanged > .box > .mark {
+    -fx-padding: 3.5 4.5 3.5 4.5;
+    -fx-shape: "M3.3 7 L0 3.7 L1.2 2.5 L3.3 4.6 L7.8 0 L9 1.2 Z";
+    -fx-background-color: transparent;
+}
+
+.change-review-window .show-unchanged:selected > .box > .mark {
+    -fx-background-color: -uc-surface;
+}
+
+/* The cards, on a grey wash, with the tray's slim scroll bar. */
+.change-review-window .cards-scroll {
+    -fx-background-color: -Grey-2;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.change-review-window .cards-scroll > .viewport {
+    -fx-background-color: -Grey-2;
+}
+
+.change-review-window .cards-scroll .scroll-bar,
+.change-review-window .cards-scroll .scroll-bar .track {
+    -fx-background-color: transparent;
+}
+
+.change-review-window .cards-scroll .scroll-bar:vertical .increment-button,
+.change-review-window .cards-scroll .scroll-bar:vertical .decrement-button,
+.change-review-window .cards-scroll .scroll-bar:vertical .increment-arrow,
+.change-review-window .cards-scroll .scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-padding: 0 2 0 2;
+}
+
+.change-review-window .cards-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: #CBD5E1;
+    -fx-background-insets: 3px 5px 3px 1px;
+    -fx-background-radius: 16px;
+}
+
+.change-review-window .cards {
+    -fx-padding: 10 12 10 12;
+    -fx-spacing: 8;
+    -fx-background-color: -Grey-2;
+}
+
+.change-review-window .change-card {
+    -fx-background-color: -uc-surface;
+    -fx-background-radius: 3;
+    -fx-border-color: -Grey-5;
+    -fx-border-radius: 3;
+}
+
+.change-review-window .card-header {
+    -fx-padding: 8 10 8 10;
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+    -fx-border-color: -uc-line;
+    -fx-border-width: 0 0 1 0;
+}
+
+.change-review-window .card-header .type-glyph {
+    -fx-min-width: 22;
+    -fx-pref-width: 22;
+    -fx-max-width: 22;
+    -fx-min-height: 22;
+    -fx-pref-height: 22;
+    -fx-max-height: 22;
+    -fx-font-size: 0.833333em; /* 10px */
+}
+
+/* The table: a grid of cells, each filling its slot so fills and hairlines span the row. */
+.change-review-window .cell {
+    -fx-padding: 7 10 7 10;
+    -fx-alignment: top-left;
+    -fx-border-color: -uc-line;
+    -fx-border-width: 0 0 1 0;
+}
+
+.change-review-window .cell.header-cell {
+    -fx-padding: 5 10 5 10;
+    -fx-background-color: -uc-surface-row;
+}
+
+.change-review-window .column-title {
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 0.833333em; /* 10px */
+    -fx-text-fill: -uc-text-muted;
+}
+
+.change-review-window .field-name {
+    -fx-text-fill: -uc-text-muted;
+}
+
+.change-review-window .cell .value-text {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-fill: -uc-text;
+}
+
+.change-review-window .cell.same .value-text {
+    -fx-fill: -uc-text-faint;
+}
+
+.change-review-window .cell.none .value-text {
+    -fx-fill: -uc-text-faint;
+    -fx-font-style: italic;
+}
+
+.change-review-window .cell.del {
+    -fx-background-color: -del-bg;
+}
+
+.change-review-window .cell.del .value-text {
+    -fx-fill: -del-fg;
+}
+
+.change-review-window .cell.add {
+    -fx-background-color: -add-bg;
+}
+
+.change-review-window .cell.add .value-text {
+    -fx-fill: -add-fg;
+}
+
+/* The words that differ, inside a changed text. */
+.change-review-window .cell .mark-removed {
+    -fx-font-family: "Noto Sans Bold";
+    -fx-strikethrough: true;
+}
+
+.change-review-window .cell .mark-added {
+    -fx-font-family: "Noto Sans Bold";
+}
+
+/* Footer: open the component's window on the left, discard and publish it on the right. */
+.change-review-window .footer {
+    -fx-padding: 10 12 10 12;
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+    -fx-background-color: -uc-surface;
+    -fx-background-radius: 0 0 8 8;
+    -fx-border-color: -uc-line;
+    -fx-border-width: 1 0 0 0;
+}
+
+.change-review-window .open-window-button {
+    -fx-background-color: transparent;
+    -fx-padding: 4;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 1em; /* 12px */
+    -fx-text-fill: -uc-primary;
+    -fx-graphic-text-gap: 6;
+    -fx-cursor: hand;
+}
+
+.change-review-window .open-window-button:hover {
+    -fx-underline: true;
+}
+
+/* A box with an arrow leaving its top-right corner. */
+.change-review-window .open-window-button .open-window-icon {
+    -fx-min-width: 12;
+    -fx-pref-width: 12;
+    -fx-max-width: 12;
+    -fx-min-height: 12;
+    -fx-pref-height: 12;
+    -fx-max-height: 12;
+    -fx-background-color: -uc-primary;
+    -fx-shape: "M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z";
+}
+
+.change-review-window .publish-button,
+.change-review-window .discard-button {
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 1em; /* 12px */
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 5 14 5 14;
+    -fx-cursor: hand;
+}
+
+.change-review-window .publish-button {
+    -fx-background-color: -uc-primary;
+    -fx-text-fill: white;
+}
+
+.change-review-window .publish-button:hover {
+    -fx-background-color: -uc-primary-hover;
+}
+
+.change-review-window .discard-button {
+    -fx-background-color: -uc-surface;
+    -fx-border-color: -Grey-5;
+    -fx-border-width: 1;
+    -fx-text-fill: #4B5563;
+}
+
+.change-review-window .discard-button:hover {
+    -fx-background-color: -uc-surface-tint;
+}
+
+.change-review-window .publish-button:disabled,
+.change-review-window .discard-button:disabled {
+    -fx-opacity: 0.5;
+}
