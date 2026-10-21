@@ -25,18 +25,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.UUID;
 
 /**
  * A search query that names components by identifier instead of by text
  * ({@code IKE-Network/ike-issues#1174}). Three forms are read:
  * <ul>
- *   <li>a nid, written as a negative integer: {@code -2147483000};</li>
+ *   <li>a nid, written as a negative integer: {@code -2147483000}, the nids of a sequential
+ *       store;</li>
  *   <li>a UUID: {@code 02018e5a-46ba-5297-92f1-6931b9f98a12};</li>
  *   <li>a bracketed list of nids, UUIDs, or both:
- *       {@code [-2147483000, 02018e5a-46ba-5297-92f1-6931b9f98a12]}.</li>
+ *       {@code [-2147483000, 02018e5a-46ba-5297-92f1-6931b9f98a12]}. Inside brackets a nid
+ *       may have either sign, so a 64-bit store's nids, which are positive, are written there:
+ *       {@code [8589934915]}.</li>
  * </ul>
+ * A bare positive number stays a text query, so a search for a code such as a SNOMED CT
+ * identifier is not read as a nid. A nid is read as a {@code long} (IKE-Network/ike-issues#1313).
  * Any other text is a text query. That includes a bracketed list with an element that is
  * neither an integer nor a UUID, so a text query may begin and end with a bracket.
  *
@@ -80,9 +84,9 @@ public final class IdentifierQuery {
             return parseList(text.substring(1, text.length() - 1));
         }
         if (text.startsWith("-")) {
-            OptionalInt nid = parseInt(text);
+            OptionalLong nid = parseLong(text);
             return nid.isPresent()
-                    ? Optional.of(new IdentifierQuery(List.of(new Nid(nid.getAsInt()))))
+                    ? Optional.of(new IdentifierQuery(List.of(new Nid(nid.getAsLong()))))
                     : Optional.empty();
         }
         return UuidUtil.getUUID(text).map(uuid -> new IdentifierQuery(List.of(new Uuid(uuid))));
@@ -160,9 +164,9 @@ public final class IdentifierQuery {
         List<Identifier> identifiers = new ArrayList<>();
         for (String part : inside.split(",", -1)) {
             String element = part.strip();
-            OptionalInt nid = parseInt(element);
+            OptionalLong nid = parseLong(element);
             if (nid.isPresent()) {
-                identifiers.add(new Nid(nid.getAsInt()));
+                identifiers.add(new Nid(nid.getAsLong()));
                 continue;
             }
             Optional<UUID> uuid = UuidUtil.getUUID(element);
@@ -174,11 +178,11 @@ public final class IdentifierQuery {
         return Optional.of(new IdentifierQuery(identifiers));
     }
 
-    private static OptionalInt parseInt(String possibleInt) {
+    private static OptionalLong parseLong(String possibleNid) {
         try {
-            return OptionalInt.of(Integer.parseInt(possibleInt));
-        } catch (NumberFormatException notAnInt) {
-            return OptionalInt.empty();
+            return OptionalLong.of(Long.parseLong(possibleNid));
+        } catch (NumberFormatException notANumber) {
+            return OptionalLong.empty();
         }
     }
 

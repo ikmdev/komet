@@ -118,6 +118,9 @@ class IdentifierQueryTest {
                 "in the order written, without the UUID the store does not hold");
         assertArrayEquals(new long[]{5, -7}, IdentifierQuery.parse("[5, -7]").orElseThrow().nids(),
                 "inside brackets an integer of either sign is a nid");
+        assertArrayEquals(new long[]{8_589_934_915L}, IdentifierQuery.parse("[8589934915]").orElseThrow().nids(),
+                "a 64-bit store's nid, beyond the int range, is read whole");
+        assertTrue(IdentifierQuery.parse("8589934915").isEmpty(), "a bare positive number stays a text query");
     }
 
     @Test
