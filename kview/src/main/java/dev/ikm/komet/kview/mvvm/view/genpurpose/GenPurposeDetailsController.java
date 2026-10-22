@@ -87,7 +87,6 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.control.SplitPane;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
@@ -317,16 +316,6 @@ public class GenPurposeDetailsController {
         // The header STAMP is view-only in this window — clicking it must not select it or open
         // the STAMP form.
         stampViewControl.setSelectable(false);
-
-        // When the window resizes vertically only the bottom section should grow or shrink; the
-        // SplitPane's default is to spread the delta across every section proportionally, so pin
-        // all items except the last one. This takes over once the user has claimed the sections'
-        // sizing by dragging a divider — until then ContentSizedSplitPane sizes every section to
-        // its content and hands the leftover height to that same last section.
-        mainContent.getItems().subscribe(() -> {
-            List<Node> items = mainContent.getItems();
-            items.forEach(item -> SplitPane.setResizableWithParent(item, item == items.getLast()));
-        });
 
         // Ghost-window styling while in create mode: the window frames a component that doesn't
         // exist yet, so the chrome dims and the frame dashes (see :create-mode in kview.css) and
