@@ -226,6 +226,7 @@
                                 <ignoredUnusedDeclaredDependency>dev.ikm.jpms:record-builder-core</ignoredUnusedDeclaredDependency>
                                 <!-- The tests' providers are found through ServiceLoader. -->
                                 <ignoredUnusedDeclaredDependency>dev.ikm.tinkar:data-spinedarray-provider</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>dev.ikm.tinkar:data-spinedarray64-provider</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>dev.ikm.tinkar:entity-provider</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>dev.ikm.tinkar:executor-provider</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
