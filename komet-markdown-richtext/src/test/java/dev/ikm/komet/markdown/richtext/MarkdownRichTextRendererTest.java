@@ -16,7 +16,9 @@
 package dev.ikm.komet.markdown.richtext;
 
 import jfx.incubator.scene.control.richtext.model.RichParagraph;
+import jfx.incubator.scene.control.richtext.model.StyleAttribute;
 import jfx.incubator.scene.control.richtext.model.StyleAttributeMap;
+import jfx.incubator.scene.control.richtext.model.StyledSegment;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -142,5 +144,74 @@ class MarkdownRichTextRendererTest {
         assertTrue(GfmTableParser.looksLikeTable(projection), "projection must be valid GFM");
         TableModel parsed = GfmTableParser.parse(projection);
         assertEquals(List.of("x", "y"), parsed.rows().get(0));
+    }
+
+    @Test
+    void linkWritesItsDestinationWhenTheDecoratorDoesNotFollowLinks() {
+        Rendered r = render("See [the guide](topic-a) now.");
+        assertEquals("See the guide (topic-a) now.", drawn(r.paragraphs().get(0)));
+    }
+
+    @Test
+    void linkCarriesTheDecoratorsStyleWhenItFollowsLinks() {
+        StyleAttribute<String> target = StyleAttribute.character("test.link", String.class);
+        InlineDecorator following = new InlineDecorator() {
+            @Override
+            public List<InlinePiece> decorate(String text, StyleAttributeMap style) {
+                return InlineDecorator.PLAIN.decorate(text, style);
+            }
+
+            @Override
+            public StyleAttributeMap linkStyle(String destination, StyleAttributeMap style) {
+                return StyleAttributeMap.builder().merge(style).set(target, destination).build();
+            }
+        };
+        List<RichParagraph> out = new ArrayList<>();
+        List<String> plain = new ArrayList<>();
+        new MarkdownRichTextRenderer(13, following).render("See [the *guide*](topic-a) now.", StyleAttributeMap.EMPTY, out, plain);
+
+        assertEquals("See the guide now.", drawn(out.get(0)));
+        List<String> linked = new ArrayList<>();
+        RichParagraph paragraph = out.get(0);
+        for (int i = 0; i < paragraph.getSegmentCount(); i++) {
+            StyledSegment segment = paragraph.getSegment(i);
+            StyleAttributeMap attributes = segment.getStyleAttributeMap(null);
+            if (attributes != null && "topic-a".equals(attributes.get(target))) {
+                linked.add(segment.getText());
+            }
+        }
+        assertEquals(List.of("the ", "guide"), linked);
+    }
+
+    @Test
+    void blockSpacingSeparatesTopLevelBlocksOnlyWhenSet() {
+        String markdown = "# Title\n\nFirst.\n\n- one\n- two\n";
+        List<RichParagraph> flush = new ArrayList<>();
+        new MarkdownRichTextRenderer(13, null).render(markdown, StyleAttributeMap.EMPTY, flush, new ArrayList<>());
+        assertTrue(flush.stream().allMatch(p -> spaceAbove(p) == null), "no spacing by default");
+
+        MarkdownRichTextRenderer spaced = new MarkdownRichTextRenderer(13, null);
+        spaced.setBlockSpacing(8);
+        List<RichParagraph> out = new ArrayList<>();
+        spaced.render(markdown, StyleAttributeMap.EMPTY, out, new ArrayList<>());
+        assertEquals(4, out.size());
+        assertEquals(null, spaceAbove(out.get(0)), "the first block sits at the top");
+        assertEquals(8.0, spaceAbove(out.get(1)));
+        assertEquals(8.0, spaceAbove(out.get(2)), "a list stands apart from the block above it");
+        assertEquals(null, spaceAbove(out.get(3)), "a list's items stay together");
+    }
+
+    private static Double spaceAbove(RichParagraph paragraph) {
+        StyleAttributeMap attributes = paragraph.getParagraphAttributes();
+        return attributes == null ? null : attributes.get(StyleAttributeMap.SPACE_ABOVE);
+    }
+
+    /** The text a paragraph draws: its segments' text in order. */
+    private static String drawn(RichParagraph paragraph) {
+        StringBuilder text = new StringBuilder();
+        for (int i = 0; i < paragraph.getSegmentCount(); i++) {
+            text.append(paragraph.getSegment(i).getText());
+        }
+        return text.toString();
     }
 }

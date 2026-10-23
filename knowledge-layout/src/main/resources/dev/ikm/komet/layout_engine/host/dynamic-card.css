@@ -128,6 +128,40 @@
     -fx-background-color: #ff9100;
 }
 
+/* Help control: a "?" in a white ring, filled white while the help drawer is open. */
+.dynamic-card-help-button {
+    -fx-min-width: 22;
+    -fx-min-height: 22;
+    -fx-max-width: 22;
+    -fx-max-height: 22;
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+    -fx-background-radius: 11;
+    -fx-border-color: white;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 11;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 13;
+    -fx-cursor: hand;
+}
+
+.dynamic-card-help-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.18);
+}
+
+.dynamic-card-help-button:selected {
+    -fx-background-color: white;
+    -fx-text-fill: #34465f;
+}
+
+/* The help drawer: a light panel ruled off from the card content. */
+.dynamic-card-help {
+    -fx-background-color: white;
+    -fx-border-color: transparent transparent transparent #d5d9e0;
+    -fx-border-width: 0 0 0 1;
+}
+
 /* Close (X) control. */
 .dynamic-card-close-button {
     -fx-background-color: transparent;

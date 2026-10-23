@@ -1,0 +1,3 @@
+= First
+
+See xref:second.adoc[the second].

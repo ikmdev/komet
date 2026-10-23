@@ -83,6 +83,7 @@ public final class MarkdownRichTextRenderer {
     private final InlineDecorator decorator;
     private final BlockRenderer blockRenderer;
     private TableColumnWidths columnWidths;
+    private double blockSpacing;
 
     /**
      * Sets the store for user-chosen table column widths ({@code IKE-Network/ike-issues#1034}).
@@ -94,6 +95,17 @@ public final class MarkdownRichTextRenderer {
      */
     public void setColumnWidths(TableColumnWidths columnWidths) {
         this.columnWidths = columnWidths;
+    }
+
+    /**
+     * Sets the space above each top-level block after the first: a paragraph, a list, a code
+     * block, and half as much again above a heading. A reading surface such as help sets it so
+     * blocks stand apart; the default, {@code 0}, keeps blocks flush, as a transcript wants.
+     *
+     * @param blockSpacing the space in pixels, {@code 0} for none
+     */
+    public void setBlockSpacing(double blockSpacing) {
+        this.blockSpacing = Math.max(0, blockSpacing);
     }
 
     /**
@@ -245,11 +257,13 @@ public final class MarkdownRichTextRenderer {
                 RichParagraph.Builder b = RichParagraph.builder();
                 StyleAttributeMap hs = baseStyle.combine(
                         StyleAttributeMap.builder().setBold(true).setFontSize(headingSize(h.getLevel())).build());
+                spaceAbove(b, out, listDepth, blockSpacing * 1.5);
                 appendInlines(b, h.getFirstChild(), hs);
                 emit(b, plainOf(h), out, plain);
             }
             case Paragraph p -> {
                 RichParagraph.Builder b = RichParagraph.builder();
+                spaceAbove(b, out, listDepth, blockSpacing);
                 appendInlines(b, p.getFirstChild(), baseStyle);
                 emit(b, plainOf(p), out, plain);
             }
@@ -263,13 +277,13 @@ public final class MarkdownRichTextRenderer {
             case IndentedCodeBlock ic -> emitCodeBlock(ic.getLiteral(), out, plain);
             case BulletList bl -> {
                 for (Node item = bl.getFirstChild(); item != null; item = item.getNext()) {
-                    renderListItem(item, "•  ", out, plain, listDepth, baseStyle);
+                    renderListItem(item, "•  ", out, plain, listDepth, baseStyle, item == bl.getFirstChild());
                 }
             }
             case OrderedList ol -> {
                 int n = 1;
                 for (Node item = ol.getFirstChild(); item != null; item = item.getNext()) {
-                    renderListItem(item, (n++) + ".  ", out, plain, listDepth, baseStyle);
+                    renderListItem(item, (n++) + ".  ", out, plain, listDepth, baseStyle, item == ol.getFirstChild());
                 }
             }
             case ThematicBreak ignored -> emit(RichParagraph.builder().addSegment("─".repeat(10), baseStyle),
@@ -287,7 +301,7 @@ public final class MarkdownRichTextRenderer {
     }
 
     private void renderListItem(Node item, String prefix, List<RichParagraph> out, List<String> plain,
-                                int listDepth, StyleAttributeMap baseStyle) {
+                                int listDepth, StyleAttributeMap baseStyle, boolean firstOfList) {
         if (!(item instanceof ListItem)) {
             renderBlock(item, out, plain, listDepth, baseStyle);
             return;
@@ -297,6 +311,9 @@ public final class MarkdownRichTextRenderer {
         for (Node child = item.getFirstChild(); child != null; child = child.getNext()) {
             if (child instanceof Paragraph p) {
                 RichParagraph.Builder b = RichParagraph.builder();
+                if (first && firstOfList) {
+                    spaceAbove(b, out, listDepth, blockSpacing);
+                }
                 addSegment(b, indent + (first ? prefix : "   "), baseStyle);
                 appendInlines(b, p.getFirstChild(), baseStyle);
                 emit(b, indent + (first ? prefix : "   ") + plainOf(p), out, plain);
@@ -802,8 +819,14 @@ public final class MarkdownRichTextRenderer {
             code = code.substring(0, code.length() - 1);
         }
         StyleAttributeMap mono = StyleAttributeMap.builder().setFontFamily(MONO).setFontSize(base).build();
+        boolean first = true;
         for (String line : code.split("\n", -1)) {
-            out.add(RichParagraph.builder().addSegment(line.isEmpty() ? " " : line, mono).build());
+            RichParagraph.Builder b = RichParagraph.builder();
+            if (first) {
+                spaceAbove(b, out, 0, blockSpacing);
+                first = false;
+            }
+            out.add(b.addSegment(line.isEmpty() ? " " : line, mono).build());
             plain.add(line);
         }
     }
@@ -832,9 +855,15 @@ public final class MarkdownRichTextRenderer {
                 case SoftLineBreak ignored -> decorator.emit(b, " ", baseStyle);
                 case HardLineBreak ignored -> decorator.emit(b, " ", baseStyle);
                 case Link l -> {
-                    appendInlines(b, l.getFirstChild(), baseStyle);
-                    if (l.getDestination() != null && !l.getDestination().isBlank()) {
-                        decorator.emit(b, " (" + l.getDestination() + ")", baseStyle);
+                    boolean hasDestination = l.getDestination() != null && !l.getDestination().isBlank();
+                    StyleAttributeMap linkStyle = hasDestination ? decorator.linkStyle(l.getDestination(), baseStyle) : null;
+                    if (linkStyle != null) {
+                        appendInlines(b, l.getFirstChild(), linkStyle);
+                    } else {
+                        appendInlines(b, l.getFirstChild(), baseStyle);
+                        if (hasDestination) {
+                            decorator.emit(b, " (" + l.getDestination() + ")", baseStyle);
+                        }
                     }
                 }
                 case Image img -> b.addInlineNode(() -> imageNode(img.getDestination()));
@@ -871,6 +900,13 @@ public final class MarkdownRichTextRenderer {
                 case HardLineBreak ignored -> sb.append(' ');
                 default -> appendPlain(c, sb);
             }
+        }
+    }
+
+    /** Spaces a top-level block after the first from the block above it, when block spacing is set. */
+    private static void spaceAbove(RichParagraph.Builder b, List<RichParagraph> out, int listDepth, double space) {
+        if (space > 0 && listDepth == 0 && !out.isEmpty()) {
+            b.setParagraphAttributes(StyleAttributeMap.builder().setSpaceAbove(space).build());
         }
     }
 

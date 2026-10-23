@@ -79,6 +79,21 @@ public interface InlineDecorator {
         }
     }
 
+    /**
+     * The style for a link's text in flowing text, for a decorator whose host follows links: the
+     * renderer writes the link's text in this style, which can carry the destination as a
+     * character attribute for the host to find under a click, and leaves the destination unwritten.
+     * The default, {@code null}, writes the link's text in the ambient style followed by its
+     * destination in parentheses, which reads well where nothing follows a link.
+     *
+     * @param destination the link's destination, never blank
+     * @param style       the ambient style
+     * @return the link text's style, or {@code null} to write the destination out
+     */
+    default StyleAttributeMap linkStyle(String destination, StyleAttributeMap style) {
+        return null;
+    }
+
     /** Default decorator: emit the run as a single styled text piece, injecting no inline nodes. */
     InlineDecorator PLAIN = (text, style) ->
             (text == null || text.isEmpty())

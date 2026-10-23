@@ -1,0 +1,3 @@
+* xref:first.adoc[The first topic]
+** xref:second.adoc[]
+* xref:missing[Missing title]

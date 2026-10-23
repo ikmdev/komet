@@ -39,6 +39,7 @@ module dev.ikm.komet.layout {
     exports dev.ikm.komet.layout_engine.host;
     exports dev.ikm.komet.layout_engine.window;
     exports dev.ikm.komet.layout.controls;
+    exports dev.ikm.komet.layout.help;
 
     opens dev.ikm.komet.layout to javafx.fxml;
     opens dev.ikm.layout.app to javafx.fxml;
@@ -48,6 +49,10 @@ module dev.ikm.komet.layout {
     // Pattern semantics factories are provided downstream (knowledge-layout-editor) but discovered
     // and shared here via KlPatternSemanticsFactories, so the lookup lives in one place.
     uses dev.ikm.komet.layout.KlPatternSemanticsFactory;
+
+    // A card's help: plugins provide the books and the renderer; the card's help drawer finds both.
+    uses dev.ikm.komet.layout.help.KlHelpProvider;
+    uses dev.ikm.komet.layout.help.KlHelpViewer.Factory;
 
     // Primary service interface for discovering ALL area factories (built-in and plugins)
     provides dev.ikm.komet.layout.KlArea.Factory

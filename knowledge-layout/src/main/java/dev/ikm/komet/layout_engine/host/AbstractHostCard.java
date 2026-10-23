@@ -8,6 +8,10 @@ import dev.ikm.komet.layout.KlToolbarItem;
 import dev.ikm.komet.layout.KlView;
 import dev.ikm.komet.layout.controls.KlDrawer;
 import dev.ikm.komet.layout.expand.KlExpansionHost;
+import dev.ikm.komet.layout.help.KlHelp;
+import dev.ikm.komet.layout.help.KlHelpProvider;
+import dev.ikm.komet.layout.help.KlHelpTopic;
+import dev.ikm.komet.layout.help.KlHelpViewer;
 import dev.ikm.komet.layout.selection.KlSelectionContext;
 import dev.ikm.komet.layout.selection.KlSelectionContextFactory;
 import dev.ikm.komet.layout_engine.toolbar.NodeToolbarItem;
@@ -30,6 +34,8 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.FlowPane;
@@ -360,26 +366,7 @@ public abstract class AbstractHostCard extends CardBlueprint {
         drawer.expandedProperty().addListener((obs, wasOpen, isOpen) -> {
             changedProperty().set(true);
             updateDrawerOpenClass(side, isOpen);
-            Region windowPane = fxObject();
-            if (side == Side.LEFT || side == Side.RIGHT) {
-                double panelWidth = content.prefWidth(-1);
-                double width = windowPane.getWidth() > 0 ? windowPane.getWidth()
-                        : windowPane.getPrefWidth();
-                double target = isOpen ? width + panelWidth : Math.max(0, width - panelWidth);
-                if (windowPane.getMaxWidth() > 0 && target > windowPane.getMaxWidth()) {
-                    windowPane.setMaxWidth(target);
-                }
-                windowPane.setPrefWidth(target);
-            } else {
-                double panelHeight = content.prefHeight(-1);
-                double height = windowPane.getHeight() > 0 ? windowPane.getHeight()
-                        : windowPane.getPrefHeight();
-                double target = isOpen ? height + panelHeight : Math.max(0, height - panelHeight);
-                if (windowPane.getMaxHeight() > 0 && target > windowPane.getMaxHeight()) {
-                    windowPane.setMaxHeight(target);
-                }
-                windowPane.setPrefHeight(target);
-            }
+            resizeForDrawer(side, content, isOpen);
         });
 
         if (isRealized()) {
@@ -390,6 +377,134 @@ public abstract class AbstractHostCard extends CardBlueprint {
             buildHeader();
         }
         return drawer;
+    }
+
+    /**
+     * Grows the window by a drawer's content as it opens, so the drawer sits beside the content rather than
+     * compressing it, and gives the size back as it closes. A raise past a standing size cap follows the
+     * user-gesture rule (ike-issues#1045): the gesture outranks the cap.
+     *
+     * @param side    the drawer's docked side
+     * @param content the drawer's content
+     * @param isOpen  whether the drawer has opened
+     */
+    private void resizeForDrawer(Side side, Region content, boolean isOpen) {
+        Region windowPane = fxObject();
+        if (side == Side.LEFT || side == Side.RIGHT) {
+            double panelWidth = content.prefWidth(-1);
+            double width = windowPane.getWidth() > 0 ? windowPane.getWidth()
+                    : windowPane.getPrefWidth();
+            double target = isOpen ? width + panelWidth : Math.max(0, width - panelWidth);
+            if (windowPane.getMaxWidth() > 0 && target > windowPane.getMaxWidth()) {
+                windowPane.setMaxWidth(target);
+            }
+            windowPane.setPrefWidth(target);
+        } else {
+            double panelHeight = content.prefHeight(-1);
+            double height = windowPane.getHeight() > 0 ? windowPane.getHeight()
+                    : windowPane.getPrefHeight();
+            double target = isOpen ? height + panelHeight : Math.max(0, height - panelHeight);
+            if (windowPane.getMaxHeight() > 0 && target > windowPane.getMaxHeight()) {
+                windowPane.setMaxHeight(target);
+            }
+            windowPane.setPrefHeight(target);
+        }
+    }
+
+    /*******************************************************************************
+     *  Help                                                                       *
+     ******************************************************************************/
+
+    /** The width the help drawer opens to. */
+    private static final double HELP_WIDTH = 460;
+    /** The height the help drawer asks for; the card's own height wins when it is taller. */
+    private static final double HELP_HEIGHT = 560;
+
+    /** The book answering for {@link #helpTopic()}, looked up once; empty when the card has no help. */
+    private Optional<KlHelpProvider> helpBook;
+    private NodeToolbarItem helpItem;
+    private KlDrawer helpDrawer;
+    private KlHelpViewer helpViewer;
+
+    /**
+     * Extension point: the help topic the card's help opens at. When a {@link KlHelpProvider} answers for its
+     * book, the toolbar carries a help button that opens the help in a drawer at the card's right edge, where
+     * it can be browsed and searched. Default: no help.
+     *
+     * @return the card's help topic, or empty when it has none
+     */
+    protected Optional<KlHelpTopic> helpTopic() {
+        return Optional.empty();
+    }
+
+    /** @return the book answering for the card's help topic, or empty */
+    private Optional<KlHelpProvider> helpBook() {
+        if (helpBook == null) {
+            helpBook = helpTopic().flatMap(topic -> {
+                try {
+                    return KlHelp.book(topic.bookId());
+                } catch (RuntimeException e) {
+                    LOG.warn("Help for {} is unavailable: {}", cardTitle(), e.toString());
+                    return Optional.empty();
+                }
+            });
+        }
+        return helpBook;
+    }
+
+    /** The help button's item: a "?" toggle that opens and closes the help drawer; created once. */
+    private NodeToolbarItem helpItem() {
+        if (helpItem == null) {
+            ToggleButton button = new ToggleButton("?");
+            button.getStyleClass().add("dynamic-card-help-button");
+            button.setId("cardHelp");
+            button.setTooltip(new Tooltip("Help: what this card does and how to use it"));
+            button.setFocusTraversable(false);
+            button.selectedProperty().addListener((obs, was, open) -> showHelp(open));
+            helpItem = NodeToolbarItem.factory()
+                    .create(KlPreferencesFactory.create(preferences(), NodeToolbarItem.class));
+            helpItem.setNode(button);
+        }
+        return helpItem;
+    }
+
+    /**
+     * Opens or closes the help drawer. The drawer and its viewer are made on first opening, at the card's
+     * topic; afterwards the viewer keeps wherever the person browsed to. Help is not part of the card's
+     * saved state: it opens closed.
+     *
+     * @param open whether to open it
+     */
+    private void showHelp(boolean open) {
+        if (helpDrawer == null) {
+            if (!open || helpBook().isEmpty()) {
+                return;
+            }
+            helpViewer = KlHelp.viewer(helpBook().get());
+            Region content = helpViewer.fxObject();
+            content.setPrefWidth(HELP_WIDTH);
+            content.setMinWidth(HELP_WIDTH);
+            // A fixed preferred height: what the viewer shows, a short topic or a long list, must not
+            // resize a card whose window follows its content's preferred size.
+            content.setPrefHeight(HELP_HEIGHT);
+            content.setMinHeight(0);
+            content.getStyleClass().add("dynamic-card-help");
+            ensureDrawerContainer();
+            helpDrawer = new KlDrawer(Side.RIGHT, content);
+            helpDrawer.setAnimated(false);
+            // Beside a right drawer the card already has, outermost.
+            Node right = drawerContainer.getRight();
+            drawerContainer.setRight(right == null ? helpDrawer : new HBox(right, helpDrawer));
+            helpViewer.show(helpTopic().orElseThrow().topicId());
+        }
+        if (helpDrawer.isExpanded() == open) {
+            return;
+        }
+        helpDrawer.setExpanded(open);
+        boolean rightOpen = open || drawers.stream()
+                .anyMatch(handle -> handle.drawer().getSide() == Side.RIGHT && handle.drawer().isExpanded());
+        updateDrawerOpenClass(Side.RIGHT, rightOpen);
+        resizeForDrawer(Side.RIGHT, helpDrawer.getContent(), open);
     }
 
     /**
@@ -651,6 +766,9 @@ public abstract class AbstractHostCard extends CardBlueprint {
         }
         for (DrawerHandle handle : drawers) {
             items.add(handle.toggleItem());
+        }
+        if (helpBook().isPresent()) {
+            items.add(helpItem());
         }
         if (onCloseRequest != null) {
             items.add(closeItem());
