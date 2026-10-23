@@ -3,6 +3,9 @@
 */
 
 .filter-options-popup {
+    /* The owner sets -popup-pref-height inline once it knows its height; until then the
+       popup takes its computed height (-1, USE_COMPUTED_SIZE) rather than an unresolved lookup. */
+    -popup-pref-height: -1;
     -fx-background-color: #2E3240;
     -fx-min-width: 326;
     -fx-pref-width: 326;
