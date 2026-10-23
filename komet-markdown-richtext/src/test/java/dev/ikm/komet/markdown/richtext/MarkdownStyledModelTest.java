@@ -72,4 +72,16 @@ class MarkdownStyledModelTest {
         String copied = m.exportPlainText(TextPos.ZERO, TextPos.ofLeading(0, 3));
         assertEquals("Tit", copied);
     }
+
+    @Test
+    void copyAcrossHeadingsAndFieldListCopiesWhatIsRendered() {
+        // The shape of a read-only report (the Knowledge Base Composition card): a bold line,
+        // headings, and a list of bold field names with code-span values. A selection from one
+        // heading into a later list item copies every paragraph between, as rendered.
+        MarkdownStyledModel m = model("**Assembled today** — 5 input(s)\n\n## Releases\n\n### snomed-rf2 — International\n\n"
+                + "- **Release artifact:** `snomedct-origin.zip`\n- **Origin checksum:** `sha256:4f70`\n");
+        assertEquals(5, m.size());
+        String copied = m.exportPlainText(TextPos.ofLeading(1, 0), TextPos.ofLeading(4, 11));
+        assertEquals("Releases\nsnomed-rf2 — International\n•  Release artifact: snomedct-origin.zip\n•  Origin c", copied);
+    }
 }
