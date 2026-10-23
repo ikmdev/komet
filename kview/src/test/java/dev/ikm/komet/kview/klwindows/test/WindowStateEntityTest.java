@@ -40,20 +40,17 @@ import java.util.prefs.Preferences;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * A window's state stores the entity it shows by UUID and never by nid, and a restored window
  * finds its entity through that UUID ({@code IKE-Network/ike-issues#1171}).
  *
- * <p>A nid is local to one knowledge base. The state used to store the nid beside the UUID and
- * restore from the nid, so preferences read against another knowledge base opened the window
- * on whatever component had that number there.
+ * <p>A nid is local to one knowledge base, so it never belongs in preferences: read against
+ * another knowledge base, it names whatever component has that number there.
  */
 class WindowStateEntityTest {
-
-    /** The preference key earlier builds stored the entity's nid under. */
-    private static final String ENTITY_NID_KEY_OF_EARLIER_BUILDS = "ENTITY_NID";
 
     private Preferences testRootNode;
     private KometPreferences preferences;
@@ -85,13 +82,16 @@ class WindowStateEntityTest {
     }
 
     @Test
-    void theEntityIsStoredByUuidAndNoNidIsWritten() {
+    void theEntityIsStoredByUuidAndNoNidIsWritten() throws BackingStoreException {
         UUID uuid = uuidOf(KernelConcept.ENGLISH_LANGUAGE);
+        String nid = Long.toString(KernelConcept.ENGLISH_LANGUAGE.nid());
 
         assertTrue(stateFor(uuid).saveToPreferences(preferences));
 
         assertEquals(Optional.of(uuid.toString()), preferences.get(EntityKlWindowState.ENTITY_UUID));
-        assertTrue(preferences.get(ENTITY_NID_KEY_OF_EARLIER_BUILDS).isEmpty(), "no nid is written");
+        for (String key : testRootNode.keys()) {
+            assertNotEquals(nid, testRootNode.get(key, null), "no nid is written, but " + key + " holds one");
+        }
     }
 
     @Test
@@ -113,30 +113,6 @@ class WindowStateEntityTest {
             assertEquals(OptionalLong.of(nid), EntityKlWindowState.fromPreferences(preferences).resolveEntityNid(),
                     "restored through " + any);
         }
-    }
-
-    @Test
-    void aNidLeftByAnEarlierBuildIsNotReadAndIsRemovedOnSave() {
-        // Preferences as an earlier build left them, read against a knowledge base in which the
-        // stored nid belongs to a different component: the UUID is English Language, and the
-        // nid is the one this knowledge base gives Language.
-        long english = KernelConcept.ENGLISH_LANGUAGE.nid();
-        long language = KernelConcept.LANGUAGE.nid();
-        preferences.put(EntityKlWindowState.WINDOW_ID, UUID.randomUUID().toString());
-        preferences.put(EntityKlWindowState.WINDOW_TYPE, EntityKlWindowTypes.CONCEPT.toString());
-        preferences.put(EntityKlWindowState.ENTITY_UUID, uuidOf(KernelConcept.ENGLISH_LANGUAGE).toString());
-        preferences.putInt(ENTITY_NID_KEY_OF_EARLIER_BUILDS, Math.toIntExact(language));
-
-        EntityKlWindowState restored = EntityKlWindowState.fromPreferences(preferences);
-
-        assertEquals(OptionalLong.of(english), restored.resolveEntityNid(),
-                "the window follows the UUID; the stored nid would have opened it on Language");
-
-        assertTrue(restored.saveToPreferences(preferences));
-        assertTrue(preferences.get(ENTITY_NID_KEY_OF_EARLIER_BUILDS).isEmpty(),
-                "saving removes the nid an earlier build stored");
-        assertEquals(Optional.of(uuidOf(KernelConcept.ENGLISH_LANGUAGE).toString()),
-                preferences.get(EntityKlWindowState.ENTITY_UUID));
     }
 
     @Test

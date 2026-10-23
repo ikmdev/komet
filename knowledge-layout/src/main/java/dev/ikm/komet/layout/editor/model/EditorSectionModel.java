@@ -49,9 +49,10 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
     private boolean nameManuallyAssigned = false;
 
     /**
-     * The nid of the reference component read from preferences, awaiting resolution to the canonical
-     * pattern instance via {@link #resolveReferenceComponent(List)}. The referenced pattern can live in
-     * any of the window's sections, so resolution has to wait until the whole window has loaded.
+     * The reference component read from preferences, which hold it by public id, as its nid in this
+     * store, awaiting resolution to the canonical pattern instance via
+     * {@link #resolveReferenceComponent(List)}. The referenced pattern can live in any of the window's
+     * sections, so resolution has to wait until the whole window has loaded.
      */
     private Long unresolvedReferenceComponentNid;
 

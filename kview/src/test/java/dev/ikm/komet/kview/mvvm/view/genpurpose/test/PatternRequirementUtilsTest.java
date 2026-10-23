@@ -29,6 +29,7 @@ import dev.ikm.tinkar.common.service.ServiceProperties;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculator;
 import dev.ikm.tinkar.coordinate.stamp.calculator.StampCalculatorDelegate;
+import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.SemanticRecord;
@@ -125,7 +126,7 @@ class PatternRequirementUtilsTest {
     @DisplayName("A semantic with no latest version under the coordinate matches nothing")
     void semanticWithoutLatestVersionMatchesNothing() {
         FakeCalculator calculator = new FakeCalculator();
-        EntityFacade unresolved = EntityProxy.Semantic.make(newNid());
+        EntityFacade unresolved = EntityProxy.Semantic.make(newNid(DESCRIPTION_PATTERN, UUID.randomUUID()));
 
         assertFalse(PatternRequirementUtils.semanticMatches(unresolved, requirement(Map.of(), 1), calculator));
     }
@@ -255,8 +256,9 @@ class PatternRequirementUtilsTest {
         };
     }
 
-    private static long newNid() {
-        return PrimitiveData.nid(PublicIds.newRandom());
+    /** A nid for a new semantic of the pattern: the store mints a nid only under the pattern it belongs to. */
+    private static long newNid(long patternNid, UUID semanticUuid) {
+        return EntityService.get().nidForSemantic(PrimitiveData.publicId(patternNid), PublicIds.of(semanticUuid));
     }
 
     /**
@@ -268,8 +270,8 @@ class PatternRequirementUtilsTest {
 
         /** Registers a semantic of the pattern whose latest version holds the field values; returns it. */
         EntityFacade semantic(long patternNid, Object... fieldValues) {
-            long nid = newNid();
             UUID uuid = UUID.randomUUID();
+            long nid = newNid(patternNid, uuid);
             SemanticRecord chronology = new SemanticRecord(uuid.getMostSignificantBits(),
                     uuid.getLeastSignificantBits(), LongLists.immutable.empty(), nid, patternNid, COMPONENT,
                     Lists.immutable.empty());

@@ -110,17 +110,10 @@ public class EntityKlWindowState {
     public static final String ENTITY_UUID = "ENTITY_UUID";
 
     /**
-     * Preference key under which earlier builds stored the associated entity's nid. It is no
-     * longer written or read; saving a window's state removes it
-     * ({@code IKE-Network/ike-issues#1171}).
-     */
-    private static final String LEGACY_ENTITY_NID = "ENTITY_NID";
-
-    /**
      * Preference key for how the associated entity is to be read when the window is restored:
      * the name of a {@code NidTextEnum} constant. It holds no nid.
      */
-    public static final String ENTITY_NID_TYPE = "ENTITY_NID_TYPE";
+    public static final String ENTITY_READ_TYPE = "ENTITY_READ_TYPE";
 
     /**
      * Preference key for storing the properties panel open/closed state.
@@ -142,7 +135,7 @@ public class EntityKlWindowState {
 
     // Entity properties
     private UUID entityUuid;
-    private String entityNidType;
+    private String entityReadType;
 
     // Additional custom properties
     private final MutableMap<String, Object> additionalProperties = Maps.mutable.empty();
@@ -305,34 +298,34 @@ public class EntityKlWindowState {
     }
 
     /**
-     * Returns the type classification of the associated entity's NID.
-     * <p>     * This provides additional metadata about the kind of entity
-     * referenced by the NID.
-     * <p>     * If the entityNidType field is null, this method attempts to retrieve
+     * Returns how the associated entity is read when the window is restored: the name of a
+     * {@code NidTextEnum} constant.
+     * <p>     * If the entityReadType field is null, this method attempts to retrieve
      * the value from the additional properties map.
      *
-     * @return the entity NID type, or null if not set
+     * @return how the entity is read, or null if not set
      */
-    public String getEntityNidType() {
-        if (entityNidType != null) {
-            return entityNidType;
+    public String getEntityReadType() {
+        if (entityReadType != null) {
+            return entityReadType;
         }
 
         // Check if it's stored in properties
-        return getStringProperty(ENTITY_NID_TYPE, null);
+        return getStringProperty(ENTITY_READ_TYPE, null);
     }
 
     /**
-     * Sets the type classification of the associated entity's NID.
+     * Sets how the associated entity is read when the window is restored: the name of a
+     * {@code NidTextEnum} constant.
      * <p>     * This method also adds the value to the additional properties map for
      * redundancy and backward compatibility.
      *
-     * @param nidType the entity NID type to set
+     * @param readType how the entity is read
      */
-    public void setEntityNidType(String nidType) {
-        this.entityNidType = nidType;
-        if (nidType != null) {
-            addProperty(ENTITY_NID_TYPE, nidType);
+    public void setEntityReadType(String readType) {
+        this.entityReadType = readType;
+        if (readType != null) {
+            addProperty(ENTITY_READ_TYPE, readType);
         }
     }
 
@@ -550,13 +543,13 @@ public class EntityKlWindowState {
         }
 
         /**
-         * Sets the associated entity NID type.
+         * Sets how the associated entity is read.
          *
-         * @param nidType the entity NID type classification
+         * @param readType how the entity is read
          * @return this builder instance for method chaining
          */
-        public Builder entityNidType(String nidType) {
-            state.setEntityNidType(nidType);
+        public Builder entityReadType(String readType) {
+            state.setEntityReadType(readType);
             return this;
         }
 
@@ -615,12 +608,8 @@ public class EntityKlWindowState {
                 preferences.put(ENTITY_UUID, entityUuid.toString());
             }
 
-            // A node saved by an earlier build holds the entity's nid as well. Remove it, so
-            // that no nid stays in preferences.
-            preferences.remove(LEGACY_ENTITY_NID);
-
-            if (entityNidType != null) {
-                preferences.put(ENTITY_NID_TYPE, entityNidType);
+            if (entityReadType != null) {
+                preferences.put(ENTITY_READ_TYPE, entityReadType);
             }
 
             // Save additional properties
@@ -736,9 +725,8 @@ public class EntityKlWindowState {
 
     /**
      * Helper method to load entity properties from preferences.
-     * <p>     * This method extracts entity-related properties (UUID and NID type)
-     * from the given preferences node and populates the window state object. A nid
-     * stored by an earlier build is not read.
+     * <p>     * This method extracts entity-related properties (UUID and read type)
+     * from the given preferences node and populates the window state object.
      *
      * @param preferences the preferences node to load from
      * @param state       the window state instance to populate
@@ -752,7 +740,7 @@ public class EntityKlWindowState {
             }
         });
 
-        preferences.get(ENTITY_NID_TYPE).ifPresent(nidType -> state.entityNidType = nidType);
+        preferences.get(ENTITY_READ_TYPE).ifPresent(readType -> state.entityReadType = readType);
     }
 
     /**
@@ -911,7 +899,7 @@ public class EntityKlWindowState {
                 ", position=(" + xPos + "," + yPos + ")" +
                 ", size=(" + width + "x" + height + ")" +
                 ", entityUuid=" + entityUuid +
-                ", entityNidType=" + entityNidType +
+                ", entityReadType=" + entityReadType +
                 ", additionalProperties={" + additionalProperties.entrySet().stream().map(
                 entry -> entry.getKey() + "=" + entry.getValue()
         ).reduce((a, b) -> a + ", " + b).orElse("") + "}" +

@@ -34,7 +34,7 @@ import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.creat
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.extractEntityFromDragInfo;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.getFactory;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.restoreWindow;
-import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.ENTITY_NID_TYPE;
+import static dev.ikm.komet.kview.klwindows.EntityKlWindowState.ENTITY_READ_TYPE;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.GEN_EDITING;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.PATTERN;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
@@ -1636,7 +1636,7 @@ public class JournalController {
                                      NidTextEnum nidTextEnum,
                                      KometPreferences preferences) {
         if (preferences != null) {
-            preferences.put(ENTITY_NID_TYPE, nidTextEnum.name());
+            preferences.put(ENTITY_READ_TYPE, nidTextEnum.name());
         }
 
         ViewProperties viewProperties = journalViewProperties;
@@ -1658,7 +1658,7 @@ public class JournalController {
 
     private void createGenPurposeKLWindow(EntityFacade entityFacade, KometPreferences klEditorWindowPreferences) {
 //        if (preferences != null) {
-//            preferences.put(ENTITY_NID_TYPE, nidTextEnum.name());
+//            preferences.put(ENTITY_READ_TYPE, nidTextEnum.name());
 //        }
 
         ViewProperties viewProperties = journalViewProperties;

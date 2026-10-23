@@ -75,7 +75,7 @@ public class GenPurposeKLWindowFactory implements EntityKlWindowFactory {
 
                 // Try to extract entity facade from saved state
                 final OptionalLong entityNid = windowState.resolveEntityNid();
-                final NidTextEnum nidTextEnum = NidTextEnum.fromString(windowState.getEntityNidType())
+                final NidTextEnum nidTextEnum = NidTextEnum.fromString(windowState.getEntityReadType())
                         .orElse(NidTextEnum.NID_TEXT);
                 EntityFacade entityFacade = null;
                 if (entityNid.isPresent()) {
