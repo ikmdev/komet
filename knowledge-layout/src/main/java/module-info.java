@@ -40,6 +40,7 @@ module dev.ikm.komet.layout {
     exports dev.ikm.komet.layout_engine.window;
     exports dev.ikm.komet.layout.controls;
     exports dev.ikm.komet.layout.help;
+    exports dev.ikm.komet.layout.trash;
 
     opens dev.ikm.komet.layout to javafx.fxml;
     opens dev.ikm.layout.app to javafx.fxml;
@@ -53,6 +54,11 @@ module dev.ikm.komet.layout {
     // A card's help: plugins provide the books and the renderer; the card's help drawer finds both.
     uses dev.ikm.komet.layout.help.KlHelpProvider;
     uses dev.ikm.komet.layout.help.KlHelpViewer.Factory;
+
+    // Komet's Trash: plugins provide what their cards moved there; the journal lists it, and the
+    // lifecycle service empties it as Komet quits when the person keeps that preference on.
+    uses dev.ikm.komet.layout.trash.KlTrashProvider;
+    provides dev.ikm.tinkar.common.service.ServiceLifecycle with dev.ikm.komet.layout.trash.KlTrashLifecycle;
 
     // Primary service interface for discovering ALL area factories (built-in and plugins)
     provides dev.ikm.komet.layout.KlArea.Factory

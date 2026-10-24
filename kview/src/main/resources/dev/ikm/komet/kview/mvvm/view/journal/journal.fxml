@@ -298,6 +298,23 @@
                </graphic>
                <tooltip><Tooltip text="Profile" /></tooltip>
             </ToggleButton>
+            <ToggleButton fx:id="trashToggleButton" mnemonicParsing="false" text="ToggleButton" toggleGroup="$sidebarToggleGroup">
+               <graphic>
+                  <!-- The bin, with the count of what is in it riding its top-right corner once there is something. -->
+                  <StackPane styleClass="trash-graphic">
+                     <children>
+                        <Region prefHeight="200.0" prefWidth="200.0">
+                           <styleClass>
+                              <String fx:value="icon" />
+                              <String fx:value="trash-icon" />
+                           </styleClass>
+                        </Region>
+                        <Label fx:id="trashBadge" styleClass="change-count-badge" text="0" visible="false" StackPane.alignment="TOP_RIGHT" />
+                     </children>
+                  </StackPane>
+               </graphic>
+               <tooltip><Tooltip text="Trash" /></tooltip>
+            </ToggleButton>
          </children>
       </VBox>
    </left>

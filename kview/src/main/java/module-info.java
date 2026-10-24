@@ -80,6 +80,7 @@ module dev.ikm.komet.kview {
 
     opens dev.ikm.komet.kview.mvvm.view.changes to javafx.fxml;
     exports dev.ikm.komet.kview.mvvm.view.changes;
+    exports dev.ikm.komet.kview.mvvm.view.trash;
 
     opens dev.ikm.komet.kview.mvvm.view.common to javafx.fxml, org.carlfx.cognitive;
     exports dev.ikm.komet.kview.mvvm.view.common;

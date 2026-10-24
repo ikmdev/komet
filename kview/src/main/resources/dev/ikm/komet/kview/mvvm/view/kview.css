@@ -8280,6 +8280,75 @@ Styling a context menu for kview ui/ux controls
     -fx-translate-y: 3;
 }
 
+/*********************************************************************************
+ *                                                                               *
+ * Trash (sidebar bin toggle and its tray, KEC 2026-10-23); the tray reuses the  *
+ * unpublished-changes container's header, empty state and footer styles.       *
+ *                                                                               *
+ *********************************************************************************/
+
+/* An open bin: the sidebar toggle's icon. */
+.trash-icon {
+    -width-size: 20;
+    -height-size: 20;
+    -fx-min-height: -height-size;
+    -fx-min-width: -width-size;
+    -fx-max-height: -height-size;
+    -fx-max-width: -width-size;
+    -fx-shape: "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12ZM8 9h8v10H8V9Zm7.5-5-1-1h-5l-1 1H5v2h14V4h-3.5Z";
+}
+
+/* The graphic is the icon's size; the count rides its top-right corner, as on the pencil. */
+.side-bar .toggle-button .trash-graphic {
+    -fx-min-width: 20;
+    -fx-pref-width: 20;
+    -fx-max-width: 20;
+}
+
+.trash-container .trash-list {
+    -fx-background-color: -uc-surface;
+    -fx-background-insets: 0;
+    -fx-padding: 4 0 4 0;
+}
+
+.trash-container .trash-list .list-cell:filled {
+    -fx-background-color: -uc-surface;
+    -fx-border-color: rgba(0, 0, 0, 0.06);
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 6 12 6 12;
+}
+
+.trash-container .trash-list .list-cell:filled:hover {
+    -fx-background-color: -uc-hover;
+}
+
+.trash-container .trash-list .list-cell:filled:selected {
+    -fx-background-color: -uc-selected;
+}
+
+.trash-container .trash-item {
+    -fx-spacing: 2;
+}
+
+.trash-container .trash-item-name {
+    -fx-font-size: 1.083333em; /* 13px */
+    -fx-font-weight: 600;
+    -fx-text-fill: -uc-text;
+}
+
+.trash-container .trash-item-detail {
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: -uc-text-muted;
+}
+
+.trash-container .trash-empty-on-quit {
+    -fx-text-fill: -uc-text;
+}
+
+.trash-container .empty-state .trash-empty-icon {
+    -fx-shape: "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12ZM8 9h8v10H8V9Zm7.5-5-1-1h-5l-1 1H5v2h14V4h-3.5Z";
+}
+
 /* The tray: a white panel with the light palette of the mockups. The colours are named here
    once so the rows, footer and popups below share them. */
 .unpublished-changes-container {

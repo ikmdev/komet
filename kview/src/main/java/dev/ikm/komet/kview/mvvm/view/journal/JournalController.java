@@ -129,6 +129,7 @@ import dev.ikm.komet.kview.mvvm.model.JournalNames;
 import dev.ikm.komet.kview.mvvm.view.concept.ConceptNode;
 import dev.ikm.komet.kview.mvvm.view.changes.ChangeReviewKlWindow;
 import dev.ikm.komet.kview.mvvm.view.changes.UnpublishedChangesController;
+import dev.ikm.komet.kview.mvvm.view.trash.TrashTray;
 import dev.ikm.komet.kview.mvvm.view.navigation.ConceptPatternNavController;
 import dev.ikm.komet.kview.mvvm.view.progress.ProgressController;
 import dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController;
@@ -336,6 +337,17 @@ public class JournalController {
     /** The change count on the unpublished-changes toggle; shown once there is a change. */
     @FXML
     private Label unpublishedChangesBadge;
+
+    /** The Trash toggle (KEC 2026-10-23): opens the tray of what cards moved to Komet's Trash. */
+    @FXML
+    private ToggleButton trashToggleButton;
+
+    /** The count on the Trash toggle; shown once something is in the Trash. */
+    @FXML
+    private Label trashBadge;
+
+    private Pane trashSlideoutTrayPane;
+    private TrashTray trashTray;
 
     @FXML
     private Button addButton;
@@ -943,6 +955,12 @@ public class JournalController {
         unpublishedChangesSlideoutTrayPane.setLayoutY(10);
         unpublishedChangesSlideoutTrayPane.setMaxHeight(Double.MAX_VALUE);
 
+        // trashSlideoutTrayPane
+        trashSlideoutTrayPane = new VerticallyFilledPane();
+        trashSlideoutTrayPane.setLayoutX(10);
+        trashSlideoutTrayPane.setLayoutY(10);
+        trashSlideoutTrayPane.setMaxHeight(Double.MAX_VALUE);
+
         trayPaneContainer.getChildren().addAll(
                 navSlideoutTrayPane,
                 searchSlideoutTrayPane,
@@ -950,8 +968,10 @@ public class JournalController {
                 conceptNavigatorSlideoutTrayPane,
                 nexGenSearchSlideoutTrayPane,
                 nextGenReasonerSlideoutTrayPane,
-                unpublishedChangesSlideoutTrayPane
+                unpublishedChangesSlideoutTrayPane,
+                trashSlideoutTrayPane
         );
+        loadTrashPanel();
     }
 
     private Pane newTrayPane() {
@@ -1371,6 +1391,9 @@ public class JournalController {
             // The list follows the store, but a look at it starts from a fresh read.
             unpublishedChangesController.refresh();
         }
+        if (trashToggleButton.equals(toggleButton) && trashTray != null) {
+            trashTray.refresh();
+        }
         SlideOutTrayHelper.slideOut(trayPane);
     }
 
@@ -1389,6 +1412,8 @@ public class JournalController {
             return nextGenReasonerSlideoutTrayPane;
         } else if (unpublishedChangesToggleButton.equals(selectedToggleButton)) {
             return unpublishedChangesSlideoutTrayPane;
+        } else if (trashToggleButton.equals(selectedToggleButton)) {
+            return trashSlideoutTrayPane;
         }
         return null;
     }
@@ -1426,6 +1451,9 @@ public class JournalController {
 
         if (unpublishedChangesController != null) {
             unpublishedChangesController.shutdown();
+        }
+        if (trashTray != null) {
+            trashTray.shutdown();
         }
     }
 
@@ -1519,6 +1547,17 @@ public class JournalController {
         unpublishedChangesBadge.visibleProperty().bind(unpublishedChangesController.changeCountProperty().greaterThan(0));
 
         setupSlideOutTrayPane(unpublishedChangesPanel, unpublishedChangesSlideoutTrayPane);
+    }
+
+    /**
+     * Adds the Trash tray, tied to the sidebar's bin toggle: what cards moved to Komet's Trash,
+     * with Put Back, Delete and Empty Trash. The toggle's badge shows the count.
+     */
+    private void loadTrashPanel() {
+        trashTray = new TrashTray();
+        trashBadge.textProperty().bind(trashTray.countProperty().asString());
+        trashBadge.visibleProperty().bind(trashTray.countProperty().greaterThan(0));
+        setupSlideOutTrayPane(trashTray.fxObject(), trashSlideoutTrayPane);
     }
 
     private void loadSearchPanel(PublicIdStringKey<ActivityStream> searchActivityStreamKey,
