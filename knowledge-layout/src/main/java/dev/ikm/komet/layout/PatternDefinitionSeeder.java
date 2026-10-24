@@ -18,6 +18,8 @@ import dev.ikm.tinkar.entity.FieldDefinitionForEntity;
 import dev.ikm.tinkar.entity.FieldDefinitionRecord;
 import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
+import dev.ikm.tinkar.entity.boundary.DataKind;
+import dev.ikm.tinkar.entity.boundary.EntityBoundaries;
 import dev.ikm.tinkar.terms.*;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.primitive.LongLists;
@@ -129,6 +131,13 @@ public final class PatternDefinitionSeeder {
         if (isDefinedBySemantics(patternNid)) {
             // The semantics are the source of this pattern's definition, not a projection of it
             // (see writeInlineDefinition): projecting would describe each field a second time.
+            return;
+        }
+        if (EntityBoundaries.kindOf(patternNid) != DataKind.KNOWLEDGE) {
+            // The projection is knowledge, written under the development module, and knowledge
+            // never references instance or ephemeral data (IKE-Network/ike-issues#1313). The
+            // assistant's conversation journals each have such a pattern; one refused the whole
+            // seeding commit, and with it the opening of every journal.
             return;
         }
 
