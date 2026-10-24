@@ -18,10 +18,6 @@
         </dependency>
         <dependency>
             <groupId>dev.ikm.tinkar</groupId>
-            <artifactId>data-spinedarray-provider</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>dev.ikm.tinkar</groupId>
             <artifactId>executor-provider</artifactId>
             <scope>test</scope>
         </dependency>

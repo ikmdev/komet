@@ -33,11 +33,6 @@
             <artifactId>evrete-dsl-java</artifactId>
         </dependency>
         <!-- The ephemeral store the integration tests load the IKE starter set into. -->
-        <dependency>
-            <groupId>dev.ikm.tinkar</groupId>
-            <artifactId>data-spinedarray-provider</artifactId>
-            <scope>test</scope>
-        </dependency>
         <!-- The memory-only store the tests run on (IKE-Network/ike-issues#1313). -->
         <dependency>
             <groupId>dev.ikm.tinkar</groupId>

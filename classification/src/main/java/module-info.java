@@ -24,7 +24,6 @@ module dev.ikm.komet.classification {
 	requires org.jgrapht.core;
 	requires org.slf4j;
 	
-	requires dev.ikm.tinkar.collection;
 	requires dev.ikm.tinkar.entity;
 
 	requires transitive dev.ikm.komet.framework;
