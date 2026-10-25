@@ -338,6 +338,8 @@ public final class ObservableComposer {
 
     private Transaction transaction;
     private final List<ObservableEntityVersion.Editable<?, ?, ?>> trackedEditables = new ArrayList<>();
+    /** Leaves its work pending for the person and continues pending work (see {@link #joinPendingWork()}). */
+    private boolean joinsPendingWork;
 
     private final ReadOnlyObjectWrapper<TransactionState> transactionStateProperty =
             new ReadOnlyObjectWrapper<>(this, "transactionState", TransactionState.NONE);
@@ -418,6 +420,31 @@ public final class ObservableComposer {
                 state,
                 transactionComment == null ? "" : transactionComment
         );
+    }
+
+    /**
+     * Makes this composer one whose work is left pending until the person publishes or discards
+     * it, as a window's edits and the assistant's changes are, and one that continues such work
+     * (IKE-Network/ike-issues#1326). Its transaction is {@linkplain Transaction#leavePending() left
+     * pending}. About to edit a component whose pending version, under this composer's author,
+     * module and path, belongs to another transaction left pending, it continues that transaction
+     * rather than opening a second one beside it, where two uncommitted versions of one component
+     * would commit in no fixed order: with nothing written yet, it takes that transaction over;
+     * with work of its own, it {@linkplain Transaction#moveInto moves} its work into that
+     * transaction first. Either way the edit lands on the pending version's own stamp, so the edit
+     * replaces the pending version, and one commit or discard settles both.
+     *
+     * <p>A composer whose work is committed at once must not join: its commit would publish
+     * pending work the person has not reviewed. Call before the first edit.
+     *
+     * @return this composer
+     */
+    public ObservableComposer joinPendingWork() {
+        this.joinsPendingWork = true;
+        if (transaction != null) {
+            transaction.leavePending();
+        }
+        return this;
     }
 
     /**
@@ -812,6 +839,7 @@ public final class ObservableComposer {
      */
     public void commit() {
         requireJavaFXThread();
+        followContinuation();
         if (transaction == null) {
             return;
         }
@@ -850,6 +878,7 @@ public final class ObservableComposer {
      */
     public void rollback() {
         requireJavaFXThread();
+        followContinuation();
         if (transaction == null) {
             return;
         }
@@ -881,6 +910,7 @@ public final class ObservableComposer {
      */
     public void cancel() {
         requireJavaFXThread();
+        followContinuation();
         if (transaction != null) {
             if (transaction.isOpen()) {
                 transaction.cancel();
@@ -922,6 +952,7 @@ public final class ObservableComposer {
      */
     public void discardUnsavedEdits(long entityNid) {
         requireJavaFXThread();
+        followContinuation();
         if (transaction == null) {
             return;
         }
@@ -958,6 +989,7 @@ public final class ObservableComposer {
      */
     public boolean withdraw(long entityNid) {
         requireJavaFXThread();
+        followContinuation();
         if (transaction == null) {
             return false;
         }
@@ -1027,7 +1059,11 @@ public final class ObservableComposer {
      */
     ObservableStamp createStamp(State state, Entity<?> entity) {
         if (entity != null) {
-            adoptRebuiltTransaction(state, entity);
+            if (joinsPendingWork) {
+                continuePendingWork(entity);
+            } else {
+                adoptRebuiltTransaction(state, entity);
+            }
         }
         StampEntity stampEntity = transaction.getStampForEntities(
             state,
@@ -1062,6 +1098,57 @@ public final class ObservableComposer {
             transaction = rebuilt;
             transactionStateProperty.set(TransactionState.UNCOMMITTED);
         });
+    }
+
+    /**
+     * Continues pending work on the entity about to be edited (see {@link #joinPendingWork()}):
+     * the one other open transaction left pending that holds the entity's pending version under
+     * this composer's author, module and path. With nothing written yet, the composer takes it
+     * over; with work of its own, the composer moves that work into it, unless both hold a
+     * pending version of one component, which leaves both as they are.
+     *
+     * @param entity the existing component about to be edited
+     */
+    private void continuePendingWork(Entity<?> entity) {
+        followContinuation();
+        Transaction owner = Transaction.pendingOwnerOf(entity.nid(), authorNid, moduleNid, pathNid, transaction)
+                .orElse(null);
+        if (owner == null) {
+            return;
+        }
+        if (transaction == null || transaction.stampsInTransactionCount() == 0) {
+            if (transaction != null) {
+                transaction.cancel();       // empty: it had written nothing
+            }
+            transaction = owner;
+            transactionStateProperty.set(TransactionState.UNCOMMITTED);
+            return;
+        }
+        long[] moved = transaction.componentNids();
+        if (transaction.moveInto(owner)) {
+            for (long nid : moved) {
+                ObservableEntity.refresh(nid);
+            }
+            continueIn(owner);
+            transactionStateProperty.set(TransactionState.UNCOMMITTED);
+        }
+    }
+
+    /**
+     * Goes on in the transaction this composer's work was moved into, when another composer moved
+     * it there ({@link Transaction#moveInto}): the tracked editable versions follow it.
+     */
+    private void followContinuation() {
+        if (transaction != null && !transaction.isOpen() && transaction.continuation().isOpen()) {
+            continueIn(transaction.continuation());
+        }
+    }
+
+    private void continueIn(Transaction receiver) {
+        transaction = receiver;
+        for (ObservableEntityVersion.Editable<?, ?, ?> editable : trackedEditables) {
+            editable.continueIn(receiver);
+        }
     }
 
     /**
@@ -1107,6 +1194,7 @@ public final class ObservableComposer {
     }
 
     private void ensureTransaction() {
+        followContinuation();
         if (transaction != null && !transaction.isOpen()) {
             // Ended elsewhere: published or discarded from the journal's unpublished-changes panel.
             // What it tracked is final; the next edit goes into a transaction of its own.
@@ -1116,6 +1204,9 @@ public final class ObservableComposer {
             transaction = transactionComment.isEmpty()
                 ? Transaction.make()
                 : Transaction.make(transactionComment);
+            if (joinsPendingWork) {
+                transaction.leavePending();
+            }
             transactionStateProperty.set(TransactionState.UNCOMMITTED);
         }
     }
@@ -1136,8 +1227,20 @@ public final class ObservableComposer {
         private EntityFacade path;
         private State defaultState = State.ACTIVE;
         private String transactionComment = "";
+        private boolean joinPendingWork;
 
         private Builder() {}
+
+        /**
+         * Makes the composer one whose work is left pending and that continues pending work
+         * (see {@link ObservableComposer#joinPendingWork()}).
+         *
+         * @return this builder for method chaining
+         */
+        public Builder joinPendingWork() {
+            this.joinPendingWork = true;
+            return this;
+        }
 
         /**
          * Sets the author for all entities created by this composer.
@@ -1201,7 +1304,7 @@ public final class ObservableComposer {
             Objects.requireNonNull(module, "module must be set");
             Objects.requireNonNull(path, "path must be set");
 
-            return new ObservableComposer(
+            ObservableComposer composer = new ObservableComposer(
                     builderViewCalc,
                     author.nid(),
                     module.nid(),
@@ -1209,6 +1312,7 @@ public final class ObservableComposer {
                     defaultState,
                     transactionComment
             );
+            return joinPendingWork ? composer.joinPendingWork() : composer;
         }
     }
 

@@ -269,7 +269,8 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
 
         protected final OE observableEntity;
         protected final OV observableVersion;
-        protected final ObservableStamp editStamp;
+        /** The stamp edits are saved under; moves with the transaction (see {@link #continueIn}). */
+        protected ObservableStamp editStamp;
         protected V workingVersion;
         /** The transaction edits are saved in; replaced when it ends elsewhere (see {@link #save()}). */
         private Transaction transaction;
@@ -358,10 +359,16 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
             LOG.info("save(): Has unsaved changes, proceeding with save");
 
             if (!transaction.isOpen()) {
-                // The transaction this editable was opened in ended elsewhere (published or discarded
-                // from the journal's unpublished-changes panel). A stamp minted into an ended
-                // transaction would never commit, so this edit is saved in a transaction of its own.
-                transaction = Transaction.make();
+                Transaction continuation = transaction.continuation();
+                if (continuation.isOpen()) {
+                    // Its work was moved into another transaction (IKE-Network/ike-issues#1326): go on there.
+                    continueIn(continuation);
+                } else {
+                    // The transaction this editable was opened in ended elsewhere (published or discarded
+                    // from the journal's unpublished-changes panel). A stamp minted into an ended
+                    // transaction would never commit, so this edit is saved in a transaction of its own.
+                    transaction = Transaction.make();
+                }
             }
 
             // Create uncommitted stamp if needed
@@ -406,6 +413,9 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
          */
         @Override
         public void commit() {
+            if (!transaction.isOpen() && transaction.continuation().isOpen()) {
+                continueIn(transaction.continuation());
+            }
             transaction.commit();
 
             // After commit, create committed version
@@ -418,6 +428,43 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
             observableEntity.saveToDB(analogue, committedVersion, oldVersion);
 
             workingVersion = committedVersion;
+        }
+
+        /**
+         * Goes on in the transaction this editable's work was moved into
+         * ({@link Transaction#moveInto}, IKE-Network/ike-issues#1326): the edit stamp becomes that
+         * transaction's stamp of the same state, author, module and path, which holds the moved
+         * version, and a working version saved under the old stamp is the moved version. The
+         * canonical editable of the entity and the new stamp is this one.
+         *
+         * @param receiver the open transaction holding this editable's moved work
+         */
+        void continueIn(Transaction receiver) {
+            if (transaction == receiver) {
+                return;
+            }
+            StampEntity<?> oldStamp = Entity.getStamp(editStamp.nid());
+            // The emptied transaction was canceled, which gave its stamp a canceled version; the
+            // stamp's state, author, module and path are those of the version before it.
+            StampEntityVersion tuple = null;
+            for (Object version : oldStamp.versions()) {
+                if (((StampEntityVersion) version).time() != Long.MIN_VALUE) {
+                    tuple = (StampEntityVersion) version;
+                }
+            }
+            if (tuple == null) {
+                throw new IllegalStateException("The edit stamp has no version before its cancellation: "
+                        + EntityText.diagnostic(oldStamp));
+            }
+            StampEntity<?> newStamp = receiver.getStamp(tuple.state(), Long.MAX_VALUE, tuple.authorNid(),
+                    tuple.moduleNid(), tuple.pathNid());
+            if (workingVersion.stampNid() == oldStamp.nid()) {
+                workingVersion = createVersionWithStamp(workingVersion, newStamp.nid());
+            }
+            EDITABLE_VERSION_CACHE.asMap().remove(new EditableVersionKey(observableVersion.nid(), oldStamp.nid()), this);
+            editStamp = ObservableEntity.packagePrivateGetStamp(newStamp);
+            EDITABLE_VERSION_CACHE.asMap().putIfAbsent(new EditableVersionKey(observableVersion.nid(), newStamp.nid()), this);
+            transaction = receiver;
         }
 
         /**

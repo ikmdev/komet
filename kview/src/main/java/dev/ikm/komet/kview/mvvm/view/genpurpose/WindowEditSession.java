@@ -145,11 +145,14 @@ public final class WindowEditSession {
     /**
      * The composer the window's edits are saved uncommitted in. Created on first use on the edit coordinate's
      * author, default module and path; a {@link #commit()} replaces it, so callers ask for it
-     * per edit rather than keeping it.
+     * per edit rather than keeping it. It {@linkplain ObservableComposer#joinPendingWork() joins
+     * pending work}: an edit of a component another window or the assistant changed, under the
+     * same author, module and path, continues that change's transaction, so the edit replaces the
+     * pending version and one Publish or Discard settles both (IKE-Network/ike-issues#1326).
      */
     public ObservableComposer createOrGetComposer() {
         if (composer == null) {
-            composer = newComposer("Edit Semantic Details");
+            composer = newComposer("Edit Semantic Details").joinPendingWork();
             hasUncommittedChanges.bind(composer.hasUncommittedChangesProperty());
         }
         return composer;
