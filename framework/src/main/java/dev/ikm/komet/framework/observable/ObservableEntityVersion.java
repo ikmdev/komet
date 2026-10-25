@@ -331,13 +331,27 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
         }
 
         /**
-         * Saves the current working version as an uncommitted version to the database.
+         * Whether saving changes the component's state: the edit stamp's state is not the state of
+         * the working version. A composer whose state is {@link dev.ikm.tinkar.terms.State#INACTIVE}
+         * retires a component this way, with no field changed. Not an unsaved change in the sense of
+         * {@link #hasUnsavedChanges()}, so a version merely opened for editing under a stamp of
+         * another state is not saved by a commit; an explicit {@link #save()} saves it.
+         *
+         * @return true when the working version's state differs from the edit stamp's
+         */
+        public boolean changesState() {
+            return workingVersion.state() != editStamp.lastVersion().state();
+        }
+
+        /**
+         * Saves the current working version as an uncommitted version to the database: when a field
+         * changed ({@link #hasUnsavedChanges()}), or when only its state does ({@link #changesState()}).
          * <p>         * Implements {@link EditableVersion#save()}.
          */
         @Override
         public void save() {
             LOG.info("save() called");
-            if (!hasUnsavedChanges()) {
+            if (!hasUnsavedChanges() && !changesState()) {
                 LOG.info("save(): No unsaved changes, returning early");
                 return;
             }

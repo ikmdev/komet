@@ -1783,6 +1783,15 @@ public final class ObservableComposer {
     }
 
     /**
+     * Whether an edit of the entity under this composer changes its state: the version an editor
+     * starts from ({@link #versionToEdit}) is in a state other than this composer's. An editor
+     * saves such an edit even when no field changed, which is how a component is retired.
+     */
+    <OV extends ObservableEntityVersion<?, ?>> boolean changesState(ObservableEntity<OV> entity) {
+        return versionToEdit(entity).getVersionRecord().state() != defaultState;
+    }
+
+    /**
      * Editor for modifying EXISTING concept entities.
      * <p>     * Use this when you need to edit a concept that already exists in the database.
      * The editor creates a new editable version with the composer's STAMP coordinates,
@@ -1858,11 +1867,16 @@ public final class ObservableComposer {
         }
 
         /**
-         * Saves changes as uncommitted.
+         * Saves changes as uncommitted: changed fields, or the composer's state when it is not the
+         * state of the version edited, so a composer of state {@code INACTIVE} retires the component.
          */
         @Override
         public void save() {
-            if (editableVersion != null && editableVersion.hasUnsavedChanges()) {
+            // A state-only edit, a retirement, saves without its editable version having been opened.
+            if (editableVersion == null && composer.changesState(concept)) {
+                getEditableVersion();
+            }
+            if (editableVersion != null) {
                 editableVersion.save();
             }
         }
@@ -1883,11 +1897,13 @@ public final class ObservableComposer {
         }
 
         /**
-         * Checks if the editable version has unsaved changes.
+         * Checks if there are unsaved changes: changed fields, or a change of state that {@link #save()} would save.
          */
         @Override
         public boolean hasUnsavedChanges() {
-            return editableVersion != null && editableVersion.hasUnsavedChanges();
+            return editableVersion == null
+                    ? composer.changesState(concept)
+                    : editableVersion.hasUnsavedChanges() || editableVersion.changesState();
         }
     }
 
@@ -1991,11 +2007,16 @@ public final class ObservableComposer {
         }
 
         /**
-         * Saves changes as uncommitted.
+         * Saves changes as uncommitted: changed fields, or the composer's state when it is not the
+         * state of the version edited, so a composer of state {@code INACTIVE} retires the component.
          */
         @Override
         public void save() {
-            if (editableVersion != null && editableVersion.hasUnsavedChanges()) {
+            // A state-only edit, a retirement, saves without its editable version having been opened.
+            if (editableVersion == null && composer.changesState(semantic)) {
+                getEditableVersion();
+            }
+            if (editableVersion != null) {
                 editableVersion.save();
             }
         }
@@ -2016,11 +2037,13 @@ public final class ObservableComposer {
         }
 
         /**
-         * Checks if the editable version has unsaved changes.
+         * Checks if there are unsaved changes: changed fields, or a change of state that {@link #save()} would save.
          */
         @Override
         public boolean hasUnsavedChanges() {
-            return editableVersion != null && editableVersion.hasUnsavedChanges();
+            return editableVersion == null
+                    ? composer.changesState(semantic)
+                    : editableVersion.hasUnsavedChanges() || editableVersion.changesState();
         }
     }
 
@@ -2052,11 +2075,16 @@ public final class ObservableComposer {
         }
 
         /**
-         * Saves changes as uncommitted.
+         * Saves changes as uncommitted: changed fields, or the composer's state when it is not the
+         * state of the version edited, so a composer of state {@code INACTIVE} retires the component.
          */
         @Override
         public void save() {
-            if (editableVersion != null && editableVersion.hasUnsavedChanges()) {
+            // A state-only edit, a retirement, saves without its editable version having been opened.
+            if (editableVersion == null && composer.changesState(pattern)) {
+                getEditableVersion();
+            }
+            if (editableVersion != null) {
                 editableVersion.save();
             }
         }
@@ -2077,11 +2105,13 @@ public final class ObservableComposer {
         }
 
         /**
-         * Checks if the editable version has unsaved changes.
+         * Checks if there are unsaved changes: changed fields, or a change of state that {@link #save()} would save.
          */
         @Override
         public boolean hasUnsavedChanges() {
-            return editableVersion != null && editableVersion.hasUnsavedChanges();
+            return editableVersion == null
+                    ? composer.changesState(pattern)
+                    : editableVersion.hasUnsavedChanges() || editableVersion.changesState();
         }
     }
 }
