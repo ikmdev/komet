@@ -293,8 +293,9 @@ import java.util.Optional;
  * );
  *
  * // Create and modify entities...
- * ObservableConceptBuilder builder = composer.createConceptBuilder();
- * builder.save(); // hasUncommittedChangesProperty becomes true
+ * var conceptComposer = composer.composeConcept(PublicIds.newRandom());
+ * conceptComposer.getEditableVersion(); // hasUncommittedChangesProperty becomes true
+ * conceptComposer.save();
  *
  * // User clicks commit button (automatically enabled)
  * composer.commit(); // hasUncommittedChangesProperty becomes false
@@ -495,7 +496,12 @@ public final class ObservableComposer {
     }
 
     /**
-     * Returns the observable property indicating if there are uncommitted changes.
+     * Returns the observable property indicating if there are uncommitted changes: whether this
+     * composer tracks an editable version the next {@link #commit()} would publish. It becomes true
+     * when an entity is first opened for editing, before anything is saved, and false on commit,
+     * on cancel, or when {@link #discardUnsavedEdits(long)} drops the last tracked entity. Whether
+     * one editable version holds an edit not yet saved is
+     * {@link ObservableEntityVersion.Editable#hasUnsavedChanges()}.
      */
     public ReadOnlyBooleanProperty hasUncommittedChangesProperty() {
         return hasUncommittedChangesProperty.getReadOnlyProperty();
@@ -784,11 +790,15 @@ public final class ObservableComposer {
             return;
         }
 
-        // Commit all tracked editable versions first
+        // Save every pending edit while the transaction is still open. The first editable's commit
+        // ends the shared transaction, and an editable saved after that opens a transaction of its
+        // own, leaving a second version beside the one this commit finalizes.
         for (ObservableEntityVersion.Editable<?, ?, ?> editable : trackedEditables) {
             if (editable.hasUnsavedChanges()) {
                 editable.save();
             }
+        }
+        for (ObservableEntityVersion.Editable<?, ?, ?> editable : trackedEditables) {
             editable.commit();
         }
 
