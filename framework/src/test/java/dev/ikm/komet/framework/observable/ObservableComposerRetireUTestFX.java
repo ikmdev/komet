@@ -21,6 +21,7 @@ import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.transaction.Transaction;
 import dev.ikm.tinkar.fixtures.StarterDataEphemeralProvider;
 import dev.ikm.tinkar.terms.KernelConcept;
 import dev.ikm.tinkar.terms.KernelPattern;
@@ -129,6 +130,33 @@ class ObservableComposerRetireUTestFX {
         retirer.commit();
         assertTrue(states(description).contains(State.INACTIVE),
                 "the commit published an inactive version; versions: " + states(description));
+    }
+
+    @Test
+    @DisplayName("A composer of state ACTIVE retires one semantic, composed in INACTIVE, in the transaction of its other edits")
+    void aComposerRetiresInTheTransactionOfItsOtherEdits() {
+        ObservableSemantic retired = newCommittedDescription("to retire");
+        ObservableSemantic edited = newCommittedDescription("to edit");
+        ObservableComposer composer = newComposer(State.ACTIVE, "edit and retire");
+
+        var editor = editorOf(composer, edited);
+        setText(editor, "edited");
+        editor.save();
+        composer.composeSemantic(retired.publicId(), EntityHandle.get(retired.referencedComponentNid()).expectEntity(),
+                KernelPattern.DESCRIPTION_PATTERN, State.INACTIVE).save();
+
+        List<EntityVersion> retiredSaved = uncommitted(retired);
+        List<EntityVersion> editedSaved = uncommitted(edited);
+        assertEquals(1, retiredSaved.size(), "versions: " + states(retired));
+        assertEquals(1, editedSaved.size(), "versions: " + states(edited));
+        assertEquals(State.INACTIVE, retiredSaved.getFirst().state());
+        assertEquals(State.ACTIVE, editedSaved.getFirst().state());
+        assertEquals(Transaction.forVersion(editedSaved.getFirst()), Transaction.forVersion(retiredSaved.getFirst()),
+                "one transaction holds both, so one commit publishes both");
+
+        composer.commit();
+        assertTrue(uncommitted(retired).isEmpty() && uncommitted(edited).isEmpty(), "the commit published both");
+        assertTrue(states(retired).contains(State.INACTIVE));
     }
 
     @Test

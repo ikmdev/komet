@@ -638,6 +638,36 @@ public final class ObservableComposer {
     }
 
     /**
+     * Creates a unified composer for a semantic entity by PublicId, its version saved in the given
+     * state rather than this composer's default. A composer whose default is
+     * {@link State#ACTIVE} retires a semantic this way in the same transaction as its other edits,
+     * so one commit publishes both: an edit of a concept's descriptions that retires one of them,
+     * say. The transaction keeps a stamp for each state ({@link Transaction#getStamp}).
+     *
+     * @param publicId            the PublicId of the semantic; if an entity with this ID exists, it
+     *                            will be edited, otherwise a new entity with this ID will be created
+     * @param referencedComponent the component this semantic references (required if creating new)
+     * @param pattern             the pattern defining the semantic's structure (required if creating new)
+     * @param state               the state its version is saved in
+     * @return a unified semantic composer
+     * @throws IllegalArgumentException if the PublicId exists but does not correspond to a semantic
+     */
+    public EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> composeSemantic(
+            PublicId publicId, EntityFacade referencedComponent, PatternFacade pattern, State state) {
+        Objects.requireNonNull(state, "state cannot be null");
+        EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> composer =
+                composeSemantic(publicId, referencedComponent, pattern);
+        return switch (composer) {
+            case ObservableSemanticEditor editor -> new ObservableSemanticEditor(this, editor.semantic, state);
+            case ObservableSemanticBuilder builder -> {
+                builder.state(state);
+                yield builder;
+            }
+            default -> throw new IllegalStateException("Unexpected semantic composer: " + composer);
+        };
+    }
+
+    /**
      * Returns a list of field values.
      * @param patternVersion Pattern Version containing the field definitions
      * @return Returns a list of default values.
@@ -737,7 +767,7 @@ public final class ObservableComposer {
      * Internal method to create an editor for an existing semantic.
      */
     private ObservableSemanticEditor editSemantic(ObservableSemantic semantic) {
-        return new ObservableSemanticEditor(this, semantic);
+        return new ObservableSemanticEditor(this, semantic, defaultState);
     }
 
     /**
@@ -1793,12 +1823,12 @@ public final class ObservableComposer {
     }
 
     /**
-     * Whether an edit of the entity under this composer changes its state: the version an editor
-     * starts from ({@link #versionToEdit}) is in a state other than this composer's. An editor
-     * saves such an edit even when no field changed, which is how a component is retired.
+     * Whether an edit of the entity in the given state changes its state: the version an editor
+     * starts from ({@link #versionToEdit}) is in another. An editor saves such an edit even when
+     * no field changed, which is how a component is retired.
      */
-    <OV extends ObservableEntityVersion<?, ?>> boolean changesState(ObservableEntity<OV> entity) {
-        return versionToEdit(entity).getVersionRecord().state() != defaultState;
+    <OV extends ObservableEntityVersion<?, ?>> boolean changesState(ObservableEntity<OV> entity, State state) {
+        return versionToEdit(entity).getVersionRecord().state() != state;
     }
 
     /**
@@ -1883,7 +1913,7 @@ public final class ObservableComposer {
         @Override
         public void save() {
             // A state-only edit, a retirement, saves without its editable version having been opened.
-            if (editableVersion == null && composer.changesState(concept)) {
+            if (editableVersion == null && composer.changesState(concept, composer.getDefaultState())) {
                 getEditableVersion();
             }
             if (editableVersion != null) {
@@ -1912,7 +1942,7 @@ public final class ObservableComposer {
         @Override
         public boolean hasUnsavedChanges() {
             return editableVersion == null
-                    ? composer.changesState(concept)
+                    ? composer.changesState(concept, composer.getDefaultState())
                     : editableVersion.hasUnsavedChanges() || editableVersion.changesState();
         }
     }
@@ -1978,11 +2008,14 @@ public final class ObservableComposer {
             implements EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> {
         private final ObservableComposer composer;
         private final ObservableSemantic semantic;
+        /** The state its version is saved in: the composer's default, unless composed with another. */
+        private final State state;
         private ObservableSemanticVersion.Editable editableVersion;
 
-        private ObservableSemanticEditor(ObservableComposer composer, ObservableSemantic semantic) {
+        private ObservableSemanticEditor(ObservableComposer composer, ObservableSemantic semantic, State state) {
             this.composer = composer;
             this.semantic = semantic;
+            this.state = state;
         }
 
         /**
@@ -1990,7 +2023,7 @@ public final class ObservableComposer {
          */
         public ObservableSemanticVersion.Editable getEditableVersion() {
             if (editableVersion == null) {
-                ObservableStamp stamp = composer.createStamp(composer.getDefaultState(), semantic.entity());
+                ObservableStamp stamp = composer.createStamp(state, semantic.entity());
 
 //                ObservableStamp stamp;
 //                if (semantic.uncommitted() && semantic.versions().size() == 1) {
@@ -2023,7 +2056,7 @@ public final class ObservableComposer {
         @Override
         public void save() {
             // A state-only edit, a retirement, saves without its editable version having been opened.
-            if (editableVersion == null && composer.changesState(semantic)) {
+            if (editableVersion == null && composer.changesState(semantic, state)) {
                 getEditableVersion();
             }
             if (editableVersion != null) {
@@ -2052,7 +2085,7 @@ public final class ObservableComposer {
         @Override
         public boolean hasUnsavedChanges() {
             return editableVersion == null
-                    ? composer.changesState(semantic)
+                    ? composer.changesState(semantic, state)
                     : editableVersion.hasUnsavedChanges() || editableVersion.changesState();
         }
     }
@@ -2091,7 +2124,7 @@ public final class ObservableComposer {
         @Override
         public void save() {
             // A state-only edit, a retirement, saves without its editable version having been opened.
-            if (editableVersion == null && composer.changesState(pattern)) {
+            if (editableVersion == null && composer.changesState(pattern, composer.getDefaultState())) {
                 getEditableVersion();
             }
             if (editableVersion != null) {
@@ -2120,7 +2153,7 @@ public final class ObservableComposer {
         @Override
         public boolean hasUnsavedChanges() {
             return editableVersion == null
-                    ? composer.changesState(pattern)
+                    ? composer.changesState(pattern, composer.getDefaultState())
                     : editableVersion.hasUnsavedChanges() || editableVersion.changesState();
         }
     }
