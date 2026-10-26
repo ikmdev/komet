@@ -102,6 +102,12 @@ class ObservableComposerJoinPendingWorkUTestFX {
         editor.save();
     }
 
+    /** Retires the description through the composer, as the assistant's change does. */
+    private static void retire(ObservableComposer composer, ObservableSemantic description) {
+        composer.composeSemantic(description.publicId(), EntityHandle.get(description.referencedComponentNid()).expectEntity(),
+                KernelPattern.DESCRIPTION_PATTERN, State.INACTIVE).save();
+    }
+
     /** The semantic's uncommitted versions, as the store holds them. */
     private static List<EntityVersion> uncommitted(ObservableSemantic semantic) {
         return EntityHandle.get(semantic.nid()).expectEntity().versions().stream()
@@ -113,6 +119,11 @@ class ObservableComposerJoinPendingWorkUTestFX {
         List<EntityVersion> pending = uncommitted(semantic);
         assertEquals(1, pending.size(), "one pending version; versions: " + pending);
         return text(pending.getFirst());
+    }
+
+    /** The semantic's latest version on the default view. */
+    private static EntityVersion latest(ObservableSemantic semantic) {
+        return Calculators.View.Default().latest(semantic.nid()).get();
     }
 
     private static String text(EntityVersion version) {
@@ -217,6 +228,55 @@ class ObservableComposerJoinPendingWorkUTestFX {
         assertTrue(uncommitted(windowChanged).isEmpty() && uncommitted(assistantOnly).isEmpty(),
                 "the window's commit published the assistant's change too");
         assertTrue(windowTransaction.committed());
+    }
+
+    @Test
+    @DisplayName("A window's edit of a description the assistant retired replaces the retirement: one pending version")
+    void aWindowEditOfARetiredDescriptionReplacesTheRetirement() {
+        ObservableSemantic retired = newCommittedDescription("as published");
+        ObservableComposer assistant = joining("Assistant change");
+        retire(assistant, retired);
+        Transaction assistantTransaction = owner(retired);
+        assertEquals(State.INACTIVE, uncommitted(retired).getFirst().state());
+
+        ObservableComposer window = joining("Edit Semantic Details");
+        edit(window, retired, "as the person left it");
+
+        assertEquals("as the person left it", pendingText(retired), "the person's edit is the one pending version");
+        assertEquals(State.ACTIVE, uncommitted(retired).getFirst().state(), "an edit in an active window is active");
+        assertSame(assistantTransaction, owner(retired));
+
+        window.commit();
+        assertTrue(uncommitted(retired).isEmpty());
+        assertEquals(2, EntityHandle.get(retired.nid()).expectEntity().versions().size(),
+                "the published version and the one commit, not two versions committed at one time");
+        EntityVersion published = latest(retired);
+        assertEquals(State.ACTIVE, published.state());
+        assertEquals("as the person left it", text(published));
+    }
+
+    @Test
+    @DisplayName("The assistant's retirement of a description the window edited keeps the person's text, retired")
+    void theAssistantsRetirementOfAWindowEditReplacesIt() {
+        ObservableSemantic edited = newCommittedDescription("as published");
+        ObservableComposer window = joining("Edit Semantic Details");
+        edit(window, edited, "as the person left it");
+        Transaction windowTransaction = owner(edited);
+
+        ObservableComposer assistant = joining("Assistant change");
+        retire(assistant, edited);
+
+        assertEquals("as the person left it", pendingText(edited), "the retirement starts from the person's edit");
+        assertEquals(State.INACTIVE, uncommitted(edited).getFirst().state());
+        assertSame(windowTransaction, owner(edited));
+
+        window.commit();
+        assertTrue(uncommitted(edited).isEmpty());
+        assertEquals(2, EntityHandle.get(edited.nid()).expectEntity().versions().size(),
+                "the window's editor, whose version the retirement replaced, wrote nothing more at the commit");
+        EntityVersion published = latest(edited);
+        assertEquals(State.INACTIVE, published.state(), "the retirement was published");
+        assertEquals("as the person left it", text(published));
     }
 
     @Test

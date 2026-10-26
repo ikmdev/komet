@@ -28,14 +28,18 @@ import dev.ikm.tinkar.component.FieldDataType;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.ConceptEntity;
 import dev.ikm.tinkar.entity.ConceptRecord;
+import dev.ikm.tinkar.entity.ConceptVersionRecord;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
+import dev.ikm.tinkar.entity.EntityText;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.PatternEntity;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
 import dev.ikm.tinkar.entity.PatternRecord;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticRecord;
+import dev.ikm.tinkar.entity.SemanticVersionRecord;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.StampRecord;
 import dev.ikm.tinkar.terms.EntityBinding;
@@ -376,6 +380,44 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
      */
     public void saveToDB(Entity<?> analogue, EntityVersion newVersionRecord , EntityVersion oldVersionRecord) {
         Entity.provider().putEntity(analogue);
+        tookVersion(newVersionRecord);
+    }
+
+    /**
+     * Saves the uncommitted version as {@link #saveToDB} does, withdrawing in the same write the
+     * entity's version under another uncommitted stamp of its transaction
+     * ({@link dev.ikm.tinkar.entity.EntityService#putEntityReplacingVersion}), so the new version
+     * replaces it rather than committing beside it (IKE-Network/ike-issues#1326).
+     *
+     * @param analogue          the entity record
+     * @param newVersionRecord  entity version record
+     * @param oldVersionRecord  the version edited
+     * @param replacedStampNid  the uncommitted stamp whose version leaves the entity
+     */
+    void saveToDBReplacing(Entity<?> analogue, EntityVersion newVersionRecord, EntityVersion oldVersionRecord,
+                           long replacedStampNid) {
+        // The analogue is built on the entity as stored, which still holds the version replaced.
+        Entity.provider().putEntityReplacingVersion(withoutVersion(analogue, replacedStampNid), replacedStampNid);
+        updateVersions(EntityHandle.get(nid()).expectEntity());
+        tookVersion(newVersionRecord);
+    }
+
+    private static Entity<?> withoutVersion(Entity<?> entity, long stampNid) {
+        for (EntityVersion version : entity.versions()) {
+            if (version.stampNid() == stampNid) {
+                return switch (entity) {
+                    case ConceptRecord concept -> concept.without((ConceptVersionRecord) version).build();
+                    case SemanticRecord semantic -> semantic.without((SemanticVersionRecord) version).build();
+                    case PatternRecord pattern -> pattern.without((PatternEntityVersion) version).build();
+                    default -> throw new IllegalStateException("Only a concept's, a semantic's or a pattern's version is replaced: "
+                            + EntityText.diagnostic(entity));
+                };
+            }
+        }
+        return entity;
+    }
+
+    private void tookVersion(EntityVersion newVersionRecord) {
         // The put has refreshed this instance already when it is the canonical one; otherwise take
         // the version here, in place when it is held, so the map and the version list stay one set.
         OV held = versionPropertyMap.get(newVersionRecord.stampNid());

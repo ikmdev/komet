@@ -274,6 +274,8 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
         protected V workingVersion;
         /** The transaction edits are saved in; replaced when it ends elsewhere (see {@link #save()}). */
         private Transaction transaction;
+        /** The version this editable saved last, or {@code null} before its first save. */
+        private V saved;
 
         /**
          * Package-private constructor. Use ObservableVersion.getEditableVersion(stamp) to create instances.
@@ -357,6 +359,10 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
                 return;
             }
             LOG.info("save(): Has unsaved changes, proceeding with save");
+            if (workingVersion == saved && replacedByAnotherSave()) {
+                // Unchanged since another save in the transaction replaced it: the edit lives on there.
+                return;
+            }
 
             if (!transaction.isOpen()) {
                 Transaction continuation = transaction.continuation();
@@ -384,6 +390,7 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
             // Create new version with uncommitted stamp
             V newVersion = createVersionWithStamp(workingVersion, uncommittedStamp.nid());
             Entity<?> analogue = createAnalogue(newVersion);
+            StampEntity<?> replacedStamp = pendingStampReplacedBy(uncommittedStamp);
 
             // Save to database - this will trigger update back to observable entity
             V oldVersion = (V) observableVersion.getVersionRecord();
@@ -397,7 +404,11 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
                         analogue.getClass().getSimpleName());
                 LOG.info("save(): Saving uncommitted version to database: entity: \n{}" +
                         "\n\n new version: {}, \n\n old version: {}", analogue, newVersion, oldVersion);
-                observableEntity.saveToDB(analogue, newVersion, oldVersion);
+                if (replacedStamp == null) {
+                    observableEntity.saveToDB(analogue, newVersion, oldVersion);
+                } else {
+                    observableEntity.saveToDBReplacing(analogue, newVersion, oldVersion, replacedStamp.nid());
+                }
             } catch (Exception e) {
                 LOG.error("Error saving uncommitted version to database: ", e);
                 throw new RuntimeException(e);
@@ -405,6 +416,50 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
 
             // Update working version
             workingVersion = newVersion;
+            saved = newVersion;
+        }
+
+        /**
+         * Whether the version this editable saved left the entity because another save in its
+         * transaction replaced it ({@link #pendingStampReplacedBy}): writing it again, at a save or a
+         * commit, would undo that save.
+         */
+        private boolean replacedByAnotherSave() {
+            if (saved == null) {
+                return false;
+            }
+            for (EntityVersion version : EntityHandle.get(observableVersion.nid()).expectEntity().versions()) {
+                if (version.stampNid() == saved.stampNid()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /**
+         * The stamp of the entity's other pending version in this editable's transaction under the
+         * same author, module and path as the stamp saved to, or {@code null} when it holds none
+         * (IKE-Network/ike-issues#1326). Such a version is in another state: a description the
+         * assistant retired, edited in a window that joined its change. A transaction holds one
+         * pending version of a component per author, module and path, so the save replaces it;
+         * left beside the save, both would commit at one time.
+         *
+         * @param saveStamp the uncommitted stamp the edit is saved under
+         * @return the stamp whose version the save withdraws, or {@code null}
+         */
+        private StampEntity<?> pendingStampReplacedBy(StampEntity<?> saveStamp) {
+            for (EntityVersion version : EntityHandle.get(observableVersion.nid()).expectEntity().versions()) {
+                StampEntity<?> stamp = version.stamp();
+                if (version.uncommitted()
+                        && stamp.nid() != saveStamp.nid()
+                        && stamp.authorNid() == saveStamp.authorNid()
+                        && stamp.moduleNid() == saveStamp.moduleNid()
+                        && stamp.pathNid() == saveStamp.pathNid()
+                        && Transaction.forStamp(stamp.publicId()).filter(owner -> owner == transaction).isPresent()) {
+                    return stamp;
+                }
+            }
+            return null;
         }
 
         /**
@@ -416,7 +471,11 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
             if (!transaction.isOpen() && transaction.continuation().isOpen()) {
                 continueIn(transaction.continuation());
             }
+            boolean replaced = workingVersion == saved && replacedByAnotherSave();
             transaction.commit();
+            if (replaced) {
+                return;     // the version replacing this one's was committed with the transaction
+            }
 
             // After commit, create committed version
             StampEntity committedStamp = Entity.getStamp(editStamp.nid());
@@ -459,7 +518,11 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
             StampEntity<?> newStamp = receiver.getStamp(tuple.state(), Long.MAX_VALUE, tuple.authorNid(),
                     tuple.moduleNid(), tuple.pathNid());
             if (workingVersion.stampNid() == oldStamp.nid()) {
+                boolean wasSaved = workingVersion == saved;
                 workingVersion = createVersionWithStamp(workingVersion, newStamp.nid());
+                if (wasSaved) {
+                    saved = workingVersion;     // the moved version is the one saved
+                }
             }
             EDITABLE_VERSION_CACHE.asMap().remove(new EditableVersionKey(observableVersion.nid(), oldStamp.nid()), this);
             editStamp = ObservableEntity.packagePrivateGetStamp(newStamp);
