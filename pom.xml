@@ -237,6 +237,11 @@
                         <additionalJOptions>
                             <additionalJOption>--enable-preview</additionalJOption>
                         </additionalJOptions>
+                        <!-- No offline links to sibling modules: they point at <url>/<module>/apidocs/,
+                             which is not where the docs are published, and they warn (test-logging, with
+                             no sources, has no apidocs to link). The working set's maven.config turned
+                             them off for developer machines only; CI builds without it. -->
+                        <detectOfflineLinks>false</detectOfflineLinks>
                     </configuration>
                     <executions>
                         <execution>
