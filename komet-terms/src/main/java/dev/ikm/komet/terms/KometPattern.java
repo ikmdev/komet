@@ -29,6 +29,16 @@ public enum KometPattern implements PatternEnumerationFacade<KometPattern> {
     DOCUMENT_BLOCK_EDIT_INPUT_PATTERN("Document block edit input pattern (IkeFoundation)", "4f7e66dc-ecad-5e59-a684-480a07be21ed"),
 
     /**
+     * The input of an action that writes the tree of an ANF statement: the kind of action performed and the statement's tree. Its referenced component is the statement to edit, or the document block a new statement is added to.
+     */
+    ANF_STATEMENT_TREE_INPUT_PATTERN("ANF statement tree input pattern (IkeFoundation)", "d500cc84-978b-543b-9011-0fefa0166507"),
+
+    /**
+     * The input of an action that promotes an ANF statement's composed topic to a complex concept: the kind of action performed on the statement, the referenced component, and the name of the complex concept it creates.
+     */
+    COMPLEX_CONCEPT_PROMOTION_INPUT_PATTERN("Complex concept promotion input pattern (IkeFoundation)", "3891e739-23c3-51e3-b048-580330566298"),
+
+    /**
      * The result of an action that writes a new version of its subject, referencing the run's input: the outcome, the STAMP of the version written (the outcome concept itself when nothing was written), and a message.
      */
     VERSION_CHANGE_RESULT_PATTERN("Version change result pattern (IkeFoundation)", "c0f13898-fa2a-5b10-aa22-cf0885144af0");

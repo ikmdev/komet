@@ -31,19 +31,26 @@ import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
 import javafx.scene.Node;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputControl;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TreeCell;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DataFormat;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -51,16 +58,23 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 
 import java.math.BigDecimal;
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.function.IntFunction;
+import java.util.function.UnaryOperator;
 
 import static dev.ikm.komet.framework.dnd.KometClipboard.COMPONENT_DRAG_FORMAT;
 import static dev.ikm.komet.framework.dnd.KometClipboard.decodePublicId;
@@ -94,6 +108,15 @@ import static dev.ikm.komet.terms.KometConcept.BLANK_CONCEPT;
  *     clause; the definition is only transformed once the template's required concepts are picked,
  *     mirroring {@code AxiomFocusedRules}' constraints (a single necessary set). An add-set
  *     affordance below the tree starts a definition from scratch.</li>
+ *     <li><b>Structural move</b> — every leaf row and every role group carries a move handle
+ *     (revealed on hover); dragging it onto a set or role group re-parents the axiom there.
+ *     Whether a clause takes the axiom is decided by
+ *     {@link #admitsChild(EntityVertex, EntityVertex, DiTreeEntity)} while the drag is over it,
+ *     so an illegal drop is refused at the drop point rather than reverted. A moved axiom keeps
+ *     its vertex identity; a role group emptied by the move goes with it.</li>
+ *     <li><b>Undo and redo</b> — every applied edit is recorded; Shortcut+Z undoes, Shift+Shortcut+Z
+ *     (or Shortcut+Y) redoes. A change of the value from outside the control (another writer,
+ *     a refresh from the store that is not the same tree) clears the history.</li>
  * </ul>
  *
  * <p>Every applied edit rebuilds a new {@link DiTreeEntity} through
@@ -110,13 +133,15 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
         super(control);
         NodeUtils.setShowing(readOnlyIndicator, false);
         control.componentSlotFactoryProperty().subscribe(() -> rebuildTree(control.getValue()));
+        installStructuralMove();
+        installUndo(control);
     }
 
-    private KLDiTreeControl control() {
+    protected KLDiTreeControl control() {
         return (KLDiTreeControl) getSkinnable();
     }
 
-    private boolean isEditable() {
+    protected boolean isEditable() {
         return control().getComponentSlotFactory() != null && getSkinnable().getComponentItemResolver() != null;
     }
 
@@ -170,7 +195,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
      * component chip replaces the chip's concept — the same edit picking it in the inline search
      * slot applies.
      */
-    private void setupChipDrop(Node chip, EntityVertex vertex, ChipKind kind) {
+    protected void setupChipDrop(Node chip, EntityVertex vertex, ChipKind kind) {
         chip.setOnDragOver(event -> {
             if (event.getGestureSource() != chip && hasDroppableComponent(event)) {
                 event.acceptTransferModes(TransferMode.COPY);
@@ -203,7 +228,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
         });
     }
 
-    private boolean hasDroppableComponent(DragEvent event) {
+    protected boolean hasDroppableComponent(DragEvent event) {
         return event.getDragboard().hasContent(COMPONENT_DRAG_FORMAT)
                 || event.getDragboard().hasContent(CONCEPT_NAVIGATOR_DRAG_FORMAT)
                 || (event.getGestureSource() instanceof Node source && source.getUserData() instanceof DragAndDropInfo)
@@ -218,7 +243,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
      * classic navigator and search cells. Returns {@link Integer#MIN_VALUE} when the drag carries
      * no usable component.
      */
-    private long extractDroppedNid(DragEvent event) {
+    protected long extractDroppedNid(DragEvent event) {
         Dragboard dragboard = event.getDragboard();
         if (dragboard.hasContent(COMPONENT_DRAG_FORMAT)) {
             PublicId publicId = decodePublicId((String) dragboard.getContent(COMPONENT_DRAG_FORMAT));
@@ -314,6 +339,11 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
                 e.consume();
             });
             return;
+        }
+
+        markMoveTarget(header, childrenBox, vertex);
+        if (isRoleGroup) {
+            header.getChildren().add(0, createMoveHandle(header::getParent, vertex));
         }
 
         Region spacer = new Region();
@@ -530,7 +560,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
      * (styled in ditree-control.css); space is always reserved and the button fades in on header
      * hover.
      */
-    private StackPane createAddButton() {
+    protected StackPane createAddButton() {
         Region plusIcon = new Region();
         plusIcon.getStyleClass().add("ditree-plus-icon");
         StackPane addButton = new StackPane(plusIcon);
@@ -937,6 +967,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
         if (!isEditable()) {
             return;
         }
+        row.getChildren().add(0, createMoveHandle(() -> row, rowVertex));
         StackPane addButton = createAddButton();
         row.getChildren().add(addButton);
 
@@ -1080,7 +1111,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
      *                                                                         *
      *=========================================================================*/
 
-    private void startChipEdit(Node chip, EntityVertex vertex, ChipKind kind) {
+    protected void startChipEdit(Node chip, EntityVertex vertex, ChipKind kind) {
         Pane parent = (Pane) chip.getParent();
         int index = parent.getChildren().indexOf(chip);
 
@@ -1100,7 +1131,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
         focusSlot(slot);
     }
 
-    private void applyChipEdit(EntityVertex vertex, ChipKind kind, long newConceptNid) {
+    protected void applyChipEdit(EntityVertex vertex, ChipKind kind, long newConceptNid) {
         transform(builder -> {
             LogicalAxiom axiom = builder.get(vertex.vertexIndex());
             switch (kind) {
@@ -1183,7 +1214,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
         return menu;
     }
 
-    private ContextMenu newMenu() {
+    protected ContextMenu newMenu() {
         ContextMenu menu = new ContextMenu();
         menu.getStyleClass().add("klcontext-menu");
         return menu;
@@ -1373,17 +1404,438 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
 
     /*=========================================================================*
      *                                                                         *
+     * Structural move                                                         *
+     *                                                                         *
+     *=========================================================================*/
+
+    /** The drag payload of a structural move: the index of the vertex moving within this tree. */
+    private static final DataFormat DITREE_VERTEX_FORMAT = dataFormat("application/x-komet-ditree-vertex");
+    private static final PseudoClass MOVE_TARGET_PSEUDO_CLASS = PseudoClass.getPseudoClass("move-target");
+    /** Node property keys marking a clause's header and children box as one move target. */
+    private static final String CLAUSE_VERTEX = "ditree-clause-vertex";
+    private static final String CLAUSE_HEADER = "ditree-clause-header";
+
+    /** The vertex this skin is dragging, or null while no structural move is in progress. */
+    private EntityVertex movingVertex;
+    private Node highlightedMoveTarget;
+
+    private static DataFormat dataFormat(String mimeType) {
+        DataFormat existing = DataFormat.lookupMimeType(mimeType);
+        return existing != null ? existing : new DataFormat(mimeType);
+    }
+
+    /**
+     * Marks a clause as a structural move target: its header and its children box both resolve
+     * to the clause's vertex, so a drop anywhere inside the clause lands in it.
+     *
+     * @param header      the clause's header row, which shows the target highlight
+     * @param childrenBox the clause's children
+     * @param clause      the clause vertex
+     */
+    protected void markMoveTarget(HBox header, VBox childrenBox, EntityVertex clause) {
+        for (Node node : List.of(header, childrenBox)) {
+            node.getProperties().put(CLAUSE_VERTEX, clause);
+            node.getProperties().put(CLAUSE_HEADER, header);
+        }
+    }
+
+    /**
+     * Builds the move handle of a row: dragging it starts a structural move of the vertex, with a
+     * snapshot of the row (or of the whole clause, for a role group) as the drag image.
+     *
+     * @param dragViewSource the node pictured while dragging
+     * @param vertex         the vertex the handle moves
+     * @return the handle, to place first in the row
+     */
+    protected Node createMoveHandle(Supplier<Node> dragViewSource, EntityVertex vertex) {
+        Label handle = new Label("⠿");
+        handle.getStyleClass().add("ditree-move-handle");
+        handle.setOnDragDetected(e -> {
+            if (!isEditable()) {
+                return;
+            }
+            movingVertex = vertex;
+            Dragboard dragboard = handle.startDragAndDrop(TransferMode.MOVE);
+            ClipboardContent content = new ClipboardContent();
+            content.put(DITREE_VERTEX_FORMAT, Integer.toString(vertex.vertexIndex()));
+            dragboard.setContent(content);
+            Node viewSource = dragViewSource.get();
+            if (viewSource != null) {
+                SnapshotParameters parameters = new SnapshotParameters();
+                parameters.setFill(Color.TRANSPARENT);
+                dragboard.setDragView(viewSource.snapshot(parameters, null));
+            }
+            e.consume();
+        });
+        handle.setOnDragDone(e -> {
+            movingVertex = null;
+            setMoveTarget(null);
+            e.consume();
+        });
+        return handle;
+    }
+
+    /**
+     * Routes structural move gestures through one filter on the tree container, ahead of the
+     * chips' own drop handling (which takes component drags only): the innermost clause under the
+     * pointer that takes the moving vertex is the target, the gesture's own clause stops the
+     * search, and every other drag passes through untouched.
+     */
+    private void installStructuralMove() {
+        treeContainer.addEventFilter(DragEvent.DRAG_OVER, e -> {
+            if (!isMoveGesture(e)) {
+                return;
+            }
+            Node target = moveTargetAt(e);
+            if (target != null) {
+                e.acceptTransferModes(TransferMode.MOVE);
+            }
+            setMoveTarget(target);
+            e.consume();
+        });
+        treeContainer.addEventFilter(DragEvent.DRAG_DROPPED, e -> {
+            if (!isMoveGesture(e)) {
+                return;
+            }
+            Node target = moveTargetAt(e);
+            EntityVertex moving = movingVertex;
+            setMoveTarget(null);
+            boolean moved = false;
+            if (target != null && target.getProperties().get(CLAUSE_VERTEX) instanceof EntityVertex clause) {
+                moveVertex(moving, clause);
+                moved = true;
+            }
+            e.setDropCompleted(moved);
+            e.consume();
+        });
+        treeContainer.addEventHandler(DragEvent.DRAG_EXITED, e -> setMoveTarget(null));
+    }
+
+    private boolean isMoveGesture(DragEvent event) {
+        return movingVertex != null && isEditable() && event.getDragboard().hasContent(DITREE_VERTEX_FORMAT);
+    }
+
+    /** The header of the clause a drop at the event's position would land in, or null. */
+    private Node moveTargetAt(DragEvent event) {
+        DiTreeEntity tree = getSkinnable().getValue();
+        if (tree == null) {
+            return null;
+        }
+        Optional<EntityVertex> currentContainer = tree.predecessor(movingVertex);
+        for (Node node = event.getTarget() instanceof Node picked ? picked : null;
+             node != null && node != treeContainer; node = node.getParent()) {
+            if (node.getProperties().get(CLAUSE_VERTEX) instanceof EntityVertex clause) {
+                boolean ownClause = currentContainer.isPresent() && containerOf(clause, tree)
+                        .map(container -> container.vertexIndex() == currentContainer.get().vertexIndex())
+                        .orElse(false);
+                if (ownClause) {
+                    return null;
+                }
+                if (canMove(movingVertex, clause, tree)) {
+                    return (Node) node.getProperties().get(CLAUSE_HEADER);
+                }
+            }
+        }
+        return null;
+    }
+
+    private void setMoveTarget(Node target) {
+        if (highlightedMoveTarget == target) {
+            return;
+        }
+        if (highlightedMoveTarget != null) {
+            highlightedMoveTarget.pseudoClassStateChanged(MOVE_TARGET_PSEUDO_CLASS, false);
+        }
+        highlightedMoveTarget = target;
+        if (target != null) {
+            target.pseudoClassStateChanged(MOVE_TARGET_PSEUDO_CLASS, true);
+        }
+    }
+
+    /**
+     * Whether a vertex can move into a clause: never into itself or its own subtree, only into a
+     * clause with a container to hold it, never where it already is, and only where admission
+     * allows it ({@link #admitsChild(EntityVertex, EntityVertex, DiTreeEntity)}).
+     *
+     * @param child  the moving vertex
+     * @param clause the candidate clause
+     * @param tree   the current tree
+     * @return true when a drop of the child on the clause is a legal move
+     */
+    public final boolean canMove(EntityVertex child, EntityVertex clause, DiTreeEntity tree) {
+        if (tree == null || child == null || clause.vertexIndex() == child.vertexIndex()) {
+            return false;
+        }
+        for (Optional<EntityVertex> up = tree.predecessor(clause); up.isPresent(); up = tree.predecessor(up.get())) {
+            if (up.get().vertexIndex() == child.vertexIndex()) {
+                return false;
+            }
+        }
+        Optional<EntityVertex> container = containerOf(clause, tree);
+        Optional<EntityVertex> current = tree.predecessor(child);
+        if (container.isEmpty() || current.isEmpty()
+                || container.get().vertexIndex() == current.get().vertexIndex()) {
+            return false;
+        }
+        return admitsChild(clause, child, tree);
+    }
+
+    /**
+     * The admission answer to a structural move: whether this clause takes this vertex. For
+     * EL++, a logical set takes is-a references, roles, role groups, interval roles and
+     * features; a role group takes roles, interval roles and features — never an is-a and never
+     * another role group. A skin for another adaptor layer overrides this for its own clauses and
+     * defers to it for the EL++ ones.
+     *
+     * @param clause the clause the vertex would move into
+     * @param child  the moving vertex
+     * @param tree   the current tree
+     * @return true when the clause admits the vertex
+     */
+    protected boolean admitsChild(EntityVertex clause, EntityVertex child, DiTreeEntity tree) {
+        long childMeaning = child.getMeaningNid();
+        boolean typedAtom = (childMeaning == KernelConcept.ROLE.nid() && !isRoleGroup(child))
+                || childMeaning == KernelConcept.INTERVAL_ROLE.nid()
+                || childMeaning == KernelConcept.FEATURE.nid();
+        if (isLogicalSet(clause)) {
+            return typedAtom || isRoleGroup(child) || childMeaning == KernelConcept.CONCEPT_REFERENCE.nid();
+        }
+        if (isRoleGroup(clause)) {
+            return typedAtom;
+        }
+        return false;
+    }
+
+    /**
+     * The vertex that holds a clause's members: for EL++ sets and role groups, the single
+     * {@code AND} beneath the clause. Empty when the clause has none. A skin for another adaptor layer
+     * overrides this when its clauses hold their members directly.
+     *
+     * @param clause the clause vertex
+     * @param tree   the current tree
+     * @return the container vertex, if the clause has one
+     */
+    protected Optional<EntityVertex> containerOf(EntityVertex clause, DiTreeEntity tree) {
+        var successors = tree.successors(clause);
+        if (successors.size() == 1 && successors.getFirst().getMeaningNid() == KernelConcept.AND.nid()) {
+            return Optional.of(successors.getFirst());
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Moves a vertex, with its subtree, into a clause, appended after the clause's members. The
+     * moved vertices keep their UUIDs, so the move reads as a move to vertex identity, not as a
+     * removal and an addition. A role group the move leaves empty is removed with it.
+     *
+     * @param child        the vertex to move
+     * @param targetClause the clause to move it into
+     * @return true when the move was legal and applied
+     */
+    public boolean moveVertex(EntityVertex child, EntityVertex targetClause) {
+        if (!canMove(child, targetClause, getSkinnable().getValue())) {
+            return false;
+        }
+        applyTreeEdit(tree -> {
+            if (!canMove(child, targetClause, tree)) {
+                return tree;
+            }
+            EntityVertex container = containerOf(targetClause, tree).orElseThrow();
+            EntityVertex oldContainer = tree.predecessor(child).orElseThrow();
+            DiTreeEntity moved = reparent(tree, child, container);
+            if (moved.successors(moved.vertex(oldContainer.vertexIndex())).isEmpty()) {
+                Optional<EntityVertex> emptied = moved.predecessor(moved.vertex(oldContainer.vertexIndex()));
+                if (emptied.isPresent() && isRoleGroup(emptied.get())) {
+                    return moved.removeVertex(emptied.get().vertexIndex()).build();
+                }
+            }
+            return moved;
+        });
+        return true;
+    }
+
+    /**
+     * Copies a tree with one vertex (and its subtree) hung under a new parent, appended after the
+     * parent's other successors. Every vertex is copied at its own index, so the source tree is
+     * left untouched (it may be held for undo) and every vertex keeps its UUID.
+     *
+     * @param tree      the source tree
+     * @param child     the vertex to re-parent
+     * @param newParent the vertex to hang it under
+     * @return the re-parented tree
+     */
+    protected static DiTreeEntity reparent(DiTreeEntity tree, EntityVertex child, EntityVertex newParent) {
+        EntityVertex[] copies = new EntityVertex[tree.vertexMap().size()];
+        DiTreeEntity.Builder builder = DiTreeEntity.builder();
+        builder.setRoot(copyOf(tree.root(), copies));
+        copyEdges(tree, tree.root(), child.vertexIndex(), newParent.vertexIndex(), copies, builder);
+        return builder.build();
+    }
+
+    private static void copyEdges(DiTreeEntity tree, EntityVertex parent, int movingIndex, int newParentIndex,
+                                  EntityVertex[] copies, DiTreeEntity.Builder builder) {
+        for (EntityVertex successor : tree.successors(parent)) {
+            if (successor.vertexIndex() == movingIndex) {
+                continue;
+            }
+            builder.addEdge(copyOf(successor, copies), copies[parent.vertexIndex()]);
+            copyEdges(tree, successor, movingIndex, newParentIndex, copies, builder);
+        }
+        if (parent.vertexIndex() == newParentIndex) {
+            EntityVertex moving = tree.vertex(movingIndex);
+            builder.addEdge(copyOf(moving, copies), copies[parent.vertexIndex()]);
+            copyEdges(tree, moving, movingIndex, newParentIndex, copies, builder);
+        }
+    }
+
+    private static EntityVertex copyOf(EntityVertex vertex, EntityVertex[] copies) {
+        if (copies[vertex.vertexIndex()] == null) {
+            copies[vertex.vertexIndex()] = vertex.copyWithNewIndex(vertex.vertexIndex());
+        }
+        return copies[vertex.vertexIndex()];
+    }
+
+    private static boolean isLogicalSet(EntityVertex vertex) {
+        long meaning = vertex.getMeaningNid();
+        return meaning == KernelConcept.NECESSARY_SET.nid()
+                || meaning == KernelConcept.SUFFICIENT_SET.nid()
+                || meaning == KernelConcept.INCLUSION_SET.nid();
+    }
+
+    private static boolean isRoleGroup(EntityVertex vertex) {
+        if (vertex.getMeaningNid() != KernelConcept.ROLE.nid()) {
+            return false;
+        }
+        ConceptFacade roleType = vertex.propertyFast(KernelConcept.ROLE_TYPE);
+        return roleType != null && PublicId.equals(roleType.publicId(), KernelConcept.ROLE_GROUP.publicId());
+    }
+
+    /*=========================================================================*
+     *                                                                         *
+     * Undo and redo                                                           *
+     *                                                                         *
+     *=========================================================================*/
+
+    private static final int UNDO_DEPTH = 100;
+    private static final KeyCombination UNDO = new KeyCodeCombination(KeyCode.Z, KeyCombination.SHORTCUT_DOWN);
+    private static final KeyCombination REDO = new KeyCodeCombination(KeyCode.Z,
+            KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN);
+    private static final KeyCombination REDO_ALTERNATE = new KeyCodeCombination(KeyCode.Y,
+            KeyCombination.SHORTCUT_DOWN);
+
+    /** Trees to return to, most recent first; every one is a tree the control held. */
+    private final Deque<DiTreeEntity> undoHistory = new ArrayDeque<>();
+    private final Deque<DiTreeEntity> redoHistory = new ArrayDeque<>();
+    /** True while this skin sets the value itself, so the change is not read as an outside one. */
+    private boolean settingOwnValue;
+
+    private void installUndo(KLDiTreeControl control) {
+        control.valueProperty().addListener((observable, oldTree, newTree) -> {
+            if (!settingOwnValue) {
+                undoHistory.clear();
+                redoHistory.clear();
+            }
+        });
+        // Text editors inside the tree (search controls, bounds, literals) consume their own undo
+        // keys; only presses they leave reach this handler.
+        control.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
+            if (!isEditable()) {
+                return;
+            }
+            if (REDO.match(e) || REDO_ALTERNATE.match(e)) {
+                if (redo()) {
+                    e.consume();
+                }
+            } else if (UNDO.match(e) && undo()) {
+                e.consume();
+            }
+        });
+        // A click in the tree takes focus to the control, so the undo keys reach it.
+        control.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            if (isEditable() && !control.isFocusWithin()
+                    && !(e.getTarget() instanceof Node target && isInsideTextInput(target))) {
+                control.requestFocus();
+            }
+        });
+    }
+
+    private static boolean isInsideTextInput(Node node) {
+        for (Node up = node; up != null; up = up.getParent()) {
+            if (up instanceof TextInputControl) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void setOwnValue(DiTreeEntity tree) {
+        settingOwnValue = true;
+        try {
+            getSkinnable().setValue(tree);
+        } finally {
+            settingOwnValue = false;
+        }
+    }
+
+    /**
+     * Returns the control to the tree it held before the last edit.
+     *
+     * @return true when there was an edit to undo
+     */
+    public boolean undo() {
+        if (undoHistory.isEmpty()) {
+            return false;
+        }
+        DiTreeEntity current = getSkinnable().getValue();
+        DiTreeEntity previous = undoHistory.pop();
+        if (current != null) {
+            redoHistory.push(current);
+        }
+        setOwnValue(previous);
+        return true;
+    }
+
+    /**
+     * Re-applies the edit the last undo took back.
+     *
+     * @return true when there was an undone edit to redo
+     */
+    public boolean redo() {
+        if (redoHistory.isEmpty()) {
+            return false;
+        }
+        DiTreeEntity current = getSkinnable().getValue();
+        DiTreeEntity next = redoHistory.pop();
+        if (current != null) {
+            undoHistory.push(current);
+        }
+        setOwnValue(next);
+        return true;
+    }
+
+    /** @return true when there is an edit to undo */
+    public boolean canUndo() {
+        return !undoHistory.isEmpty();
+    }
+
+    /** @return true when there is an undone edit to redo */
+    public boolean canRedo() {
+        return !redoHistory.isEmpty();
+    }
+
+    /*=========================================================================*
+     *                                                                         *
      * Slots and tree transformations                                          *
      *                                                                         *
      *=========================================================================*/
 
-    private KLComponentControl newSlot() {
+    protected KLComponentControl newSlot() {
         KLComponentControl slot = control().getComponentSlotFactory().get();
         slot.getStyleClass().add("ditree-slot");
         return slot;
     }
 
-    private void onEscape(Node node, Runnable action) {
+    protected void onEscape(Node node, Runnable action) {
         node.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
             if (e.getCode() == KeyCode.ESCAPE) {
                 action.run();
@@ -1392,7 +1844,7 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
         });
     }
 
-    private void focusSlot(KLComponentControl slot) {
+    protected void focusSlot(KLComponentControl slot) {
         Platform.runLater(() -> {
             // The skin only exists after a CSS pass; force it so the inner search text field is
             // there to receive focus, letting the user type the search right away.
@@ -1407,17 +1859,41 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
     }
 
     /**
+     * Applies a tree-level edit: the function receives the control's current tree (null when
+     * there is no definition yet) and returns the tree to set as the new value, which re-renders
+     * and propagates to the bound field. Every edit of this skin goes through here, so a subclass
+     * rendering another adaptor layer over the same {@link DiTreeEntity} applies its own builder's
+     * edits by the same path, and a nested EL++ edit inside such a tree is an edit of the
+     * extracted subtree spliced back by that subclass.
+     */
+    protected void applyTreeEdit(UnaryOperator<DiTreeEntity> edit) {
+        DiTreeEntity before = getSkinnable().getValue();
+        DiTreeEntity after = edit.apply(before);
+        setOwnValue(after);
+        // A first definition has nothing to return to (the field holds no tree to restore), and an
+        // edit that leaves the same tree is no step to undo.
+        if (before != null && after != null && !Objects.equals(before, after)) {
+            undoHistory.push(before);
+            while (undoHistory.size() > UNDO_DEPTH) {
+                undoHistory.removeLast();
+            }
+            redoHistory.clear();
+        }
+    }
+
+    /**
      * Applies an edit to the current definition through a {@link LogicalExpressionBuilder} — the
      * same transformation API the classic axiom rule actions use — and sets the resulting tree as
      * the control's value. A null current value starts a fresh definition (root vertex only).
      */
     private void transform(Consumer<LogicalExpressionBuilder> edit) {
-        DiTreeEntity tree = getSkinnable().getValue();
-        LogicalExpressionBuilder builder = tree == null
-                ? new LogicalExpressionBuilder()
-                : new LogicalExpressionBuilder(tree);
-        edit.accept(builder);
-        getSkinnable().setValue(toTree(builder.build()));
+        applyTreeEdit(tree -> {
+            LogicalExpressionBuilder builder = tree == null
+                    ? new LogicalExpressionBuilder()
+                    : new LogicalExpressionBuilder(tree);
+            edit.accept(builder);
+            return toTree(builder.build());
+        });
     }
 
     private void changeSetType(EntityVertex setVertex, ConceptFacade newSetMeaning) {
@@ -1425,9 +1901,8 @@ public class KLDiTreeControlSkin extends KLReadOnlyDiTreeControlSkin {
                 (LogicalAxiom.LogicalSet) builder.get(setVertex.vertexIndex()), newSetMeaning));
     }
 
-    private void removeVertex(EntityVertex vertex) {
-        DiTreeEntity tree = getSkinnable().getValue();
-        getSkinnable().setValue(tree.removeVertex(vertex.vertexIndex()).build());
+    protected void removeVertex(EntityVertex vertex) {
+        applyTreeEdit(tree -> tree.removeVertex(vertex.vertexIndex()).build());
     }
 
     private static DiTreeEntity toTree(LogicalExpression expression) {

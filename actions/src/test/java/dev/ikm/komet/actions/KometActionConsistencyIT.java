@@ -57,6 +57,9 @@ class KometActionConsistencyIT {
     /** Actions the starter set defines that a plugin implements, with the plugin that does. */
     private static final Map<KometConcept, String> IMPLEMENTED_BY_PLUGINS = Map.of(
             KometConcept.EDIT_DOCUMENT_BLOCK, "komet-claude-plugin",
+            KometConcept.ADD_ANF_STATEMENT, "komet-claude-plugin",
+            KometConcept.EDIT_ANF_STATEMENT, "komet-claude-plugin",
+            KometConcept.PROMOTE_TO_COMPLEX_CONCEPT, "komet-claude-plugin",
             KometConcept.EDIT_DOCUMENT_SENTENCE, "komet-claude-plugin");
 
     private ViewCalculator view;
@@ -85,6 +88,9 @@ class KometActionConsistencyIT {
         assertTrue(definedActions.contains(KometConcept.ACTIVATE_COMPONENT.nid()), "Activate component is defined");
         assertTrue(definedActions.contains(KometConcept.INACTIVATE_COMPONENT.nid()), "Inactivate component is defined");
         assertTrue(definedActions.contains(KometConcept.EDIT_DOCUMENT_BLOCK.nid()), "Edit document block is defined");
+        assertTrue(definedActions.contains(KometConcept.ADD_ANF_STATEMENT.nid()), "Add ANF statement is defined");
+        assertTrue(definedActions.contains(KometConcept.EDIT_ANF_STATEMENT.nid()), "Edit ANF statement is defined");
+        assertTrue(definedActions.contains(KometConcept.PROMOTE_TO_COMPLEX_CONCEPT.nid()), "Promote to complex concept is defined");
         assertTrue(definedActions.contains(KometConcept.EDIT_DOCUMENT_SENTENCE.nid()), "Edit document sentence is defined");
     }
 
@@ -94,6 +100,9 @@ class KometActionConsistencyIT {
                 KometConcept.ACTIVATE_COMPONENT, KometPattern.COMPONENT_ACTION_INPUT_PATTERN,
                 KometConcept.INACTIVATE_COMPONENT, KometPattern.COMPONENT_ACTION_INPUT_PATTERN,
                 KometConcept.EDIT_DOCUMENT_BLOCK, KometPattern.DOCUMENT_BLOCK_EDIT_INPUT_PATTERN,
+                KometConcept.ADD_ANF_STATEMENT, KometPattern.ANF_STATEMENT_TREE_INPUT_PATTERN,
+                KometConcept.EDIT_ANF_STATEMENT, KometPattern.ANF_STATEMENT_TREE_INPUT_PATTERN,
+                KometConcept.PROMOTE_TO_COMPLEX_CONCEPT, KometPattern.COMPLEX_CONCEPT_PROMOTION_INPUT_PATTERN,
                 KometConcept.EDIT_DOCUMENT_SENTENCE, KometPattern.DOCUMENT_BLOCK_EDIT_INPUT_PATTERN);
         List<String> problems = new ArrayList<>();
         inputs.forEach((action, input) -> {

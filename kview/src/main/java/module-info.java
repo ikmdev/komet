@@ -159,6 +159,10 @@ module dev.ikm.komet.kview {
 
     exports dev.ikm.komet.kview.controls;
     opens dev.ikm.komet.kview.controls;
+    // Exported so a skin for another adaptor layer over the DiTree control (the ANF statement and
+    // complex concept skins in komet-claude-plugin) can extend KLReadOnlyDiTreeControlSkin and
+    // KLDiTreeControlSkin (IKE-Network/ike-issues#1312).
+    exports dev.ikm.komet.kview.controls.skin;
     opens dev.ikm.komet.kview.controls.skin to javafx.controls;
     exports dev.ikm.komet.kview.klfields;
 
