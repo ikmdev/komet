@@ -31,7 +31,22 @@ public final class KLDiTreeControlFactory {
      * @return the wired control
      */
     public static KLDiTreeControl create(ViewCalculator viewCalculator) {
-        KLDiTreeControl control = new KLDiTreeControl();
+        return configure(new KLDiTreeControl(), viewCalculator);
+    }
+
+    /**
+     * Wires an axiom tree control, or a control extending it, against the given view, as
+     * {@link #create} wires its own: names, identicons and public ids resolved through the view,
+     * stated definitions for the peek, type-ahead search slots, and the SNOMED property-set seeds
+     * when the knowledge base has them. A control for another adaptor layer, such as the ANF
+     * statement or complex concept control, is hosted with the same wiring.
+     *
+     * @param control        the control to wire
+     * @param viewCalculator the view to resolve names, identicons and type-ahead search against
+     * @param <C>            the control's type
+     * @return the same control, wired
+     */
+    public static <C extends KLDiTreeControl> C configure(C control, ViewCalculator viewCalculator) {
         control.setComponentItemResolver(nid -> {
             String description = viewCalculator.getDescriptionTextOrNid(nid);
             EntityHandle entityHandle = EntityHandle.get(nid);

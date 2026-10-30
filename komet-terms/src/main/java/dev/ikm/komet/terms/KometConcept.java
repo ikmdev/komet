@@ -399,6 +399,21 @@ public enum KometConcept implements ConceptEnumerationFacade<KometConcept> {
     EDIT_DOCUMENT_BLOCK("Edit document block (IkeFoundation)", "18d930ea-9ced-5cc2-b19f-257547037d03"),
 
     /**
+     * Adds an ANF statement to a document block: writes a new semantic of the ANF statement pattern, under the edit coordinate, whose referenced component is the block and whose tree is the given one. The tree must be a well-formed statement: every vertex an ANF meaning, every child one its parent admits, and every attribute's own rules kept. A statement may still lack attributes; it is completed by editing it.
+     */
+    ADD_ANF_STATEMENT("Add ANF statement (IkeFoundation)", "bb7aec19-81a6-5e4d-87cb-425ee4b77001"),
+
+    /**
+     * Replaces the tree of one ANF statement with a new tree: writes a new version of the statement's semantic, under the edit coordinate, whose tree is the new one. The new tree must be a well-formed statement, as for adding one. A second edit by the same person replaces their pending version rather than stacking on it.
+     */
+    EDIT_ANF_STATEMENT("Edit ANF statement (IkeFoundation)", "2fae24f5-0776-5aaa-a4d8-8ce288c1a075"),
+
+    /**
+     * Promotes an ANF statement's composed topic to a complex concept, as one uncommitted change: writes a new concept in the Complex concepts module with the given name, its complex concept specification with the composition as its definition and a focused expansion on the composition's parent concept to be finished in the complex concept editor, and a new version of the statement whose topic is the new concept. Instance data keeps a concept, never a composed expression.
+     */
+    PROMOTE_TO_COMPLEX_CONCEPT("Promote to complex concept (IkeFoundation)", "11602b2b-1b19-5fdb-b67b-e7d0e9977a54"),
+
+    /**
      * Replaces the text of one sentence of a document materialized from git as semantic vertices (IKE-Network/ike-issues#1313): the sentence goes on a line of its own, a part of it on one line whose words survive keeps that line, and only changed text is broken anew, after a clause or a comma. The block's lines are then edited as Edit document block edits them, and the sentence gets a new version under its own identity. The input's subject is the sentence; its text is the replacement.
      */
     EDIT_DOCUMENT_SENTENCE("Edit document sentence (IkeFoundation)", "cd4f4488-ca4c-5e44-904e-ca91b5399c6d");

@@ -48,7 +48,14 @@ import java.util.function.IntFunction;
  * <p>The protected hooks — {@link #createChipNode(EntityVertex, long, ChipKind)},
  * {@link #decorateClauseHeader(HBox, VBox, EntityVertex)}, {@link #decorateRoleRow(HBox, EntityVertex)}
  * and {@link #afterRebuild(DiTreeEntity)} — exist for the editing subclass
- * ({@code KLDiTreeControlSkin}) to mount its interactions without re-arranging the layout.</p>
+ * ({@code KLDiTreeControlSkin}) to mount its interactions without re-arranging the layout.
+ * The vertex dispatch and row builders — {@link #buildVertex(EntityVertex, DiTreeEntity)},
+ * {@link #rootNode(long, DiTreeEntity)}, {@link #appendChildren(VBox, EntityVertex, DiTreeEntity)},
+ * {@link #createClauseNode(EntityVertex, DiTreeEntity, String, String)}, {@link #conceptRow(EntityVertex, long)},
+ * {@link #roleRow(EntityVertex, DiTreeEntity, ConceptFacade)}, {@link #intervalRow(EntityVertex)} and
+ * {@link #featureRow(EntityVertex)} — are protected so that a skin for another adaptor layer over the same
+ * {@link DiTreeEntity} (an ANF statement, a complex concept) can handle its own vertex meanings and
+ * hand every EL++ subtree back to this skin's rows unchanged.</p>
  */
 public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLReadOnlyDiTreeControl> {
 
@@ -157,7 +164,7 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
      * shown when the control knows its {@link KLReadOnlyDiTreeControl#rootConceptNidProperty()
      * root concept}.
      */
-    private Node rootNode(long rootConceptNid, DiTreeEntity tree) {
+    protected Node rootNode(long rootConceptNid, DiTreeEntity tree) {
         VBox childrenBox = new VBox();
         childrenBox.getStyleClass().add("ditree-children");
         if (tree != null) {
@@ -208,7 +215,7 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
         return false;
     }
 
-    private void appendChildren(VBox container, EntityVertex vertex, DiTreeEntity tree) {
+    protected void appendChildren(VBox container, EntityVertex vertex, DiTreeEntity tree) {
         for (EntityVertex child : tree.successors(vertex)) {
             if (child.getMeaningNid() == KernelConcept.AND.nid()) {
                 appendChildren(container, child, tree);
@@ -218,7 +225,7 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
         }
     }
 
-    private Node buildVertex(EntityVertex vertex, DiTreeEntity tree) {
+    protected Node buildVertex(EntityVertex vertex, DiTreeEntity tree) {
         long meaning = vertex.getMeaningNid();
         if (meaning == KernelConcept.NECESSARY_SET.nid()) {
             return createClauseNode(vertex, tree, "necessary-set", "Necessary set");
@@ -257,7 +264,7 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
      * with the vertex's children indented below it. The children box is always part of the clause
      * (hidden while empty), so the editing subclass can insert template rows into empty clauses.
      */
-    private Node createClauseNode(EntityVertex vertex, DiTreeEntity tree, String barStyleClass, String clauseText) {
+    protected Node createClauseNode(EntityVertex vertex, DiTreeEntity tree, String barStyleClass, String clauseText) {
         VBox childrenBox = new VBox();
         childrenBox.getStyleClass().add("ditree-children");
         appendChildren(childrenBox, vertex, tree);
@@ -283,7 +290,7 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
      * Builds an expand/collapse toggle that shows or hides the given child container (default
      * expanded) — so sets and role groups can be collapsed.
      */
-    private Label createDisclosureWithChildren(VBox childrenBox) {
+    protected Label createDisclosureWithChildren(VBox childrenBox) {
         Label toggle = new Label("▾");
         toggle.getStyleClass().add("ditree-toggle");
         toggle.setOnMouseClicked(event -> {
@@ -298,7 +305,7 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
     /**
      * Builds a full-width chip row for a concept reference (an is-a of the enclosing set).
      */
-    private Node conceptRow(EntityVertex vertex, long nid) {
+    protected Node conceptRow(EntityVertex vertex, long nid) {
         Node itemNode = createChipNode(vertex, nid, ChipKind.CONCEPT_REFERENCE);
         if (itemNode instanceof Region region) {
             region.setMaxWidth(Double.MAX_VALUE);
@@ -325,7 +332,7 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
      * Builds the {@code ∃ (role type) → [restriction]} row for an existential role restriction:
      * fixed-width operator glyphs with a chip for the role type and one per restriction concept.
      */
-    private Node roleRow(EntityVertex vertex, DiTreeEntity tree, ConceptFacade roleType) {
+    protected Node roleRow(EntityVertex vertex, DiTreeEntity tree, ConceptFacade roleType) {
         HBox row = new HBox();
         row.getStyleClass().add("ditree-role-row");
         row.setAlignment(Pos.CENTER_LEFT);
@@ -392,7 +399,7 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
      * shape the classic axiom control renders ({@code IntervalUtil.getIntervalRoleString}), with
      * the role type and unit of measure as inline component chips.
      */
-    private Node intervalRow(EntityVertex vertex) {
+    protected Node intervalRow(EntityVertex vertex) {
         HBox row = new HBox();
         row.getStyleClass().add("ditree-interval-row");
         row.setAlignment(Pos.CENTER_LEFT);
@@ -439,7 +446,7 @@ public class KLReadOnlyDiTreeControlSkin extends KLReadOnlyBaseControlSkin<KLRea
      * shape the classic axiom control renders, with the feature type as an inline component chip
      * and the comparison symbol of the concrete domain operator.
      */
-    private Node featureRow(EntityVertex vertex) {
+    protected Node featureRow(EntityVertex vertex) {
         HBox row = new HBox();
         row.getStyleClass().add("ditree-feature-row");
         row.setAlignment(Pos.CENTER_LEFT);

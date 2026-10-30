@@ -204,3 +204,26 @@
     -fx-min-height: 11px;
     -fx-max-height: 11px;
 }
+/* Structural move: a handle first on every movable row and on role-group headers, space always
+   reserved and revealed on hover (the add button's reserve-and-reveal pattern). */
+.ditree-control .ditree-move-handle {
+    -fx-opacity: 0;
+    -fx-cursor: move;
+    -fx-padding: 0 4 0 2;
+    -fx-text-fill: #8a93a6;
+}
+.ditree-control .ditree-clause-header:hover .ditree-move-handle,
+.ditree-control .ditree-concept-row:hover .ditree-move-handle,
+.ditree-control .ditree-role-row:hover .ditree-move-handle,
+.ditree-control .ditree-interval-row:hover .ditree-move-handle,
+.ditree-control .ditree-feature-row:hover .ditree-move-handle {
+    -fx-opacity: 1;
+}
+
+/* The clause a structural move would land in, while the drag is over it: an inset ring in the
+   role-group accent, painted as backgrounds so the header's size does not change. */
+.ditree-control .ditree-clause-header:move-target {
+    -fx-background-color: #009BFF, #e3f2ff;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 4px, 3px;
+}

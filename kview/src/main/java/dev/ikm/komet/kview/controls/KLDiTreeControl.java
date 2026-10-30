@@ -103,4 +103,64 @@ public class KLDiTreeControl extends KLReadOnlyDiTreeControl {
     protected Skin<?> createDefaultSkin() {
         return new KLDiTreeControlSkin(this);
     }
+
+    /*=========================================================================*
+     *                                                                         *
+     * Structural edits and undo (delegating to the editing skin)              *
+     *                                                                         *
+     *=========================================================================*/
+
+    private KLDiTreeControlSkin editingSkin() {
+        return getSkin() instanceof KLDiTreeControlSkin skin ? skin : null;
+    }
+
+    /**
+     * Whether an axiom can move into a clause (a set or role group) under the admission rules of this
+     * control's skin; see {@link KLDiTreeControlSkin#canMove(EntityVertex, EntityVertex, DiTreeEntity)}.
+     *
+     * @param child  a vertex of the current value
+     * @param clause a clause vertex of the current value
+     * @return true when the move is legal; false as well before the skin exists
+     */
+    public boolean canMove(EntityVertex child, EntityVertex clause) {
+        KLDiTreeControlSkin skin = editingSkin();
+        return skin != null && skin.canMove(child, clause, getValue());
+    }
+
+    /**
+     * Moves an axiom, with its subtree, into a clause — the edit a drop of its move handle
+     * applies. The axiom keeps its vertex identity.
+     *
+     * @param child  a vertex of the current value
+     * @param clause a clause vertex of the current value
+     * @return true when the move was legal and applied
+     */
+    public boolean moveVertex(EntityVertex child, EntityVertex clause) {
+        KLDiTreeControlSkin skin = editingSkin();
+        return skin != null && skin.moveVertex(child, clause);
+    }
+
+    /** @return true when the last applied edit was undone */
+    public boolean undo() {
+        KLDiTreeControlSkin skin = editingSkin();
+        return skin != null && skin.undo();
+    }
+
+    /** @return true when the last undone edit was re-applied */
+    public boolean redo() {
+        KLDiTreeControlSkin skin = editingSkin();
+        return skin != null && skin.redo();
+    }
+
+    /** @return true when there is an applied edit to undo */
+    public boolean canUndo() {
+        KLDiTreeControlSkin skin = editingSkin();
+        return skin != null && skin.canUndo();
+    }
+
+    /** @return true when there is an undone edit to redo */
+    public boolean canRedo() {
+        KLDiTreeControlSkin skin = editingSkin();
+        return skin != null && skin.canRedo();
+    }
 }
