@@ -29,6 +29,11 @@ public enum KometPattern implements PatternEnumerationFacade<KometPattern> {
     DOCUMENT_BLOCK_EDIT_INPUT_PATTERN("Document block edit input pattern (IkeFoundation)", "4f7e66dc-ecad-5e59-a684-480a07be21ed"),
 
     /**
+     * The input of an action that adds a block to a document after the referenced component, a block whose members are lines: the kind of action performed, the new block's kind, and its text, one line per line.
+     */
+    DOCUMENT_BLOCK_INSERTION_INPUT_PATTERN("Document block insertion input pattern (IkeFoundation)", "0c165219-451c-5597-beb8-a2d404e67742"),
+
+    /**
      * The input of an action that writes the tree of an ANF statement: the kind of action performed and the statement's tree. Its referenced component is the statement to edit, or the document block a new statement is added to.
      */
     ANF_STATEMENT_TREE_INPUT_PATTERN("ANF statement tree input pattern (IkeFoundation)", "d500cc84-978b-543b-9011-0fefa0166507"),

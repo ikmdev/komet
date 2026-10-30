@@ -414,6 +414,16 @@ public enum KometConcept implements ConceptEnumerationFacade<KometConcept> {
     PROMOTE_TO_COMPLEX_CONCEPT("Promote to complex concept (IkeFoundation)", "11602b2b-1b19-5fdb-b67b-e7d0e9977a54"),
 
     /**
+     * Adds a block to a document materialized from git: a new paragraph or listing after a block whose members are lines, with the given text. Its lines and the block itself land as provisional elements under the document's one pending edit, written into the parent block's members in place; the person's git commit of the file settles them, and the commit's own identities stand in theirs. The input's subject is the block to insert after; its fields are the new block's kind and its text.
+     */
+    ADD_DOCUMENT_BLOCK("Add document block (IkeFoundation)", "35f59e27-9fef-52a9-b9cf-0baa0848e27f"),
+
+    /**
+     * Deletes a block of a document materialized from git, a block whose members are lines: its lines leave the document and the block gets an inactive version, in the document's one pending edit, and the blank line that separated it goes with it. The person's git commit of the file settles the deletion, which retires the lines where git recorded their removal. Refused for a block holding other blocks: remove its blocks first.
+     */
+    DELETE_DOCUMENT_BLOCK("Delete document block (IkeFoundation)", "265acd37-710f-5cbb-9e33-a1a7650e5622"),
+
+    /**
      * Replaces the text of one sentence of a document materialized from git as semantic vertices (IKE-Network/ike-issues#1313): the sentence goes on a line of its own, a part of it on one line whose words survive keeps that line, and only changed text is broken anew, after a clause or a comma. The block's lines are then edited as Edit document block edits them, and the sentence gets a new version under its own identity. The input's subject is the sentence; its text is the replacement.
      */
     EDIT_DOCUMENT_SENTENCE("Edit document sentence (IkeFoundation)", "cd4f4488-ca4c-5e44-904e-ca91b5399c6d");

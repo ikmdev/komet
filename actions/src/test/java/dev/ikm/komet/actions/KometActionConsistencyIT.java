@@ -60,7 +60,9 @@ class KometActionConsistencyIT {
             KometConcept.ADD_ANF_STATEMENT, "komet-claude-plugin",
             KometConcept.EDIT_ANF_STATEMENT, "komet-claude-plugin",
             KometConcept.PROMOTE_TO_COMPLEX_CONCEPT, "komet-claude-plugin",
-            KometConcept.EDIT_DOCUMENT_SENTENCE, "komet-claude-plugin");
+            KometConcept.EDIT_DOCUMENT_SENTENCE, "komet-claude-plugin",
+            KometConcept.ADD_DOCUMENT_BLOCK, "komet-claude-plugin",
+            KometConcept.DELETE_DOCUMENT_BLOCK, "komet-claude-plugin");
 
     private ViewCalculator view;
     private Set<Long> definedActions;
@@ -92,6 +94,8 @@ class KometActionConsistencyIT {
         assertTrue(definedActions.contains(KometConcept.EDIT_ANF_STATEMENT.nid()), "Edit ANF statement is defined");
         assertTrue(definedActions.contains(KometConcept.PROMOTE_TO_COMPLEX_CONCEPT.nid()), "Promote to complex concept is defined");
         assertTrue(definedActions.contains(KometConcept.EDIT_DOCUMENT_SENTENCE.nid()), "Edit document sentence is defined");
+        assertTrue(definedActions.contains(KometConcept.ADD_DOCUMENT_BLOCK.nid()), "Add document block is defined");
+        assertTrue(definedActions.contains(KometConcept.DELETE_DOCUMENT_BLOCK.nid()), "Delete document block is defined");
     }
 
     @Test
@@ -103,7 +107,9 @@ class KometActionConsistencyIT {
                 KometConcept.ADD_ANF_STATEMENT, KometPattern.ANF_STATEMENT_TREE_INPUT_PATTERN,
                 KometConcept.EDIT_ANF_STATEMENT, KometPattern.ANF_STATEMENT_TREE_INPUT_PATTERN,
                 KometConcept.PROMOTE_TO_COMPLEX_CONCEPT, KometPattern.COMPLEX_CONCEPT_PROMOTION_INPUT_PATTERN,
-                KometConcept.EDIT_DOCUMENT_SENTENCE, KometPattern.DOCUMENT_BLOCK_EDIT_INPUT_PATTERN);
+                KometConcept.EDIT_DOCUMENT_SENTENCE, KometPattern.DOCUMENT_BLOCK_EDIT_INPUT_PATTERN,
+                KometConcept.ADD_DOCUMENT_BLOCK, KometPattern.DOCUMENT_BLOCK_INSERTION_INPUT_PATTERN,
+                KometConcept.DELETE_DOCUMENT_BLOCK, KometPattern.COMPONENT_ACTION_INPUT_PATTERN);
         List<String> problems = new ArrayList<>();
         inputs.forEach((action, input) -> {
             List<SemanticEntityVersion> definitions = EntityService.get()
