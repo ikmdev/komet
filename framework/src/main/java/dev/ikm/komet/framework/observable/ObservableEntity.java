@@ -632,6 +632,14 @@ public abstract sealed class ObservableEntity<OV extends ObservableEntityVersion
         return versionPropertyMap;
     }
 
+    /**
+     * The entity's versions as an observable list, one per stamp, in the order they were taken:
+     * what {@link ObservableChangeChronology} listens to for versions arriving and leaving.
+     */
+    FeatureList<OV> versionList() {
+        return versionSetAsList;
+    }
+
     @Override
     public ImmutableList<OV> versions() {
         return Lists.immutable.ofAll(versionPropertyMap.values());

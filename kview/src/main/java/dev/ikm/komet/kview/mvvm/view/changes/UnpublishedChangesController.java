@@ -412,7 +412,11 @@ public class UnpublishedChangesController {
         showInReview(index);
     }
 
-    /** Diffs the group's changes off the FX thread and shows the page; the tray selects the row. */
+    /**
+     * Diffs the group's changes and shows the page; the tray selects the row. The diffs are read
+     * from each component's live change chronology, which lives on the FX thread, so they are
+     * built here rather than off it.
+     */
     private void showInReview(int index) {
         UnpublishedGroup group = groups.get(index);
         int total = groups.size();
@@ -420,17 +424,10 @@ public class UnpublishedChangesController {
         reviewedNid = group.nid();
         reviewedIndex = index;
         ViewCalculator calculator = viewProperties.calculator();
-        TinkExecutor.threadPool().execute(() -> {
-            List<ChangeDiff> diffs = group.changes().stream().map(change -> ChangeDiff.of(change, calculator)).toList();
-            String author = diffs.isEmpty() ? "" : calculator.getDescriptionTextOrNid(diffs.getFirst().after().authorNid());
-            Platform.runLater(() -> {
-                if (reviewWindow == null || reviewedNid != group.nid()) {
-                    return; // closed, or moved on, meanwhile
-                }
-                reviewWindow.show(new ChangeReviewKlWindow.Page(group, diffs, index, total, changeTotal, author));
-                selectGroupRow(group.nid());
-            });
-        });
+        List<ChangeDiff> diffs = group.changes().stream().map(change -> ChangeDiff.of(change, calculator)).toList();
+        String author = diffs.isEmpty() ? "" : calculator.getDescriptionTextOrNid(diffs.getFirst().after().authorNid());
+        reviewWindow.show(new ChangeReviewKlWindow.Page(group, diffs, index, total, changeTotal, author));
+        selectGroupRow(group.nid());
     }
 
     /**

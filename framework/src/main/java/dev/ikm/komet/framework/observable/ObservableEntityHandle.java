@@ -1137,6 +1137,56 @@ public interface ObservableEntityHandle {
         return get(nid).entity().map(e -> e.getSnapshot(viewCalculator));
     }
 
+    // ========== Change Chronology Retrieval Methods ==========
+
+    /**
+     * The live change chronology of this entity, if present: what each version changed against
+     * the version it supersedes, kept current as versions arrive, are edited, commit and cancel
+     * ({@link ObservableChangeChronology}). There is one chronology per entity, shared by every
+     * view of it whatever its coordinate, so it takes no calculator: a view names the fields it
+     * lists through its own.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     *
+     * <p><b>Usage Example:</b>
+     * <pre>{@code
+     * ObservableEntityHandle.get(nid)
+     *     .asChangeChronology()
+     *     .ifPresent(chronology -> historyView.setItems(chronology.changes()));
+     * }</pre>
+     *
+     * @return Optional containing the ObservableChangeChronology, or empty if absent
+     */
+    default Optional<ObservableChangeChronology> asChangeChronology() {
+        return asEntity().map(ObservableChangeChronology::packagePrivateGet);
+    }
+
+    /**
+     * If this entity is present, gets its change chronology and executes the consumer.
+     * <p>     * Returns {@code this} for chaining regardless of whether consumer executed.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     *
+     * @param consumer the action to perform on the ObservableChangeChronology
+     * @return this handle for chaining
+     */
+    default ObservableEntityHandle ifEntityGetChangeChronology(Consumer<ObservableChangeChronology> consumer) {
+        asChangeChronology().ifPresent(consumer);
+        return this;
+    }
+
+    /**
+     * Retrieves an entity's change chronology by nid in a single call, throwing if absent.
+     * <p>     * <b>Thread Safety:</b> Must be called on JavaFX application thread.
+     *
+     * @param nid the native identifier
+     * @return the ObservableChangeChronology (never null)
+     * @throws IllegalStateException if the entity is absent
+     * @throws RuntimeException if not called on JavaFX application thread
+     * @see #asChangeChronology()
+     */
+    static ObservableChangeChronology getChangeChronologyOrThrow(long nid) {
+        return ObservableChangeChronology.packagePrivateGet(get(nid).expectEntity());
+    }
+
     // ========== Snapshot Retrieval Methods - Safe Extraction Pattern (asXxx) ==========
 
     /**
