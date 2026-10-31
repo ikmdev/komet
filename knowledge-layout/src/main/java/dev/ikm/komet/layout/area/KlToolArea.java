@@ -18,6 +18,9 @@ package dev.ikm.komet.layout.area;
 import dev.ikm.komet.framework.view.ViewProperties;
 import javafx.scene.layout.Region;
 
+import java.util.UUID;
+import java.util.function.Supplier;
+
 /**
  * A {@link KlSupplementalArea} that can be summoned as a self-contained tool window
  * within the Journal workspace.
@@ -55,6 +58,16 @@ public interface KlToolArea<FX extends Region> extends KlSupplementalArea<FX> {
      *                        may be {@code null} to clear a previously set callback
      */
     void setOnCloseRequest(Runnable onCloseRequest);
+
+    /**
+     * Supplies the topic of the journal hosting this tool, so the tool can open windows in it
+     * (a concept's KL window, for example). Asked when needed rather than given once, since a
+     * host may learn its journal after the area is realized. The default ignores it.
+     *
+     * @param journalTopic answers the hosting journal's topic, or {@code null} when it has none
+     */
+    default void setJournalTopicSupplier(Supplier<UUID> journalTopic) {
+    }
 
     /**
      * Factory for {@link KlToolArea} instances, discovered via {@code ServiceLoader}

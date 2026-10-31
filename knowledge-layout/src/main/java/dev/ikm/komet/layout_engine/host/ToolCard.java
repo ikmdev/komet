@@ -144,6 +144,7 @@ public final class ToolCard extends AbstractHostCard {
         this.toolName = factory.toolName();
         toolArea.setToolViewProperties(getCardViewProperties());
         toolArea.setOnCloseRequest(this::requestClose);
+        toolArea.setJournalTopicSupplier(this::getJournalTopic);
         setCardContent(toolArea.fxObject());
         LOG.info("ToolCard hosting {} in node {}", toolName, toolAreaNodeName);
     }

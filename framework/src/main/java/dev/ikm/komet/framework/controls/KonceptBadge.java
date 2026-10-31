@@ -51,6 +51,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
@@ -72,7 +73,10 @@ import org.controlsfx.control.PopOver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+import java.util.function.LongFunction;
 
 /**
  * A reusable, CSS-driven badge that renders a single concept the way the AsciiDoc {@code k:}
@@ -476,11 +480,51 @@ public class KonceptBadge extends HBox {
                 showTextSelectionPopover(bounds.getMinX(), bounds.getMaxY());
             }
         });
-        ContextMenu menu = new ContextMenu(copyName, copyToken, selectText);
+        ContextMenu menu = new ContextMenu();
         setOnContextMenuRequested(event -> {
+            menu.getItems().setAll(copyName, copyToken, selectText);
+            List<MenuItem> contributed = contributedMenuItems();
+            if (!contributed.isEmpty()) {
+                menu.getItems().add(new SeparatorMenuItem());
+                menu.getItems().addAll(contributed);
+            }
             menu.show(this, event.getScreenX(), event.getScreenY());
             event.consume();
         });
+    }
+
+    /** The node property under which a host contributes items to the menu of every badge inside it. */
+    public static final String MENU_CONTRIBUTOR = KonceptBadge.class.getName() + ".menuContributor";
+
+    /**
+     * Contributes items to the context menu of every badge inside {@code host}, after the copy
+     * items: each time a badge's menu opens, {@code items} is asked for that badge's items given
+     * its nid, and may answer none. A host uses it to offer what only it can do, such as opening
+     * the concept in a window of its journal.
+     *
+     * @param host  the node whose badges the items join, at any depth
+     * @param items a badge's items by its nid; never asked for a badge with no nid
+     */
+    public static void contributeMenuItems(Node host, LongFunction<List<MenuItem>> items) {
+        host.getProperties().put(MENU_CONTRIBUTOR, items);
+    }
+
+    /** The items every host above this badge contributes, the nearest host's first. */
+    @SuppressWarnings("unchecked")
+    private List<MenuItem> contributedMenuItems() {
+        List<MenuItem> items = new ArrayList<>();
+        if (Nid.isNone(nid)) {
+            return items;
+        }
+        for (Node node = this; node != null; node = node.getParent()) {
+            if (node.hasProperties() && node.getProperties().get(MENU_CONTRIBUTOR) instanceof LongFunction<?> contributor) {
+                List<MenuItem> more = ((LongFunction<List<MenuItem>>) contributor).apply(nid);
+                if (more != null) {
+                    items.addAll(more);
+                }
+            }
+        }
+        return items;
     }
 
     /**
