@@ -830,11 +830,21 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         }
 
         // --------------------------------------------------------------------
-        // 3) Otherwise, use the three-row placement strategy from the top-left
+        // 3) Otherwise, use the three-row placement strategy: beside the window the
+        //    opening gesture came from when the window names one, else from the top-left
         // --------------------------------------------------------------------
-        final Point2D placement = findThreeRowPlacement(windowWidth, windowHeight,
-                0, 0, desktopWidth, desktopHeight,
-                workspace.getHorizontalGap(), workspace.getVerticalGap());
+        Point2D placement = null;
+        final Bounds near = nearWindowBounds(windowPanel);
+        if (near != null) {
+            placement = findThreeRowPlacement(windowWidth, windowHeight,
+                    near.getMaxX() + workspace.getHorizontalGap(), near.getMinY(), desktopWidth, desktopHeight,
+                    workspace.getHorizontalGap(), workspace.getVerticalGap());
+        }
+        if (placement == null) {
+            placement = findThreeRowPlacement(windowWidth, windowHeight,
+                    0, 0, desktopWidth, desktopHeight,
+                    workspace.getHorizontalGap(), workspace.getVerticalGap());
+        }
 
         if (placement != null) {
             windowPanel.setLayoutX(placement.getX());
@@ -853,6 +863,26 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
 
         // Save the window's position and size
         window.save();
+    }
+
+    /**
+     * The bounds, in the desktop, of the window holding the node a new window panel names under
+     * {@link KLWorkspace#WINDOW_PLACE_NEAR_KEY}; null when it names none, or a node outside the
+     * desktop (in a popover, say). The property is read once and removed.
+     *
+     * @param windowPanel the new window's root pane
+     * @return the bounds of the window to open beside, or null
+     */
+    private Bounds nearWindowBounds(Pane windowPanel) {
+        if (!(windowPanel.getProperties().remove(KLWorkspace.WINDOW_PLACE_NEAR_KEY) instanceof Node near)) {
+            return null;
+        }
+        for (Node at = near; at != null; at = at.getParent()) {
+            if (at.getParent() == desktopPane) {
+                return getWindowBounds(at);
+            }
+        }
+        return null;
     }
 
     /**
@@ -1286,7 +1316,8 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
             xCandidates.add(initialX);
             for (Bounds occ : rowOccupants) {
                 double candidateX = occ.getMaxX() + hgap;
-                if (candidateX + width <= rowRight) {
+                // never left of the start: a window opened beside another stays to its right
+                if (candidateX >= initialX && candidateX + width <= rowRight) {
                     xCandidates.add(candidateX);
                 }
             }

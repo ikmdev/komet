@@ -151,6 +151,13 @@ public class KLWorkspace extends Control {
     public static final String WINDOW_AUTHORED_HEIGHT_KEY = "kl-workspace-authored-height";
 
     /**
+     * A window panel property naming a node the new window should open beside: the workspace starts
+     * its search for a free place at the right of the window holding that node, in that window's row,
+     * rather than at the workspace's top left, and scrolls the new window into view.
+     */
+    public static final String WINDOW_PLACE_NEAR_KEY = "kl-workspace-place-near";
+
+    /**
      * Constructs a new KLWorkspace with default style classes and settings.
      */
     public KLWorkspace() {

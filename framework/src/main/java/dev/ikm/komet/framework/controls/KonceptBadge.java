@@ -76,7 +76,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.LongFunction;
 
 /**
  * A reusable, CSS-driven badge that renders a single concept the way the AsciiDoc {@code k:}
@@ -496,29 +495,41 @@ public class KonceptBadge extends HBox {
     /** The node property under which a host contributes items to the menu of every badge inside it. */
     public static final String MENU_CONTRIBUTOR = KonceptBadge.class.getName() + ".menuContributor";
 
+    /** What a host adds to the context menu of a badge inside it. */
+    @FunctionalInterface
+    public interface MenuContributor {
+        /**
+         * The items for one badge's menu, asked each time it opens.
+         *
+         * @param badge the badge whose menu is opening, an anchor for what an item shows
+         * @param nid   the badge's component
+         * @return the items, possibly none
+         */
+        List<MenuItem> items(KonceptBadge badge, long nid);
+    }
+
     /**
      * Contributes items to the context menu of every badge inside {@code host}, after the copy
-     * items: each time a badge's menu opens, {@code items} is asked for that badge's items given
-     * its nid, and may answer none. A host uses it to offer what only it can do, such as opening
-     * the concept in a window of its journal.
+     * items: each time a badge's menu opens, {@code contributor} is asked for that badge's items,
+     * and may answer none. A host uses it to offer what only it can do, such as peeking at the
+     * concept, or opening it in a window of its journal.
      *
-     * @param host  the node whose badges the items join, at any depth
-     * @param items a badge's items by its nid; never asked for a badge with no nid
+     * @param host        the node whose badges the items join, at any depth
+     * @param contributor a badge's items; never asked for a badge with no nid
      */
-    public static void contributeMenuItems(Node host, LongFunction<List<MenuItem>> items) {
-        host.getProperties().put(MENU_CONTRIBUTOR, items);
+    public static void contributeMenuItems(Node host, MenuContributor contributor) {
+        host.getProperties().put(MENU_CONTRIBUTOR, contributor);
     }
 
     /** The items every host above this badge contributes, the nearest host's first. */
-    @SuppressWarnings("unchecked")
     private List<MenuItem> contributedMenuItems() {
         List<MenuItem> items = new ArrayList<>();
         if (Nid.isNone(nid)) {
             return items;
         }
         for (Node node = this; node != null; node = node.getParent()) {
-            if (node.hasProperties() && node.getProperties().get(MENU_CONTRIBUTOR) instanceof LongFunction<?> contributor) {
-                List<MenuItem> more = ((LongFunction<List<MenuItem>>) contributor).apply(nid);
+            if (node.hasProperties() && node.getProperties().get(MENU_CONTRIBUTOR) instanceof MenuContributor contributor) {
+                List<MenuItem> more = contributor.items(this, nid);
                 if (more != null) {
                     items.addAll(more);
                 }

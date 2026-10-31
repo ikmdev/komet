@@ -121,6 +121,8 @@ import dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils;
 import dev.ikm.komet.kview.klwindows.concept.ConceptKlWindow;
 import dev.ikm.komet.kview.klwindows.DynamicCardKlWindow;
 import dev.ikm.komet.layout_engine.host.DynamicComponentCard;
+import dev.ikm.komet.framework.controls.KonceptBadge;
+import dev.ikm.komet.framework.controls.PeekPopover;
 import dev.ikm.komet.kview.klwindows.genpurpose.GenPurposeKLWindow;
 import dev.ikm.komet.kview.klwindows.genpurpose.GenPurposeKLWindowFactory;
 import dev.ikm.komet.kview.lidr.mvvm.model.DataModelHelper;
@@ -163,6 +165,8 @@ import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculatorWithCache;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
+import dev.ikm.tinkar.entity.ConceptEntity;
+import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.ProxyFactory;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -465,6 +469,10 @@ public class JournalController {
         workspace.getProperties().put(KlPeerable.PropertyKeys.KL_CONTEXT,
                 new JournalKlContext(journalViewProperties.nodeView()));
 
+        // Every concept or pattern chip in the journal offers a peek at its card, its card as a window
+        // beside the one it is in, and (a concept) its place in the navigator, on right-click.
+        KonceptBadge.contributeMenuItems(workspace, this::componentMenuItems);
+
         // One shared View Options control everywhere: the journal differs only in its navigator (graph) and where
         // the popup is anchored (beneath the toolbar button); commit-on-Apply and the rest come from the shared
         // ViewOptionsPopupHelper (ike-issues#681).
@@ -529,7 +537,9 @@ public class JournalController {
 
         makeKLWindowEventSubscriber = evt -> {
             if (evt.getEventType() == MakeKLWindowEvent.OPEN_STANDARD_WINDOW) {
-                newCreateStandardKLWindow(evt.getEntityFacade(), evt.getWindowTitle());
+                newCreateStandardKLWindow(evt.getEntityFacade(), evt.getWindowTitle(), evt.getNear());
+            } else if (evt.getEventType() == MakeKLWindowEvent.PEEK_STANDARD_WINDOW) {
+                peekStandardKLWindow(evt.getEntityFacade(), evt.getWindowTitle(), evt.getNear());
             } else {
                 newCreateGenPurposeKLWindow(evt.getEntityFacade(), evt.getWindowTitle());
             }
@@ -2348,13 +2358,99 @@ public class JournalController {
      * @param windowTitle  the title of the standard window (e.g. {@link StandardEditorWindows#CONCEPT_WINDOW})
      */
     public void newCreateStandardKLWindow(EntityFacade entityFacade, String windowTitle) {
+        newCreateStandardKLWindow(entityFacade, windowTitle, null);
+    }
+
+    /**
+     * Opens the named standard KL window for the given entity beside the window a node is in.
+     *
+     * @param entityFacade the entity the window is about, or {@code null} to open in create mode
+     * @param windowTitle  the title of the standard window
+     * @param near         the node the window opens beside; null places it as usual
+     */
+    public void newCreateStandardKLWindow(EntityFacade entityFacade, String windowTitle, Node near) {
+        GenPurposeKLWindow window = standardKLWindow(entityFacade, windowTitle);
+        placeNear(window, near);
+        setupWorkspaceWindow(window);
+    }
+
+    /**
+     * Shows the named standard KL window for an entity as a peek at a node (KEC 2026-10-31): a
+     * transient popover that a click outside or Esc closes, leaving nothing in the journal, and
+     * that <em>Keep in journal</em> places as a window beside the one the node is in.
+     *
+     * @param entityFacade the entity the window is about
+     * @param windowTitle  the title of the standard window
+     * @param near         the node the peek is anchored at
+     */
+    public void peekStandardKLWindow(EntityFacade entityFacade, String windowTitle, Node near) {
+        if (near == null || near.getScene() == null) {
+            newCreateStandardKLWindow(entityFacade, windowTitle, near);
+            return;
+        }
+        GenPurposeKLWindow window = standardKLWindow(entityFacade, windowTitle);
+        javafx.geometry.Bounds at = near.localToScreen(near.getBoundsInLocal());
+        String title = entityFacade == null ? windowTitle
+                : journalViewProperties.calculator().getPreferredDescriptionTextWithFallbackOrNid(entityFacade.nid());
+        PeekPopover peek = PeekPopover.show(window.fxObject(), KLWorkspace.DEFAULT_WINDOW_WIDTH, title, near,
+                at.getMinX(), at.getMaxY(),
+                () -> {
+                    placeNear(window, near);
+                    setupWorkspaceWindow(window);
+                },
+                window::delete);
+        // the card's own close button closes the peek; chips inside it offer the same menu as the journal's
+        window.setOnClose(peek::hide);
+        KonceptBadge.contributeMenuItems(peek.content(), this::componentMenuItems);
+        window.onShown();
+    }
+
+    private GenPurposeKLWindow standardKLWindow(EntityFacade entityFacade, String windowTitle) {
         final KometPreferences appPreferences = KometPreferencesImpl.getConfigurationRootPreferences();
         final KometPreferences standardWindowsPreferences =
                 appPreferences.node(KL_EDITOR_APP).node(KL_STANDARD_WINDOWS_DIR);
 
         StandardEditorWindows.ensureStandardWindows(standardWindowsPreferences, journalViewProperties.calculator());
 
-        createGenPurposeKLWindow(entityFacade, standardWindowsPreferences.node(windowTitle));
+        GenPurposeKLWindowFactory factory =
+                (GenPurposeKLWindowFactory) getFactory(EntityKlWindowTypes.GEN_PURPOSE_KL);
+        return factory.create(journalTopic, entityFacade, journalViewProperties, null,
+                standardWindowsPreferences.node(windowTitle));
+    }
+
+    /** Names the node a new window opens beside, for the workspace's placement. */
+    private static void placeNear(ChapterKlWindow<Pane> window, Node near) {
+        if (near != null) {
+            window.fxObject().getProperties().put(KLWorkspace.WINDOW_PLACE_NEAR_KEY, near);
+        }
+    }
+
+    /**
+     * What a chip's right-click menu offers for its component, beside copying: a peek at its
+     * standard card, the card as a window beside the chip's, and a concept's place in the navigator.
+     */
+    private List<MenuItem> componentMenuItems(KonceptBadge badge, long nid) {
+        Entity<?> entity = EntityHandle.get(nid).orNull();
+        String windowTitle;
+        if (entity instanceof ConceptEntity<?>) {
+            windowTitle = StandardEditorWindows.CONCEPT_WINDOW;
+        } else if (entity instanceof PatternEntity<?>) {
+            windowTitle = StandardEditorWindows.PATTERN_WINDOW;
+        } else {
+            return List.of();
+        }
+        MenuItem peek = new MenuItem("Peek");
+        peek.setOnAction(e -> peekStandardKLWindow(entity, windowTitle, badge));
+        MenuItem open = new MenuItem("Open in " + windowTitle.toLowerCase(Locale.ROOT) + " window");
+        open.setOnAction(e -> newCreateStandardKLWindow(entity, windowTitle, badge));
+        List<MenuItem> items = new ArrayList<>(List.of(peek, open));
+        if (entity instanceof ConceptEntity<?> concept) {
+            MenuItem navigator = new MenuItem("Show in navigator");
+            navigator.setOnAction(e -> journalEventBus.publish(journalTopic, new ShowNavigationalPanelEvent(this,
+                    ShowNavigationalPanelEvent.SHOW_CONCEPT_NAVIGATIONAL_FROM_CONCEPT, concept)));
+            items.add(navigator);
+        }
+        return items;
     }
 
     public void newCreateGenPurposeKLWindow(EntityFacade entityFacade, String windowTitle) {
