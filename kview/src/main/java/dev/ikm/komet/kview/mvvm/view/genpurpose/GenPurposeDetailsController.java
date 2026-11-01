@@ -44,15 +44,11 @@ import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl.Tab;
-import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SectionSemanticsComboBoxCell;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard.SemanticStandardControl;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.FormMode;
 import dev.ikm.komet.layout.InlineEditSaver;
-import dev.ikm.komet.layout.KlPatternSemanticsFactory;
-import dev.ikm.komet.layout.PatternSemanticsPresenter;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
-import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternSemanticFilter;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
@@ -68,7 +64,6 @@ import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.komet.layout.PatternFieldDefaults;
 import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
-import dev.ikm.tinkar.entity.PatternEntity;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.entity.StampEntity;
@@ -80,30 +75,20 @@ import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
-import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
-import javafx.event.ActionEvent;
 import javafx.geometry.Point2D;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.control.TitledPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import dev.ikm.komet.layout_engine.host.SupplementalAreaRenderer;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -111,7 +96,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -133,19 +117,6 @@ public class GenPurposeDetailsController {
     private static final PseudoClass WINDOW_FOCUSED = PseudoClass.getPseudoClass("window-focused");
 
     /**
-     * Active on a Pattern's container while the Pattern shows its title. Drives the vertical spacing
-     * the title needs in kview.css.
-     */
-    private static final PseudoClass TITLE_VISIBLE_PSEUDO_CLASS = PseudoClass.getPseudoClass("title-visible");
-
-    /**
-     * Active on a Pattern's container while none of its fields show their title. The gap the Pattern
-     * title sets below itself is sized for the field labels that normally lead each field, so kview.css
-     * closes it when the field values follow the title directly.
-     */
-    private static final PseudoClass FIELD_TITLES_HIDDEN_PSEUDO_CLASS = PseudoClass.getPseudoClass("field-titles-hidden");
-
-    /**
      * Key a collapsed section keeps the content height it gave up under, so expanding it again
      * hands the window back the very height its collapse closed (see
      * {@link #resizeWindowWithSection(SectionTitledPane, boolean)}).
@@ -153,40 +124,12 @@ public class GenPurposeDetailsController {
     private static final String COLLAPSED_CONTENT_HEIGHT_KEY = "gen-purpose-collapsed-content-height";
 
     /**
-     * Given a SectionModel what's its associated SectionTitledPane.
-     */
-    private final Map<EditorSectionModel, SectionTitledPane<EntityFacade>> sectionModelToTitledPane = new HashMap<>();
-
-    /**
-     * Given an Editor Pattern Model what is the associated Pattern Presenter.
-     */
-    private final Map<EditorPatternModel, PatternSemanticsPresenter> editorPatternModelToPatternPresenter = new HashMap<>();
-
-    /**
-     * Given a Semantic what is the associated Pattern Control that has it.
-     */
-    private final Map<SemanticEntity<SemanticEntityVersion>, PatternSemanticsPresenter> semanticEntityToPatternSemanticsPresenter = new HashMap<>();
-
-    /**
-     * The semantics currently rendered in the window, by nid, in render order — each the entity
-     * object its view was built from, which is the key its presenter is filed under in
-     * {@link #semanticEntityToPatternSemanticsPresenter}. Kept in step by {@link #doAddSemanticViews}
-     * and {@link #clearSemanticViews}; read by {@link #unpublishedSemantics}.
-     */
-    private final Map<Long, SemanticEntity<SemanticEntityVersion>> displayedSemantics = new LinkedHashMap<>();
-
-    /**
      * Given a SemanticEntity what's its associated Semantic Control.
      */
     private final Map<SemanticEntity<SemanticEntityVersion>, SemanticStandardControl> semanticEntityToSemanticView = new HashMap<>();
 
-    /**
-     * Sections currently being refreshed by a reference-component cascade. Used as a re-entrancy guard
-     * so a malformed (cyclic) reference chain can't drive infinite recursion (see komet-desktop #3).
-     */
-    private final Set<EditorSectionModel> refreshingSections = new HashSet<>();
-
-    private PatternSemanticsPresenter previousPatternSemanticsInEditMode;
+    /** The definition's sections: what is displayed where, and how each section resolves its component. */
+    private final WindowSections windowSections;
 
     /**
      * The semantics an "Add …" entry created ({@link #onCreateSemantic}) whose edit form has not
@@ -270,7 +213,6 @@ public class GenPurposeDetailsController {
         this.createModeHintLabel = view.getCreateModeHintLabel();
         this.unpublishedHint = view.getUnpublishedHint();
         this.unpublishedHintLabel = view.getUnpublishedHintLabel();
-        view.getUnpublishedShowLink().setOnAction(event -> revealFirstUnpublishedSemantic());
         this.unpublishedDiscardLink = view.getUnpublishedDiscardLink();
         unpublishedDiscardLink.setOnAction(event -> discardUnpublished());
 
@@ -284,6 +226,18 @@ public class GenPurposeDetailsController {
             case STANDARD_PATTERN -> "Pattern";
             case STANDARD_SEMANTIC, SEMANTICS -> "Semantic";
         };
+
+        // In the Publish-flow window edits made inline in the details area (the stated definition's
+        // axiom tree) are saved uncommitted like the properties panel's submits, until the toolbar's
+        // Publish button commits them (see publish); elsewhere they commit as applied. The axiom
+        // tree already shows the edit, so nothing re-renders for it; the required chips and the
+        // Publish button follow through the stated-definition change subscriber.
+        InlineEditSaver inlineEditSaver = usesPublishFlow() ? session::saveUncommittedFieldEdit : null;
+        this.windowSections = new WindowSections(editorWindowModel, session, mainContent, journalTopic, inlineEditSaver);
+        windowSections.setOnSectionEditRequested(this::onEditAction);
+        windowSections.setOnSectionExpandedChanged(this::resizeWindowWithSection);
+        windowSections.setOnPublishInputsChanged(this::updatePublishState);
+        view.getUnpublishedShowLink().setOnAction(event -> windowSections.revealFirstUnpublishedSemantic());
 
         wireChrome();
         buildWindowFromDefinition(windowTitle);
@@ -565,14 +519,6 @@ public class GenPurposeDetailsController {
     }
 
     /**
-     * The stated axioms pattern per the view's logic coordinate — the pattern whose semantics
-     * edit inline as an axiom tree (see {@code KlFieldHelper.createReadOnlyKlField}).
-     */
-    private long statedAxiomsPatternNid() {
-        return getViewProperties().calculator().viewCoordinateRecord().logicCoordinate().statedAxiomsPatternNid();
-    }
-
-    /**
      * Creates the stated definition semantic seeded with one necessary or sufficient set — the
      * classic concept window's "Add Necessary Set" / "Add Sufficient Set" actions: the set holds
      * an is-a to "Anonymous concept", the placeholder chip the user then replaces in the inline
@@ -585,7 +531,7 @@ public class GenPurposeDetailsController {
      */
     private void createSeededStatedDefinition(EditorSectionModel section, EditorPatternModel patternModel,
             boolean necessary) {
-        EntityFacade refComponent = resolveSectionReferenceComponent(section);
+        EntityFacade refComponent = windowSections.resolveReferenceComponent(section);
         if (refComponent == null) {
             refComponent = createUncommitedReferenceComponent();
         }
@@ -635,13 +581,13 @@ public class GenPurposeDetailsController {
         }
 
         if (usesPublishFlow()) {
-            reloadSemanticViews(semantic);
+            windowSections.reloadSemanticViews(semantic);
             updateRequiredChips();
             return SubmitOutcome.UNCOMMITTED_UNTIL_PUBLISHED;
         }
 
-        if (session.isCreateMode() && !allRequiredPatternsSatisfied()) {
-            reloadSemanticViews(semantic);
+        if (session.isCreateMode() && !windowSections.allRequiredPatternsSatisfied()) {
+            windowSections.reloadSemanticViews(semantic);
             // The submitted semantic now shows in the details area — flip its section's chip to MET.
             updateRequiredChips();
             return SubmitOutcome.UNCOMMITTED_UNTIL_REQUIREMENTS_MET;
@@ -659,21 +605,8 @@ public class GenPurposeDetailsController {
             updateView();
         }
 
-        reloadSemanticViews(semantic);
+        windowSections.reloadSemanticViews(semantic);
         return componentCreated ? SubmitOutcome.COMPONENT_CREATED : SubmitOutcome.COMMITTED;
-    }
-
-    /**
-     * Saves, uncommitted, an edit made inline in the details area — the stated definition's axiom tree (see
-     * {@link InlineEditSaver}) — the way a properties-panel submit does: the field's new value
-     * is saved as a version not published yet in the session's open transaction, until the
-     * toolbar's Publish button commits it ({@link #publish}).
-     * <p>
-     * The axiom tree already shows the edit, so nothing re-renders here; the required chips and
-     * the Publish button follow through the stated-definition change subscriber.
-     */
-    private void saveUncommittedInlineEdit(long semanticNid, int fieldIndex, Object newValue) {
-        session.saveUncommittedFieldEdit(semanticNid, fieldIndex, newValue);
     }
 
     /**
@@ -687,22 +620,14 @@ public class GenPurposeDetailsController {
     private void onSemanticCancelled(SemanticEntity<SemanticEntityVersion> semantic) {
         if (unsubmittedNewSemanticNids.remove(semantic.nid())) {
             session.cancelSingleSemanticTransaction(semantic);
-            reloadSemanticViews(semantic);
-            forEachSectionInWindow(section -> {
-                EditorPatternModel referencePattern = section.getReferenceComponent();
-                if (referencePattern != null && referencePattern.getNid() == semantic.patternNid()) {
-                    refreshSectionReferenceComponents(section);
-                }
-            });
+            windowSections.reloadSemanticViews(semantic);
+            windowSections.refreshSectionsReferencing(referencePattern -> referencePattern.getNid() == semantic.patternNid());
             updateRequiredChips();
         } else {
             session.discardUnsavedEdits(semantic);
         }
 
-        if (previousPatternSemanticsInEditMode != null) {
-            previousPatternSemanticsInEditMode.setEditingSemantic(null);
-            previousPatternSemanticsInEditMode = null;
-        }
+        windowSections.setEditingSemantic(null);
     }
 
     private void setupProperties() {
@@ -788,26 +713,7 @@ public class GenPurposeDetailsController {
         // Apply the Window settings authored in the KL editor (this window shares the same model).
         applyEditorWindowSettings();
 
-        EditorSectionModel mainSection = editorWindowModel.getMainSection();
-
-        // Main TitledPane
-        TitledPane mainTitledPane = createTitledPane(mainSection);
-        addPatternViewsOfSection(mainSection.getPatterns());
-        addSupplementalAreaViewsOfSection(mainSection);
-        mainContent.getItems().add(mainTitledPane);
-
-        mainSection.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) this::onSectionPatternsChanged);
-
-        // Additional Sections
-        editorWindowModel.getAdditionalSections().forEach(section -> {
-            TitledPane titledPane = createTitledPane(section);
-            addPatternViewsOfSection(section.getPatterns());
-            addSupplementalAreaViewsOfSection(section);
-            mainContent.getItems().add(titledPane);
-        });
-
-        // TODO: will sections need to be refreshed on coordinate changes?
-        editorWindowModel.getAdditionalSections().addListener(this::onAdditionalSectionsChanged);
+        windowSections.build();
 
         // Initial view update
         updateView();
@@ -822,7 +728,7 @@ public class GenPurposeDetailsController {
         // Inline stated-definition edits persist without a PUBLISH event, so track them here:
         // a change to any stated-axiom semantic re-evaluates the required chips.
         statedDefinitionChangeSubscriber = changedNid -> EntityHandle.get(changedNid).asSemantic()
-                .filter(semantic -> semantic.patternNid() == statedAxiomsPatternNid())
+                .filter(semantic -> semantic.patternNid() == windowSections.statedAxiomsPatternNid())
                 .ifPresent(semantic -> Platform.runLater(this::updateRequiredChips));
         Entity.provider().addSubscriberWithWeakReference(statedDefinitionChangeSubscriber);
     }
@@ -878,49 +784,6 @@ public class GenPurposeDetailsController {
         }
     }
 
-    private TitledPane createTitledPane(EditorSectionModel sectionModel) {
-        SectionTitledPane<EntityFacade> titledPane = new SectionTitledPane<>();
-        titledPane.textProperty().bind(sectionModel.nameProperty());
-
-        titledPane.setMaxHeight(Double.MAX_VALUE);
-        titledPane.setMaxWidth(Double.MAX_VALUE);
-
-        titledPane.setExpanded(!sectionModel.isStartCollapsed());
-
-        titledPane.getStyleClass().add("pattern-titled-pane");
-
-        titledPane.numberColumnsProperty().bind(sectionModel.numberColumnsProperty());
-
-        // Section Semantics ComboBox
-        List<EntityFacade> semanticsOfPattern = null;
-        if (sectionModel.getReferenceComponent() != null) {
-            EditorPatternModel patternReferenceComponent = sectionModel.getReferenceComponent();
-            semanticsOfPattern = getSemanticsOfPattern(patternReferenceComponent);
-            titledPane.getReferenceComponents().addAll(semanticsOfPattern);
-        }
-        titledPane.setReferenceComponentCellFactory(_ -> createSectionSemanticsComboBoxCell(viewProperties));
-        titledPane.setReferenceComponentButtonCellFactory(new SectionSemanticsComboBoxCell(viewProperties));
-
-        titledPane.setOnEditAction(actionEvent -> onEditAction(actionEvent, sectionModel));
-
-        titledPane.editEnabledProperty().bind(sectionModel.referenceComponentProperty().isNull()
-                .or(Bindings.isNotEmpty(titledPane.getReferenceComponents())));
-
-        sectionModelToTitledPane.put(sectionModel, titledPane);
-
-        // Collapsing a section closes the window by the height the section's content occupied, so
-        // that height leaves the window instead of turning into blank space at the bottom of the
-        // last section (komet-desktop#159).
-        titledPane.expandedProperty().subscribe((_, isExpanded) -> resizeWindowWithSection(titledPane, isExpanded));
-
-        // When this section's resolved reference component changes, cascade to any section that anchors
-        // on it (i.e. whose reference pattern is displayed in this section), so downstream sections in a
-        // reference-component chain re-resolve and re-populate (see komet-desktop #3).
-        titledPane.selectedReferenceComponentProperty().subscribe(() -> refreshSectionsAnchoredOn(sectionModel));
-
-        return titledPane;
-    }
-
     /**
      * Closes or opens the window by the height a section's content occupies, as that section
      * collapses or expands. Without this a window carrying a height of its own — one restored from a
@@ -956,29 +819,12 @@ public class GenPurposeDetailsController {
         windowHeightFitter.changeHeightBy(delta);
     }
 
-    private SectionSemanticsComboBoxCell createSectionSemanticsComboBoxCell(ViewProperties viewProperties) {
-        SectionSemanticsComboBoxCell sectionSemanticsComboBoxCell = new SectionSemanticsComboBoxCell(viewProperties);
-        sectionSemanticsComboBoxCell.hoverProperty().subscribe(() -> {
-            SemanticEntity<SemanticEntityVersion> semanticEntity = (SemanticEntity<SemanticEntityVersion>) sectionSemanticsComboBoxCell.getItem();
-            PatternSemanticsPresenter patternSemanticsPresenter = semanticEntityToPatternSemanticsPresenter.get(semanticEntity);
-
-            if (patternSemanticsPresenter != null) {
-                if (sectionSemanticsComboBoxCell.isHover()) {
-                    patternSemanticsPresenter.setPreviewingSemantic(semanticEntity);
-                } else {
-                    patternSemanticsPresenter.setPreviewingSemantic(null);
-                }
-            }
-        });
-        return sectionSemanticsComboBoxCell;
-    }
-
     /**
      * The section's stated definition pattern, or null when the section doesn't hold it.
      */
     private EditorPatternModel sectionStatedPattern(EditorSectionModel sectionModel) {
         return sectionModel.getPatterns().stream()
-                .filter(pattern -> pattern.getNid() == statedAxiomsPatternNid())
+                .filter(pattern -> pattern.getNid() == windowSections.statedAxiomsPatternNid())
                 .findFirst().orElse(null);
     }
 
@@ -991,18 +837,11 @@ public class GenPurposeDetailsController {
         return session.isCreateMode() || patternModel.isAllowNewSemantics();
     }
 
-    private void onEditAction(ActionEvent actionEvent, EditorSectionModel sectionModel) {
+    private void onEditAction(EditorSectionModel sectionModel) {
         SectionEditPopup popup = new SectionEditPopup();
 
         // The Reference Component to use
-        EntityFacade refComponent;
-
-        if (sectionModel.getReferenceComponent() == null) {
-            refComponent = session.getComponent();
-        } else {
-            SectionTitledPane<EntityFacade> sectionTitledPane = sectionModelToTitledPane.get(sectionModel);
-            refComponent = sectionTitledPane.getSelectedReferenceComponent();
-        }
+        EntityFacade refComponent = windowSections.resolveReferenceComponent(sectionModel);
 
         // In create mode the standard Concept/Pattern window has no reference component yet — the
         // new component is created lazily when the user authors the first semantic (see
@@ -1044,24 +883,13 @@ public class GenPurposeDetailsController {
                             popup.hide();
                         });
 
-                        semanticLabel.hoverProperty().subscribe(() -> {
-                            PatternSemanticsPresenter patternSemanticsPresenter = semanticEntityToPatternSemanticsPresenter.get(semantic);
-
-                            if (patternSemanticsPresenter == null) {
-                                // The popup lists every semantic of the pattern, while the details area
-                                // shows only the ones passing the pattern's display filters — e.g. the
-                                // standard Concept window's Description columns, which between them show
-                                // fully qualified names, other names and definitions, so a description of
-                                // any other type has no view to preview.
-                                return;
-                            }
-
-                            if (semanticLabel.isHover()) {
-                                patternSemanticsPresenter.setPreviewingSemantic(semantic);
-                            } else {
-                                patternSemanticsPresenter.setPreviewingSemantic(null);
-                            }
-                        });
+                        // The popup lists every semantic of the pattern, while the details area
+                        // shows only the ones passing the pattern's display filters — e.g. the
+                        // standard Concept window's Description columns, which between them show
+                        // fully qualified names, other names and definitions, so a description of
+                        // any other type has no view to preview.
+                        semanticLabel.hoverProperty().subscribe(() ->
+                                windowSections.setPreviewingSemantic(semantic, semanticLabel.isHover()));
 
                         popup.getItems().add(semanticLabel);
                     });
@@ -1088,7 +916,7 @@ public class GenPurposeDetailsController {
                 if (!canAddSemantics(patternModel)) {
                     continue;
                 }
-                addCreateEntries(createEntries, actionEvent, sectionModel, patternModel, refComponent);
+                addCreateEntries(createEntries, sectionModel, patternModel, refComponent);
             }
         }
         createEntries.forEach(entry -> popup.getCreateActions().add(entry.createAction()));
@@ -1101,8 +929,8 @@ public class GenPurposeDetailsController {
                 return;
             }
             Optional<CreateEntry> directRunEntry = PatternRequirementUtils.getDirectRunEntry(sectionModel.getPatterns(),
-                    createEntries, this::getSemanticsOfPattern, getViewProperties().calculator(),
-                    statedAxiomsPatternNid());
+                    createEntries, windowSections::semanticsOfPattern, getViewProperties().calculator(),
+                    windowSections.statedAxiomsPatternNid());
             if (directRunEntry.isPresent()) {
                 directRunEntry.get().createAction().action().run();
                 return;
@@ -1110,7 +938,7 @@ public class GenPurposeDetailsController {
         }
 
         // Show Popup
-        SectionTitledPane<?> sectionTitledPane = sectionModelToTitledPane.get(sectionModel);
+        SectionTitledPane<?> sectionTitledPane = windowSections.titledPaneOf(sectionModel);
         Point2D screenPoint = sectionTitledPane.localToScreen(
                 sectionTitledPane.getWidth(),
                 0
@@ -1127,12 +955,12 @@ public class GenPurposeDetailsController {
      * comes out passing the filter it was created from. Either way a trailing "Pattern" word is
      * dropped from the entry's name.
      */
-    private void addCreateEntries(List<CreateEntry> createEntries, ActionEvent actionEvent,
+    private void addCreateEntries(List<CreateEntry> createEntries,
             EditorSectionModel sectionModel, EditorPatternModel patternModel, EntityFacade refComponent) {
         if (patternModel.getSemanticFilters().isEmpty()) {
             createEntries.add(new CreateEntry(patternModel, Map.of(), new SectionEditPopup.CreateAction(
                     "Add " + PatternUIUtils.stripPatternSuffix(patternModel.getTitle()), () -> {
-                        onCreateSemantic(actionEvent, sectionModel, patternModel, refComponent, Map.of());
+                        onCreateSemantic(sectionModel, patternModel, refComponent, Map.of());
                     })));
             return;
         }
@@ -1153,7 +981,7 @@ public class GenPurposeDetailsController {
             Map<Integer, EntityFacade> fieldSeeds = Map.copyOf(filter.getFieldConstraints());
             createEntries.add(new CreateEntry(patternModel, fieldSeeds, new SectionEditPopup.CreateAction(
                     "Add " + PatternUIUtils.stripPatternSuffix(entryName), () -> {
-                        onCreateSemantic(actionEvent, sectionModel, patternModel, refComponent, fieldSeeds);
+                        onCreateSemantic(sectionModel, patternModel, refComponent, fieldSeeds);
                     })));
         }
     }
@@ -1168,7 +996,7 @@ public class GenPurposeDetailsController {
             implements PatternRequirementUtils.SeededEntry {
     }
 
-    private void onCreateSemantic(ActionEvent actionEvent, EditorSectionModel sectionModelOfPattern,
+    private void onCreateSemantic(EditorSectionModel sectionModelOfPattern,
                                   EditorPatternModel editorPatternModel, EntityFacade refComponent,
                                   Map<Integer, EntityFacade> fieldSeeds) {
         // Lazy reference-component creation: in create mode the window has no component yet — the
@@ -1184,27 +1012,7 @@ public class GenPurposeDetailsController {
         SemanticEntity<SemanticEntityVersion> uncommitedSemantic = createUncommitedSemantic(refComponent, patternFacade, fieldSeeds);
         unsubmittedNewSemanticNids.add(uncommitedSemantic.nid());
 
-        PatternSemanticsPresenter patternSemanticsPresenter = editorPatternModelToPatternPresenter.get(editorPatternModel);
-
-        // Add content to Pattern inside Section
-        if (patternSemanticsPresenter == null) {
-            // First time adding a Semantic for the given Pattern
-            addPatternViewsOfSection(sectionModelOfPattern.getPatterns());
-        } else {
-            // Not the first time adding a Semantic for this Pattern so we just add the new one below the existing ones
-            patternSemanticsPresenter.addNewSemantic(uncommitedSemantic);
-        }
-
-        // Every section anchored on this pattern gets the new semantic as a reference-component
-        // option — several sections may reference the same pattern (komet-desktop#193). The refresh
-        // re-reads the options from the store (the semantic is saved, uncommitted, above), keeps a
-        // surviving selection and otherwise selects the first option, so a section whose only
-        // option this is selects it and enables its edit button.
-        forEachSectionInWindow(section -> {
-            if (section.getReferenceComponent() == editorPatternModel) {
-                refreshSectionReferenceComponents(section);
-            }
-        });
+        windowSections.showNewSemantic(sectionModelOfPattern, editorPatternModel, uncommitedSemantic);
 
         // Show Edit Panel to the right
         showEditSemanticFieldsPanel(uncommitedSemantic, editorPatternModel);
@@ -1221,211 +1029,7 @@ public class GenPurposeDetailsController {
         openPropertiesPanel();
 
         // Turn on Edit mode on the left side for the Semantic being edited
-        if (previousPatternSemanticsInEditMode != null) {
-            previousPatternSemanticsInEditMode.setEditingSemantic(null);
-        }
-        PatternSemanticsPresenter patternSemanticsPresenter = semanticEntityToPatternSemanticsPresenter.get(semanticEntity);
-        if (patternSemanticsPresenter != null) {
-            patternSemanticsPresenter.setEditingSemantic(semanticEntity);
-        }
-        previousPatternSemanticsInEditMode = patternSemanticsPresenter;
-    }
-
-    private void addPatternViewsOfSection(List<? extends EditorPatternModel> patternModels) {
-        if (patternModels == null || patternModels.isEmpty()) {
-            // A section may legitimately contain no patterns — e.g. one that holds only
-            // supplemental areas (a Claude/Evrete check or chat). Nothing to render here.
-            return;
-        }
-
-        for (EditorPatternModel editorPatternModel : patternModels) {
-            addSinglePatternView(editorPatternModel);
-        }
-    }
-
-    /**
-     * Renders the section's placed supplemental areas (Claude/Evrete checks, chat, …). The whole
-     * capability lives in knowledge-layout's {@link SupplementalAreaRenderer}, which materializes
-     * each area generically from its plugin factory and injects this window's view and reference
-     * concept. This window only delegates.
-     */
-    private void addSupplementalAreaViewsOfSection(EditorSectionModel section) {
-        SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(section);
-        EntityFacade refComponent = session.getComponent();
-        SupplementalAreaRenderer.renderInto(section, titledPane.getItems(), viewProperties, refComponent);
-    }
-
-    private void addSinglePatternView(EditorPatternModel editorPatternModel) {
-        EditorSectionModel parentSection = editorPatternModel.getParentSection();
-        SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(parentSection);
-
-        // Pattern fields
-        PatternSemanticsPresenter patternSemanticsPresenter = addSemanticViews(editorPatternModel);
-
-        editorPatternModelToPatternPresenter.put(editorPatternModel, patternSemanticsPresenter);
-
-        Node view = createPatternContainer(editorPatternModel, patternSemanticsPresenter.getView());
-
-        editorPatternModel.rowIndexProperty().subscribe(newRowIndex -> {
-            GridPane.setRowIndex(view, newRowIndex.intValue());
-        });
-
-        editorPatternModel.columnIndexProperty().subscribe(newColumnIndex -> {
-            GridPane.setColumnIndex(view, newColumnIndex.intValue());
-        });
-
-        editorPatternModel.columnSpanProperty().subscribe(newColumnSpan -> {
-            GridPane.setColumnSpan(view, newColumnSpan.intValue());
-        });
-
-        titledPane.getItems().add(view);
-    }
-
-    /**
-     * Wraps a Pattern's semantics view — whichever representation its factory supplies — in the
-     * container that goes into the Section's grid, with the Pattern's title above it. Title text and
-     * title visibility are authored per Pattern in the KL Editor, and apply to every representation,
-     * so the title is rendered here rather than by each representation's own control.
-     */
-    private Node createPatternContainer(EditorPatternModel editorPatternModel, Node semanticsView) {
-        Label patternTitle = new Label();
-        patternTitle.getStyleClass().add("gen-purpose-pattern-title");
-        // Uppercased here rather than in CSS — JavaFX has no text-transform — so the title reads in
-        // the same group-label language as the field labels under it (KLReadOnlyBaseControlSkin
-        // uppercases those the same way). Only the display changes; the authored title is untouched.
-        patternTitle.textProperty().bind(editorPatternModel.titleProperty().map(String::toUpperCase));
-        patternTitle.visibleProperty().bind(editorPatternModel.titleVisibleProperty());
-        patternTitle.managedProperty().bind(editorPatternModel.titleVisibleProperty());
-
-        VBox patternContainer = new VBox(patternTitle, semanticsView);
-        patternContainer.getStyleClass().add("pattern-view-container");
-        VBox.setVgrow(semanticsView, Priority.ALWAYS);
-
-        // A shown title needs the room the semantics view claims above itself (see the negative top
-        // inset on .pattern-container in kview.css), so the state is exposed to CSS.
-        editorPatternModel.titleVisibleProperty().subscribe(titleVisible ->
-                patternContainer.pseudoClassStateChanged(TITLE_VISIBLE_PSEUDO_CLASS, titleVisible));
-
-        // The title's gap is likewise sized for the field labels below it, so whether any field still
-        // shows one is exposed too. Recomputed as the author toggles the fields in the KL Editor.
-        for (EditorFieldModel fieldModel : editorPatternModel.getVisibleFields()) {
-            fieldModel.titleVisibleProperty().subscribe(() ->
-                    updateFieldTitlesHidden(patternContainer, editorPatternModel));
-        }
-        updateFieldTitlesHidden(patternContainer, editorPatternModel);
-
-        return patternContainer;
-    }
-
-    private static void updateFieldTitlesHidden(VBox patternContainer, EditorPatternModel editorPatternModel) {
-        boolean anyFieldTitleShown = editorPatternModel.getVisibleFields().stream().anyMatch(EditorFieldModel::isTitleVisible);
-        patternContainer.pseudoClassStateChanged(FIELD_TITLES_HIDDEN_PSEUDO_CLASS, !anyFieldTitleShown);
-    }
-
-    private PatternSemanticsPresenter addSemanticViews(EditorPatternModel editorPatternModel) {
-        EditorSectionModel parentSection = editorPatternModel.getParentSection();
-
-        List<EntityFacade> refComponents = getReferenceComponentsToUse(parentSection.getReferenceComponent());
-
-        SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(parentSection);
-
-        // The model always supplies a factory (it defaults to the Standard factory), so no fallback is needed here.
-        KlPatternSemanticsFactory klPatternSemanticsFactory = editorPatternModel.getFactory();
-
-        PatternSemanticsPresenter patternSemanticsPresenter = klPatternSemanticsFactory.createJournalControl(editorPatternModel,
-                viewProperties, session.createOrGetComposer(), journalTopic);
-        // In the Publish-flow window edits made inline in the details area (the stated
-        // definition's axiom tree) stay uncommitted like the properties panel's submits do, until the
-        // toolbar's Publish button commits them (see publish).
-        if (usesPublishFlow()) {
-            patternSemanticsPresenter.setInlineEditSaver(this::saveUncommittedInlineEdit);
-        }
-
-        if (!refComponents.isEmpty()) {
-            doAddSemanticViews(editorPatternModel, patternSemanticsPresenter, refComponents.getFirst());
-            titledPane.setSelectedReferenceComponent(refComponents.getFirst());
-        }
-
-        titledPane.selectedReferenceComponentProperty().subscribe(() -> {
-            clearSemanticViews(patternSemanticsPresenter);
-            doAddSemanticViews(editorPatternModel, patternSemanticsPresenter, titledPane.getSelectedReferenceComponent());
-        });
-
-        return patternSemanticsPresenter;
-    }
-
-    private void reloadSemanticViews(SemanticEntity<SemanticEntityVersion> semantic) {
-        editorPatternModelToPatternPresenter.forEach((patternModel, presenter) -> {
-            if (patternModel.getNid() == semantic.patternNid()) {
-                clearSemanticViews(presenter);
-                doAddSemanticViews(patternModel, presenter, semantic.referencedComponent());
-            }
-        });
-    }
-
-    /**
-     * Re-renders every pattern's semantics from the store — after a publish, so the versions just
-     * published stop showing as not published.
-     */
-    private void reloadAllSemanticViews() {
-        editorPatternModelToPatternPresenter.forEach((patternModel, presenter) -> {
-            clearSemanticViews(presenter);
-            // Resolved the way the sections are built (see resolveSectionReferenceComponent): the
-            // main section anchors on the window's component, which its titled pane never selects.
-            doAddSemanticViews(patternModel, presenter,
-                    resolveSectionReferenceComponent(patternModel.getParentSection()));
-        });
-    }
-
-    /**
-     * Clears a presenter's semantic views, forgetting the semantics it displayed.
-     */
-    private void clearSemanticViews(PatternSemanticsPresenter presenter) {
-        presenter.clearSemantics();
-        displayedSemantics.values().removeIf(semantic -> semanticEntityToPatternSemanticsPresenter.get(semantic) == presenter);
-    }
-
-    private void doAddSemanticViews(EditorPatternModel editorPatternModel, PatternSemanticsPresenter patternSemanticsPresenter, EntityFacade referenceComponent) {
-        if (referenceComponent == null) {
-            // No reference concept selected — nothing to render for this pattern's semantics.
-            return;
-        }
-
-        // Pattern Entity
-        long patternNid = editorPatternModel.getNid();
-        EntityHandle handle = EntityHandle.get(patternNid);
-        PatternEntity patternEntity;
-        if (handle.asPattern().isEmpty()) {
-            throw new RuntimeException("Expecting a Pattern to be present instead of an empty Optional");
-        }
-        patternEntity = handle.asPattern().get();
-
-        // Composer
-
-        // Start adding Semantics — skipping the ones the pattern's display filters hide (see
-        // EditorPatternSemanticFilter), e.g. a Description pattern showing only fully qualified names.
-        EntityService.get().forEachSemanticForComponentOfPattern(referenceComponent.nid(), patternEntity.nid(),
-                (semantic) -> {
-                    // A pattern's defaults semantic is a semantic of the pattern referencing
-                    // the pattern itself; it holds the defaults, not content (see PatternFieldDefaults).
-                    if (PatternFieldDefaults.isDefaultsSemantic(semantic)) {
-                        return;
-                    }
-                    // A semantic whose creation was cancelled (see onSemanticCancelled) is still
-                    // in the store, canceled.
-                    if (semantic.canceled()) {
-                        return;
-                    }
-                    if (!editorPatternModel.displaysSemantic(semantic.nid(), getViewProperties().calculator())) {
-                        return;
-                    }
-                    patternSemanticsPresenter.addNewSemantic(semantic);
-                    semanticEntityToPatternSemanticsPresenter.put(semantic, patternSemanticsPresenter);
-                    displayedSemantics.put(semantic.nid(), semantic);
-                });
-
-        // The semantics just rendered may carry versions not published yet (see unpublishedSemantics).
-        updatePublishState();
+        windowSections.setEditingSemantic(semanticEntity);
     }
 
     /**
@@ -1490,102 +1094,6 @@ public class GenPurposeDetailsController {
     }
 
     /**
-     * The component a section's rows resolve against: the window's reference component for a section
-     * with no reference pattern, otherwise the component currently selected for that section. This is
-     * what lets reference-component chains resolve to arbitrary depth — a downstream section anchors on
-     * the resolved component of the section that owns its reference pattern, rather than always anchoring
-     * on the window component (see komet-desktop #3).
-     */
-    private EntityFacade resolveSectionReferenceComponent(EditorSectionModel section) {
-        if (section == null || section.getReferenceComponent() == null) {
-            return session.getComponent();
-        }
-        SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(section);
-        return titledPane == null ? null : titledPane.getSelectedReferenceComponent();
-    }
-
-    private List<EntityFacade> getReferenceComponentsToUse(EditorPatternModel sectionReferenceComponent) {
-        List<EntityFacade> refComponents = new ArrayList<>();
-
-        if (sectionReferenceComponent != null) {
-            // Anchor on the resolved reference component of the section that owns the reference pattern,
-            // so chains where one section references another section's semantic resolve to any depth.
-            EntityFacade base = resolveSectionReferenceComponent(sectionReferenceComponent.getParentSection());
-            if (base != null) {
-                EntityService.get().forEachSemanticForComponentOfPattern(base.nid(), sectionReferenceComponent.getNid(),
-                        (SemanticEntity<SemanticEntityVersion> semantic) -> {
-                            if (!semantic.canceled()) {
-                                refComponents.add(semantic);
-                            }
-                        }
-                );
-            }
-        } else {
-            // No section reference pattern — the section resolves directly against the window component.
-            // Never return a list containing null (callers treat a non-empty list as having a usable component).
-            EntityFacade windowRefComponent = session.getComponent();
-            if (windowRefComponent != null) {
-                refComponents.add(windowRefComponent);
-            }
-        }
-
-        return refComponents;
-    }
-
-    private List<EntityFacade> getSemanticsOfPattern(EditorPatternModel editorPatternModel) {
-        List<EntityFacade> refComponents = new ArrayList<>();
-
-        // Anchor on the resolved reference component of the section that owns this reference pattern, so
-        // a section referencing another section's semantic populates its options (see komet-desktop #3).
-        EntityFacade base = resolveSectionReferenceComponent(editorPatternModel.getParentSection());
-        if (base == null) {
-            return refComponents;
-        }
-
-        EntityService.get().forEachSemanticForComponentOfPattern(base.nid(), editorPatternModel.getNid(),
-                (SemanticEntity<SemanticEntityVersion> semantic) -> {
-                    // A semantic whose creation was cancelled stays in the store, canceled.
-                    if (!semantic.canceled()) {
-                        refComponents.add(semantic);
-                    }
-                }
-        );
-
-        return refComponents;
-    }
-
-    /**
-     * Visits every section in this window (the main section and all additional sections).
-     */
-    private void forEachSectionInWindow(Consumer<EditorSectionModel> action) {
-        action.accept(editorWindowModel.getMainSection());
-        editorWindowModel.getAdditionalSections().forEach(action);
-    }
-
-    /**
-     * Refreshes each section's required-pattern chip (see the REQUIRED / "✓ REQUIREMENT MET"
-     * chip in the section title bar): shown in create mode on sections hosting a required
-     * pattern, flipping to satisfied once every required pattern in the section is satisfied
-     * ({@link #isRequiredPatternSatisfied}) — the same check that gates the Publish button in
-     * create mode, so the button re-evaluates with the chips.
-     */
-    private void updateRequiredChips() {
-        boolean createMode = session.isCreateMode();
-        sectionModelToTitledPane.forEach((section, titledPane) -> {
-            List<EditorPatternModel> requiredPatterns = section.getPatterns().stream()
-                    .filter(EditorPatternModel::isRequired)
-                    .toList();
-            boolean chipVisible = createMode && !requiredPatterns.isEmpty();
-            titledPane.setRequiredChipVisible(chipVisible);
-            if (chipVisible) {
-                titledPane.setRequiredSatisfied(requiredPatterns.stream()
-                        .allMatch(this::isRequiredPatternSatisfied));
-            }
-        });
-        updatePublishState();
-    }
-
-    /**
      * Whether this window uses the toolbar Publish flow: changes stay uncommitted in the composer's open
      * transaction until the Publish button commits them. Scoped to the standard Pattern and
      * Concept windows for now — the other window types keep the classic commit-on-submit flow
@@ -1604,13 +1112,22 @@ public class GenPurposeDetailsController {
      * (mode changes, PUBLISH submits, inline stated-definition edits) and on the composer's
      * change tracking (see {@link WindowEditSession#hasUncommittedChangesProperty}).
      */
+    /**
+     * Refreshes each section's required-pattern chip (see {@link WindowSections#updateRequiredChips})
+     * and, since the same check gates the Publish button in create mode, the button with them.
+     */
+    private void updateRequiredChips() {
+        windowSections.updateRequiredChips();
+        updatePublishState();
+    }
+
     private void updatePublishState() {
         boolean hasUncommittedChanges = session.hasUncommittedChanges();
         boolean disabled;
         String publishTooltip;
         int unpublishedChanges = 0;
         if (session.isCreateMode()) {
-            disabled = !hasUncommittedChanges || !allRequiredPatternsSatisfied();
+            disabled = !hasUncommittedChanges || !windowSections.allRequiredPatternsSatisfied();
             publishTooltip = disabled ? "Complete the required semantics to publish" : "Publish";
         } else {
             // Changes saved but not published count whether this window instance saved them or
@@ -1638,73 +1155,7 @@ public class GenPurposeDetailsController {
                     : unpublishedChanges + " changes not published yet. Only you can see them until you publish.");
         }
 
-        updateUnpublishedChips();
-    }
-
-    /**
-     * The unpublished strip's "Show" action: brings the first semantic with an unpublished version
-     * into view, expanding the section holding it if it is collapsed.
-     */
-    private void revealFirstUnpublishedSemantic() {
-        List<SemanticEntity<SemanticEntityVersion>> unpublished = unpublishedSemantics();
-        if (unpublished.isEmpty()) {
-            return;
-        }
-        SemanticEntity<SemanticEntityVersion> semantic = unpublished.getFirst();
-        PatternSemanticsPresenter presenter = semanticEntityToPatternSemanticsPresenter.get(semantic);
-        editorPatternModelToPatternPresenter.forEach((patternModel, patternPresenter) -> {
-            if (patternPresenter == presenter) {
-                sectionModelToTitledPane.get(patternModel.getParentSection()).setExpanded(true);
-            }
-        });
-        presenter.revealSemantic(semantic);
-    }
-
-    /**
-     * Sets each section header's NOT PUBLISHED chip and note ("2 changes by you") from the
-     * section's semantics whose latest version is saved but not published yet; sections without
-     * any show no chip. Not in create mode, whose DRAFT chip and hint already say the whole
-     * component is unpublished.
-     */
-    private void updateUnpublishedChips() {
-        Map<EditorSectionModel, List<SemanticEntity<SemanticEntityVersion>>> unpublishedBySection = new HashMap<>();
-        if (!session.isCreateMode()) {
-            for (SemanticEntity<SemanticEntityVersion> semantic : unpublishedSemantics()) {
-                PatternSemanticsPresenter presenter = semanticEntityToPatternSemanticsPresenter.get(semantic);
-                editorPatternModelToPatternPresenter.forEach((patternModel, patternPresenter) -> {
-                    if (patternPresenter == presenter) {
-                        unpublishedBySection.computeIfAbsent(patternModel.getParentSection(), section -> new ArrayList<>())
-                                .add(semantic);
-                    }
-                });
-            }
-        }
-        long currentAuthorNid = getViewProperties().nodeView().editCoordinate().getAuthorNidForChanges();
-        sectionModelToTitledPane.forEach((section, titledPane) -> {
-            List<SemanticEntity<SemanticEntityVersion>> unpublished = unpublishedBySection.get(section);
-            if (unpublished == null) {
-                titledPane.setUnpublishedNote(null);
-                return;
-            }
-            boolean allByCurrentAuthor = unpublished.stream()
-                    .flatMap(semantic -> EntityHandle.get(semantic.nid()).expectEntity().versions().stream())
-                    .filter(EntityVersion::uncommitted)
-                    .allMatch(version -> version.stamp().authorNid() == currentAuthorNid);
-            titledPane.setUnpublishedNote((unpublished.size() == 1 ? "1 change" : unpublished.size() + " changes")
-                    + (allByCurrentAuthor ? " by you" : ""));
-        });
-    }
-
-    /**
-     * The semantics shown in this window whose latest version is saved but not published yet, in
-     * render order — each as the entity object its view was built from (see {@link #displayedSemantics}).
-     * Whether a semantic is published is read from the store, since a version may have been
-     * submitted or published since its view was built.
-     */
-    private List<SemanticEntity<SemanticEntityVersion>> unpublishedSemantics() {
-        return displayedSemantics.values().stream()
-                .filter(semantic -> EntityHandle.get(semantic.nid()).expectSemantic().uncommitted())
-                .toList();
+        windowSections.updateUnpublishedChips();
     }
 
     /**
@@ -1713,7 +1164,7 @@ public class GenPurposeDetailsController {
      * reference component.
      */
     private int unpublishedChangeCount() {
-        int count = unpublishedSemantics().size();
+        int count = windowSections.unpublishedSemantics().size();
         EntityFacade refComponent = session.getComponent();
         if (refComponent != null && EntityHandle.get(refComponent.nid()).expectEntity().uncommitted()) {
             count++;
@@ -1751,10 +1202,10 @@ public class GenPurposeDetailsController {
         if (confirm.showAndWait().filter(javafx.scene.control.ButtonType.OK::equals).isEmpty()) {
             return;
         }
-        session.cancelUnpublishedTransactions(unpublishedSemantics());
+        session.cancelUnpublishedTransactions(windowSections.unpublishedSemantics());
         unsubmittedNewSemanticNids.clear();
         updateView();
-        reloadAllSemanticViews();
+        windowSections.reloadAllSemanticViews();
         updatePublishState();
     }
 
@@ -1769,7 +1220,7 @@ public class GenPurposeDetailsController {
 
         session.commit();
 
-        int unpublishable = session.commitUnpublishedTransactions(unpublishedSemantics());
+        int unpublishable = session.commitUnpublishedTransactions(windowSections.unpublishedSemantics());
 
         // A semantic whose form is still open when its creation publishes is published as it
         // stands; cancelling that form now only drops the form's edits.
@@ -1782,7 +1233,7 @@ public class GenPurposeDetailsController {
         // component itself) — refresh the banner/identifier/STAMP from the committed state, and
         // the semantics so the versions just published drop their "Not published" marks.
         updateView();
-        reloadAllSemanticViews();
+        windowSections.reloadAllSemanticViews();
         updatePublishState();
 
         // The pattern navigator lists patterns from the committed store, so a pattern created
@@ -1802,105 +1253,6 @@ public class GenPurposeDetailsController {
             toast().show(Toast.Status.SUCCESS,
                     wasCreateMode ? componentKindString + " created" : "Changes published");
         }
-    }
 
-    /**
-     * Whether every pattern marked Required in the KL editor is satisfied
-     * ({@link #isRequiredPatternSatisfied}) against its section's resolved reference component.
-     * In create mode this gates the actual creation (commit) of the window's component:
-     * uncommitted semantics count, since they are found by the entity service once saved.
-     */
-    private boolean allRequiredPatternsSatisfied() {
-        AtomicBoolean satisfied = new AtomicBoolean(true);
-        forEachSectionInWindow(section -> {
-            for (EditorPatternModel pattern : section.getPatterns()) {
-                if (pattern.isRequired() && !isRequiredPatternSatisfied(pattern)) {
-                    satisfied.set(false);
-                }
-            }
-        });
-        return satisfied.get();
-    }
-
-    /**
-     * Whether a required pattern's requirement is met against its section's resolved reference
-     * component (see {@link PatternRequirementUtils#isPatternSatisfied}).
-     */
-    private boolean isRequiredPatternSatisfied(EditorPatternModel pattern) {
-        return PatternRequirementUtils.isPatternSatisfied(pattern, getSemanticsOfPattern(pattern),
-                getViewProperties().calculator(), statedAxiomsPatternNid());
-    }
-
-    /**
-     * Re-resolves every section whose reference pattern lives in {@code changedSection}, so a change to
-     * that section's reference component propagates down the reference-component chain. Each refreshed
-     * section's own selection change drives the next hop, so the cascade naturally reaches arbitrary
-     * depth (see komet-desktop #3).
-     */
-    private void refreshSectionsAnchoredOn(EditorSectionModel changedSection) {
-        forEachSectionInWindow(section -> {
-            EditorPatternModel referencePattern = section.getReferenceComponent();
-            if (referencePattern != null && referencePattern.getParentSection() == changedSection) {
-                refreshSectionReferenceComponents(section);
-            }
-        });
-    }
-
-    /**
-     * Recomputes a section's reference-component options against its (now-changed) upstream anchor,
-     * preserving the prior selection when it survives and otherwise defaulting to the first option.
-     * Re-selecting re-populates the section's rows and cascades to its own downstream sections.
-     */
-    private void refreshSectionReferenceComponents(EditorSectionModel section) {
-        SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(section);
-        // Skip when the section isn't built yet (initial load resolves it directly) or it is already
-        // mid-refresh (guards against a cyclic reference chain recursing forever).
-        if (titledPane == null || !refreshingSections.add(section)) {
-            return;
-        }
-
-        List<EntityFacade> options = getSemanticsOfPattern(section.getReferenceComponent());
-        EntityFacade previousSelection = titledPane.getSelectedReferenceComponent();
-
-        titledPane.getReferenceComponents().setAll(options);
-
-        EntityFacade newSelection = null;
-        if (previousSelection != null) {
-            for (EntityFacade option : options) {
-                if (option.nid() == previousSelection.nid()) {
-                    newSelection = option;
-                    break;
-                }
-            }
-        }
-        if (newSelection == null && !options.isEmpty()) {
-            newSelection = options.getFirst();
-        }
-
-        titledPane.setSelectedReferenceComponent(newSelection);
-        refreshingSections.remove(section);
-    }
-
-    private void onSectionPatternsChanged(ListChangeListener.Change<? extends EditorPatternModel> change) {
-        while (change.next()) {
-            if (change.wasAdded()) {
-                addPatternViewsOfSection(change.getAddedSubList());
-            }
-        }
-    }
-
-    private void onAdditionalSectionsChanged(ListChangeListener.Change<? extends EditorSectionModel> change) {
-        while (change.next()) {
-            if (change.wasAdded()) {
-                for (EditorSectionModel additionalSectionModel : change.getAddedSubList()) {
-                    TitledPane titledPane = createTitledPane(additionalSectionModel);
-                    addPatternViewsOfSection(additionalSectionModel.getPatterns());
-                    additionalSectionModel.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) this::onSectionPatternsChanged);
-
-                    mainContent.getItems().add(titledPane);
-                }
-                updateRequiredChips();
-            }
-        }
     }
 }
