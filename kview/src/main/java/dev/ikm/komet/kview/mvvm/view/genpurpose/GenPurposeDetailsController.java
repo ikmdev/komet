@@ -33,11 +33,9 @@ import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.KlWindowControlToolbar;
 import dev.ikm.komet.layout.controls.FilterOptionsPopup;
-import dev.ikm.komet.kview.controls.KometLabel;
 import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
 import dev.ikm.komet.kview.controls.StampViewControl;
-import dev.ikm.komet.kview.controls.SectionEditPopup;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
@@ -50,7 +48,6 @@ import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.FormMode;
 import dev.ikm.komet.layout.InlineEditSaver;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
-import dev.ikm.komet.layout.editor.model.EditorPatternSemanticFilter;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowType;
@@ -62,7 +59,6 @@ import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.komet.layout.PatternFieldDefaults;
-import dev.ikm.tinkar.entity.EntityService;
 import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
@@ -76,7 +72,6 @@ import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
 import javafx.application.Platform;
 import javafx.css.PseudoClass;
-import javafx.geometry.Point2D;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
@@ -88,16 +83,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public class GenPurposeDetailsController {
 
@@ -130,6 +122,8 @@ public class GenPurposeDetailsController {
 
     /** The definition's sections: what is displayed where, and how each section resolves its component. */
     private final WindowSections windowSections;
+    /** The menu a section's pencil button opens. */
+    private final SectionEditMenu sectionEditMenu;
 
     /**
      * The semantics an "Add …" entry created ({@link #onCreateSemantic}) whose edit form has not
@@ -234,9 +228,14 @@ public class GenPurposeDetailsController {
         // Publish button follow through the stated-definition change subscriber.
         InlineEditSaver inlineEditSaver = usesPublishFlow() ? session::saveUncommittedFieldEdit : null;
         this.windowSections = new WindowSections(editorWindowModel, session, mainContent, journalTopic, inlineEditSaver);
-        windowSections.setOnSectionEditRequested(this::onEditAction);
         windowSections.setOnSectionExpandedChanged(this::resizeWindowWithSection);
         windowSections.setOnPublishInputsChanged(this::updatePublishState);
+
+        this.sectionEditMenu = new SectionEditMenu(editorWindowModel, session, windowSections);
+        sectionEditMenu.setOnEditSemantic(this::showEditSemanticFieldsPanel);
+        sectionEditMenu.setOnCreateSemantic(this::onCreateSemantic);
+        sectionEditMenu.setOnCreateStatedDefinition(this::createSeededStatedDefinition);
+        windowSections.setOnSectionEditRequested(sectionEditMenu::open);
         view.getUnpublishedShowLink().setOnAction(event -> windowSections.revealFirstUnpublishedSemantic());
 
         wireChrome();
@@ -817,183 +816,6 @@ public class GenPurposeDetailsController {
         // Through the fitter, so a window grown to fit its properties panel takes the section's
         // height out of (or into) the height closing the panel restores as well.
         windowHeightFitter.changeHeightBy(delta);
-    }
-
-    /**
-     * The section's stated definition pattern, or null when the section doesn't hold it.
-     */
-    private EditorPatternModel sectionStatedPattern(EditorSectionModel sectionModel) {
-        return sectionModel.getPatterns().stream()
-                .filter(pattern -> pattern.getNid() == windowSections.statedAxiomsPatternNid())
-                .findFirst().orElse(null);
-    }
-
-    /**
-     * Whether new semantics of the pattern can be added right now. In create mode they always can;
-     * once the window is in edit mode the pattern must allow new semantics, as authored in the KL
-     * Editor. Existing semantics stay editable either way.
-     */
-    private boolean canAddSemantics(EditorPatternModel patternModel) {
-        return session.isCreateMode() || patternModel.isAllowNewSemantics();
-    }
-
-    private void onEditAction(EditorSectionModel sectionModel) {
-        SectionEditPopup popup = new SectionEditPopup();
-
-        // The Reference Component to use
-        EntityFacade refComponent = windowSections.resolveReferenceComponent(sectionModel);
-
-        // In create mode the standard Concept/Pattern window has no reference component yet — the
-        // new component is created lazily when the user authors the first semantic (see
-        // onCreateSemantic), so the popup still opens, offering only its create entries.
-        boolean canCreateReferenceComponent = sectionModel.getReferenceComponent() == null
-                && session.isCreateMode()
-                && (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_CONCEPT
-                        || editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN);
-
-        if (refComponent == null && !canCreateReferenceComponent) {
-            // No reference concept to edit against — nothing to populate.
-            return;
-        }
-
-        // The stated definition pattern takes over its section's popup: its semantics are the
-        // ones offered for editing (never the reasoner-owned inferred definition's), and its
-        // create entries seed the definition with a set instead of the per-pattern "Add …"
-        // entries — the classic concept window's axiom + menu.
-        EditorPatternModel statedPattern = sectionStatedPattern(sectionModel);
-        EditorPatternModel editPattern = statedPattern != null
-                ? statedPattern
-                : sectionModel.getPatterns().getFirst();
-
-        if (refComponent != null) {
-            // Populate the Popup
-            EntityService.get().forEachSemanticForComponentOfPattern(refComponent.nid(),
-                    editPattern.getNid(), (semantic) -> {
-                        // The pattern's defaults semantic is edited through its own entry
-                        // below, never as one of the pattern's semantics; a semantic whose
-                        // creation was cancelled is still in the store, canceled.
-                        if (PatternFieldDefaults.isDefaultsSemantic(semantic) || semantic.canceled()) {
-                            return;
-                        }
-                        KometLabel semanticLabel = new KometLabel(semantic, viewProperties);
-                        semanticLabel.setShowTooltip(true);
-
-                        semanticLabel.setOnMouseClicked(_ -> {
-                            showEditSemanticFieldsPanel(semantic, editPattern);
-                            popup.hide();
-                        });
-
-                        // The popup lists every semantic of the pattern, while the details area
-                        // shows only the ones passing the pattern's display filters — e.g. the
-                        // standard Concept window's Description columns, which between them show
-                        // fully qualified names, other names and definitions, so a description of
-                        // any other type has no view to preview.
-                        semanticLabel.hoverProperty().subscribe(() ->
-                                windowSections.setPreviewingSemantic(semantic, semanticLabel.isHover()));
-
-                        popup.getItems().add(semanticLabel);
-                    });
-        }
-
-        List<CreateEntry> createEntries = new ArrayList<>();
-        if (statedPattern != null) {
-            // A concept has at most one stated definition — offer the seeds only until it
-            // exists (afterwards more sets are added inline, on the tree's root row), and only
-            // while the pattern accepts new semantics. Sufficient before necessary, matching the
-            // classic concept window's menu.
-            if (popup.getItems().isEmpty() && canAddSemantics(statedPattern)) {
-                createEntries.add(new CreateEntry(statedPattern, Map.of(),
-                        new SectionEditPopup.CreateAction("Add sufficient set",
-                                () -> createSeededStatedDefinition(sectionModel, statedPattern, false))));
-                createEntries.add(new CreateEntry(statedPattern, Map.of(),
-                        new SectionEditPopup.CreateAction("Add necessary set",
-                                () -> createSeededStatedDefinition(sectionModel, statedPattern, true))));
-            }
-        } else {
-            for (EditorPatternModel patternModel : sectionModel.getPatterns()) {
-                // Once in edit mode, only patterns authored in the KL Editor as allowing new
-                // semantics accept them.
-                if (!canAddSemantics(patternModel)) {
-                    continue;
-                }
-                addCreateEntries(createEntries, sectionModel, patternModel, refComponent);
-            }
-        }
-        createEntries.forEach(entry -> popup.getCreateActions().add(entry.createAction()));
-
-        // With no semantic to edit, the popup would only offer its create entries — when one of
-        // them is the obvious choice it runs straight away instead of asking, and with none left
-        // to offer (the patterns don't accept new semantics anymore) there is nothing to show.
-        if (popup.getItems().isEmpty()) {
-            if (createEntries.isEmpty()) {
-                return;
-            }
-            Optional<CreateEntry> directRunEntry = PatternRequirementUtils.getDirectRunEntry(sectionModel.getPatterns(),
-                    createEntries, windowSections::semanticsOfPattern, getViewProperties().calculator(),
-                    windowSections.statedAxiomsPatternNid());
-            if (directRunEntry.isPresent()) {
-                directRunEntry.get().createAction().action().run();
-                return;
-            }
-        }
-
-        // Show Popup
-        SectionTitledPane<?> sectionTitledPane = windowSections.titledPaneOf(sectionModel);
-        Point2D screenPoint = sectionTitledPane.localToScreen(
-                sectionTitledPane.getWidth(),
-                0
-        );
-        popup.show(sectionTitledPane, screenPoint.getX(), screenPoint.getY());
-    }
-
-    /**
-     * Adds the section popup's "Add …" create entries for one pattern of the section to the passed
-     * in list. A pattern without display filters gets one entry named after the pattern; a
-     * filtered pattern gets one entry per filter, named after the concept(s) the filter selects on
-     * — e.g. "Add Fully qualified name" for a Description pattern filtered to fully qualified
-     * names — and that entry's new semantic is seeded with the filter's field constraints, so it
-     * comes out passing the filter it was created from. Either way a trailing "Pattern" word is
-     * dropped from the entry's name.
-     */
-    private void addCreateEntries(List<CreateEntry> createEntries,
-            EditorSectionModel sectionModel, EditorPatternModel patternModel, EntityFacade refComponent) {
-        if (patternModel.getSemanticFilters().isEmpty()) {
-            createEntries.add(new CreateEntry(patternModel, Map.of(), new SectionEditPopup.CreateAction(
-                    "Add " + PatternUIUtils.stripPatternSuffix(patternModel.getTitle()), () -> {
-                        onCreateSemantic(sectionModel, patternModel, refComponent, Map.of());
-                    })));
-            return;
-        }
-
-        for (EditorPatternSemanticFilter filter : patternModel.getSemanticFilters()) {
-            String filterConceptNames = filter.getFieldConstraints().values().stream()
-                    .map(filterConcept -> getViewProperties().calculator()
-                            .getPreferredDescriptionTextWithFallbackOrNid(filterConcept.nid()))
-                    .distinct()
-                    .collect(Collectors.joining(", "));
-            // A filter constraining nothing selects every semantic — its entry falls back to the
-            // pattern's name.
-            String entryName = filterConceptNames.isEmpty()
-                    ? patternModel.getTitle()
-                    : filterConceptNames;
-
-            // Snapshot the constraints at popup-build time; they seed the new semantic's fields.
-            Map<Integer, EntityFacade> fieldSeeds = Map.copyOf(filter.getFieldConstraints());
-            createEntries.add(new CreateEntry(patternModel, fieldSeeds, new SectionEditPopup.CreateAction(
-                    "Add " + PatternUIUtils.stripPatternSuffix(entryName), () -> {
-                        onCreateSemantic(sectionModel, patternModel, refComponent, fieldSeeds);
-                    })));
-        }
-    }
-
-    /**
-     * One "Add …" entry of a section's edit popup, kept with the pattern it creates a semantic of
-     * and the field values that new semantic starts out with, so
-     * {@link PatternRequirementUtils#getDirectRunEntry} can tell which entry meets a requirement.
-     */
-    private record CreateEntry(EditorPatternModel pattern, Map<Integer, EntityFacade> fieldSeeds,
-                               SectionEditPopup.CreateAction createAction)
-            implements PatternRequirementUtils.SeededEntry {
     }
 
     private void onCreateSemantic(EditorSectionModel sectionModelOfPattern,
