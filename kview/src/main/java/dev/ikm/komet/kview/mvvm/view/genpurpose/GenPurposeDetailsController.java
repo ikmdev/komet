@@ -17,27 +17,17 @@ package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
 import static dev.ikm.komet.layout_engine.window.DraggableSupport.addDraggableNodes;
-import static dev.ikm.komet.kview.klfields.KlFieldHelper.retrieveCommittedLatestVersion;
 import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
 import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
 
-import dev.ikm.komet.framework.Identicon;
-import dev.ikm.komet.framework.observable.ObservableEntity;
-import dev.ikm.komet.framework.observable.ObservableEntityHandle;
-import dev.ikm.komet.framework.observable.ObservableEntitySnapshot;
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.ContentSizedSplitPane;
-import dev.ikm.komet.kview.controls.ComponentItem;
 import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.KlWindowControlToolbar;
 import dev.ikm.komet.layout.controls.FilterOptionsPopup;
-import dev.ikm.komet.kview.controls.PublicIDListControl;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
-import dev.ikm.komet.kview.controls.StampViewControl;
 import dev.ikm.komet.kview.controls.Toast;
-import dev.ikm.komet.kview.controls.ComponentItemNode;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl;
@@ -52,28 +42,19 @@ import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowType;
 import dev.ikm.komet.layout_engine.window.WindowSupport;
 import dev.ikm.komet.preferences.KometPreferences;
-import dev.ikm.tinkar.common.util.time.DateTimeUtil;
-import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
-import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.komet.layout.PatternFieldDefaults;
-import dev.ikm.tinkar.entity.EntityVersion;
 import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
-import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.PatternFacade;
-import dev.ikm.tinkar.terms.State;
 import javafx.application.Platform;
 import javafx.css.PseudoClass;
 import javafx.scene.control.Label;
-import javafx.scene.control.Tooltip;
-import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -126,7 +107,6 @@ public class GenPurposeDetailsController {
     private final Set<Long> unsubmittedNewSemanticNids = new HashSet<>();
 
     // The parts of the window's view (see GenPurposeWindowView) this controller wires behavior onto.
-    private final StampViewControl stampViewControl;
     private final ContentSizedSplitPane mainContent;
     private final BorderPane detailsOuterBorderPane;
     private final KlWindowControlToolbar windowControlToolbar;
@@ -134,9 +114,8 @@ public class GenPurposeDetailsController {
      * Used slide out the properties view
      */
     private final VerticallyFilledPane propertiesSlideoutTrayPane;
-    private final ComponentItemNode windowConceptTitle;
-    private final Tooltip windowConceptTitleTooltip;
-    private final PublicIDListControl identifierControl;
+    /** The title, identifiers and STAMP at the top of the window. */
+    private final WindowBanner banner;
     private final Label createModeHintLabel;
     /** Strip naming the changes not published yet (see {@link #updatePublishState}). */
     private final HBox unpublishedHint;
@@ -186,12 +165,9 @@ public class GenPurposeDetailsController {
         this.viewProperties = session.getViewProperties();
         this.detailsOuterBorderPane = view;
         this.windowControlToolbar = view.getWindowControlToolbar();
-        this.stampViewControl = view.getStampViewControl();
         this.mainContent = view.getMainContent();
         this.propertiesSlideoutTrayPane = view.getPropertiesSlideoutTrayPane();
-        this.windowConceptTitle = view.getWindowConceptTitle();
-        this.windowConceptTitleTooltip = view.getWindowConceptTitleTooltip();
-        this.identifierControl = view.getIdentifierControl();
+        this.banner = new WindowBanner(view, viewProperties);
         this.createModeHintLabel = view.getCreateModeHintLabel();
         this.unpublishedHint = view.getUnpublishedHint();
         this.unpublishedHintLabel = view.getUnpublishedHintLabel();
@@ -252,10 +228,6 @@ public class GenPurposeDetailsController {
         // the chrome (see setupProperties), and the panel starts out closed like the toggle.
         windowControlToolbar.propertiesSelectedProperty()
                 .subscribe(() -> onPropertiesToggleChanged(windowControlToolbar.isPropertiesSelected()));
-
-        // The header STAMP is view-only in this window — clicking it must not select it or open
-        // the STAMP form.
-        stampViewControl.setSelectable(false);
 
         // Ghost-window styling while in create mode: the window frames a component that doesn't
         // exist yet, so the chrome dims and the frame dashes (see :create-mode in kview.css) and
@@ -358,101 +330,6 @@ public class GenPurposeDetailsController {
         } else {
             closePropertiesPanel();
         }
-    }
-
-    /// Show the public ID
-    private void updateDisplayIdentifier(EntityFacade refComponent) {
-        ViewCalculator viewCalculator = getViewProperties().calculator();
-        identifierControl.updatePublicIdList(viewCalculator, refComponent);
-    }
-
-    private void updateStampControl(EntityFacade refConcept) {
-        ObservableEntity observableEntity = ObservableEntityHandle.get(refConcept.nid()).expectEntity();
-        ObservableEntitySnapshot observableEntitySnapshot;
-        try {
-            observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
-        } catch (IllegalStateException e) {
-            // No version of the concept passes the current view coordinate (e.g. a status/path filter that
-            // excludes every version); leave the stamp control as-is rather than throwing out of the
-            // coordinate-change listener chain — which would also abort the supplemental areas' re-render
-            // (ike-issues#666).
-            LOG.debug("No latest version for nid {} under the current view coordinate; skipping stamp update",
-                    refConcept.nid());
-            return;
-        }
-        Latest<EntityVersion> latestEntityVersion = retrieveCommittedLatestVersion(observableEntitySnapshot);
-        latestEntityVersion.ifPresent(latestVersion -> {
-            StampEntity stampEntity = latestEntityVersion.get().stamp();
-
-            // -- status
-            State newStatus = stampEntity.state();
-            String statusMsg = newStatus == null ? "Active" : getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid(((State) newStatus).nid());
-            stampViewControl.setStatus(statusMsg);
-
-            // -- time
-            long newTime = stampEntity.time();
-            stampViewControl.setLastUpdated(DateTimeUtil.format(newTime, DateTimeUtil.DAY_FORMATTER));
-
-            // -- author
-            ConceptFacade authorConcept = stampEntity.author();
-            String authorDescription = ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(authorConcept, getViewProperties());
-            stampViewControl.setAuthor(authorDescription);
-
-            // -- module
-            ConceptFacade newModule = stampEntity.module();
-            String newModuleDescription;
-            if (newModule == null) {
-                newModuleDescription = "";
-            } else {
-                newModuleDescription = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid((newModule).nid());
-            }
-            stampViewControl.setModule(newModuleDescription);
-
-            // -- path
-            ConceptFacade newPath = stampEntity.path();
-            String pathDescr;
-            if (newPath == null) {
-                pathDescr = "";
-            } else {
-                pathDescr = getViewProperties().calculator().getPreferredDescriptionTextWithFallbackOrNid((newPath).nid());
-            }
-            stampViewControl.setPath(pathDescr);
-        });
-    }
-
-    /**
-     * Populates the header STAMP control from the edit coordinate — the author, module and path a
-     * newly created component will be committed with, and the Active status it will be committed
-     * as. Used in create mode, where no committed STAMP exists yet to read those values from.
-     */
-    private void populateStampFromEditCoordinate() {
-        var editCoordinate = getViewProperties().nodeView().editCoordinate();
-
-        stampViewControl.setStatus(getViewProperties().calculator()
-                .getPreferredDescriptionTextWithFallbackOrNid(State.ACTIVE.nid()));
-
-        ConceptFacade author = editCoordinate.getAuthorForChanges();
-        stampViewControl.setAuthor(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(author, getViewProperties()));
-
-        ConceptFacade module = editCoordinate.defaultModuleProperty().get();
-        stampViewControl.setModule(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(module, getViewProperties()));
-
-        ConceptFacade path = editCoordinate.defaultPathProperty().get();
-        stampViewControl.setPath(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(path, getViewProperties()));
-    }
-
-    private void updateWindowTitle(EntityFacade refConcept) {
-        // Follow the view coordinate's description-type preference (FQN vs preferred), like the axiom
-        // badges, so the header tracks the coordinate too (ike-issues#660).
-        String conceptNameStr = getViewProperties().calculator().getDescriptionTextOrNid(refConcept.nid());
-        Image identicon = Identicon.generateIdenticonImage(refConcept.publicId());
-
-        boolean isConcept = EntityHandle.get(refConcept).isConcept();
-        ComponentItem componentItem = new ComponentItem(conceptNameStr, identicon, refConcept.publicId(), isConcept);
-
-        windowConceptTitle.setComponentItem(componentItem);
-
-        windowConceptTitleTooltip.setText(conceptNameStr);
     }
 
     /**
@@ -641,7 +518,7 @@ public class GenPurposeDetailsController {
     }
 
     void closeConceptWindow() {
-        LOG.info("Cleanup occurring: Closing Window: " + windowConceptTitle.getComponentItem());
+        LOG.info("Cleanup occurring: Closing Window: " + session.getComponent());
 
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
@@ -702,7 +579,7 @@ public class GenPurposeDetailsController {
         updateView();
 
         if (session.isCreateMode()) {
-            populateStampFromEditCoordinate();
+            banner.populateStampFromEditCoordinate();
         }
 
         // Sections exist now — show the required-pattern chips (create mode only).
@@ -759,9 +636,7 @@ public class GenPurposeDetailsController {
         LOG.info("Update view called - implement coordinate changes here.");
         EntityFacade refConcept = session.getComponent();
         if (refConcept != null) {
-            updateDisplayIdentifier(refConcept);
-            updateWindowTitle(refConcept);
-            updateStampControl(refConcept);
+            banner.updateComponent(refConcept);
         } else {
             LOG.warn("The window has no component yet, cannot update view.");
         }
