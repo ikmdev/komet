@@ -37,8 +37,10 @@ import java.util.Optional;
  *
  * @param nid      the component's nid
  * @param entity   the component as read when the row was built
- * @param rootNid  the component the change is grouped under: the component itself for a concept
- *                 or a pattern, else the concept or pattern its semantic is ultimately on
+ * @param rootNid  the component the change is listed under: the component itself for a concept
+ *                 or a pattern, else the component its semantic is on, which may be a semantic
+ *                 in turn. A semantic that other listed changes are on heads a group of its
+ *                 own instead ({@link UnpublishedGroup#groupsOf})
  * @param type     what the component is
  * @param kind     what the unpublished version does to it
  * @param title    the component's description text on the journal's view
@@ -125,20 +127,16 @@ public record UnpublishedChange(long nid, Entity<?> entity, long rootNid, Type t
     }
 
     /**
-     * The component a change is grouped under: a concept or pattern itself; for a semantic, the
-     * component it is on, followed through semantics on semantics up to a concept or pattern.
-     * A chain whose next component is absent, or longer than any real nesting, stops where it is.
+     * The component a change is listed under: a concept or pattern itself; for a semantic, the
+     * component it is on, whether a concept, a pattern or another semantic. A semantic whose
+     * component is absent from the store stands on its own.
      */
     static long rootComponentNid(Entity<?> entity) {
-        Entity<?> component = entity;
-        for (int hop = 0; component instanceof SemanticEntity<?> semantic && hop < 32; hop++) {
-            Entity<?> referenced = EntityHandle.get(semantic.referencedComponentNid()).orNull();
-            if (referenced == null) {
-                break;
-            }
-            component = referenced;
+        if (entity instanceof SemanticEntity<?> semantic
+                && EntityHandle.get(semantic.referencedComponentNid()).orNull() != null) {
+            return semantic.referencedComponentNid();
         }
-        return component.nid();
+        return entity.nid();
     }
 
     /**

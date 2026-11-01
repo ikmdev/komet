@@ -100,11 +100,12 @@ import java.util.function.Consumer;
 
 /**
  * The journal sidebar's unpublished-changes tray: every component with a version saved in an
- * open {@link Transaction}, grouped under the concept or pattern it belongs to, with a footer
- * that names the module and path to publish to and publishes (commits) or discards (cancels)
- * them all. A group's or a row's menu publishes or discards just that, or opens the component in
- * its window; a double-click opens the review window ({@link ChangeReviewKlWindow}) on the row's
- * component, which steps through the components in the tray's order.
+ * open {@link Transaction}, grouped under the component it is on (a concept, a pattern, or a
+ * semantic that semantics are on), with a footer that names the module and path to publish to
+ * and publishes (commits) or discards (cancels) them all. A group's or a row's menu publishes or
+ * discards just that, or opens the component in its window; a double-click opens the review
+ * window ({@link ChangeReviewKlWindow}) on the row's component, which steps through the
+ * components in the tray's order.
  * <p>
  * The tree follows the store: it is rebuilt when any entity is written and when any transaction
  * commits, and again each time the tray slides out ({@link #refresh()}).
@@ -514,7 +515,7 @@ public class UnpublishedChangesController {
     private void publishAll() {
         String note = noteTextField.getText() == null ? "" : noteTextField.getText().strip();
         List<Callable<?>> tasks = new ArrayList<>();
-        tasks.add(restampTask(changes));
+        tasks.add(createRestampTask(changes));
         for (Transaction transaction : transactionsHoldingAnyOf(nidsOf(changes))) {
             if (!note.isEmpty()) {
                 transaction.setTransactionName(note);
@@ -603,7 +604,7 @@ public class UnpublishedChangesController {
      * the same write ({@link dev.ikm.tinkar.entity.EntityService#putEntityReplacingVersion}).
      * The commit that follows finalizes the new stamps with the rest.
      */
-    private Callable<Void> restampTask(List<UnpublishedChange> toPublish) {
+    private Callable<Void> createRestampTask(List<UnpublishedChange> toPublish) {
         ConceptEntity module = moduleComboBox.getValue();
         ConceptEntity path = pathComboBox.getValue();
         if (module == null || path == null) {
@@ -654,14 +655,28 @@ public class UnpublishedChangesController {
 
     // ---- One row, one group -------------------------------------------------------------------
 
+    /** The tasks that publish some changes apart from the rest; see {@link #createEndingTasks}. */
+    private List<Callable<?>> createPublishTasks(Collection<UnpublishedChange> selection) {
+        return createEndingTasks(selection, true);
+    }
+
+    /** The tasks that discard some changes apart from the rest; see {@link #createEndingTasks}. */
+    private List<Callable<?>> createDiscardTasks(Collection<UnpublishedChange> selection) {
+        return createEndingTasks(selection, false);
+    }
+
     /**
-     * The tasks that end some changes apart from the rest: their transactions whole when those
-     * hold nothing else listed, else each semantic's or pattern's uncommitted version on its own
-     * ({@link CommitVersionTask}, {@link CancelVersionTask}). A concept's version cannot leave a
-     * shared transaction; that branch throws. It is unreachable today: a window's transaction only
-     * holds versions rooted at the window's component, so a transaction never spans two headings.
+     * Creates the tasks that end some changes apart from the rest: their transactions whole when
+     * those hold nothing else listed, else each uncommitted version on its own
+     * ({@link CommitVersionTask}, {@link CancelVersionTask}), which moves it out of its shared
+     * transaction first. A window's transaction can span two headings: a semantic a window creates
+     * on one of its component's semantics is listed under that semantic, not under the window's
+     * component.
+     *
+     * @param selection the changes to end
+     * @param commit    true to commit (publish) them, false to cancel (discard) them
      */
-    private List<Callable<?>> endingsOf(Collection<UnpublishedChange> selection, boolean publish) {
+    private List<Callable<?>> createEndingTasks(Collection<UnpublishedChange> selection, boolean commit) {
         Set<Long> selected = nidsOf(selection);
         Set<Long> others = nidsOf(changes);
         others.removeAll(selected);
@@ -669,7 +684,7 @@ public class UnpublishedChangesController {
         List<Callable<?>> tasks = new ArrayList<>();
         if (transactions.stream().noneMatch(transaction -> holdsAnyOf(transaction, others))) {
             for (Transaction transaction : transactions) {
-                tasks.add(publish ? new CommitTransactionTask(transaction) : new CancelTransactionTask(transaction));
+                tasks.add(commit ? new CommitTransactionTask(transaction) : new CancelTransactionTask(transaction));
             }
             return tasks;
         }
@@ -680,11 +695,13 @@ public class UnpublishedChangesController {
                     continue;
                 }
                 tasks.add(switch (version) {
+                    case ConceptVersionRecord concept ->
+                            commit ? new CommitVersionTask(concept) : new CancelVersionTask(concept);
                     case SemanticVersionRecord semantic ->
-                            publish ? new CommitVersionTask(semantic) : new CancelVersionTask(semantic);
+                            commit ? new CommitVersionTask(semantic) : new CancelVersionTask(semantic);
                     case PatternVersionRecord pattern ->
-                            publish ? new CommitVersionTask(pattern) : new CancelVersionTask(pattern);
-                    default -> throw new IllegalStateException("A concept's version cannot leave its transaction: " + version);
+                            commit ? new CommitVersionTask(pattern) : new CancelVersionTask(pattern);
+                    default -> throw new IllegalStateException("Not a concept, semantic or pattern version: " + version);
                 });
             }
         }
@@ -693,13 +710,13 @@ public class UnpublishedChangesController {
 
     private void publish(Collection<UnpublishedChange> selection) {
         List<Callable<?>> tasks = new ArrayList<>();
-        tasks.add(restampTask(new ArrayList<>(selection)));
-        tasks.addAll(endingsOf(selection, true));
+        tasks.add(createRestampTask(new ArrayList<>(selection)));
+        tasks.addAll(createPublishTasks(selection));
         runTasks(tasks);
     }
 
     private void discard(Collection<UnpublishedChange> selection) {
-        runTasks(endingsOf(selection, false));
+        runTasks(createDiscardTasks(selection));
     }
 
     private void open(UnpublishedRow row) {

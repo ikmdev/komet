@@ -21,14 +21,17 @@ import dev.ikm.tinkar.entity.EntityHandle;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A component heading in the unpublished-changes tree, with the changes grouped under it: the
- * changes to the semantics on the component. The component's own change, when it has one, is
- * shown on the heading itself (its kind tag), not as a row under it.
+ * changes to the semantics on the component. The component is a concept, a pattern, or a
+ * semantic that semantics are on. The component's own change, when it has one, is shown on
+ * the heading itself (its kind tag), not as a row under it.
  *
  * @param nid       the component's nid
  * @param component the component as read when the group was built; null when it is absent
@@ -59,16 +62,23 @@ public record UnpublishedGroup(long nid, Entity<?> component, UnpublishedChange.
 
     /**
      * Groups changes under the component each is on, groups by title and a group's changes with
-     * the component's own change first, then by title.
+     * the component's own change first, then by title. A changed semantic that other changes are
+     * on heads its own group, where its change is the heading's, rather than being listed under
+     * the component it is on itself: every change is in exactly one group.
      *
      * @param changes    the changes, in any order
      * @param calculator the view the group titles are read on
      * @return the groups
      */
     public static List<UnpublishedGroup> groupsOf(List<UnpublishedChange> changes, ViewCalculator calculator) {
+        Set<Long> headingNids = new HashSet<>();
+        for (UnpublishedChange change : changes) {
+            headingNids.add(change.rootNid());
+        }
         Map<Long, List<UnpublishedChange>> byRoot = new LinkedHashMap<>();
         for (UnpublishedChange change : changes) {
-            byRoot.computeIfAbsent(change.rootNid(), _ -> new ArrayList<>()).add(change);
+            long groupNid = headingNids.contains(change.nid()) ? change.nid() : change.rootNid();
+            byRoot.computeIfAbsent(groupNid, _ -> new ArrayList<>()).add(change);
         }
         List<UnpublishedGroup> groups = new ArrayList<>();
         byRoot.forEach((rootNid, members) -> groups.add(of(rootNid, members, calculator)));
