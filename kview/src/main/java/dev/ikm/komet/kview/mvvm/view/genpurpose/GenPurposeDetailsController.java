@@ -167,7 +167,7 @@ public class GenPurposeDetailsController {
         this.windowControlToolbar = view.getWindowControlToolbar();
         this.mainContent = view.getMainContent();
         this.propertiesSlideoutTrayPane = view.getPropertiesSlideoutTrayPane();
-        this.banner = new WindowBanner(view, viewProperties);
+        this.banner = view.getBanner();
         this.createModeHintLabel = view.getCreateModeHintLabel();
         this.unpublishedHint = view.getUnpublishedHint();
         this.unpublishedHintLabel = view.getUnpublishedHintLabel();
@@ -579,7 +579,7 @@ public class GenPurposeDetailsController {
         updateView();
 
         if (session.isCreateMode()) {
-            banner.populateStampFromEditCoordinate();
+            banner.populateStampFromEditCoordinate(viewProperties);
         }
 
         // Sections exist now — show the required-pattern chips (create mode only).
@@ -636,7 +636,7 @@ public class GenPurposeDetailsController {
         LOG.info("Update view called - implement coordinate changes here.");
         EntityFacade refConcept = session.getComponent();
         if (refConcept != null) {
-            banner.updateComponent(refConcept);
+            banner.updateComponent(viewProperties, refConcept);
         } else {
             LOG.warn("The window has no component yet, cannot update view.");
         }

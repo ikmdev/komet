@@ -36,8 +36,19 @@ import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.State;
+import javafx.geometry.HPos;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.RowConstraints;
+import javafx.scene.layout.StackPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,51 +56,96 @@ import org.slf4j.LoggerFactory;
  * The banner of a general-purpose KL window: the component's title with its identicon, its public
  * identifiers and the STAMP of its latest committed version. Shown for a component on demand —
  * on open, after a coordinate change, after a publish — and, in create mode, with the STAMP a
- * component would be committed with instead.
+ * component would be committed with instead. Owns its layout: the title grid on the left, the
+ * STAMP on the right.
  */
-final class WindowBanner {
+final class WindowBanner extends BorderPane {
 
     private static final Logger LOG = LoggerFactory.getLogger(WindowBanner.class);
 
-    private final ViewProperties viewProperties;
-    private final ComponentItemNode windowConceptTitle;
-    private final Tooltip windowConceptTitleTooltip;
-    private final PublicIDListControl identifierControl;
-    private final StampViewControl stampViewControl;
+    private final PublicIDListControl identifierControl = new PublicIDListControl();
+    // Built bare, off ComponentItemNodeFactory, so the title shows the identicon and name only: no
+    // kind sigil or taxonomic status cluster leading it.
+    private final ComponentItemNode windowConceptTitle = new ComponentItemNode();
+    private final Tooltip windowConceptTitleTooltip = new Tooltip("Empty Tooltip");
+    private final StampViewControl stampViewControl = new StampViewControl();
 
-    /**
-     * @param view           the window view holding the banner's controls
-     * @param viewProperties the view the descriptions in the banner follow
-     */
-    WindowBanner(GenPurposeWindowView view, ViewProperties viewProperties) {
-        this.viewProperties = viewProperties;
-        this.windowConceptTitle = view.getWindowConceptTitle();
-        this.windowConceptTitleTooltip = view.getWindowConceptTitleTooltip();
-        this.identifierControl = view.getIdentifierControl();
-        this.stampViewControl = view.getStampViewControl();
+    WindowBanner() {
+        ColumnConstraints iconColumn = new ColumnConstraints();
+        iconColumn.setHalignment(HPos.LEFT);
+        iconColumn.setMaxWidth(586);
+        iconColumn.setMinWidth(Region.USE_PREF_SIZE);
+        iconColumn.setPrefWidth(42);
+        ColumnConstraints titleColumn = new ColumnConstraints();
+        titleColumn.setHalignment(HPos.LEFT);
+        titleColumn.setMaxWidth(586);
+        titleColumn.setMinWidth(234);
+        titleColumn.setPrefWidth(416);
+        RowConstraints titleRow = new RowConstraints();
+        titleRow.setVgrow(Priority.NEVER);
+        RowConstraints identifierRow = new RowConstraints();
+        identifierRow.setMaxHeight(77);
+        identifierRow.setMinHeight(0);
+        identifierRow.setVgrow(Priority.SOMETIMES);
+
+        identifierControl.setId("identifierControl");
+        identifierControl.getStyleClass().add("concept-definition-title");
+        GridPane.setColumnIndex(identifierControl, 0);
+        GridPane.setColumnSpan(identifierControl, 3);
+        GridPane.setRowIndex(identifierControl, 1);
+        GridPane.setHalignment(identifierControl, HPos.LEFT);
+        GridPane.setValignment(identifierControl, VPos.TOP);
+
+        windowConceptTitle.setId("windowConceptTitle");
+        windowConceptTitle.setMaxHeight(Double.MAX_VALUE);
+        windowConceptTitle.setPrefWidth(416);
+        windowConceptTitle.getStyleClass().add("window-main-title");
+        windowConceptTitle.setWrapText(true);
+        windowConceptTitle.setTooltip(windowConceptTitleTooltip);
+        GridPane.setColumnIndex(windowConceptTitle, 0);
+        GridPane.setColumnSpan(windowConceptTitle, 3);
+
+        GridPane bannerGrid = new GridPane();
+        bannerGrid.setMaxHeight(Double.MAX_VALUE);
+        bannerGrid.setMaxWidth(Double.MAX_VALUE);
+        bannerGrid.setPrefWidth(510);
+        bannerGrid.getStyleClass().addAll("concept-detail-banner-background", "window-banner-grid");
+        bannerGrid.getColumnConstraints().addAll(iconColumn, titleColumn, new ColumnConstraints());
+        bannerGrid.getRowConstraints().addAll(titleRow, identifierRow);
+        bannerGrid.getChildren().addAll(identifierControl, windowConceptTitle);
 
         // The header STAMP is view-only in this window — clicking it must not select it or open
         // the STAMP form.
+        stampViewControl.setId("stampViewControl");
         stampViewControl.setSelectable(false);
+        StackPane stampHolder = new StackPane(stampViewControl);
+        BorderPane.setAlignment(stampHolder, Pos.CENTER);
+        BorderPane.setMargin(stampHolder, new Insets(5, 5, 5, 0));
+
+        setPrefWidth(894);
+        getStyleClass().add("concept-detail-banner-background");
+        BorderPane.setAlignment(this, Pos.CENTER);
+        setCenter(bannerGrid);
+        setRight(stampHolder);
     }
 
     /**
      * Shows the component: its identifiers, its title and the STAMP of its latest committed
-     * version.
+     * version, with the descriptions following the view.
      */
-    void updateComponent(EntityFacade component) {
-        updateDisplayIdentifier(component);
-        updateWindowTitle(component);
-        updateStampControl(component);
+    void updateComponent(ViewProperties viewProperties, EntityFacade component) {
+        updateDisplayIdentifier(viewProperties, component);
+        updateWindowTitle(viewProperties, component);
+        updateStampControl(viewProperties, component);
     }
 
     /// Show the public ID
-    private void updateDisplayIdentifier(EntityFacade refComponent) {
+    private void updateDisplayIdentifier(ViewProperties viewProperties, EntityFacade refComponent) {
         ViewCalculator viewCalculator = viewProperties.calculator();
         identifierControl.updatePublicIdList(viewCalculator, refComponent);
     }
 
-    private void updateStampControl(EntityFacade refConcept) {
+    private void updateStampControl(ViewProperties viewProperties, EntityFacade refConcept) {
         ObservableEntity observableEntity = ObservableEntityHandle.get(refConcept.nid()).expectEntity();
         ObservableEntitySnapshot observableEntitySnapshot;
         try {
@@ -148,7 +204,7 @@ final class WindowBanner {
      * newly created component will be committed with, and the Active status it will be committed
      * as. Used in create mode, where no committed STAMP exists yet to read those values from.
      */
-    void populateStampFromEditCoordinate() {
+    void populateStampFromEditCoordinate(ViewProperties viewProperties) {
         var editCoordinate = viewProperties.nodeView().editCoordinate();
 
         stampViewControl.setStatus(viewProperties.calculator()
@@ -164,7 +220,7 @@ final class WindowBanner {
         stampViewControl.setPath(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(path, viewProperties));
     }
 
-    private void updateWindowTitle(EntityFacade refConcept) {
+    private void updateWindowTitle(ViewProperties viewProperties, EntityFacade refConcept) {
         // Follow the view coordinate's description-type preference (FQN vs preferred), like the axiom
         // badges, so the header tracks the coordinate too (ike-issues#660).
         String conceptNameStr = viewProperties.calculator().getDescriptionTextOrNid(refConcept.nid());
