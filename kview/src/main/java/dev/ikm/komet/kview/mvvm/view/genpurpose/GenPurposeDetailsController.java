@@ -42,7 +42,6 @@ import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl.Tab;
-import dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard.SemanticStandardControl;
 import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.FormMode;
 import dev.ikm.komet.layout.InlineEditSaver;
@@ -83,7 +82,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -115,11 +113,6 @@ public class GenPurposeDetailsController {
      */
     private static final String COLLAPSED_CONTENT_HEIGHT_KEY = "gen-purpose-collapsed-content-height";
 
-    /**
-     * Given a SemanticEntity what's its associated Semantic Control.
-     */
-    private final Map<SemanticEntity<SemanticEntityVersion>, SemanticStandardControl> semanticEntityToSemanticView = new HashMap<>();
-
     /** The definition's sections: what is displayed where, and how each section resolves its component. */
     private final WindowSections windowSections;
     /** The menu a section's pencil button opens. */
@@ -137,11 +130,6 @@ public class GenPurposeDetailsController {
     private final ContentSizedSplitPane mainContent;
     private final BorderPane detailsOuterBorderPane;
     private final KlWindowControlToolbar windowControlToolbar;
-    /**
-     * popup for the filter coordinates menu, used with the toolbar's coordinates menu button.
-     * An instance of FilterOptionsPopup.
-     */
-    private FilterOptionsPopup filterOptionsPopup;
     /**
      * Used slide out the properties view
      */
@@ -249,8 +237,7 @@ public class GenPurposeDetailsController {
     private void wireChrome() {
         // Drive the coordinates menu from the relocated FilterOptionsPopup (ike-issues#661); the popup
         // writes the window's nodeView override, which the window's KL context + areas resolve through.
-        filterOptionsPopup = setupViewCoordinateOptionsPopup(viewProperties,
-                FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW, detailsOuterBorderPane,
+        setupViewCoordinateOptionsPopup(viewProperties, FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW, detailsOuterBorderPane,
                 windowControlToolbar.getCoordinatesMenuButton(), this::updateView);
 
         // Wire the toolbar's behaviour: the close and Publish buttons take actions, while the
@@ -473,9 +460,6 @@ public class GenPurposeDetailsController {
      * TODO Note that this is not a working menu, this is the first step to have propagating, inherited, filter coordinates
      * in the window/node hierarchy.
      */
-    public void setupFilterCoordinatesMenu() {
-//        this.viewMenuModel = new ViewMenuModel(patternViewModel.getViewProperties(), coordinatesMenuButton, "PatternDetailsController");
-    }
 
     /**
      * Creates a transaction and uncommited Semantic.
