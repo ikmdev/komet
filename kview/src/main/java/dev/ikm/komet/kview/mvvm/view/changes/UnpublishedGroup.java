@@ -38,12 +38,15 @@ import java.util.Set;
  * @param type      what the component is
  * @param kind      what the component's own unpublished version does to it; null when the
  *                  component itself is published and only semantics on it changed
- * @param title     the component's description text on the journal's view
+ * @param title     the component's description text on the journal's view; for a component
+ *                  without one, what it is instead
+ * @param untitled  true when the component has no text of its own and the title says what it is
+ *                  instead ({@link UnpublishedChange#untitled()}); the heading shows it muted
  * @param changes   every change the heading stands for, the component's own first, then the
  *                  semantics' by title; the group actions act on all of them
  */
 public record UnpublishedGroup(long nid, Entity<?> component, UnpublishedChange.Type type,
-                               UnpublishedChange.Kind kind, String title,
+                               UnpublishedChange.Kind kind, String title, boolean untitled,
                                List<UnpublishedChange> changes) implements UnpublishedRow {
 
     /**
@@ -94,9 +97,9 @@ public record UnpublishedGroup(long nid, Entity<?> component, UnpublishedChange.
         ordered.sort(Comparator
                 .comparing((UnpublishedChange change) -> change.nid() != rootNid)
                 .thenComparing(UnpublishedChange::title, String.CASE_INSENSITIVE_ORDER));
-        String title = own != null
-                ? own.title()
-                : UnpublishedChange.text(rootNid, "Unnamed " + type.label().toLowerCase(), calculator);
-        return new UnpublishedGroup(rootNid, component, type, own == null ? null : own.kind(), title, List.copyOf(ordered));
+        String text = own != null ? own.title() : UnpublishedChange.text(rootNid, null, calculator);
+        boolean untitled = own != null ? own.untitled() : text == null;
+        String title = text == null ? type.label() : text;
+        return new UnpublishedGroup(rootNid, component, type, own == null ? null : own.kind(), title, untitled, List.copyOf(ordered));
     }
 }

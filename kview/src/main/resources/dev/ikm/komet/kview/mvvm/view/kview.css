@@ -8355,6 +8355,7 @@ Styling a context menu for kview ui/ux controls
     -uc-text: #1F2937;
     -uc-text-muted: #6B7280;
     -uc-text-faint: #9CA3AF;
+    -uc-text-pattern: #4B5563; /* a row's pattern name: under a title, or alone as the title */
     -uc-line: #E5E7EB;
     -uc-surface: #FFFFFF;
     -uc-surface-tint: #F3F4F6;
@@ -8561,9 +8562,19 @@ Styling a context menu for kview ui/ux controls
     -fx-text-overrun: ellipsis;
 }
 
+/* A component with no text of its own (a membership semantic, a concept not yet named): its one
+   line says what it is, in the subtitle's colour, so the two read as the same kind of text. */
+.unpublished-row .change-title.untitled {
+    -fx-text-fill: -uc-text-pattern;
+}
+
+.tree-cell:change-row .unpublished-row .change-text {
+    -fx-min-height: 34; /* a 13px title over an 11px subtitle, 1px apart */
+}
+
 .unpublished-row .change-subtitle {
     -fx-font-size: 0.916667em; /* 11px */
-    -fx-text-fill: -uc-text-muted;
+    -fx-text-fill: -uc-text-pattern;
     -fx-text-overrun: ellipsis;
 }
 
@@ -8819,6 +8830,7 @@ Styling a context menu for kview ui/ux controls
 .change-review-window {
     -uc-text: #1F2937;
     -uc-text-muted: #6B7280;
+    -uc-text-pattern: #4B5563;
     -uc-text-faint: #9CA3AF;
     -uc-line: #E5E7EB;
     -uc-surface: #FFFFFF;

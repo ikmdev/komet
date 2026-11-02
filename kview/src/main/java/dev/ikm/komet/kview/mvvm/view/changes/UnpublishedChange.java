@@ -43,11 +43,21 @@ import java.util.Optional;
  *                 own instead ({@link UnpublishedGroup#groupsOf})
  * @param type     what the component is
  * @param kind     what the unpublished version does to it
- * @param title    the component's description text on the journal's view
- * @param subtitle what it is, and for a semantic, which pattern it is an instance of
+ * @param title    the component's description text on the journal's view; for a component
+ *                 without one, what it is instead (see {@code subtitle})
+ * @param subtitle what it is, and for a semantic, which pattern it is an instance of; null when
+ *                 that is already the title, because the component has no text of its own. A
+ *                 membership semantic never has text; a concept just created in a window has
+ *                 none until its first name is submitted. Such a row shows the one line, muted,
+ *                 rather than a placeholder name that draws the eye without telling anything
  */
 public record UnpublishedChange(long nid, Entity<?> entity, long rootNid, Type type, Kind kind,
                                 String title, String subtitle) implements UnpublishedRow {
+
+    /** True when the component has no text of its own and the title says what it is instead. */
+    public boolean untitled() {
+        return subtitle == null;
+    }
 
     /** What the changed component is. */
     public enum Type {
@@ -118,11 +128,13 @@ public record UnpublishedChange(long nid, Entity<?> entity, long rootNid, Type t
             case SemanticEntity<?> _ -> Type.SEMANTIC;
             default -> throw new IllegalArgumentException("Not a concept, pattern or semantic: " + entity);
         };
-        String title = text(entity.nid(), "Unnamed " + type.label().toLowerCase(), calculator);
-        String subtitle = switch (entity) {
+        String text = text(entity.nid(), null, calculator);
+        String what = switch (entity) {
             case SemanticEntity<?> semantic -> text(semantic.patternNid(), "Semantic", calculator);
             default -> type.label();
         };
+        String title = text == null ? what : text;
+        String subtitle = text == null ? null : what;
         return new UnpublishedChange(entity.nid(), entity, rootComponentNid(entity), type, kindOf(entity), title, subtitle);
     }
 
@@ -140,8 +152,9 @@ public record UnpublishedChange(long nid, Entity<?> entity, long rootNid, Type t
     }
 
     /**
-     * A component's description text on the view, or the fallback while it has none: a concept
-     * just created in a window has no description until its first name is submitted.
+     * A component's description text on the view, or the fallback (which may be null) while it
+     * has none: a concept just created in a window has no description until its first name is
+     * submitted.
      * <p>
      * The descriptions are read from the store each time rather than through the calculator's
      * cache: that cache remembers a component's descriptions by the component's nid and is

@@ -255,6 +255,10 @@ final class ChangeReviewPane extends BorderPane {
         typeGlyph.setText(group.type().glyph());
         restyle(typeGlyph, "type-glyph", group.type().name().toLowerCase());
         titleLabel.setText(group.title());
+        titleLabel.getStyleClass().remove("untitled");
+        if (group.untitled()) {
+            titleLabel.getStyleClass().add("untitled");
+        }
         subtitleLabel.setText(group.type().label() + " · " + plural(group.changes().size(), "change")
                 + (page.author().isBlank() ? "" : " · by " + page.author()));
         kindTag.setText(kind.label());
@@ -314,9 +318,15 @@ final class ChangeReviewPane extends BorderPane {
         glyph.getStyleClass().addAll("type-glyph", change.type().name().toLowerCase());
         Label title = new Label(change.title());
         title.getStyleClass().add("change-title");
-        Label subtitle = new Label(change.subtitle());
-        subtitle.getStyleClass().add("change-subtitle");
-        VBox text = new VBox(title, subtitle);
+        VBox text = new VBox(title);
+        if (change.untitled()) {
+            // The title already says what the semantic is, muted; nothing goes under it.
+            title.getStyleClass().add("untitled");
+        } else {
+            Label subtitle = new Label(change.subtitle());
+            subtitle.getStyleClass().add("change-subtitle");
+            text.getChildren().add(subtitle);
+        }
         text.getStyleClass().add("change-text");
         text.setMinWidth(0);
         HBox.setHgrow(text, Priority.ALWAYS);

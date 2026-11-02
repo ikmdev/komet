@@ -59,6 +59,7 @@ import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.geometry.Side;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -811,6 +812,8 @@ public class UnpublishedChangesController {
 
             VBox text = new VBox(title, subtitle);
             text.getStyleClass().add("change-text");
+            // An untitled change has the one line, centred in the height its two-line neighbours take.
+            text.setAlignment(Pos.CENTER_LEFT);
             HBox.setHgrow(text, Priority.ALWAYS);
             // Only the text gives way when the row is narrow; the chips keep their full width.
             text.setMinWidth(0);
@@ -861,7 +864,7 @@ public class UnpublishedChangesController {
             switch (item) {
                 case UnpublishedGroup group -> {
                     showType(group.type());
-                    title.setText(group.title());
+                    updateTitle(group.title(), group.untitled());
                     subtitle.setVisible(false);
                     subtitle.setManaged(false);
                     showTag(group.headingKind().label(), group.headingKind().name().toLowerCase());
@@ -875,10 +878,10 @@ public class UnpublishedChangesController {
                 }
                 case UnpublishedChange change -> {
                     showType(change.type());
-                    title.setText(change.title());
+                    updateTitle(change.title(), change.untitled());
                     subtitle.setText(change.subtitle());
-                    subtitle.setVisible(true);
-                    subtitle.setManaged(true);
+                    subtitle.setVisible(!change.untitled());
+                    subtitle.setManaged(!change.untitled());
                     showTag(change.kind().label(), change.kind().name().toLowerCase());
                     count.setVisible(false);
                     count.setManaged(false);
@@ -889,6 +892,15 @@ public class UnpublishedChangesController {
             publishItem.setDisable(busy.get());
             discardItem.setDisable(busy.get());
             setGraphic(row);
+        }
+
+        /** The title, muted when it only says what the component is because it has no text. */
+        private void updateTitle(String text, boolean untitled) {
+            title.setText(text);
+            title.getStyleClass().remove("untitled");
+            if (untitled) {
+                title.getStyleClass().add("untitled");
+            }
         }
 
         private void showType(UnpublishedChange.Type type) {
