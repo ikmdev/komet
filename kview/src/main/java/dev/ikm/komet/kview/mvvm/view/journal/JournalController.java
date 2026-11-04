@@ -1588,6 +1588,8 @@ public class JournalController {
             throw new UncheckedIOException("The unpublished-changes tray FXML failed to load", e);
         }
         unpublishedChangesController = loader.getController();
+        // The tray is outside the workspace, so its chips get the journal's chip menu here.
+        KonceptBadge.contributeMenuItems(unpublishedChangesPanel, this::componentMenuItems);
 
         unpublishedChangesBadge.textProperty().bind(unpublishedChangesController.changeCountProperty().asString());
         unpublishedChangesBadge.visibleProperty().bind(unpublishedChangesController.changeCountProperty().greaterThan(0));

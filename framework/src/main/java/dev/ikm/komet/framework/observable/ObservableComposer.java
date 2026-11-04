@@ -615,12 +615,21 @@ public final class ObservableComposer {
                 .call(() -> PrimitiveData.nid(publicId));
 
         ObservableEntityHandle entityHandle = ObservableEntityHandle.get(publicId);
-        if (entityHandle.isAbsent()) {
+        if (hasNoVersions(entityHandle)) {
             return createConceptBuilder().publicId(publicId);
         }
         ObservableConcept concept = entityHandle.asConcept()
                 .orElseThrow(() -> new IllegalArgumentException("PublicId does not correspond to a concept"));
         return editConcept(concept);
+    }
+
+    /**
+     * Whether there is nothing of the component to edit: it is absent, or its only versions were
+     * rolled back, which leaves the record with none. Either way it is written new, so a write that
+     * failed can be made again under the same identity.
+     */
+    private static boolean hasNoVersions(ObservableEntityHandle handle) {
+        return handle.asEntity().map(entity -> entity.versions().isEmpty()).orElse(true);
     }
 
     /**
@@ -656,7 +665,7 @@ public final class ObservableComposer {
                     .call(() -> PrimitiveData.nid(publicId));
 
         ObservableEntityHandle entityHandle = ObservableEntityHandle.get(publicId);
-        if (entityHandle.isAbsent()) {
+        if (hasNoVersions(entityHandle)) {
             return createSemanticBuilder(referencedComponent, pattern).publicId(publicId);
         }
         ObservableSemantic semantic = entityHandle.asSemantic()
@@ -688,6 +697,37 @@ public final class ObservableComposer {
             case ObservableSemanticEditor editor -> new ObservableSemanticEditor(this, editor.semantic, state);
             case ObservableSemanticBuilder builder -> {
                 builder.state(state);
+                yield builder;
+            }
+            default -> throw new IllegalStateException("Unexpected semantic composer: " + composer);
+        };
+    }
+
+    /**
+     * Creates a unified composer for a semantic entity by PublicId, its version saved in the given
+     * module rather than this composer's, in the same transaction, so one commit publishes both
+     * modules' work: a concept written in its own module with a new version of a semantic that
+     * stays in the semantic's, say. The transaction keeps a stamp for each module
+     * ({@link Transaction#getStamp}). Pending work on the entity is continued under the given
+     * module ({@link #joinPendingWork()}).
+     *
+     * @param publicId            the PublicId of the semantic; if an entity with this ID exists, it
+     *                            will be edited, otherwise a new entity with this ID will be created
+     * @param referencedComponent the component this semantic references (required if creating new)
+     * @param pattern             the pattern defining the semantic's structure (required if creating new)
+     * @param module              the module its version is saved in
+     * @return a unified semantic composer
+     * @throws IllegalArgumentException if the PublicId exists but does not correspond to a semantic
+     */
+    public EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> composeSemanticInModule(
+            PublicId publicId, EntityFacade referencedComponent, PatternFacade pattern, EntityFacade module) {
+        Objects.requireNonNull(module, "module cannot be null");
+        EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> composer =
+                composeSemantic(publicId, referencedComponent, pattern);
+        return switch (composer) {
+            case ObservableSemanticEditor editor -> new ObservableSemanticEditor(this, editor.semantic, defaultState, module.nid());
+            case ObservableSemanticBuilder builder -> {
+                builder.module = module.nid();
                 yield builder;
             }
             default -> throw new IllegalStateException("Unexpected semantic composer: " + composer);
@@ -1058,17 +1098,24 @@ public final class ObservableComposer {
      * Creates or retrieves an observable stamp for the current author/module/path/state.
      */
     ObservableStamp createStamp(State state, Entity<?> entity) {
+        return createStamp(state, getModuleNid(), entity);
+    }
+
+    /**
+     * Creates or retrieves an observable stamp for the current author/path/state in the given module.
+     */
+    ObservableStamp createStamp(State state, long module, Entity<?> entity) {
         if (entity != null) {
             if (joinsPendingWork) {
-                continuePendingWork(entity);
+                continuePendingWork(module, entity);
             } else {
-                adoptRebuiltTransaction(state, entity);
+                adoptRebuiltTransaction(state, module, entity);
             }
         }
         StampEntity stampEntity = transaction.getStampForEntities(
             state,
             getAuthorNid(),
-            getModuleNid(),
+            module,
             getPathNid(),
             entity  // Pass the entity to ensure canonical stamp
         );
@@ -1085,13 +1132,14 @@ public final class ObservableComposer {
      * window reopened after a restart publishes or discards its earlier work.
      *
      * @param state  the state of the stamp about to be made
+     * @param module the module of the stamp about to be made
      * @param entity the existing component about to be edited
      */
-    private void adoptRebuiltTransaction(State state, Entity<?> entity) {
+    private void adoptRebuiltTransaction(State state, long module, Entity<?> entity) {
         if (transaction != null && transaction.stampsInTransactionCount() > 0) {
             return;
         }
-        Transaction.rebuiltOwnerOfPendingVersion(entity.nid(), state, authorNid, moduleNid, pathNid).ifPresent(rebuilt -> {
+        Transaction.rebuiltOwnerOfPendingVersion(entity.nid(), state, authorNid, module, pathNid).ifPresent(rebuilt -> {
             if (transaction != null && transaction != rebuilt) {
                 transaction.cancel();       // empty: it had written nothing
             }
@@ -1107,11 +1155,12 @@ public final class ObservableComposer {
      * over; with work of its own, the composer moves that work into it, unless both hold a
      * pending version of one component, which leaves both as they are.
      *
+     * @param module the module of the edit about to be made
      * @param entity the existing component about to be edited
      */
-    private void continuePendingWork(Entity<?> entity) {
+    private void continuePendingWork(long module, Entity<?> entity) {
         followContinuation();
-        Transaction owner = Transaction.pendingOwnerOf(entity.nid(), authorNid, moduleNid, pathNid, transaction)
+        Transaction owner = Transaction.pendingOwnerOf(entity.nid(), authorNid, module, pathNid, transaction)
                 .orElse(null);
         if (owner == null) {
             return;
@@ -1608,6 +1657,8 @@ public final class ObservableComposer {
         private ObservableSemantic observableSemantic;
         private SemanticRecord semanticRecord;
         private ObservableStamp stampEntity;
+        /** The module its version is saved in: the composer's, unless composed with another. */
+        private long module = ObservableComposer.this.moduleNid;
 
         private ObservableSemanticBuilder(ObservableComposer composer, long referencedComponentNid, long patternNid) {
             super(composer);
@@ -1633,7 +1684,7 @@ public final class ObservableComposer {
                 }
 
                 // Create the stamp first
-                stampEntity = composer.createStamp(state != null ? state : composer.getDefaultState(), null);
+                stampEntity = composer.createStamp(state != null ? state : composer.getDefaultState(), module, null);
 
                 // Prepare versions list (in-memory)
                 RecordListBuilder<SemanticVersionRecord> versions = RecordListBuilder.make();
@@ -2114,12 +2165,19 @@ public final class ObservableComposer {
         private final ObservableSemantic semantic;
         /** The state its version is saved in: the composer's default, unless composed with another. */
         private final State state;
+        /** The module its version is saved in: the composer's, unless composed with another. */
+        private final long module;
         private ObservableSemanticVersion.Editable editableVersion;
 
         private ObservableSemanticEditor(ObservableComposer composer, ObservableSemantic semantic, State state) {
+            this(composer, semantic, state, composer.getModuleNid());
+        }
+
+        private ObservableSemanticEditor(ObservableComposer composer, ObservableSemantic semantic, State state, long module) {
             this.composer = composer;
             this.semantic = semantic;
             this.state = state;
+            this.module = module;
         }
 
         /**
@@ -2127,7 +2185,7 @@ public final class ObservableComposer {
          */
         public ObservableSemanticVersion.Editable getEditableVersion() {
             if (editableVersion == null) {
-                ObservableStamp stamp = composer.createStamp(state, semantic.entity());
+                ObservableStamp stamp = composer.createStamp(state, module, semantic.entity());
 
 //                ObservableStamp stamp;
 //                if (semantic.uncommitted() && semantic.versions().size() == 1) {

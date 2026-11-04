@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.changes;
 
+import dev.ikm.komet.framework.controls.KonceptBadge;
 import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.komet.framework.view.ObservableEditCoordinate;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -101,10 +102,12 @@ import java.util.function.Consumer;
 
 /**
  * The journal sidebar's unpublished-changes tray: every component with a version saved in an
- * open {@link Transaction}, grouped under the component it is on (a concept, a pattern, or a
- * semantic that semantics are on), with a footer that names the module and path to publish to
- * and publishes (commits) or discards (cancels) them all. A group's or a row's menu publishes or
- * discards just that, or opens the component in its window; a double-click opens the review
+ * open {@link Transaction}, grouped under the component it is on (a concept or a pattern), and
+ * nested under the listed change it is on in turn (a dialect under its description), with a
+ * footer that names the module and path to publish to and publishes (commits) or discards
+ * (cancels) them all. Every row leads with the component's {@link KonceptBadge}: its identicon
+ * tells two components of the same name apart. A group's or a row's menu publishes or discards
+ * just that, or opens the component in its window; a double-click on a row opens the review
  * window ({@link ChangeReviewKlWindow}) on the row's component, which steps through the
  * components in the tray's order.
  * <p>
@@ -176,6 +179,12 @@ public class UnpublishedChangesController {
 
     /** Groups the user unfolded; a rebuilt tree unfolds them again. Groups start folded. */
     private final Set<Long> expandedGroups = new HashSet<>();
+
+    /**
+     * Rows under a heading the user folded; a rebuilt tree folds them again. They start
+     * unfolded, so an unfolded group shows everything on its component at once.
+     */
+    private final Set<Long> foldedRows = new HashSet<>();
 
     private final TreeItem<UnpublishedRow> treeRoot = new TreeItem<>();
 
@@ -369,8 +378,8 @@ public class UnpublishedChangesController {
                     return false;
                 }
             };
-            for (UnpublishedChange change : group.semanticChanges()) {
-                item.getChildren().add(new TreeItem<>(change));
+            for (UnpublishedChange row : group.rows()) {
+                item.getChildren().add(itemOf(row));
             }
             item.setExpanded(expandedGroups.contains(group.nid()));
             item.expandedProperty().subscribe(expanded -> {
@@ -388,6 +397,25 @@ public class UnpublishedChangesController {
         followReview();
     }
 
+    /** A row's tree item, with the changes nested under it; one with children remembers its fold. */
+    private TreeItem<UnpublishedRow> itemOf(UnpublishedChange row) {
+        TreeItem<UnpublishedRow> item = new TreeItem<>(row);
+        for (UnpublishedChange child : row.children()) {
+            item.getChildren().add(itemOf(child));
+        }
+        if (!row.children().isEmpty()) {
+            item.setExpanded(!foldedRows.contains(row.nid()));
+            item.expandedProperty().subscribe(expanded -> {
+                if (expanded) {
+                    foldedRows.remove(row.nid());
+                } else {
+                    foldedRows.add(row.nid());
+                }
+            });
+        }
+        return item;
+    }
+
     // ---- Review window ------------------------------------------------------------------------
 
     /**
@@ -395,11 +423,10 @@ public class UnpublishedChangesController {
      * group a change is under.
      */
     private void review(UnpublishedRow row) {
-        long nid = switch (row) {
-            case UnpublishedGroup group -> group.nid();
-            case UnpublishedChange change -> change.rootNid();
+        int index = switch (row) {
+            case UnpublishedGroup group -> indexOfGroup(group.nid());
+            case UnpublishedChange change -> indexOfGroupContaining(change.nid());
         };
-        int index = indexOfGroup(nid);
         if (index < 0) {
             return;
         }
@@ -453,6 +480,18 @@ public class UnpublishedChangesController {
         for (int i = 0; i < groups.size(); i++) {
             if (groups.get(i).nid() == nid) {
                 return i;
+            }
+        }
+        return -1;
+    }
+
+    /** The group listing the change with the nid, at any depth under its heading. */
+    private int indexOfGroupContaining(long nid) {
+        for (int i = 0; i < groups.size(); i++) {
+            for (UnpublishedChange change : groups.get(i).changes()) {
+                if (change.nid() == nid) {
+                    return i;
+                }
             }
         }
         return -1;
@@ -756,11 +795,13 @@ public class UnpublishedChangesController {
      **************************************************************************/
 
     /**
-     * A tree row. A group: type badge, the component's title, its kind tag (Edited when only
-     * semantics on it changed),
-     * the count of semantic changes under it (none for a component changed on its own), and the
-     * menu. A change: a smaller badge, title over the
-     * pattern name, the kind tag, and the menu.
+     * A tree row. A group: the component's badge, its kind tag (Edited when only semantics on
+     * it changed), the count of semantic changes under it (none for a component changed on its
+     * own), and the menu. A change: the badge over what the component is, the kind tag, and the
+     * menu. The badge is a {@link KonceptBadge} named by the row's title: identicon, kind sigil
+     * and name, so two components of one name are told apart by their identicons, and the row
+     * drags, copies and pops out like a badge anywhere else. Every row keeps the fold gutter so
+     * the badges of one level line up; a row with something under it shows the arrow.
      */
     private final class UnpublishedRowCell extends TreeCell<UnpublishedRow> {
 
@@ -772,8 +813,10 @@ public class UnpublishedChangesController {
          * to hit. Its size comes from the stylesheet.
          */
         private final StackPane caretHitArea = new StackPane(caret);
-        private final Label typeGlyph = new Label();
-        private final Label title = new Label();
+        /** The badge over the subtitle; the badge is rebuilt when the row's component changes. */
+        private final VBox text = new VBox();
+        private KonceptBadge badge;
+        private long badgeNid = Long.MIN_VALUE;
         private final Label subtitle = new Label();
         private final Label kindTag = new Label();
         private final Label count = new Label();
@@ -804,24 +847,22 @@ public class UnpublishedChangesController {
                     event.consume();
                 }
             });
-            typeGlyph.getStyleClass().add("type-glyph");
-            title.getStyleClass().add("change-title");
             subtitle.getStyleClass().add("change-subtitle");
             kindTag.getStyleClass().add("kind-tag");
             count.getStyleClass().add("group-count");
 
-            VBox text = new VBox(title, subtitle);
             text.getStyleClass().add("change-text");
             // An untitled change has the one line, centred in the height its two-line neighbours take.
             text.setAlignment(Pos.CENTER_LEFT);
+            // The badge is a pill: it takes its own width, up to the column's, rather than being
+            // stretched across the row; past the column's width its name ellipsizes.
+            text.setFillWidth(false);
             HBox.setHgrow(text, Priority.ALWAYS);
             // Only the text gives way when the row is narrow; the chips keep their full width.
             text.setMinWidth(0);
-            for (Region fixed : List.of(caretHitArea, typeGlyph, kindTag, count, menuButton)) {
+            for (Region fixed : List.of(caretHitArea, kindTag, count, menuButton)) {
                 fixed.setMinWidth(Region.USE_PREF_SIZE);
             }
-            title.setMinWidth(0);
-            title.setMaxWidth(Double.MAX_VALUE);
             subtitle.setMinWidth(0);
             subtitle.setMaxWidth(Double.MAX_VALUE);
 
@@ -838,7 +879,7 @@ public class UnpublishedChangesController {
             publishItem.setOnAction(_ -> publish(changesOf(getItem())));
             discardItem.setOnAction(_ -> discard(changesOf(getItem())));
 
-            row.getChildren().addAll(caretHitArea, typeGlyph, text, kindTag, count, menuButton);
+            row.getChildren().addAll(caretHitArea, text, kindTag, count, menuButton);
             row.setOnMouseClicked(event -> {
                 if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && getItem() != null) {
                     review(getItem());
@@ -856,15 +897,16 @@ public class UnpublishedChangesController {
                 setGraphic(null);
                 return;
             }
-            // Every heading keeps the gutter so the badges line up; only one with something to fold
-            // shows the arrow and takes clicks there.
-            boolean folds = item instanceof UnpublishedGroup group && !group.semanticChanges().isEmpty();
-            caretHitArea.setManaged(item instanceof UnpublishedGroup);
+            // Every row keeps the gutter so the badges of a level line up; only one with something
+            // to fold shows the arrow and takes clicks there.
+            boolean folds = switch (item) {
+                case UnpublishedGroup group -> !group.rows().isEmpty();
+                case UnpublishedChange change -> !change.children().isEmpty();
+            };
             caretHitArea.setVisible(folds);
             switch (item) {
                 case UnpublishedGroup group -> {
-                    showType(group.type());
-                    updateTitle(group.title(), group.untitled());
+                    showBadge(group.nid(), group.title(), group.untitled());
                     subtitle.setVisible(false);
                     subtitle.setManaged(false);
                     showTag(group.headingKind().label(), group.headingKind().name().toLowerCase());
@@ -877,11 +919,16 @@ public class UnpublishedChangesController {
                     discardItem.setText("Discard this component");
                 }
                 case UnpublishedChange change -> {
-                    showType(change.type());
-                    updateTitle(change.title(), change.untitled());
+                    showBadge(change.nid(), change.title(), change.untitled());
                     subtitle.setText(change.subtitle());
-                    subtitle.setVisible(!change.untitled());
-                    subtitle.setManaged(!change.untitled());
+                    subtitle.setVisible(change.showsSubtitle());
+                    subtitle.setManaged(change.showsSubtitle());
+                    // A subtitle dropped as a repeat takes its height with it; an untitled change
+                    // keeps its two-line neighbours' height, centred.
+                    text.getStyleClass().remove("one-line");
+                    if (!change.untitled() && !change.showsSubtitle()) {
+                        text.getStyleClass().add("one-line");
+                    }
                     showTag(change.kind().label(), change.kind().name().toLowerCase());
                     count.setVisible(false);
                     count.setManaged(false);
@@ -894,19 +941,31 @@ public class UnpublishedChangesController {
             setGraphic(row);
         }
 
-        /** The title, muted when it only says what the component is because it has no text. */
-        private void updateTitle(String text, boolean untitled) {
-            title.setText(text);
-            title.getStyleClass().remove("untitled");
-            if (untitled) {
-                title.getStyleClass().add("untitled");
+        /**
+         * The component's badge, named by the row's title rather than the view's name for it: the
+         * title is read from the store each refresh, so a concept named since the view first saw
+         * it is named here too ({@link UnpublishedChange#text}), and a dialect says its
+         * acceptability rather than its nid. The name is muted when it only says what the
+         * component is because it has no text. The badge is kept while the cell shows the same
+         * component, since building one resolves the component's kind and status on the view.
+         */
+        private void showBadge(long nid, String title, boolean untitled) {
+            if (badge == null || badgeNid != nid) {
+                badge = new KonceptBadge(nid, viewProperties);
+                // The row already opens its component: the menu's Open, and the chip's Peek.
+                badge.setDefinitionPopoutVisible(false);
+                badgeNid = nid;
+                if (text.getChildren().isEmpty()) {
+                    text.getChildren().addAll(badge, subtitle);
+                } else {
+                    text.getChildren().set(0, badge);
+                }
             }
-        }
-
-        private void showType(UnpublishedChange.Type type) {
-            typeGlyph.setText(type.glyph());
-            typeGlyph.getStyleClass().removeIf(styleClass -> !styleClass.equals("type-glyph"));
-            typeGlyph.getStyleClass().add(type.name().toLowerCase());
+            badge.setConceptName(title);
+            badge.getStyleClass().remove("untitled");
+            if (untitled) {
+                badge.getStyleClass().add("untitled");
+            }
         }
 
         private void showTag(String text, String styleClass) {

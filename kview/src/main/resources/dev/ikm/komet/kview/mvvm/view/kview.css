@@ -8510,8 +8510,17 @@ Styling a context menu for kview ui/ux controls
     -fx-alignment: center-left;
 }
 
+/* A row under a heading keeps the same gutter (its own fold arrow, when it has rows under it),
+   so the badges of one level line up; the tree's indent steps each level in. */
 .tree-cell:change-row .unpublished-row {
-    -fx-padding: 7 8 7 4;
+    -fx-padding: 7 8 7 0;
+}
+
+/* The row leads with the component's badge (komet.css dresses the chip itself). A component with
+   no text of its own (a membership semantic, a concept not yet named) is named by what it is, in
+   the subtitle's colour, so the two read as the same kind of text. The name is a Text node. */
+.unpublished-row .koncept-chip.untitled .koncept-label {
+    -fx-fill: -uc-text-pattern;
 }
 
 .unpublished-row .type-glyph {
@@ -8570,6 +8579,11 @@ Styling a context menu for kview ui/ux controls
 
 .tree-cell:change-row .unpublished-row .change-text {
     -fx-min-height: 34; /* a 13px title over an 11px subtitle, 1px apart */
+}
+
+/* A dialect under its description: its subtitle would repeat the row above, so it has one line. */
+.tree-cell:change-row .unpublished-row .change-text.one-line {
+    -fx-min-height: 0;
 }
 
 .unpublished-row .change-subtitle {

@@ -209,7 +209,8 @@ public class ComponentItemNode extends Region {
             // cluster keeps the bundled glyph face (ike-issues#953). Never request bold here:
             // the face ships only a Regular weight, and asking for bold sends font resolution
             // outside the family — the OS fallback that draws the ⋎ fork upside-down.
-            String statusStyle = (glyphFamily != null
+            // A letter keeps the text face: the bundled face holds the logic symbols.
+            String statusStyle = (glyphFamily != null && !status.isLetter()
                     ? "-fx-font-family: '" + glyphFamily + "'; "
                     : "")
                     + "-fx-font-size: " + statusSize + "px;";

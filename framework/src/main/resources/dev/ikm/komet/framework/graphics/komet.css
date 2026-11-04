@@ -1441,6 +1441,14 @@ nested under another sized rule is relative to that one instead.
     -fx-fill: #8a6d00;
 }
 
+/* A concept with no stated definition: a letter, set as a kind sigil is, not a logic symbol. The
+   colour MIRRORS KonceptStatus.UNDEFINED_COLOR_HEX. */
+.koncept-status.koncept-undefined {
+    -fx-font-family: "System";
+    -fx-font-weight: bold;
+    -fx-fill: #2a5a8a;
+}
+
 /* Component-kind sigil (ike-issues#638): the leading D/S/P/? letter glyph. Its colour is the
    kind's own colour, applied inline from ComponentKind (data, for cross-medium parity), not here. */
 .koncept-sigil {

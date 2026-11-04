@@ -43,8 +43,17 @@ import dev.ikm.komet.framework.StyleClasses;
  */
 public enum KonceptStatus {
 
-    /** No classification glyph is shown (e.g. role values, or a concept with no logical definition). */
+    /** No mark applies: a role value, a component that is not a concept, or a status hidden by the settings. */
     NONE(network.ike.docs.konceptcore.KonceptStatus.NONE, null, false),
+
+    /**
+     * A concept with no stated definition. It has no copula to lead with, so it leads with a
+     * {@value #UNDEFINED_GLYPH} instead of standing bare: a bare badge would read as nothing
+     * known about the concept, when what is known is that it was never defined. koncept-core
+     * has no such status yet, so the glyph and colour are held here, and generated media still
+     * draw these concepts bare.
+     */
+    UNDEFINED(network.ike.docs.konceptcore.KonceptStatus.NONE, StyleClasses.KONCEPT_UNDEFINED, false),
 
     /** A navigation root — a concept with no parents. */
     ROOT(network.ike.docs.konceptcore.KonceptStatus.ROOT, StyleClasses.KONCEPT_ROOT, false),
@@ -71,6 +80,12 @@ public enum KonceptStatus {
     public static final String MULTI_PARENT_GLYPH =
             network.ike.docs.konceptcore.KonceptStatus.MULTI_PARENT_GLYPH;
 
+    /** The letter a concept with no stated definition leads with. */
+    public static final String UNDEFINED_GLYPH = "C";
+
+    /** The colour of {@link #UNDEFINED_GLYPH}, as a web hex string: the badge's name colour. */
+    public static final String UNDEFINED_COLOR_HEX = "#2a5a8a";
+
     private final network.ike.docs.konceptcore.KonceptStatus core;
     private final StyleClasses styleClass;
     private final boolean multiParent;
@@ -95,11 +110,30 @@ public enum KonceptStatus {
     /**
      * The classification glyph this status displays.
      *
-     * @return the glyph string ({@code ≡} defined, {@code ⊑} primitive, {@code ⊤} root), or
-     *         {@code null} for {@link #NONE}
+     * @return the glyph string ({@code ≡} defined, {@code ⊑} primitive, {@code ⊤} root,
+     *         {@value #UNDEFINED_GLYPH} undefined), or {@code null} for {@link #NONE}
      */
     public String glyph() {
-        return core.glyph();
+        return this == UNDEFINED ? UNDEFINED_GLYPH : core.glyph();
+    }
+
+    /**
+     * The glyph's colour as a web hex string, for a renderer no stylesheet reaches.
+     *
+     * @return the colour hex, or {@code null} for {@link #NONE}
+     */
+    public String colorHex() {
+        return this == UNDEFINED ? UNDEFINED_COLOR_HEX : core.colorHex();
+    }
+
+    /**
+     * Whether the glyph is a letter rather than a logic symbol. A letter is set in the text face,
+     * as a kind sigil is; the bundled glyph face holds the logic symbols.
+     *
+     * @return {@code true} for {@link #UNDEFINED}
+     */
+    public boolean isLetter() {
+        return this == UNDEFINED;
     }
 
     /**
@@ -172,6 +206,6 @@ public enum KonceptStatus {
      * @return {@code true} for every status except {@link #NONE}
      */
     public boolean hasGlyph() {
-        return core.hasGlyph();
+        return this == UNDEFINED || core.hasGlyph();
     }
 }

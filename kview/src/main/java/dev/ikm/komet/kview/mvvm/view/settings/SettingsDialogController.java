@@ -223,7 +223,7 @@ public class SettingsDialogController {
     }
 
     private static Text statusGlyph(KonceptStatus status) {
-        return glyphText(status.glyph(), status.core().colorHex());
+        return glyphText(status.glyph(), status.colorHex());
     }
 
     private static Text forkGlyph() {

@@ -613,7 +613,7 @@ public final class KonceptDragGlyph {
                 : Font.font(STATUS_FONT);
         Text copula = new Text(status.glyph());
         copula.setFont(statusFont);
-        copula.setFill(Color.web(status.core().colorHex()));
+        copula.setFill(Color.web(status.colorHex()));
         HBox cluster = new HBox(copula);
         if (status.isMultiParent()) {
             Text fork = new Text(KonceptStatus.MULTI_PARENT_GLYPH);

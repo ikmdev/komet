@@ -78,6 +78,22 @@ class KonceptStatusTest {
     }
 
     @Test
+    void anUndefinedConceptLeadsWithACWhereNoneStaysBare() {
+        assertEquals("C", KonceptStatus.UNDEFINED.glyph());
+        assertTrue(KonceptStatus.UNDEFINED.hasGlyph());
+        assertTrue(KonceptStatus.UNDEFINED.isLetter());
+        assertEquals("No stated definition", KonceptStatus.UNDEFINED.accessibleText());
+        assertFalse(KonceptStatus.NONE.hasGlyph());
+        assertNull(KonceptStatus.NONE.colorHex());
+    }
+
+    @Test
+    void theDefinitionStatusSettingHidesTheC() {
+        assertEquals(KonceptStatus.NONE, KonceptStatus.UNDEFINED.shown(false, true));
+        assertEquals(KonceptStatus.UNDEFINED, KonceptStatus.UNDEFINED.shown(true, false));
+    }
+
+    @Test
     void multiParentIsTheJavaFxSideProduct() {
         assertTrue(KonceptStatus.DEFINED_MULTIPARENT.isMultiParent());
         assertTrue(KonceptStatus.PRIMITIVE_MULTIPARENT.isMultiParent());

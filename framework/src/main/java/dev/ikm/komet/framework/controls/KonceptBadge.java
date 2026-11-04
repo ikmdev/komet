@@ -1479,8 +1479,8 @@ public class KonceptBadge extends HBox {
      * @param calculator  the view calculator used to read parents and the logical definition
      * @param premiseType the premise type to read the axiom tree under; falls back to
      *                    {@link PremiseType#STATED} when no tree exists for the requested premise
-     * @return the classification, or {@link KonceptStatus#NONE} when the concept has no resolvable
-     *         logical definition
+     * @return the classification; {@link KonceptStatus#UNDEFINED} for a concept with no resolvable
+     *         logical definition; {@link KonceptStatus#NONE} for a component that is not a concept
      */
     public static KonceptStatus computeStatus(long nid, ViewCalculator calculator, PremiseType premiseType) {
         if (Nid.isNone(nid) || nid == -1 || nid == KernelConcept.UNINITIALIZED_COMPONENT.nid()) {
@@ -1498,9 +1498,13 @@ public class KonceptBadge extends HBox {
             definition = calculator.getAxiomTreeForEntity(nid, PremiseType.STATED);
         }
         if (!definition.isPresent()) {
-            return KonceptStatus.NONE;
+            return KonceptKindResolver.resolve(nid, calculator) == KonceptKind.CONCEPT
+                    ? KonceptStatus.UNDEFINED
+                    : KonceptStatus.NONE;
         }
-        if (parents.isEmpty()) {
+        // A concept states its parents before the navigation does: a new one has none until the
+        // reasoner runs, and it is not a root for that.
+        if (parents.isEmpty() && !definition.get().containsVertexWithMeaning(KernelConcept.CONCEPT_REFERENCE)) {
             return KonceptStatus.ROOT;
         }
         boolean multiParent = parents.size() > 1;

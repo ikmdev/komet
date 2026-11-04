@@ -160,6 +160,42 @@ class ObservableComposerRetireUTestFX {
     }
 
     @Test
+    @DisplayName("A composer writes semantics composed in another module in the transaction of its other edits")
+    void aComposerWritesInAnotherModuleInTheTransactionOfItsOtherEdits() {
+        ObservableSemantic moved = newCommittedDescription("in another module");
+        ObservableSemantic edited = newCommittedDescription("to edit");
+        ObservableComposer composer = newComposer(State.ACTIVE, "edit in two modules");
+
+        var editor = editorOf(composer, edited);
+        setText(editor, "edited");
+        editor.save();
+        var inModule = composer.composeSemanticInModule(moved.publicId(),
+                EntityHandle.get(moved.referencedComponentNid()).expectEntity(),
+                KernelPattern.DESCRIPTION_PATTERN, KernelConcept.SOLOR_OVERLAY_MODULE);
+        setText(inModule, "edited in another module");
+        inModule.save();
+        var created = composer.composeSemanticInModule(PublicIds.newRandom(),
+                EntityHandle.get(moved.referencedComponentNid()).expectEntity(),
+                KernelPattern.DESCRIPTION_PATTERN, KernelConcept.SOLOR_OVERLAY_MODULE);
+        setText(created, "created in another module");
+        created.save();
+
+        EntityVersion editedVersion = uncommitted(edited).getFirst();
+        EntityVersion movedVersion = uncommitted(moved).getFirst();
+        EntityVersion createdVersion = uncommitted(created.getEntity()).getFirst();
+        assertEquals(KernelConcept.PRIMORDIAL_MODULE.nid(), editedVersion.moduleNid());
+        assertEquals(KernelConcept.SOLOR_OVERLAY_MODULE.nid(), movedVersion.moduleNid());
+        assertEquals(KernelConcept.SOLOR_OVERLAY_MODULE.nid(), createdVersion.moduleNid());
+        assertEquals(Transaction.forVersion(editedVersion), Transaction.forVersion(movedVersion),
+                "one transaction holds both modules' edits, so one commit publishes both");
+        assertEquals(Transaction.forVersion(editedVersion), Transaction.forVersion(createdVersion));
+
+        composer.commit();
+        assertTrue(uncommitted(moved).isEmpty() && uncommitted(edited).isEmpty()
+                && uncommitted(created.getEntity()).isEmpty(), "the commit published all of it");
+    }
+
+    @Test
     @DisplayName("Control: retiring while also changing a field saves an inactive uncommitted version")
     void retiringWithAFieldChangeSavesAnInactiveVersion() {
         ObservableSemantic description = newCommittedDescription("to retire");
