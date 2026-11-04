@@ -24,6 +24,7 @@
 /* The bordered, rounded, shadowed card body (everything below the floating tab). */
 .dynamic-card-body {
     -fx-background-color: white;
+    -fx-background-insets: 8 0 0 0;   /* none behind the toolbar's rounded corner, or it shows as a white sliver there */
     -fx-border-color: #34465f;   /* match the tab/toolbar (title bar) color */
     -fx-border-width: 0 2 2 2;   /* sides + bottom; no top, so no white line under the tab/toolbar */
     -fx-border-radius: 0 8 8 8;
@@ -85,6 +86,7 @@
 /* The dark icon toolbar under the tab. */
 .dynamic-card-toolbar {
     -fx-background-color: #34465f;
+    -fx-background-insets: 0 -2 0 0;   /* over the body's side border, so its corner is the body's corner */
     -fx-background-radius: 0 8 0 0;
     -fx-border-radius: 0 8 0 0;
     -fx-padding: 4 8 4 8;
