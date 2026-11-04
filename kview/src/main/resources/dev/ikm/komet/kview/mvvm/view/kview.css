@@ -7360,13 +7360,216 @@ Styling a context menu for kview ui/ux controls
     -fx-shape: "M1.40988 0.295017L-0.000122333 1.70502L5.99988 7.70502L11.9999 1.70502L10.5899 0.295017L5.99988 4.87502L1.40988 0.295017Z";
 }
 
+/* Sized to its label, up to a cap so a short section title does not leave it a third of the
+   window wide (SectionTitledPaneSkin applies the cap). */
 .gen-purpose-window .section-titled-pane > .section-combo-box {
     -fx-min-width: -1;
     -fx-pref-width: -1;
+    -fx-max-width: 21.666667em; /* 260px */
 }
 
 .gen-purpose-window .section-titled-pane > .section-combo-box > .list-cell .komet-label > .label {
     -fx-text-fill: #111;
+}
+
+/* The closed combobox (SectionReferenceButtonCell): identicon, the value telling the selection
+   apart, and its pattern's name muted after it. The value elides first; the section's reference
+   strip then takes over (see .reference-strip). */
+.gen-purpose-window .section-titled-pane > .section-combo-box > .list-cell .reference-button {
+    -fx-spacing: 6;
+    -fx-alignment: center-left;
+}
+
+.gen-purpose-window .section-titled-pane > .section-combo-box > .list-cell .reference-button > .reference-button-value {
+    -fx-text-fill: #111;
+}
+
+.gen-purpose-window .section-titled-pane > .section-combo-box > .list-cell .reference-button > .reference-button-pattern {
+    -fx-text-fill: -Grey-8;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 0.846154em; /* 11px of the combobox's 13px */
+}
+
+/* Reference-component options whose labels all read the same lead with the field values that
+   tell them apart (SectionSemanticsComboBoxCell.reference-option), the usual label under it as
+   a smaller, muted context line. */
+.gen-purpose-window .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell .reference-option {
+    -fx-spacing: 1;
+}
+
+.gen-purpose-window .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell .reference-option > .reference-option-summary {
+    -fx-text-fill: #111;
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 1em; /* 12px */
+}
+
+.gen-purpose-window .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell .reference-option:with-summary > .komet-label > .label {
+    -fx-text-fill: #6B6B6B;
+    -fx-font-size: 0.916667em; /* 11px */
+}
+
+.gen-purpose-window .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell:filled:selected .reference-option > .reference-option-summary {
+    -fx-text-fill: white;
+}
+
+.gen-purpose-window .combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .cell.indexed-cell.list-cell:filled:selected .reference-option:with-summary > .komet-label > .label {
+    -fx-text-fill: #DFE8F7;
+}
+
+/*******************  Reference colors  **************************/
+
+/* Sections anchored on the same pattern are told apart by color (ReferenceColors): the color
+   identifies the semantic a section chose, worn as a 4px left edge on the section's reference
+   combobox and reference strip, and as a bar of the same color down the semantic's left edge
+   where it is shown — in the standard view a mark in the gutter the semantics container's
+   padding leaves (SemanticStandardControlSkin), in the table view the row's left edge plus a
+   wash (PatternSemanticsTableControlSkin). Twelve colors, 0 the default blue; a section alone on
+   its pattern wears no edge and its semantic's mark is color 0. */
+.gen-purpose-window {
+    -reference-color-0: -Secondary-05;
+    -reference-color-1: #D98E04;
+    -reference-color-2: #1F9E89;
+    -reference-color-3: #8E5AC8;
+    -reference-color-4: #E05A6C;
+    -reference-color-5: #3BA55C;
+    -reference-color-6: #D94F2B;
+    -reference-color-7: #0E8FB5;
+    -reference-color-8: #B8408F;
+    -reference-color-9: #7A8A1E;
+    -reference-color-10: #6B5BD6;
+    -reference-color-11: #A0522D;
+}
+
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-0 { -fx-background-color: -reference-color-0; }
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-1 { -fx-background-color: -reference-color-1; }
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-2 { -fx-background-color: -reference-color-2; }
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-3 { -fx-background-color: -reference-color-3; }
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-4 { -fx-background-color: -reference-color-4; }
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-5 { -fx-background-color: -reference-color-5; }
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-6 { -fx-background-color: -reference-color-6; }
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-7 { -fx-background-color: -reference-color-7; }
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-8 { -fx-background-color: -reference-color-8; }
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-9 { -fx-background-color: -reference-color-9; }
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-10 { -fx-background-color: -reference-color-10; }
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-11 { -fx-background-color: -reference-color-11; }
+
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-0,
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-1,
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-2,
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-3,
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-4,
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-5,
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-6,
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-7,
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-8,
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-9,
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-10,
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-11{
+    -fx-border-width: 1 1 1 4;
+}
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-0 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-0; }
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-1 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-1; }
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-2 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-2; }
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-3 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-3; }
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-4 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-4; }
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-5 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-5; }
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-6 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-6; }
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-7 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-7; }
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-8 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-8; }
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-9 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-9; }
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-10 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-10; }
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-11 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-11; }
+
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-0,
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-1,
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-2,
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-3,
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-4,
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-5,
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-6,
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-7,
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-8,
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-9,
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-10,
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-11{
+    -fx-border-width: 0 0 1 4;
+}
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-0 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-0; }
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-1 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-1; }
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-2 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-2; }
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-3 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-3; }
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-4 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-4; }
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-5 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-5; }
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-6 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-6; }
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-7 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-7; }
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-8 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-8; }
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-9 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-9; }
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-10 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-10; }
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-11 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-11; }
+
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced {
+    -fx-background-color: #F9FBFE;
+    -fx-border-width: 1 1 1 3;
+}
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-0 { -fx-border-color: transparent transparent transparent -reference-color-0; }
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-1 { -fx-border-color: transparent transparent transparent -reference-color-1; }
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-2 { -fx-border-color: transparent transparent transparent -reference-color-2; }
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-3 { -fx-border-color: transparent transparent transparent -reference-color-3; }
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-4 { -fx-border-color: transparent transparent transparent -reference-color-4; }
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-5 { -fx-border-color: transparent transparent transparent -reference-color-5; }
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-6 { -fx-border-color: transparent transparent transparent -reference-color-6; }
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-7 { -fx-border-color: transparent transparent transparent -reference-color-7; }
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-8 { -fx-border-color: transparent transparent transparent -reference-color-8; }
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-9 { -fx-border-color: transparent transparent transparent -reference-color-9; }
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-10 { -fx-border-color: transparent transparent transparent -reference-color-10; }
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-11 { -fx-border-color: transparent transparent transparent -reference-color-11; }
+
+/*******************  Section reference strip  **************************/
+
+/* Strip between a section's title bar and its content naming the reference component the
+   section is anchored on (SectionTitledPaneSkin.createReferenceStrip), shown when the combobox's
+   label is not enough to tell the selection apart from the section's other options: a REFERENCE
+   caption, "NAME: value" pairs of the fields that tell it apart and, at the far right, a "Show"
+   link in the unpublished strip's language that brings the semantic into view in the section
+   above. */
+
+/* The box holding the strip and the section's content grid: flush with the title bar and the
+   section edges (modena pads a VBox placed straight into a titled pane's content by 0.8em). */
+.section-titled-pane > .content > .section-content {
+    -fx-padding: 0;
+}
+
+.gen-purpose-window .section-titled-pane .reference-strip {
+    -fx-background-color: #F7F9FC;
+    -fx-border-color: transparent transparent #E3E8F0 transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 5 12 5 12;
+    -fx-spacing: 8;
+}
+
+.gen-purpose-window .section-titled-pane .reference-strip > .reference-strip-caption {
+    -fx-text-fill: #6B6B6B;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 0.875em; /* 10.5px */
+}
+
+/* Field names in the language of the field titles in the section's content (upper-cased,
+   -Grey-8, 11px SemiBold), so they read apart from the values beside them. */
+.gen-purpose-window .section-titled-pane .reference-strip .reference-strip-field-name {
+    -fx-fill: -Grey-8;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 0.916667em; /* 11px */
+}
+
+.gen-purpose-window .section-titled-pane .reference-strip .reference-strip-field-value,
+.gen-purpose-window .section-titled-pane .reference-strip .reference-strip-field-separator {
+    -fx-fill: #1F1F1F;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 1em; /* 12px */
+}
+
+.gen-purpose-window .section-titled-pane .reference-strip .reference-strip-field-separator {
+    -fx-fill: #6B6B6B;
 }
 
 /*******************************************************************************

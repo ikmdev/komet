@@ -1,10 +1,13 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose.control.standard;
 
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
+import dev.ikm.komet.layout.PatternSemanticsPresenter.ReferencingSection;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -73,4 +76,15 @@ public class SemanticStandardControl extends Control {
     public boolean isPreviewMode() { return previewMode.get(); }
     public BooleanProperty previewModeProperty() { return previewMode; }
     public void setPreviewMode(boolean previewMode) { this.previewMode.set(previewMode); }
+
+    // -- referenced by
+    /**
+     * The sections anchored on this semantic (it is their chosen reference component), null for
+     * none. While set, a bar in its color runs down the semantic's left edge, the color those
+     * sections' reference comboboxes wear.
+     */
+    private final ObjectProperty<ReferencingSection> referencedBy = new SimpleObjectProperty<>();
+    public ReferencingSection getReferencedBy() { return referencedBy.get(); }
+    public ObjectProperty<ReferencingSection> referencedByProperty() { return referencedBy; }
+    public void setReferencedBy(ReferencingSection referencedBy) { this.referencedBy.set(referencedBy); }
 }

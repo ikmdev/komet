@@ -17,7 +17,10 @@ package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.ContentSizedSplitPane;
+import dev.ikm.komet.kview.common.ViewCalculatorUtils;
+import dev.ikm.komet.kview.controls.ReferenceColors;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SectionReferenceButtonCell;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.SectionSemanticsComboBoxCell;
 import dev.ikm.komet.layout.InlineEditSaver;
 import dev.ikm.komet.layout.KlPatternSemanticsFactory;
@@ -53,6 +56,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -116,6 +120,28 @@ final class WindowSections {
     private final Map<SemanticEntity<SemanticEntityVersion>, PatternSemanticsPresenter> semanticEntityToPatternSemanticsPresenter = new HashMap<>();
 
     /**
+     * Per section anchored on a reference pattern, its reference-component options' fields as
+     * display text in pattern order, by option nid (see {@link ReferenceComponentSummaries}): what
+     * the section's reference strip and combobox show. Recomputed whenever the options change.
+     */
+    private final Map<EditorSectionModel, Map<Long, List<ReferenceComponentSummaries.FieldText>>> sectionReferenceSummaries = new HashMap<>();
+
+    /**
+     * Per section anchored on a reference pattern, whether the user could see its selected
+     * reference component at the last layout pass (see {@link #updateReferencesOnScreen}); a
+     * section not looked at yet counts as on screen, so it shows no strip before the window has
+     * had a look.
+     */
+    private final Map<EditorSectionModel, Boolean> sectionReferenceOnScreen = new HashMap<>();
+
+    /**
+     * Per section anchored on a reference pattern, whether its closed combobox currently cuts the
+     * selected reference component's value off, as its button cell reports; the other input to
+     * the strip decision (see {@link #updateReferenceStripVisibility}).
+     */
+    private final Map<EditorSectionModel, Boolean> sectionReferenceLabelTruncated = new HashMap<>();
+
+    /**
      * The semantics currently rendered in the window, by nid, in render order — each the entity
      * object its view was built from, which is the key its presenter is filed under in
      * {@link #semanticEntityToPatternSemanticsPresenter}. Kept in step by {@link #doAddSemanticViews}
@@ -146,6 +172,40 @@ final class WindowSections {
         this.content = content;
         this.journalTopic = journalTopic;
         this.inlineEditSaver = inlineEditSaver;
+
+        // Whether a section's reference component is on screen follows scrolling, collapsing and
+        // resizing, so it is re-read after every layout pass of the scene the sections are in.
+        content.sceneProperty().subscribe((oldScene, newScene) -> {
+            if (oldScene != null) {
+                oldScene.removePostLayoutPulseListener(this::updateReferencesOnScreen);
+            }
+            if (newScene != null) {
+                newScene.addPostLayoutPulseListener(this::updateReferencesOnScreen);
+            }
+        });
+    }
+
+    /**
+     * Re-reads, for each section anchored on a reference pattern, whether the user can currently
+     * see its selected reference component in the section showing it, and re-decides the
+     * section's reference strip when that changed (see {@link #updateReferenceStripVisibility});
+     * only looked up for sections with several options, the only ones that could show a strip.
+     */
+    private void updateReferencesOnScreen() {
+        sectionModelToTitledPane.forEach((section, titledPane) -> {
+            if (section.getReferenceComponent() == null || titledPane.getReferenceComponents().size() < 2) {
+                return;
+            }
+            EntityFacade selected = titledPane.getSelectedReferenceComponent();
+            PatternSemanticsPresenter presenter = selected instanceof SemanticEntity<?> semantic
+                    ? semanticEntityToPatternSemanticsPresenter.get((SemanticEntity<SemanticEntityVersion>) semantic)
+                    : null;
+            boolean onScreen = presenter != null
+                    && presenter.isSemanticOnScreen((SemanticEntity<SemanticEntityVersion>) selected);
+            if (!Objects.equals(sectionReferenceOnScreen.put(section, onScreen), onScreen)) {
+                updateReferenceStripVisibility(section, titledPane);
+            }
+        });
     }
 
     /**
@@ -274,8 +334,24 @@ final class WindowSections {
             semanticsOfPattern = semanticsOfPattern(patternReferenceComponent);
             titledPane.getReferenceComponents().addAll(semanticsOfPattern);
         }
-        titledPane.setReferenceComponentCellFactory(_ -> createSectionSemanticsComboBoxCell(viewProperties));
-        titledPane.setReferenceComponentButtonCellFactory(new SectionSemanticsComboBoxCell(viewProperties));
+        titledPane.setReferenceComponentCellFactory(_ -> createSectionSemanticsComboBoxCell(sectionModel, viewProperties));
+
+        // The options' labels can all read the same ("Module in Test Performed Pattern"), so the
+        // closed combobox shows the value telling the selection apart plus its pattern, the
+        // options lead with the values telling them apart, and the strip under the title bar
+        // spells the fields out when the combobox cannot.
+        SectionReferenceButtonCell buttonCell = new SectionReferenceButtonCell(
+                option -> ReferenceComponentSummaries.buttonValue(referenceSummaryOf(sectionModel, option)),
+                this::patternDisplayName);
+        titledPane.setReferenceComponentButtonCellFactory(buttonCell);
+        buttonCell.valueTruncatedProperty().subscribe(truncated -> {
+            sectionReferenceLabelTruncated.put(sectionModel, truncated);
+            updateReferenceStripVisibility(sectionModel, titledPane);
+        });
+
+        titledPane.getReferenceComponents().subscribe(() -> updateReferenceSummaries(sectionModel, titledPane));
+        titledPane.selectedReferenceComponentProperty().subscribe(() -> updateReferenceStrip(sectionModel, titledPane));
+        updateReferenceSummaries(sectionModel, titledPane);
 
         titledPane.setOnEditAction(_ -> getOnSectionEditRequested().accept(sectionModel));
 
@@ -292,13 +368,117 @@ final class WindowSections {
         // When this section's resolved reference component changes, cascade to any section that anchors
         // on it (i.e. whose reference pattern is displayed in this section), so downstream sections in a
         // reference-component chain re-resolve and re-populate (see komet-desktop #3).
-        titledPane.selectedReferenceComponentProperty().subscribe(() -> refreshSectionsAnchoredOn(sectionModel));
+        titledPane.selectedReferenceComponentProperty().subscribe(() -> {
+            refreshSectionsAnchoredOn(sectionModel);
+            updateReferencedByTags();
+        });
 
         return titledPane;
     }
 
-    private SectionSemanticsComboBoxCell createSectionSemanticsComboBoxCell(ViewProperties viewProperties) {
-        SectionSemanticsComboBoxCell sectionSemanticsComboBoxCell = new SectionSemanticsComboBoxCell(viewProperties);
+    /**
+     * Marks, in the section showing it, each semantic some section is anchored on (the semantic
+     * is that section's chosen reference component) with a bar in a color, and has the sections
+     * anchored on it wear the same color on their reference combobox, so the user can tell which
+     * semantic a section uses. The color identifies the chosen semantic: among the sections
+     * anchored on a pattern that other sections are anchored on too, each distinct chosen semantic
+     * gets the next color, in section order across the window, and sections that chose the same
+     * semantic share it. A section alone on its pattern wears no color and its mark is the
+     * default one. Only for sections with several options, since with one there is nothing to
+     * tell apart, and only on semantics with a view (the pattern's display filters can hide one).
+     * Recomputed from scratch whenever a section's options or selection change and whenever
+     * semantic views are rebuilt.
+     */
+    private void updateReferencedByTags() {
+        Map<Long, Integer> sectionsReferencingPattern = new HashMap<>();
+        forEachSection(section -> {
+            if (section.getReferenceComponent() != null) {
+                sectionsReferencingPattern.merge(section.getReferenceComponent().getNid(), 1, Integer::sum);
+            }
+        });
+
+        Map<Long, Integer> colorBySemantic = new HashMap<>();
+        Map<Long, List<String>> sectionNamesBySemantic = new LinkedHashMap<>();
+        forEachSection(section -> {
+            SectionTitledPane<EntityFacade> titledPane = sectionModelToTitledPane.get(section);
+            if (section.getReferenceComponent() == null || titledPane == null) {
+                return;
+            }
+            EntityFacade selected = titledPane.getSelectedReferenceComponent();
+            boolean sharesPattern = sectionsReferencingPattern.get(section.getReferenceComponent().getNid()) > 1;
+            int colorIndex = sharesPattern && selected != null
+                    ? colorBySemantic.computeIfAbsent(selected.nid(), _ -> colorBySemantic.size() % ReferenceColors.COUNT)
+                    : -1;
+            titledPane.setReferenceColorIndex(colorIndex);
+
+            if (titledPane.getReferenceComponents().size() < 2 || selected == null) {
+                return;
+            }
+            sectionNamesBySemantic.computeIfAbsent(selected.nid(), _ -> new ArrayList<>()).add(section.getName());
+        });
+        semanticEntityToPatternSemanticsPresenter.forEach((semantic, presenter) -> {
+            List<String> sectionNames = sectionNamesBySemantic.get(semantic.nid());
+            presenter.setReferencedBy(semantic, sectionNames == null ? null
+                    : new PatternSemanticsPresenter.ReferencingSection(String.join(", ", sectionNames),
+                            colorBySemantic.getOrDefault(semantic.nid(), 0)));
+        });
+    }
+
+    /**
+     * Reacts to a change of the section's reference-component options: recomputes their display
+     * text, then refreshes everything showing it (the strip, the closed combobox) and the marks
+     * on the chosen semantics, which depend on how many options the section has.
+     */
+    private void updateReferenceSummaries(EditorSectionModel section, SectionTitledPane<EntityFacade> titledPane) {
+        sectionReferenceSummaries.put(section,
+                ReferenceComponentSummaries.summarize(titledPane.getReferenceComponents(), viewProperties));
+        updateReferenceStrip(section, titledPane);
+        // The closed combobox only re-reads its texts when the selection changes.
+        titledPane.refreshReferenceComponentLabel();
+        // Whether the section tags its reference component depends on how many options it has.
+        updateReferencedByTags();
+    }
+
+    /** Fills the section's reference strip with the selected reference component's fields, in pattern order. */
+    private void updateReferenceStrip(EditorSectionModel section, SectionTitledPane<EntityFacade> titledPane) {
+        List<SectionTitledPane.ReferenceField> fields = new ArrayList<>();
+        for (ReferenceComponentSummaries.FieldText field : referenceSummaryOf(section, titledPane.getSelectedReferenceComponent())) {
+            fields.add(new SectionTitledPane.ReferenceField(field.name(), field.value()));
+        }
+        titledPane.getReferenceSummary().setAll(fields);
+        updateReferenceStripVisibility(section, titledPane);
+    }
+
+    /**
+     * Shows a section's reference strip when the user cannot see the selected reference component
+     * itself (see {@link #updateReferencesOnScreen}) and the combobox's label, the first field's
+     * value, does not show the whole semantic: it has further fields, or that one value is cut off
+     * in the combobox. Re-decided whenever any of those changes. The pane is passed in, as the
+     * first decision is made while the section is still being built, before it is on record.
+     */
+    private void updateReferenceStripVisibility(EditorSectionModel section, SectionTitledPane<EntityFacade> titledPane) {
+        int fields = titledPane.getReferenceSummary().size();
+        boolean truncated = sectionReferenceLabelTruncated.getOrDefault(section, false);
+        boolean labelEnough = fields == 0 || (fields == 1 && !truncated);
+        titledPane.setReferenceStripVisible(!sectionReferenceOnScreen.getOrDefault(section, true) && !labelEnough);
+    }
+
+    private String patternDisplayName(EntityFacade option) {
+        return option instanceof SemanticEntity<?> semantic
+                ? ViewCalculatorUtils.retrieveDisplayName(semantic.pattern(), viewProperties)
+                : "";
+    }
+
+    private List<ReferenceComponentSummaries.FieldText> referenceSummaryOf(EditorSectionModel section, EntityFacade option) {
+        if (option == null) {
+            return List.of();
+        }
+        return sectionReferenceSummaries.getOrDefault(section, Map.of()).getOrDefault(option.nid(), List.of());
+    }
+
+    private SectionSemanticsComboBoxCell createSectionSemanticsComboBoxCell(EditorSectionModel sectionModel, ViewProperties viewProperties) {
+        SectionSemanticsComboBoxCell sectionSemanticsComboBoxCell = new SectionSemanticsComboBoxCell(viewProperties,
+                option -> ReferenceComponentSummaries.optionText(referenceSummaryOf(sectionModel, option)));
         sectionSemanticsComboBoxCell.hoverProperty().subscribe(() -> {
             SemanticEntity<SemanticEntityVersion> semanticEntity = (SemanticEntity<SemanticEntityVersion>) sectionSemanticsComboBoxCell.getItem();
             setPreviewingSemantic(semanticEntity, sectionSemanticsComboBoxCell.isHover());
@@ -499,6 +679,8 @@ final class WindowSections {
 
         // The semantics just rendered may carry versions not published yet (see unpublishedSemantics).
         getOnPublishInputsChanged().run();
+        // Views are new, so the tags of the semantics some section is anchored on are reapplied.
+        updateReferencedByTags();
     }
 
     /**

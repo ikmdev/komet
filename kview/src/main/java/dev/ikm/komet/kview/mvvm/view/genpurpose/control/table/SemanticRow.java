@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose.control.table;
 
+import dev.ikm.komet.layout.PatternSemanticsPresenter.ReferencingSection;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -9,6 +10,17 @@ import java.util.List;
 
 public class SemanticRow {
     private final List<SemanticField> fields;
+
+    // -- referenced by
+    /**
+     * The sections anchored on this row's semantic (it is their chosen reference component), null
+     * for none. While set the row is washed and its left edge takes their color, the color those
+     * sections' reference comboboxes wear.
+     */
+    private final ObjectProperty<ReferencingSection> referencedBy = new SimpleObjectProperty<>();
+    public ReferencingSection getReferencedBy() { return referencedBy.get(); }
+    public ObjectProperty<ReferencingSection> referencedByProperty() { return referencedBy; }
+    public void setReferencedBy(ReferencingSection referencedBy) { this.referencedBy.set(referencedBy); }
 
     public SemanticRow(List<SemanticField> fields) {
         this.fields = fields;

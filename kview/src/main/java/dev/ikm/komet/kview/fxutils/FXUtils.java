@@ -18,12 +18,16 @@ package dev.ikm.komet.kview.fxutils;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TitledPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
@@ -352,5 +356,57 @@ public abstract class FXUtils {
             }
         }
         return sizes;
+    }
+
+    /**
+     * How much of a node must show for {@link #isOnScreen} to count it as on screen: this much of
+     * its height, or all of it when it is shorter — about one field of a semantic.
+     */
+    private static final double ON_SCREEN_MIN_VISIBLE_HEIGHT = 40;
+
+    /**
+     * Whether the user can currently see the node, or enough of it to recognize it: it is in a
+     * scene, nothing up its tree is hidden or a collapsed titled pane, and at least
+     * {@value #ON_SCREEN_MIN_VISIBLE_HEIGHT}px of its height (all of it when shorter) lies inside
+     * the scene and inside the viewport of every scroll pane and table it sits in. Answered from
+     * the current layout, so ask after a layout pass (e.g. from a post-layout pulse listener).
+     */
+    public static boolean isOnScreen(Node node) {
+        Scene scene = node.getScene();
+        if (scene == null) {
+            return false;
+        }
+        for (Node ancestor = node; ancestor != null; ancestor = ancestor.getParent()) {
+            if (!ancestor.isVisible() || (ancestor instanceof TitledPane titledPane && !titledPane.isExpanded())) {
+                return false;
+            }
+        }
+
+        Bounds visible = node.localToScene(node.getBoundsInLocal());
+        double wanted = Math.min(visible.getHeight(), ON_SCREEN_MIN_VISIBLE_HEIGHT);
+        visible = intersection(visible, new BoundingBox(0, 0, scene.getWidth(), scene.getHeight()));
+        for (Parent ancestor = node.getParent(); ancestor != null && visible != null; ancestor = ancestor.getParent()) {
+            Node window = switch (ancestor) {
+                case ScrollPane scrollPane -> scrollPane.lookup(".viewport");
+                case TableView<?> tableView -> tableView;
+                default -> null;
+            };
+            if (window != null) {
+                visible = intersection(visible, window.localToScene(window.getBoundsInLocal()));
+            }
+        }
+        return visible != null && visible.getWidth() > 0 && visible.getHeight() >= wanted - 0.5;
+    }
+
+    /** The overlap of two bounds, null when they do not overlap. */
+    private static Bounds intersection(Bounds a, Bounds b) {
+        double minX = Math.max(a.getMinX(), b.getMinX());
+        double minY = Math.max(a.getMinY(), b.getMinY());
+        double maxX = Math.min(a.getMaxX(), b.getMaxX());
+        double maxY = Math.min(a.getMaxY(), b.getMaxY());
+        if (maxX <= minX || maxY <= minY) {
+            return null;
+        }
+        return new BoundingBox(minX, minY, maxX - minX, maxY - minY);
     }
 }

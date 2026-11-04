@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls.skin;
 
+import dev.ikm.komet.kview.controls.ReferenceColors;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
 import dev.ikm.komet.kview.fxutils.FXUtils;
 import javafx.beans.binding.Bindings;
@@ -7,6 +8,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -22,6 +25,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
 import java.util.ArrayList;
@@ -41,6 +45,7 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
     private Text titleRegionText;
 
     private GridPane contentContainer;
+    private HBox referenceStrip;
 
     private ComboBox<T> referenceComponentSemanticsCB;
 
@@ -64,7 +69,6 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
         editButton = new EditButton(control);
         editButton.disableProperty().bind(control.editEnabledProperty().not());
 
-        createReferenceComponentCB(control);
         createRequiredChip(control);
         createUnpublishedChip(control);
 
@@ -122,12 +126,17 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
 
     /**
      * Builds the GridPane that holds the section's content areas and installs it as the pane's
-     * content. Users of this control add views through
-     * {@link SectionTitledPane#getItems()}, and the column layout follows the control's
-     * {@link SectionTitledPane#numberColumnsProperty()}. Rows stack at their content height
-     * rather than splitting the section's height — see {@link PrefCappedRowsGridPane}.
+     * content, under the reference strip (see {@link #createReferenceStrip}). Users of this
+     * control add views through {@link SectionTitledPane#getItems()}, and the column layout
+     * follows the control's {@link SectionTitledPane#numberColumnsProperty()}. Rows stack at
+     * their content height rather than splitting the section's height — see
+     * {@link PrefCappedRowsGridPane}.
      */
     private void createContentContainer(SectionTitledPane<T> control) {
+        // The strip's color subscription also colors the combobox, so the combobox comes first.
+        createReferenceComponentCB(control);
+        createReferenceStrip(control);
+
         contentContainer = new PrefCappedRowsGridPane();
         contentContainer.getStyleClass().add("section-titled-pane-container");
 
@@ -144,7 +153,63 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
             contentContainer.getColumnConstraints().setAll(columns);
         });
 
-        control.setContent(contentContainer);
+        VBox content = new VBox(referenceStrip, contentContainer);
+        // Modena pads a VBox placed straight into a titled pane's content; .section-content zeroes it.
+        content.getStyleClass().add("section-content");
+        VBox.setVgrow(contentContainer, Priority.ALWAYS);
+        control.setContent(content);
+    }
+
+    /**
+     * Creates the reference strip shown between the title bar and the content while the control
+     * says so (see {@link SectionTitledPane#referenceStripVisibleProperty()}), listing the
+     * control's reference summary (see {@link SectionTitledPane#getReferenceSummary()}): a
+     * REFERENCE caption, then the summary's fields as "name value" pairs on a single line that is
+     * cut off with an ellipsis where the strip runs out of room (styled by .reference-strip in
+     * kview.css).
+     */
+    private void createReferenceStrip(SectionTitledPane<T> control) {
+        Label caption = new Label("REFERENCE:");
+        caption.getStyleClass().add("reference-strip-caption");
+        caption.setMinWidth(Region.USE_PREF_SIZE);
+
+        ElidedTextLine fields = new ElidedTextLine();
+        fields.getStyleClass().add("reference-strip-fields");
+        HBox.setHgrow(fields, Priority.ALWAYS);
+        control.getReferenceSummary().subscribe(() -> fillReferenceFields(fields, control.getReferenceSummary()));
+        fillReferenceFields(fields, control.getReferenceSummary());
+
+        referenceStrip = new HBox(caption, fields);
+        referenceStrip.setAlignment(Pos.CENTER_LEFT);
+        referenceStrip.getStyleClass().add("reference-strip");
+
+        // The section's color, on the strip's left edge as on the combobox's.
+        control.referenceColorIndexProperty().subscribe(colorIndex -> {
+            ReferenceColors.apply(referenceStrip, colorIndex.intValue());
+            ReferenceColors.apply(referenceComponentSemanticsCB, colorIndex.intValue());
+        });
+
+        referenceStrip.visibleProperty().bind(control.referenceStripVisibleProperty());
+        referenceStrip.managedProperty().bind(control.referenceStripVisibleProperty());
+    }
+
+    private static void fillReferenceFields(ElidedTextLine line, List<SectionTitledPane.ReferenceField> summary) {
+        List<Text> texts = new ArrayList<>();
+        for (SectionTitledPane.ReferenceField field : summary) {
+            if (!texts.isEmpty()) {
+                Text separator = new Text(" · ");
+                separator.getStyleClass().add("reference-strip-field-separator");
+                texts.add(separator);
+            }
+            // Upper-cased with a colon, the way the fields in the section's content title themselves.
+            Text name = new Text(field.name().toUpperCase() + ": ");
+            name.getStyleClass().add("reference-strip-field-name");
+            Text value = new Text(field.value());
+            value.getStyleClass().add("reference-strip-field-value");
+            texts.add(name);
+            texts.add(value);
+        }
+        line.setTexts(texts);
     }
 
     private void createReferenceComponentCB(SectionTitledPane<T> control) {
@@ -212,8 +277,9 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
             titleRightEdge = noteX + noteWidth;
         }
 
-        // Reference Component Semantics Combobox
-        double cbPrefWidth = referenceComponentSemanticsCB.prefWidth(-1);
+        // Reference Component Semantics Combobox: its content width, capped by its CSS max width
+        // (resize does not apply the max itself) and by the room the title line leaves.
+        double cbPrefWidth = Math.min(referenceComponentSemanticsCB.prefWidth(-1), referenceComponentSemanticsCB.maxWidth(-1));
         double cbMaxWidth =  editButtonX - SPACE_BETWEEN_SEMANTIC_CB_AND_EDIT_BUTTON
                 - (titleRightEdge + SPACE_BETWEEN_TITLE_AND_SEMANTIC_CB);
         double cbWidth = Math.min(cbPrefWidth, cbMaxWidth);
@@ -362,6 +428,124 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
                 }
             }
             return false;
+        }
+    }
+
+    /**
+     * A row of Text nodes on a single line, each keeping its own style: laid out left to right and,
+     * where the row runs out of room, cut off with an ellipsis — it never wraps, and it never asks
+     * for more than zero width, so the row beside it keeps its own items whole. The texts are
+     * measured through a scratch Text in their font rather than by changing them in place, so a
+     * layout pass that changes nothing leaves them untouched and does not request another.
+     */
+    private static class ElidedTextLine extends Region {
+        private static final String ELLIPSIS = "…";
+
+        private final List<Text> texts = new ArrayList<>();
+        private final List<String> fullTexts = new ArrayList<>();
+        private final Text measurer = new Text();
+
+        void setTexts(List<Text> newTexts) {
+            texts.clear();
+            fullTexts.clear();
+            for (Text text : newTexts) {
+                text.setTextOrigin(VPos.TOP);
+                texts.add(text);
+                fullTexts.add(text.getText());
+            }
+            getChildren().setAll(newTexts);
+            requestLayout();
+        }
+
+        @Override
+        protected double computeMinWidth(double height) {
+            return snappedLeftInset() + snappedRightInset();
+        }
+
+        @Override
+        protected double computePrefWidth(double height) {
+            double width = 0;
+            for (int i = 0; i < texts.size(); i++) {
+                width += widthOf(texts.get(i), fullTexts.get(i));
+            }
+            return snappedLeftInset() + width + snappedRightInset();
+        }
+
+        @Override
+        protected double computeMinHeight(double width) {
+            return computePrefHeight(width);
+        }
+
+        @Override
+        protected double computePrefHeight(double width) {
+            double height = 0;
+            for (int i = 0; i < texts.size(); i++) {
+                height = Math.max(height, heightOf(texts.get(i), fullTexts.get(i)));
+            }
+            return snappedTopInset() + height + snappedBottomInset();
+        }
+
+        @Override
+        protected void layoutChildren() {
+            final double left = snappedLeftInset();
+            final double right = getWidth() - snappedRightInset();
+            final double top = snappedTopInset();
+            final double contentHeight = getHeight() - top - snappedBottomInset();
+
+            double x = left;
+            boolean roomLeft = true;
+            for (int i = 0; i < texts.size(); i++) {
+                Text text = texts.get(i);
+                String full = fullTexts.get(i);
+                String shown = roomLeft ? fitting(text, full, right - x) : "";
+                if (shown.length() < full.length()) {
+                    roomLeft = false;
+                }
+                text.setText(shown);
+                text.setVisible(!shown.isEmpty());
+                if (shown.isEmpty()) {
+                    continue;
+                }
+                double height = heightOf(text, shown);
+                text.relocate(x, top + (contentHeight - height) / 2d);
+                x += widthOf(text, shown);
+            }
+        }
+
+        /**
+         * The text itself when it fits in the room left, else its longest prefix that, with an
+         * ellipsis on the end, does; empty when not even the ellipsis fits.
+         */
+        private String fitting(Text text, String full, double room) {
+            if (widthOf(text, full) <= room) {
+                return full;
+            }
+            int low = 0;
+            int high = full.length();
+            while (low < high) {
+                int middle = (low + high + 1) / 2;
+                if (widthOf(text, full.substring(0, middle) + ELLIPSIS) <= room) {
+                    low = middle;
+                } else {
+                    high = middle - 1;
+                }
+            }
+            if (low == 0 && widthOf(text, ELLIPSIS) > room) {
+                return "";
+            }
+            return full.substring(0, low).stripTrailing() + ELLIPSIS;
+        }
+
+        private double widthOf(Text text, String string) {
+            measurer.setFont(text.getFont());
+            measurer.setText(string);
+            return measurer.getLayoutBounds().getWidth();
+        }
+
+        private double heightOf(Text text, String string) {
+            measurer.setFont(text.getFont());
+            measurer.setText(string);
+            return measurer.getLayoutBounds().getHeight();
         }
     }
 

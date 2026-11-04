@@ -7,6 +7,7 @@ import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.ComponentItem;
+import dev.ikm.komet.kview.fxutils.FXUtils;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.AbstractPatternSemanticsPresenter;
 import dev.ikm.komet.layout.PatternSemanticsPresenter;
 import dev.ikm.komet.layout.editor.model.EditorFieldModel;
@@ -22,6 +23,7 @@ import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityProxy;
 import javafx.scene.Node;
+import javafx.scene.control.TableRow;
 import javafx.scene.image.Image;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,6 +156,35 @@ public class PatternSemanticsTablePresenter extends AbstractPatternSemanticsPres
         }
 
         previousSemanticRowPreviewMode = semanticRow;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The table realizes a row node only for the rows in or near its viewport, so a semantic
+     * whose row has no node is off screen.
+     */
+    @Override
+    public boolean isSemanticOnScreen(SemanticEntity<SemanticEntityVersion> semanticEntity) {
+        SemanticRow semanticRow = semanticEntityToSemanticRow.get(semanticEntity);
+        if (semanticRow == null) {
+            return false;
+        }
+        for (Node node : patternSemanticsControl.lookupAll(".table-row-cell")) {
+            if (node instanceof TableRow<?> row && row.getItem() == semanticRow) {
+                return FXUtils.isOnScreen(row);
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void setReferencedBy(SemanticEntity<SemanticEntityVersion> semanticEntity, ReferencingSection referencedBy) {
+        SemanticRow semanticRow = semanticEntityToSemanticRow.get(semanticEntity);
+        if (semanticRow == null) {
+            return;
+        }
+        semanticRow.setReferencedBy(referencedBy);
     }
 
     @Override

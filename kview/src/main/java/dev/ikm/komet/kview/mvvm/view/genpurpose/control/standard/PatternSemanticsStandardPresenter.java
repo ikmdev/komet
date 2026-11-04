@@ -6,6 +6,7 @@ import dev.ikm.komet.framework.observable.ObservableSemanticSnapshot;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLReadOnlyBaseControl;
+import dev.ikm.komet.kview.fxutils.FXUtils;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.AbstractPatternSemanticsPresenter;
 import dev.ikm.komet.layout.InlineEditSaver;
@@ -140,6 +141,20 @@ public class PatternSemanticsStandardPresenter extends AbstractPatternSemanticsP
     @Override
     public void revealSemantic(SemanticEntity<SemanticEntityVersion> semanticEntity) {
         patternSemanticsControl.revealSemantic(semanticEntityToSemanticView.get(semanticEntity));
+    }
+
+    @Override
+    public boolean isSemanticOnScreen(SemanticEntity<SemanticEntityVersion> semanticEntity) {
+        SemanticStandardControl semanticView = semanticEntityToSemanticView.get(semanticEntity);
+        return semanticView != null && FXUtils.isOnScreen(semanticView);
+    }
+
+    @Override
+    public void setReferencedBy(SemanticEntity<SemanticEntityVersion> semanticEntity, ReferencingSection referencedBy) {
+        SemanticStandardControl semanticView = semanticEntityToSemanticView.get(semanticEntity);
+        if (semanticView != null) {
+            semanticView.setReferencedBy(referencedBy);
+        }
     }
 
     @Override

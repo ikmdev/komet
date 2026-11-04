@@ -2,6 +2,8 @@ package dev.ikm.komet.kview.mvvm.view.genpurpose.control.table;
 
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticComponentCell;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticComponentCollectionCell;
+import dev.ikm.komet.kview.controls.ReferenceColors;
+import dev.ikm.komet.layout.PatternSemanticsPresenter.ReferencingSection;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticIdenticonCell;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.table.cell.SemanticStandardCell;
 import dev.ikm.tinkar.common.id.LongIdCollection;
@@ -30,6 +32,11 @@ import static dev.ikm.tinkar.terms.KernelConcept.*;
 public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsTableControl> {
     public static final PseudoClass EDIT_MODE_PSEUDO_CLASS = PseudoClass.getPseudoClass("edit-mode");
     public static final PseudoClass PREVIEW_MODE_PSEUDO_CLASS = PseudoClass.getPseudoClass("preview-mode");
+    /**
+     * Active on a row whose semantic some section is anchored on, with those sections' color as
+     * :reference-color-N (see {@link SemanticRow#getReferencedBy()}).
+     */
+    public static final PseudoClass REFERENCED_PSEUDO_CLASS = PseudoClass.getPseudoClass("referenced");
 
     private static final String TABLE_HEADER_ROW = "TableHeaderRow";
     private static final String SHOW_GRID_LINES_STYLE_CLASS = "show-grid-lines";
@@ -217,15 +224,25 @@ public class PatternSemanticsTableControlSkin extends SkinBase<PatternSemanticsT
                         lastSubscription = Subscription.combine(lastSubscription,
                                 newItem.previewModeProperty().subscribe(isPreviewMode -> {
                                     row.pseudoClassStateChanged(PREVIEW_MODE_PSEUDO_CLASS, isPreviewMode);
-                                })
+                                }),
+                                newItem.referencedByProperty().subscribe(() -> markReferenced(row, newItem))
                         );
+                        markReferenced(row, newItem);
                     } else {
                         row.pseudoClassStateChanged(EDIT_MODE_PSEUDO_CLASS, false);
                         row.pseudoClassStateChanged(PREVIEW_MODE_PSEUDO_CLASS, false);
+                        row.pseudoClassStateChanged(REFERENCED_PSEUDO_CLASS, false);
+                        ReferenceColors.apply(row, -1);
                     }
                 });
 
                 return row;
+            }
+
+            private void markReferenced(TableRow<SemanticRow> row, SemanticRow item) {
+                ReferencingSection referencedBy = item.getReferencedBy();
+                row.pseudoClassStateChanged(REFERENCED_PSEUDO_CLASS, referencedBy != null);
+                ReferenceColors.apply(row, referencedBy == null ? -1 : referencedBy.colorIndex());
             }
         };
     }
