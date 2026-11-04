@@ -48,6 +48,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Locks {@link LayoutWatchdog} against the case that taught it: a text field an {@code HBox}
  * squeezes to its insets, whose skin moves its text on every layout and asks for the next one.
+ * That field keeps a shown window busy only on a desktop toolkit, so the tests of a shown window
+ * use {@link Restless}, which loops on any toolkit, and need no display.
  */
 @ExtendWith(JavaFXThreadExtension.class)
 class LayoutWatchdogUTestFX {
@@ -69,6 +71,14 @@ class LayoutWatchdogUTestFX {
         StackPane root = new StackPane(row);
         new Scene(root, width, 80);
         return root;
+    }
+
+    /** Asks for another layout from each layout, as any node caught in a loop does. */
+    private static final class Restless extends Region {
+        @Override
+        protected void layoutChildren() {
+            Platform.runLater(this::requestLayout);
+        }
     }
 
     private static <T> T onFx(Callable<T> body) throws Exception {
@@ -106,7 +116,9 @@ class LayoutWatchdogUTestFX {
         Stage stage = onFx(() -> {
             Subscription watching = LayoutWatchdog.install(SAMPLE_NANOS, REST_NANOS, 3, 2, reports::add);
             Stage shown = new Stage();
-            shown.setScene(row(300, false).getScene());
+            Restless restless = new Restless();
+            restless.setId("restless");
+            shown.setScene(new Scene(new StackPane(restless), 300, 80));
             shown.setOnHidden(event -> watching.unsubscribe());
             shown.show();
             return shown;
@@ -114,7 +126,7 @@ class LayoutWatchdogUTestFX {
         try {
             String report = reports.poll(10, TimeUnit.SECONDS);
             assertNotNull(report, "the loop is named");
-            assertTrue(report.contains("TextField#price"), report);
+            assertTrue(report.contains("Restless#restless"), report);
             assertNull(reports.poll(1, TimeUnit.SECONDS), "and named once");
         } finally {
             onFx(() -> {

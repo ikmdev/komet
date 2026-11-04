@@ -160,6 +160,12 @@
             <artifactId>executor-provider</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Headless JavaFX, so a test that shows a window needs no display and opens none on a desktop. -->
+        <dependency>
+            <groupId>one.jpro.platform.jpms</groupId>
+            <artifactId>openjfx-monocle</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>

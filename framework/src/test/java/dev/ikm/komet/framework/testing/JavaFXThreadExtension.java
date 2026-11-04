@@ -55,14 +55,29 @@ public class JavaFXThreadExtension implements InvocationInterceptor, BeforeAllCa
     public void beforeAll(ExtensionContext context) throws Exception {
         synchronized (LOCK) {
             if (!initialized) {
+                useHeadlessToolkit();
                 CountDownLatch latch = new CountDownLatch(1);
                 Platform.startup(latch::countDown);
                 if (!latch.await(5, TimeUnit.SECONDS)) {
                     throw new RuntimeException("JavaFX platform failed to start within 5 seconds");
                 }
+                // a test closing its window must not end the toolkit under the tests after it
+                Platform.setImplicitExit(false);
                 initialized = true;
             }
         }
+    }
+
+    /**
+     * Selects Monocle's headless platform, so a test that shows a window needs no display and puts
+     * nothing on the screen of a machine that has one. Must run before the toolkit starts.
+     */
+    private static void useHeadlessToolkit() {
+        System.setProperty("glass.platform", "Monocle");
+        System.setProperty("monocle.platform", "Headless");
+        System.setProperty("prism.order", "sw");
+        System.setProperty("prism.text", "t2k");
+        System.setProperty("java.awt.headless", "true");
     }
 
     @Override
