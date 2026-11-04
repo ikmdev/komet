@@ -96,6 +96,15 @@ public final class CardKlWindow extends AbstractChapterKlWindow<Pane> {
         return providerClassName;
     }
 
+    /**
+     * The card this window hosts.
+     *
+     * @return the card
+     */
+    public AbstractHostCard card() {
+        return card;
+    }
+
     private final UUID windowTopic;
     private UUID journalTopic;
     private final String providerClassName;

@@ -548,7 +548,13 @@ public class JournalController {
 
         // Focus-or-create for provider-contributed cards (ike-issues#1044): one editing
         // surface per card kind — front the open window, else create it.
-        makeCardWindowEventSubscriber = evt -> focusOrCreateCardWindow(evt.getProviderClassName());
+        makeCardWindowEventSubscriber = evt -> {
+            if (evt.getEventType() == dev.ikm.komet.layout_engine.host.MakeCardWindowEvent.CREATE_NEW) {
+                createCardWindow(evt);
+            } else {
+                focusOrCreateCardWindow(evt.getProviderClassName());
+            }
+        };
         journalEventBus.subscribe(journalTopic,
                 dev.ikm.komet.layout_engine.host.MakeCardWindowEvent.class,
                 makeCardWindowEventSubscriber);
@@ -851,10 +857,40 @@ public class JournalController {
      * @param cardProvider the discovered card provider selected from the "+" menu
      */
     private void createCardWindow(KlCardProvider cardProvider) {
+        setupWorkspaceWindow(newCardWindow(cardProvider));
+    }
+
+    private CardKlWindow newCardWindow(KlCardProvider cardProvider) {
         ViewProperties viewProperties =
                 windowView.makeOverridableViewProperties("JournalController.createCardWindow");
-        CardKlWindow cardWindow = CardKlWindow.create(journalTopic, cardProvider, viewProperties, null);
-        setupWorkspaceWindow(cardWindow);
+        return CardKlWindow.create(journalTopic, cardProvider, viewProperties, null);
+    }
+
+    /**
+     * Creates a new card window as a {@code MakeCardWindowEvent.CREATE_NEW} asks: beside the node it
+     * names, at its authored size, and hands the card to the publisher once it is on the workspace.
+     *
+     * @param event the gesture
+     */
+    private void createCardWindow(dev.ikm.komet.layout_engine.host.MakeCardWindowEvent event) {
+        for (KlCardProvider provider : PluggableService.load(KlCardProvider.class)) {
+            if (provider.getClass().getName().equals(event.getProviderClassName())) {
+                CardKlWindow window = newCardWindow(provider);
+                placeNear(window, event.getNear());
+                if (event.getAuthoredWidth() >= 0) {
+                    window.fxObject().getProperties().put(KLWorkspace.WINDOW_AUTHORED_WIDTH_KEY, event.getAuthoredWidth());
+                }
+                if (event.getAuthoredHeight() >= 0) {
+                    window.fxObject().getProperties().put(KLWorkspace.WINDOW_AUTHORED_HEIGHT_KEY, event.getAuthoredHeight());
+                }
+                setupWorkspaceWindow(window);
+                if (event.getOnCreated() != null) {
+                    event.getOnCreated().accept(window.card());
+                }
+                return;
+            }
+        }
+        LOG.warn("No card provider {} to create", event.getProviderClassName());
     }
 
     /**
