@@ -7448,26 +7448,66 @@ Styling a context menu for kview ui/ux controls
     -reference-color-19: #5D4037;
 }
 
-.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-0 { -fx-background-color: -reference-color-0; }
-.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-1 { -fx-background-color: -reference-color-1; }
-.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-2 { -fx-background-color: -reference-color-2; }
-.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-3 { -fx-background-color: -reference-color-3; }
-.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-4 { -fx-background-color: -reference-color-4; }
-.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-5 { -fx-background-color: -reference-color-5; }
-.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-6 { -fx-background-color: -reference-color-6; }
-.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-7 { -fx-background-color: -reference-color-7; }
-.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-8 { -fx-background-color: -reference-color-8; }
-.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-9 { -fx-background-color: -reference-color-9; }
-.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-10 { -fx-background-color: -reference-color-10; }
-.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-11 { -fx-background-color: -reference-color-11; }
-.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-12 { -fx-background-color: -reference-color-12; }
-.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-13 { -fx-background-color: -reference-color-13; }
-.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-14 { -fx-background-color: -reference-color-14; }
-.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-15 { -fx-background-color: -reference-color-15; }
-.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-16 { -fx-background-color: -reference-color-16; }
-.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-17 { -fx-background-color: -reference-color-17; }
-.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-18 { -fx-background-color: -reference-color-18; }
-.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-19 { -fx-background-color: -reference-color-19; }
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-0 {
+    -fx-background-color: -reference-color-0;
+}
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-1 {
+    -fx-background-color: -reference-color-1;
+}
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-2 {
+    -fx-background-color: -reference-color-2;
+}
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-3 {
+    -fx-background-color: -reference-color-3;
+}
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-4 {
+    -fx-background-color: -reference-color-4;
+}
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-5 {
+    -fx-background-color: -reference-color-5;
+}
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-6 {
+    -fx-background-color: -reference-color-6;
+}
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-7 {
+    -fx-background-color: -reference-color-7;
+}
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-8 {
+    -fx-background-color: -reference-color-8;
+}
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-9 {
+    -fx-background-color: -reference-color-9;
+}
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-10 {
+    -fx-background-color: -reference-color-10;
+}
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-11 {
+    -fx-background-color: -reference-color-11;
+}
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-12 {
+    -fx-background-color: -reference-color-12;
+}
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-13 {
+    -fx-background-color: -reference-color-13;
+}
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-14 {
+    -fx-background-color: -reference-color-14;
+}
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-15 {
+    -fx-background-color: -reference-color-15;
+}
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-16 {
+    -fx-background-color: -reference-color-16;
+}
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-17 {
+    -fx-background-color: -reference-color-17;
+}
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-18 {
+    -fx-background-color: -reference-color-18;
+}
+.gen-purpose-window .pattern-container .semantics-container .semantic-view > .reference-mark:reference-color-19 {
+    -fx-background-color: -reference-color-19;
+}
 
 .gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-0,
 .gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-1,
@@ -7491,26 +7531,66 @@ Styling a context menu for kview ui/ux controls
 .gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-19{
     -fx-border-width: 1 1 1 4;
 }
-.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-0 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-0; }
-.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-1 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-1; }
-.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-2 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-2; }
-.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-3 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-3; }
-.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-4 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-4; }
-.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-5 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-5; }
-.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-6 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-6; }
-.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-7 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-7; }
-.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-8 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-8; }
-.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-9 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-9; }
-.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-10 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-10; }
-.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-11 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-11; }
-.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-12 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-12; }
-.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-13 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-13; }
-.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-14 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-14; }
-.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-15 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-15; }
-.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-16 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-16; }
-.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-17 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-17; }
-.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-18 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-18; }
-.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-19 { -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-19; }
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-0 {
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-0;
+}
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-1 {
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-1;
+}
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-2 {
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-2;
+}
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-3 {
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-3;
+}
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-4 {
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-4;
+}
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-5 {
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-5;
+}
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-6 {
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-6;
+}
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-7 {
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-7;
+}
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-8 {
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-8;
+}
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-9 {
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-9;
+}
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-10 {
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-10;
+}
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-11 {
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-11;
+}
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-12 {
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-12;
+}
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-13 {
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-13;
+}
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-14 {
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-14;
+}
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-15 {
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-15;
+}
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-16 {
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-16;
+}
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-17 {
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-17;
+}
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-18 {
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-18;
+}
+.gen-purpose-window .section-titled-pane > .section-combo-box:reference-color-19 {
+    -fx-border-color: -Grey-5 -Grey-5 -Grey-5 -reference-color-19;
+}
 
 .gen-purpose-window .section-titled-pane .reference-strip:reference-color-0,
 .gen-purpose-window .section-titled-pane .reference-strip:reference-color-1,
@@ -7534,51 +7614,131 @@ Styling a context menu for kview ui/ux controls
 .gen-purpose-window .section-titled-pane .reference-strip:reference-color-19{
     -fx-border-width: 0 0 1 4;
 }
-.gen-purpose-window .section-titled-pane .reference-strip:reference-color-0 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-0; }
-.gen-purpose-window .section-titled-pane .reference-strip:reference-color-1 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-1; }
-.gen-purpose-window .section-titled-pane .reference-strip:reference-color-2 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-2; }
-.gen-purpose-window .section-titled-pane .reference-strip:reference-color-3 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-3; }
-.gen-purpose-window .section-titled-pane .reference-strip:reference-color-4 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-4; }
-.gen-purpose-window .section-titled-pane .reference-strip:reference-color-5 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-5; }
-.gen-purpose-window .section-titled-pane .reference-strip:reference-color-6 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-6; }
-.gen-purpose-window .section-titled-pane .reference-strip:reference-color-7 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-7; }
-.gen-purpose-window .section-titled-pane .reference-strip:reference-color-8 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-8; }
-.gen-purpose-window .section-titled-pane .reference-strip:reference-color-9 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-9; }
-.gen-purpose-window .section-titled-pane .reference-strip:reference-color-10 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-10; }
-.gen-purpose-window .section-titled-pane .reference-strip:reference-color-11 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-11; }
-.gen-purpose-window .section-titled-pane .reference-strip:reference-color-12 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-12; }
-.gen-purpose-window .section-titled-pane .reference-strip:reference-color-13 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-13; }
-.gen-purpose-window .section-titled-pane .reference-strip:reference-color-14 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-14; }
-.gen-purpose-window .section-titled-pane .reference-strip:reference-color-15 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-15; }
-.gen-purpose-window .section-titled-pane .reference-strip:reference-color-16 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-16; }
-.gen-purpose-window .section-titled-pane .reference-strip:reference-color-17 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-17; }
-.gen-purpose-window .section-titled-pane .reference-strip:reference-color-18 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-18; }
-.gen-purpose-window .section-titled-pane .reference-strip:reference-color-19 { -fx-border-color: transparent transparent #E3E8F0 -reference-color-19; }
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-0 {
+    -fx-border-color: transparent transparent #E3E8F0 -reference-color-0;
+}
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-1 {
+    -fx-border-color: transparent transparent #E3E8F0 -reference-color-1;
+}
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-2 {
+    -fx-border-color: transparent transparent #E3E8F0 -reference-color-2;
+}
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-3 {
+    -fx-border-color: transparent transparent #E3E8F0 -reference-color-3;
+}
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-4 {
+    -fx-border-color: transparent transparent #E3E8F0 -reference-color-4;
+}
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-5 {
+    -fx-border-color: transparent transparent #E3E8F0 -reference-color-5;
+}
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-6 {
+    -fx-border-color: transparent transparent #E3E8F0 -reference-color-6;
+}
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-7 {
+    -fx-border-color: transparent transparent #E3E8F0 -reference-color-7;
+}
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-8 {
+    -fx-border-color: transparent transparent #E3E8F0 -reference-color-8;
+}
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-9 {
+    -fx-border-color: transparent transparent #E3E8F0 -reference-color-9;
+}
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-10 {
+    -fx-border-color: transparent transparent #E3E8F0 -reference-color-10;
+}
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-11 {
+    -fx-border-color: transparent transparent #E3E8F0 -reference-color-11;
+}
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-12 {
+    -fx-border-color: transparent transparent #E3E8F0 -reference-color-12;
+}
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-13 {
+    -fx-border-color: transparent transparent #E3E8F0 -reference-color-13;
+}
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-14 {
+    -fx-border-color: transparent transparent #E3E8F0 -reference-color-14;
+}
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-15 {
+    -fx-border-color: transparent transparent #E3E8F0 -reference-color-15;
+}
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-16 {
+    -fx-border-color: transparent transparent #E3E8F0 -reference-color-16;
+}
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-17 {
+    -fx-border-color: transparent transparent #E3E8F0 -reference-color-17;
+}
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-18 {
+    -fx-border-color: transparent transparent #E3E8F0 -reference-color-18;
+}
+.gen-purpose-window .section-titled-pane .reference-strip:reference-color-19 {
+    -fx-border-color: transparent transparent #E3E8F0 -reference-color-19;
+}
 
 .gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced {
-    -fx-background-color: #F9FBFE;
-    -fx-border-width: 1 1 1 3;
+    /* Edge and wash as two background layers: a wider border would push the cells right. */
+    -fx-background-insets: 0, 0 0 0 3;
 }
-.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-0 { -fx-border-color: transparent transparent transparent -reference-color-0; }
-.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-1 { -fx-border-color: transparent transparent transparent -reference-color-1; }
-.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-2 { -fx-border-color: transparent transparent transparent -reference-color-2; }
-.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-3 { -fx-border-color: transparent transparent transparent -reference-color-3; }
-.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-4 { -fx-border-color: transparent transparent transparent -reference-color-4; }
-.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-5 { -fx-border-color: transparent transparent transparent -reference-color-5; }
-.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-6 { -fx-border-color: transparent transparent transparent -reference-color-6; }
-.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-7 { -fx-border-color: transparent transparent transparent -reference-color-7; }
-.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-8 { -fx-border-color: transparent transparent transparent -reference-color-8; }
-.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-9 { -fx-border-color: transparent transparent transparent -reference-color-9; }
-.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-10 { -fx-border-color: transparent transparent transparent -reference-color-10; }
-.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-11 { -fx-border-color: transparent transparent transparent -reference-color-11; }
-.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-12 { -fx-border-color: transparent transparent transparent -reference-color-12; }
-.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-13 { -fx-border-color: transparent transparent transparent -reference-color-13; }
-.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-14 { -fx-border-color: transparent transparent transparent -reference-color-14; }
-.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-15 { -fx-border-color: transparent transparent transparent -reference-color-15; }
-.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-16 { -fx-border-color: transparent transparent transparent -reference-color-16; }
-.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-17 { -fx-border-color: transparent transparent transparent -reference-color-17; }
-.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-18 { -fx-border-color: transparent transparent transparent -reference-color-18; }
-.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-19 { -fx-border-color: transparent transparent transparent -reference-color-19; }
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-0 {
+    -fx-background-color: -reference-color-0, #F9FBFE;
+}
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-1 {
+    -fx-background-color: -reference-color-1, #F9FBFE;
+}
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-2 {
+    -fx-background-color: -reference-color-2, #F9FBFE;
+}
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-3 {
+    -fx-background-color: -reference-color-3, #F9FBFE;
+}
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-4 {
+    -fx-background-color: -reference-color-4, #F9FBFE;
+}
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-5 {
+    -fx-background-color: -reference-color-5, #F9FBFE;
+}
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-6 {
+    -fx-background-color: -reference-color-6, #F9FBFE;
+}
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-7 {
+    -fx-background-color: -reference-color-7, #F9FBFE;
+}
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-8 {
+    -fx-background-color: -reference-color-8, #F9FBFE;
+}
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-9 {
+    -fx-background-color: -reference-color-9, #F9FBFE;
+}
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-10 {
+    -fx-background-color: -reference-color-10, #F9FBFE;
+}
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-11 {
+    -fx-background-color: -reference-color-11, #F9FBFE;
+}
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-12 {
+    -fx-background-color: -reference-color-12, #F9FBFE;
+}
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-13 {
+    -fx-background-color: -reference-color-13, #F9FBFE;
+}
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-14 {
+    -fx-background-color: -reference-color-14, #F9FBFE;
+}
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-15 {
+    -fx-background-color: -reference-color-15, #F9FBFE;
+}
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-16 {
+    -fx-background-color: -reference-color-16, #F9FBFE;
+}
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-17 {
+    -fx-background-color: -reference-color-17, #F9FBFE;
+}
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-18 {
+    -fx-background-color: -reference-color-18, #F9FBFE;
+}
+.gen-purpose-window .table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell:referenced:reference-color-19 {
+    -fx-background-color: -reference-color-19, #F9FBFE;
+}
 
 /*******************  Section reference strip  **************************/
 
