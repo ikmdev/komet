@@ -817,6 +817,20 @@ public class KonceptBadge extends HBox {
     /** Host opt-out flag for the definition popout; the applicability gate stays separate. */
     private boolean popoutSuppressed;
 
+    private boolean popoutOnHover;
+
+    /**
+     * Whether the definition popout shows only under the pointer. It then takes no room from the
+     * name, for a chip whose name a column has already capped: on a single line it floats over
+     * the pill's trailing end while the pointer is on the chip, so showing it moves nothing.
+     *
+     * @param onHover {@code true} to show the popout only under the pointer
+     */
+    public final void setPopoutOnHover(boolean onHover) {
+        this.popoutOnHover = onHover;
+        refreshPopout();
+    }
+
     /**
      * Whether this badge can honour a definition popout: a known concept with a view to
      * resolve its definition through. Pure gate, shared with the tests.
@@ -864,14 +878,34 @@ public class KonceptBadge extends HBox {
                 }
             });
         }
+        boolean floating = popoutOnHover && !multiLineLabel;
         if (multiLineLabel) {
             nameNode.setTrailingNode(popoutButton);
-        } else if (popoutPosition == PopoutPosition.AFTER_IDENTICON) {
+        } else if (popoutPosition == PopoutPosition.AFTER_IDENTICON && !floating) {
             getChildren().add(getChildren().indexOf(nameNode), popoutButton);
         } else {
             getChildren().add(popoutButton);
         }
+        popoutButton.setManaged(!floating);
+        popoutButton.setStyle(floating ? "-fx-background-color: " + SPEC.pillFillHex() + "; -fx-background-radius: 4;" : "");
+        popoutButton.visibleProperty().unbind();
+        if (popoutOnHover) {
+            popoutButton.visibleProperty().bind(hoverProperty());
+        } else {
+            popoutButton.setVisible(true);
+        }
         applyCompanionSeating();
+    }
+
+    /** Seats a floating popout over the pill's trailing end; the row's layout never counts it. */
+    @Override
+    protected void layoutChildren() {
+        super.layoutChildren();
+        if (popoutButton != null && !popoutButton.isManaged() && popoutButton.getParent() == this) {
+            double width = popoutButton.prefWidth(-1);
+            double height = popoutButton.prefHeight(-1);
+            popoutButton.resizeRelocate(getWidth() - snappedRightInset() - width, (getHeight() - height) / 2, width, height);
+        }
     }
 
     /**
