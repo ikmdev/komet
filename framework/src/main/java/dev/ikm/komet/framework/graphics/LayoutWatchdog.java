@@ -53,7 +53,9 @@ import java.util.function.Consumer;
  * <p>A node is watched by whether its {@code needsLayout} flag keeps changing, not by whether the
  * flag is set: a node can keep the flag with no layout coming, when it asks for one while its
  * parent is laying out, and that costs nothing. A window at rest has no pulses, so this costs
- * nothing there either; under a running animation it walks the scene once a second.
+ * nothing there either. Under a running animation it walks the scene every few seconds, which is
+ * why a loop may run that long before the looks begin, and once a second only while a node stays
+ * busy.
  */
 public final class LayoutWatchdog {
 
@@ -61,6 +63,8 @@ public final class LayoutWatchdog {
 
     /** How long one look at a scene lasts. */
     private static final long SAMPLE_NANOS = TimeUnit.SECONDS.toNanos(1);
+    /** How long a scene is left alone after a look finds nothing busy, as nearly every look does. */
+    private static final long REST_NANOS = TimeUnit.SECONDS.toNanos(5);
     /** The looks in a row, with no input, that a node must stay busy through before it is named. */
     private static final int SAMPLES_TO_REPORT = 5;
     /** The layouts in one look that make a node busy: more than a clock or a status line asks for. */
@@ -82,15 +86,16 @@ public final class LayoutWatchdog {
      * @return a subscription that stops the watching
      */
     public static Subscription install() {
-        Installer installer = new Installer(SAMPLE_NANOS, SAMPLES_TO_REPORT, LAYOUTS_PER_SAMPLE,
+        Installer installer = new Installer(SAMPLE_NANOS, REST_NANOS, SAMPLES_TO_REPORT, LAYOUTS_PER_SAMPLE,
                 path -> LOG.warn("{} is being laid out continuously with no input; it is keeping the JavaFX "
                         + "thread and the renderer busy. Look for a size or position it changes while laying out.", path));
         return installer::uninstall;
     }
 
     /** As {@link #install()}, with the timing and the report a test sets. */
-    static Subscription install(long sampleNanos, int samplesToReport, int layoutsPerSample, Consumer<String> report) {
-        return new Installer(sampleNanos, samplesToReport, layoutsPerSample, report)::uninstall;
+    static Subscription install(long sampleNanos, long restNanos, int samplesToReport, int layoutsPerSample,
+                                Consumer<String> report) {
+        return new Installer(sampleNanos, restNanos, samplesToReport, layoutsPerSample, report)::uninstall;
     }
 
     /**
@@ -192,6 +197,7 @@ public final class LayoutWatchdog {
     private static final class Installer {
 
         private final long sampleNanos;
+        private final long restNanos;
         private final int samplesToReport;
         private final int layoutsPerSample;
         private final Consumer<String> report;
@@ -203,8 +209,9 @@ public final class LayoutWatchdog {
             }
         };
 
-        Installer(long sampleNanos, int samplesToReport, int layoutsPerSample, Consumer<String> report) {
+        Installer(long sampleNanos, long restNanos, int samplesToReport, int layoutsPerSample, Consumer<String> report) {
             this.sampleNanos = sampleNanos;
+            this.restNanos = restNanos;
             this.samplesToReport = samplesToReport;
             this.layoutsPerSample = layoutsPerSample;
             this.report = report;
@@ -242,6 +249,7 @@ public final class LayoutWatchdog {
             private Scene scene;
             private Look look;
             private long lookStart;
+            private long restUntil = System.nanoTime();
             private boolean touched;
             private Set<String> suspects = Set.of();
             private int samples;
@@ -265,18 +273,30 @@ public final class LayoutWatchdog {
 
             private void pulse() {
                 long now = System.nanoTime();
-                if (look == null || now - lookStart >= sampleNanos) {
+                if (look == null) {
+                    if (now - restUntil >= 0) {
+                        startLook(now);
+                    }
+                } else if (now - lookStart >= sampleNanos) {
                     judge(now);
-                    look = new Look(scene.getRoot());
-                    lookStart = now;
-                    touched = false;
+                    if (samples > 0) {
+                        startLook(now);
+                    } else {
+                        restUntil = now + restNanos;
+                    }
                 }
             }
 
+            private void startLook(long now) {
+                look = new Look(scene.getRoot());
+                lookStart = now;
+                touched = false;
+            }
+
             private void judge(long now) {
-                // pulses that stopped between two looks are no continuous layout
-                boolean adjacent = look != null && now - lookStart < 2 * sampleNanos;
-                Set<String> busy = look == null ? Set.of() : look.end(layoutsPerSample);
+                // pulses that stopped during a look are no continuous layout
+                boolean adjacent = now - lookStart < 2 * sampleNanos;
+                Set<String> busy = look.end(layoutsPerSample);
                 look = null;
                 if (touched || !adjacent || busy.isEmpty()) {
                     suspects = Set.of();

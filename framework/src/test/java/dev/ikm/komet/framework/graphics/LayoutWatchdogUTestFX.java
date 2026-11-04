@@ -53,6 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class LayoutWatchdogUTestFX {
 
     private static final long SAMPLE_NANOS = TimeUnit.MILLISECONDS.toNanos(100);
+    private static final long REST_NANOS = TimeUnit.MILLISECONDS.toNanos(500);
 
     /** A field beside a label that will not give way, in a row narrower than the two. */
     private static Parent row(double width, boolean guarded) {
@@ -103,7 +104,7 @@ class LayoutWatchdogUTestFX {
     void aWatchedWindowNamesTheNodeOnce() throws Exception {
         BlockingQueue<String> reports = new LinkedBlockingQueue<>();
         Stage stage = onFx(() -> {
-            Subscription watching = LayoutWatchdog.install(SAMPLE_NANOS, 3, 2, reports::add);
+            Subscription watching = LayoutWatchdog.install(SAMPLE_NANOS, REST_NANOS, 3, 2, reports::add);
             Stage shown = new Stage();
             shown.setScene(row(300, false).getScene());
             shown.setOnHidden(event -> watching.unsubscribe());
@@ -130,7 +131,7 @@ class LayoutWatchdogUTestFX {
         Timeline ticking = new Timeline(new KeyFrame(Duration.millis(40), event -> clock.setText(clock.getText() + "0")));
         ticking.setCycleCount(Animation.INDEFINITE);
         Stage stage = onFx(() -> {
-            Subscription watching = LayoutWatchdog.install(SAMPLE_NANOS, 3, 10, reports::add);
+            Subscription watching = LayoutWatchdog.install(SAMPLE_NANOS, REST_NANOS, 3, 10, reports::add);
             Stage shown = new Stage();
             shown.setScene(new Scene(new StackPane(clock), 300, 80));
             shown.setOnHidden(event -> watching.unsubscribe());
