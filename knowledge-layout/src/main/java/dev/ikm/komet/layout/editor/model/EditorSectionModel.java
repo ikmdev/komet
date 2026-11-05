@@ -27,6 +27,7 @@ import java.util.prefs.BackingStoreException;
 import static dev.ikm.komet.preferences.KLEditorPreferences.GridLayoutKey.KL_GRID_NUMBER_COLUMNS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_ADDITIONAL_SECTIONS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_REFERENCE_COMPONENT;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_REFERENCE_FIELD_ORDER;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_SUPPLEMENTAL_AREAS;
 import static dev.ikm.komet.preferences.KLEditorPreferences.ListKey.PATTERN_LIST;
 
@@ -63,6 +64,14 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
         name.subscribe(() -> {
             if (!settingNameInternally) {
                 nameManuallyAssigned = true;
+            }
+        });
+        // The field order indexes into the reference component's pattern, so it means nothing for
+        // another pattern. Resolving the stored reference on load sets it from null, which keeps the
+        // stored order.
+        referenceComponent.subscribe((previous, current) -> {
+            if (previous != null && (current == null || current.getNid() != previous.getNid())) {
+                referenceFieldOrder.clear();
             }
         });
     }
@@ -110,6 +119,9 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
 
         sectionPreferences.getEntity(KL_REFERENCE_COMPONENT).ifPresent(referenceComponent ->
                 unresolvedReferenceComponentNid = referenceComponent.nid());
+        referenceFieldOrder.setAll(sectionPreferences.getList(KL_REFERENCE_FIELD_ORDER).stream()
+                .map(Integer::valueOf)
+                .toList());
 
         List<EditorPatternModel> editorPatternModels = EditorPatternModel.load(sectionPreferences, viewCalculator);
         getPatterns().setAll(editorPatternModels);
@@ -239,6 +251,9 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
         if (getReferenceComponent() != null) {
             sectionPreferences.putEntity(KL_REFERENCE_COMPONENT, getReferenceComponent().getPatternFacade());
         }
+        sectionPreferences.putList(KL_REFERENCE_FIELD_ORDER, referenceFieldOrder.stream()
+                .map(String::valueOf)
+                .toList());
 
         // The Patterns this Section holds, in the order it holds them, by placement id — a Pattern can be
         // placed more than once, so the placement rather than the Pattern is what's listed. Written from
@@ -270,6 +285,29 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
         } catch (BackingStoreException e) {
             LOG.error("Error writing Section details to preferences", e);
         }
+    }
+
+    /**
+     * Every field index below {@code fieldCount} once, in the order a preference list such as
+     * {@link #getReferenceFieldOrder()} asks for: the listed indexes first, as listed, then the
+     * rest in pattern order. An index the pattern has no field at, or listed twice, is ignored.
+     *
+     * @param preferredOrder the indexes to lead with
+     * @param fieldCount     how many fields the pattern has
+     */
+    public static List<Integer> fieldIndexesInOrder(List<Integer> preferredOrder, int fieldCount) {
+        List<Integer> indexes = new ArrayList<>(fieldCount);
+        for (Integer index : preferredOrder) {
+            if (index >= 0 && index < fieldCount && !indexes.contains(index)) {
+                indexes.add(index);
+            }
+        }
+        for (int index = 0; index < fieldCount; index++) {
+            if (!indexes.contains(index)) {
+                indexes.add(index);
+            }
+        }
+        return indexes;
     }
 
     /*******************************************************************************
@@ -335,4 +373,16 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
     public EditorPatternModel getReferenceComponent() { return referenceComponent.get(); }
     public ObjectProperty<EditorPatternModel> referenceComponentProperty() { return referenceComponent; }
     public void setReferenceComponent(EditorPatternModel editorPatternModel) { referenceComponent.set(editorPatternModel); }
+
+    // -- reference field order
+    /**
+     * The fields of the reference component's pattern, by index in the pattern, in the order the
+     * author wants them to name the semantic a user of the window chooses for this Section: the
+     * first is what the Section's reference combobox shows, and the reference strip lists them in
+     * this order. Fields missing from the list follow in pattern order, so an empty list (the
+     * default) means pattern order throughout; see {@link #fieldIndexesInOrder(List, int)}. Cleared
+     * when the reference component changes to another pattern.
+     */
+    private final ObservableList<Integer> referenceFieldOrder = FXCollections.observableArrayList();
+    public ObservableList<Integer> getReferenceFieldOrder() { return referenceFieldOrder; }
 }

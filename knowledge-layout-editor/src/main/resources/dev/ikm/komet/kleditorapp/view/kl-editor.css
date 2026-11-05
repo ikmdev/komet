@@ -535,6 +535,117 @@
     -fx-text-fill: #888;
 }
 
+/**********************  Reference Fields **************************/
+
+/* Reference label: the reference pattern's fields in the order they name the chosen semantic,
+   under the Reference Component it qualifies. Indented off a guide line like the pattern pane's
+   rule lists, one field per row with its position, name, where that position is used, and arrows */
+.right-properties-pane .section-properties .reference-fields {
+    -fx-spacing: 6;
+    -fx-border-color: transparent transparent transparent #d0d0d0;
+    -fx-border-width: 0 0 0 2;
+    -fx-border-insets: 0 0 0 6;
+    -fx-padding: 6 0 2 20;
+}
+
+.right-properties-pane .section-properties .reference-fields .fields-title {
+    -fx-font-family: "Noto Sans Bold";
+    -fx-font-size: 1em; /* 12px */
+    -fx-text-fill: #333;
+}
+
+.right-properties-pane .section-properties .reference-fields .fields-hint {
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: #888;
+}
+
+.right-properties-pane .section-properties .reference-fields .rows-container {
+    -fx-background-color: white;
+    -fx-background-radius: 6;
+    -fx-border-color: #d8d8d8;
+    -fx-border-radius: 6;
+}
+
+.right-properties-pane .section-properties .reference-fields .reference-field-row {
+    -fx-spacing: 6;
+    -fx-padding: 4 6 4 8;
+    -fx-border-color: #ececec transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+
+.right-properties-pane .section-properties .reference-fields .reference-field-row:first-child {
+    -fx-border-width: 0;
+}
+
+.right-properties-pane .section-properties .reference-fields .reference-field-row.lead {
+    -fx-background-color: #f4f8ff;
+}
+
+/* While a row is dragged its image travels with the cursor (see SectionReferenceFieldsView), so
+   the row itself fades to a stand-in; the row under the cursor shows where it would land */
+.right-properties-pane .section-properties .reference-fields .reference-field-row:dragging {
+    -fx-opacity: 0.35;
+}
+
+.right-properties-pane .section-properties .reference-fields .reference-field-row:drop-target {
+    -fx-border-color: #3f7be8 transparent transparent transparent;
+    -fx-border-width: 2 0 0 0;
+}
+
+.right-properties-pane .section-properties .reference-fields .reference-field-row .position {
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: #888;
+    -fx-min-width: 14;
+}
+
+.right-properties-pane .section-properties .reference-fields .reference-field-row .field-name {
+    -fx-font-size: 1em; /* 12px */
+    -fx-text-fill: #333;
+}
+
+.right-properties-pane .section-properties .reference-fields .reference-field-row .use {
+    -fx-font-size: 0.833333em; /* 10px */
+    -fx-text-fill: #888;
+    -fx-background-color: #f3f5f9;
+    -fx-background-radius: 3;
+    -fx-border-color: #d8d8d8;
+    -fx-border-radius: 3;
+    -fx-padding: 0 5 0 5;
+}
+
+.right-properties-pane .section-properties .reference-fields .reference-field-row .use.lead {
+    -fx-text-fill: #3f7be8;
+    -fx-background-color: #eef3fd;
+    -fx-border-color: #c8d7f5;
+}
+
+.right-properties-pane .section-properties .reference-fields .icon-button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 3;
+    -fx-border-color: transparent;
+    -fx-padding: 3 5 3 5;
+}
+
+.right-properties-pane .section-properties .reference-fields .icon-button:hover {
+    -fx-background-color: #ececec;
+}
+
+.right-properties-pane .section-properties .reference-fields .icon-button .icon {
+    -fx-background-color: #8a8a8a;
+    -fx-scale-shape: true;
+    -fx-min-width: 6;
+    -fx-max-width: 6;
+    -fx-min-height: 9;
+    -fx-max-height: 9;
+}
+
+.right-properties-pane .section-properties .reference-fields .reset-link {
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-padding: 0;
+    -fx-border-width: 0;
+}
+
 /******************************************************************************
  * Pattern Properties Pane                                                    *
  ******************************************************************************/

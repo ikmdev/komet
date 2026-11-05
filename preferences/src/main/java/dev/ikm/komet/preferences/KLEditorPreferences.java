@@ -64,6 +64,14 @@ public class KLEditorPreferences {
     public static final String KL_REFERENCE_COMPONENT = "kl-reference-component";
 
     /**
+     * List of the fields of a Section's reference component pattern, by index in the pattern, in the
+     * order the author wants them to name the chosen semantic: the first is what the Section's
+     * reference combobox shows, and the reference strip lists them in this order. Fields missing
+     * from the list follow in pattern order; no list means pattern order throughout.
+     */
+    public static final String KL_REFERENCE_FIELD_ORDER = "kl-reference-field-order";
+
+    /**
      * Key for the list of supplemental areas placed in a Section (a list of area ids).
      */
     public static final String KL_SUPPLEMENTAL_AREAS = "KL-SUPPLEMENTAL-AREAS";

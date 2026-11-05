@@ -5,6 +5,7 @@ import dev.ikm.komet.framework.observable.ObservableSemantic;
 import dev.ikm.komet.framework.observable.ObservableSemanticVersion;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.klfields.KlFieldType;
+import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.tinkar.common.id.LongIdCollection;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
@@ -43,14 +44,17 @@ final class ReferenceComponentSummaries {
     }
 
     /**
-     * Per candidate (by nid), its fields as display text in pattern order. A candidate that is not
-     * a semantic, or that the view holds no version of, gets an empty list.
+     * Per candidate (by nid), its fields as display text in the section's preferred order (see
+     * {@link EditorSectionModel#getReferenceFieldOrder()}), pattern order for the fields the
+     * preference leaves out. A candidate that is not a semantic, or that the view holds no version
+     * of, gets an empty list.
      */
-    static Map<Long, List<FieldText>> summarize(List<? extends EntityFacade> candidates, ViewProperties viewProperties) {
+    static Map<Long, List<FieldText>> summarize(List<? extends EntityFacade> candidates, List<Integer> preferredFieldOrder,
+                                                 ViewProperties viewProperties) {
         ViewCalculator calculator = viewProperties.calculator();
         Map<Long, List<FieldText>> summaries = new HashMap<>();
         for (EntityFacade candidate : candidates) {
-            summaries.put(candidate.nid(), fieldTexts(candidate, calculator));
+            summaries.put(candidate.nid(), fieldTexts(candidate, preferredFieldOrder, calculator));
         }
         return summaries;
     }
@@ -70,12 +74,12 @@ final class ReferenceComponentSummaries {
     }
 
     /**
-     * The candidate's fields as display text in pattern order, leaving out fields of a type that
-     * has no text form. The values are those of the version the window renders: the latest for
-     * the view through the semantic's observable snapshot, the way the presenters resolve it (see
-     * AbstractPatternSemanticsPresenter.latestVersionForView).
+     * The candidate's fields as display text in the preferred order, leaving out fields of a type
+     * that has no text form. The values are those of the version the window renders: the latest
+     * for the view through the semantic's observable snapshot, the way the presenters resolve it
+     * (see AbstractPatternSemanticsPresenter.latestVersionForView).
      */
-    private static List<FieldText> fieldTexts(EntityFacade candidate, ViewCalculator calculator) {
+    private static List<FieldText> fieldTexts(EntityFacade candidate, List<Integer> preferredFieldOrder, ViewCalculator calculator) {
         if (!(candidate instanceof SemanticEntity<?> semanticEntity)) {
             return List.of();
         }
@@ -94,8 +98,9 @@ final class ReferenceComponentSummaries {
 
         ImmutableList<? extends FieldDefinitionForEntity> definitions = latestPattern.get().fieldDefinitions();
         ImmutableList<Object> values = version.fieldValues();
+        int fieldCount = Math.min(definitions.size(), values.size());
         List<FieldText> fields = new ArrayList<>();
-        for (int i = 0; i < definitions.size() && i < values.size(); i++) {
+        for (int i : EditorSectionModel.fieldIndexesInOrder(preferredFieldOrder, fieldCount)) {
             FieldDefinitionForEntity definition = definitions.get(i);
             String value = valueText(values.get(i), definition.dataTypeNid(), calculator);
             if (value == null) {

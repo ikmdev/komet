@@ -33,6 +33,8 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
 
     private ComboBox<EditorPatternModel> referenceComponentCB;
 
+    private final SectionReferenceFieldsView referenceFieldsView = new SectionReferenceFieldsView();
+
     public SectionPropertiesPane() {
         super(true);
 
@@ -139,7 +141,8 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
             gridLayoutGridPane,
             separator2,
             interactionTitleLabel,
-            interactionGridPane
+            interactionGridPane,
+            referenceFieldsView
         );
 
         setContent(sectionMainContainer);
@@ -181,6 +184,7 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
         startCollapsedTS.selectedProperty().bindBidirectional(currentlyShownModel.startCollapsedProperty());
 
         referenceComponentCB.valueProperty().bindBidirectional(currentlyShownModel.referenceComponentProperty());
+        referenceFieldsView.setSection(currentlyShownModel);
     }
 
     @Override
@@ -188,5 +192,6 @@ public class SectionPropertiesPane extends ControlBasePropertiesPane<EditorSecti
         sectionNameTextField.textProperty().unbindBidirectional(currentlyShownModel.nameProperty());
         startCollapsedTS.selectedProperty().unbindBidirectional(currentlyShownModel.startCollapsedProperty());
         referenceComponentCB.valueProperty().unbindBidirectional(currentlyShownModel.referenceComponentProperty());
+        referenceFieldsView.setSection(null);
     }
 }

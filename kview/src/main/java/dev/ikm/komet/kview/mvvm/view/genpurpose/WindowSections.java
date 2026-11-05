@@ -350,6 +350,7 @@ final class WindowSections {
         });
 
         titledPane.getReferenceComponents().subscribe(() -> updateReferenceSummaries(sectionModel, titledPane));
+        sectionModel.getReferenceFieldOrder().subscribe(() -> updateReferenceSummaries(sectionModel, titledPane));
         titledPane.selectedReferenceComponentProperty().subscribe(() -> updateReferenceStrip(sectionModel, titledPane));
         updateReferenceSummaries(sectionModel, titledPane);
 
@@ -430,8 +431,8 @@ final class WindowSections {
      * on the chosen semantics, which depend on how many options the section has.
      */
     private void updateReferenceSummaries(EditorSectionModel section, SectionTitledPane<EntityFacade> titledPane) {
-        sectionReferenceSummaries.put(section,
-                ReferenceComponentSummaries.summarize(titledPane.getReferenceComponents(), viewProperties));
+        sectionReferenceSummaries.put(section, ReferenceComponentSummaries.summarize(
+                titledPane.getReferenceComponents(), section.getReferenceFieldOrder(), viewProperties));
         updateReferenceStrip(section, titledPane);
         // The closed combobox only re-reads its texts when the selection changes.
         titledPane.refreshReferenceComponentLabel();
