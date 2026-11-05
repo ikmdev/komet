@@ -379,8 +379,9 @@ public class EditorSectionModel extends EditorModelBase implements ParentGridMod
      * The fields of the reference component's pattern, by index in the pattern, in the order the
      * author wants them to name the semantic a user of the window chooses for this Section: the
      * first is what the Section's reference combobox shows, and the reference strip lists them in
-     * this order. Fields missing from the list follow in pattern order, so an empty list (the
-     * default) means pattern order throughout; see {@link #fieldIndexesInOrder(List, int)}. Cleared
+     * this order. Fields missing from the list follow in pattern order (see
+     * {@link #fieldIndexesInOrder(List, int)}). An empty list (the default) sets no order: the
+     * window then orders the fields by how well their values tell the semantics apart. Cleared
      * when the reference component changes to another pattern.
      */
     private final ObservableList<Integer> referenceFieldOrder = FXCollections.observableArrayList();

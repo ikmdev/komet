@@ -17,6 +17,7 @@ import org.eclipse.collections.api.list.ImmutableList;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -28,9 +29,10 @@ import java.util.StringJoiner;
  * component. Those semantics all share the same referenced component and pattern, so the label
  * they get everywhere else ("Module in Test Performed Pattern") is the same for every one of them.
  * What tells them apart is their field values, so this class turns each candidate's fields into
- * display text, in pattern order: the closed combobox shows the first field's value, a dropdown
- * option leads with the first {@value #OPTION_FIELD_COUNT} values, and the reference strip lists
- * every field.
+ * display text, in the order the layout author set or, failing that, the order that best tells
+ * the candidates apart: the closed combobox shows the first field's value, a dropdown option
+ * leads with the first {@value #OPTION_FIELD_COUNT} values, and the reference strip lists every
+ * field.
  */
 final class ReferenceComponentSummaries {
 
@@ -44,18 +46,46 @@ final class ReferenceComponentSummaries {
     }
 
     /**
-     * Per candidate (by nid), its fields as display text in the section's preferred order (see
-     * {@link EditorSectionModel#getReferenceFieldOrder()}), pattern order for the fields the
-     * preference leaves out. A candidate that is not a semantic, or that the view holds no version
-     * of, gets an empty list.
+      * Per candidate (by nid), its fields as display text, in the order the layout author set for
+     * the section (see {@link EditorSectionModel#getReferenceFieldOrder()}, pattern order for the
+     * fields it leaves out) or, with no order set, the order that best tells the candidates apart
+     * ({@link AutomaticFieldOrder}). A candidate that is not a semantic, or that the view
+     * holds no version of, gets an empty list.
      */
     static Map<Long, List<FieldText>> summarize(List<? extends EntityFacade> candidates, List<Integer> preferredFieldOrder,
                                                  ViewProperties viewProperties) {
         ViewCalculator calculator = viewProperties.calculator();
-        Map<Long, List<FieldText>> summaries = new HashMap<>();
+        Map<Long, List<FieldText>> inPatternOrder = new LinkedHashMap<>();
+        int fieldCount = 0;
         for (EntityFacade candidate : candidates) {
-            summaries.put(candidate.nid(), fieldTexts(candidate, preferredFieldOrder, calculator));
+            List<FieldText> fields = fieldTexts(candidate, calculator);
+            inPatternOrder.put(candidate.nid(), fields);
+            fieldCount = Math.max(fieldCount, fields.size());
         }
+
+        List<Integer> order;
+        if (preferredFieldOrder.isEmpty()) {
+            List<List<String>> valuesPerCandidate = new ArrayList<>();
+            for (List<FieldText> fields : inPatternOrder.values()) {
+                if (!fields.isEmpty()) {
+                    valuesPerCandidate.add(fields.stream().map(field -> field == null ? "" : field.value()).toList());
+                }
+            }
+            order = AutomaticFieldOrder.rank(valuesPerCandidate, fieldCount);
+        } else {
+            order = EditorSectionModel.fieldIndexesInOrder(preferredFieldOrder, fieldCount);
+        }
+
+        Map<Long, List<FieldText>> summaries = new HashMap<>();
+        inPatternOrder.forEach((nid, fields) -> {
+            List<FieldText> ordered = new ArrayList<>();
+            for (int index : order) {
+                if (index < fields.size() && fields.get(index) != null) {
+                    ordered.add(fields.get(index));
+                }
+            }
+            summaries.put(nid, ordered);
+        });
         return summaries;
     }
 
@@ -74,12 +104,13 @@ final class ReferenceComponentSummaries {
     }
 
     /**
-     * The candidate's fields as display text in the preferred order, leaving out fields of a type
-     * that has no text form. The values are those of the version the window renders: the latest
-     * for the view through the semantic's observable snapshot, the way the presenters resolve it
-     * (see AbstractPatternSemanticsPresenter.latestVersionForView).
+     * The candidate's fields as display text in pattern order, null for a field of a type that has
+     * no text form so that the list lines up with the pattern's definitions. The values are those
+     * of the version the window renders: the latest for the view through the semantic's observable
+     * snapshot, the way the presenters resolve it (see
+     * AbstractPatternSemanticsPresenter.latestVersionForView).
      */
-    private static List<FieldText> fieldTexts(EntityFacade candidate, List<Integer> preferredFieldOrder, ViewCalculator calculator) {
+    private static List<FieldText> fieldTexts(EntityFacade candidate, ViewCalculator calculator) {
         if (!(candidate instanceof SemanticEntity<?> semanticEntity)) {
             return List.of();
         }
@@ -100,10 +131,11 @@ final class ReferenceComponentSummaries {
         ImmutableList<Object> values = version.fieldValues();
         int fieldCount = Math.min(definitions.size(), values.size());
         List<FieldText> fields = new ArrayList<>();
-        for (int i : EditorSectionModel.fieldIndexesInOrder(preferredFieldOrder, fieldCount)) {
+        for (int i = 0; i < fieldCount; i++) {
             FieldDefinitionForEntity definition = definitions.get(i);
             String value = valueText(values.get(i), definition.dataTypeNid(), calculator);
             if (value == null) {
+                fields.add(null);
                 continue;
             }
             String name = describe(definition.meaningNid(), calculator);

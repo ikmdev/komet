@@ -29,10 +29,11 @@ import java.util.List;
  * The "Reference label" area of the {@link SectionPropertiesPane}'s INTERACTION group, shown while
  * the Section has a reference component: the fields of that pattern, one per row, in the order
  * they name the semantic a user of the window chooses for the Section (see
- * {@link EditorSectionModel#getReferenceFieldOrder()}). The author reorders them by dragging a row
- * or with its arrows; each row says where its position is used (the first is the combobox's
- * value, the first two lead a dropdown option, every one is in the reference strip). A link puts
- * them back in pattern order.
+ * {@link EditorSectionModel#getReferenceFieldOrder()}). Until the author sets an order the window
+ * works one out from the semantics' values, and the list shows the fields in pattern order,
+ * dimmed, saying so. The author fixes an order by dragging a row or with its arrows; each row then
+ * says where its position is used (the first is the combobox's value, the first two lead a
+ * dropdown option, every one is in the reference strip). A link goes back to automatic.
  */
 public class SectionReferenceFieldsView extends VBox {
     public static final String DEFAULT_STYLE_CLASS = "reference-fields";
@@ -48,7 +49,17 @@ public class SectionReferenceFieldsView extends VBox {
     private static final double LIFT_SHADOW_RADIUS = 10;
     private static final double LIFT_SHADOW_OFFSET_Y = 3;
 
+    /** On the view while the Section has no order of its own, so the window orders the fields itself. */
+    private static final PseudoClass AUTOMATIC = PseudoClass.getPseudoClass("automatic");
+
+    private static final String AUTOMATIC_HINT = "Automatic: the window orders the fields by how much their values "
+            + "differ between the semantics. Reorder to fix the order.";
+    private static final String MANUAL_HINT = "Order of the fields naming the chosen semantic. The first shows in the "
+            + "combobox; the strip lists them in this order.";
+
+    private final Label hintLabel = new Label();
     private final VBox rowsContainer = new VBox();
+    private final Hyperlink resetLink = new Hyperlink("Reset to automatic");
 
     private EditorSectionModel section;
     private Subscription sectionSubscription = Subscription.EMPTY;
@@ -57,14 +68,11 @@ public class SectionReferenceFieldsView extends VBox {
         Label titleLabel = new Label("Reference label");
         titleLabel.getStyleClass().add("fields-title");
 
-        Label hintLabel = new Label("Order of the fields naming the chosen semantic. The first shows in the "
-                + "combobox; the strip lists them in this order.");
         hintLabel.getStyleClass().add("fields-hint");
         hintLabel.setWrapText(true);
 
         rowsContainer.getStyleClass().add("rows-container");
 
-        Hyperlink resetLink = new Hyperlink("Reset to pattern order");
         resetLink.getStyleClass().add("reset-link");
         resetLink.setOnAction(_ -> section.getReferenceFieldOrder().clear());
 
@@ -106,37 +114,48 @@ public class SectionReferenceFieldsView extends VBox {
             return;
         }
 
+        // With no order of its own the Section's fields are shown in pattern order, dimmed and
+        // without positions or uses: the window works those out from the semantics' values.
+        boolean automatic = section.getReferenceFieldOrder().isEmpty();
+        pseudoClassStateChanged(AUTOMATIC, automatic);
+        hintLabel.setText(automatic ? AUTOMATIC_HINT : MANUAL_HINT);
+        resetLink.setDisable(automatic);
+
         ImmutableList<FieldDefinitionRecord> fields = pattern.getFieldDefinitions();
         List<Integer> order = EditorSectionModel.fieldIndexesInOrder(section.getReferenceFieldOrder(), fields.size());
         for (int position = 0; position < order.size(); position++) {
-            rowsContainer.getChildren().add(createRow(fields.get(order.get(position)), position, order));
+            rowsContainer.getChildren().add(createRow(fields.get(order.get(position)), position, order, automatic));
         }
     }
 
-    private HBox createRow(FieldDefinitionRecord field, int position, List<Integer> order) {
-        Label positionLabel = new Label(String.valueOf(position + 1));
-        positionLabel.getStyleClass().add("position");
-
+    private HBox createRow(FieldDefinitionRecord field, int position, List<Integer> order, boolean automatic) {
         Label fieldNameLabel = new Label(field.meaning().description());
         fieldNameLabel.getStyleClass().add("field-name");
         fieldNameLabel.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(fieldNameLabel, Priority.ALWAYS);
-
-        boolean leads = position < POSITION_USES.length;
-        Label useLabel = new Label(leads ? POSITION_USES[position] : STRIP_USE);
-        useLabel.getStyleClass().addAll("use", leads ? "lead" : "strip");
 
         Button upButton = createMoveButton("chevron-up", position, position - 1, order);
         upButton.setDisable(position == 0);
         Button downButton = createMoveButton("chevron-down", position, position + 1, order);
         downButton.setDisable(position == order.size() - 1);
 
-        HBox row = new HBox(positionLabel, fieldNameLabel, useLabel, upButton, downButton);
+        HBox row = new HBox(fieldNameLabel, upButton, downButton);
         row.getStyleClass().add("reference-field-row");
-        if (leads) {
-            row.getStyleClass().add("lead");
-        }
         row.setAlignment(Pos.CENTER_LEFT);
+
+        if (!automatic) {
+            Label positionLabel = new Label(String.valueOf(position + 1));
+            positionLabel.getStyleClass().add("position");
+            row.getChildren().addFirst(positionLabel);
+
+            boolean leads = position < POSITION_USES.length;
+            Label useLabel = new Label(leads ? POSITION_USES[position] : STRIP_USE);
+            useLabel.getStyleClass().addAll("use", leads ? "lead" : "strip");
+            row.getChildren().add(row.getChildren().indexOf(upButton), useLabel);
+            if (leads) {
+                row.getStyleClass().add("lead");
+            }
+        }
 
         // Drag a row onto another to put it in that one's place. The row lifts off with the cursor
         // as a shadowed image of itself, leaving a dimmed stand-in in the list; the row under the

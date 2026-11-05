@@ -67,7 +67,8 @@ public class KLEditorPreferences {
      * List of the fields of a Section's reference component pattern, by index in the pattern, in the
      * order the author wants them to name the chosen semantic: the first is what the Section's
      * reference combobox shows, and the reference strip lists them in this order. Fields missing
-     * from the list follow in pattern order; no list means pattern order throughout.
+     * from the list follow in pattern order. No list, or an empty one, sets no order: the window
+     * then orders the fields by how well their values tell the semantics apart.
      */
     public static final String KL_REFERENCE_FIELD_ORDER = "kl-reference-field-order";
 

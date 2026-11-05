@@ -603,6 +603,12 @@
     -fx-text-fill: #333;
 }
 
+/* With no order of the author's own the fields are listed in pattern order only as a starting
+   point for one, so they read as muted as the hint saying the window orders them */
+.right-properties-pane .section-properties .reference-fields:automatic .reference-field-row .field-name {
+    -fx-text-fill: #888;
+}
+
 .right-properties-pane .section-properties .reference-fields .reference-field-row .use {
     -fx-font-size: 0.833333em; /* 10px */
     -fx-text-fill: #888;
