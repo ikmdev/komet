@@ -56,15 +56,9 @@ import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.Separator;
-import javafx.scene.layout.VBox;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,29 +95,19 @@ public class GenPurposeFieldsController {
      */
     public static final String CONFIRM_CLEAR_MESSAGE = "Are you sure you want to clear the form? All entered data will be lost.";
 
-    @FXML
-    private VBox editFieldsVBox;
-    @FXML
-    private Button cancelButton;
-
-    @FXML
-    private Button clearOrResetFormButton;
-
-    @FXML
-    private Button submitButton;
+    private final GenPurposeFieldsView view;
 
     /**
      * What the window is editing: the form follows its mode, edits on its coordinate and, unless
      * editing through {@link #formComposer}, in its composer.
      */
-    private WindowEditSession session;
+    private final WindowEditSession session;
 
     // ObservableComposer integration for proper transaction management
     private ObservableComposer.EntityComposer<ObservableSemanticVersion.Editable, ObservableSemantic> semanticEditor;
     private ObservableSemanticVersion.Editable editableVersion;
     private ObservableStamp currentEditStamp;
 
-    private final List<Node> nodes = new ArrayList<>();
     private final List<KlField> klFields = new ArrayList<>();
 
     private int committedHash;
@@ -158,15 +142,12 @@ public class GenPurposeFieldsController {
      */
     private ObservableComposer formComposer;
 
-    @FXML
-    private Label formTitleLabel;
-
     /**
      * Whether this form instance is the properties panel's DEFAULTS tab, editing the pattern's
      * defaults semantic (see {@link GenPurposePropertiesController#showDefaultsForm}), rather
      * than its ADD/EDIT tab editing the section patterns' semantics.
      */
-    private boolean defaultsForm;
+    private final boolean isDefaultsForm;
 
     /**
      * Where a submitted semantic goes once its edited values are saved: the window, which
@@ -197,13 +178,6 @@ public class GenPurposeFieldsController {
         this.onCloseRequested = onCloseRequested;
     }
 
-    public void setDefaultsForm(boolean defaultsForm) {
-        this.defaultsForm = defaultsForm;
-        // The defaults form publishes on its own button (see submit) rather than leaving them uncommitted for the
-        // toolbar's Publish, so its button says what it does.
-        submitButton.setText(defaultsForm ? "Publish" : "Submit");
-    }
-
 //    private void enableDisableButtons() {
 //        boolean emptyFields = checkForEmptyFields();
 //        int uncommittedHash = calculateHashValue(getObservableEditables(), getStampCalculator());
@@ -221,18 +195,6 @@ public class GenPurposeFieldsController {
 
     private ObservableComposer getComposer() {
         return formComposer != null ? formComposer : session.createOrGetComposer();
-    }
-
-    /** Sets what the window is editing. The form's Clear/Reset button follows the window's mode. */
-    public void setSession(WindowEditSession session) {
-        this.session = session;
-        session.modeProperty().subscribe((mode) -> {
-            if (mode == FormMode.EDIT) {
-                clearOrResetFormButton.setText("Reset form");
-            } else {
-                clearOrResetFormButton.setText("Clear form");
-            }
-        });
     }
 
     /**
@@ -293,12 +255,36 @@ public class GenPurposeFieldsController {
 //
 //    }
 
-    @FXML
-    private void initialize() {
-        // clear all semantic details.
-        editFieldsVBox.setSpacing(8.0);
-        editFieldsVBox.getChildren().clear();
-        submitButton.setDisable(true); // disable submit until fields changed.
+    /**
+     * @param view         the form's layout, which the controller fills and drives
+     * @param session      what the window is editing: the form follows its mode and edits in its
+     *                     composer unless given another
+     * @param isDefaultsForm whether this instance is the DEFAULTS tab's form (see {@link #isDefaultsForm})
+     */
+    public GenPurposeFieldsController(GenPurposeFieldsView view, WindowEditSession session, boolean isDefaultsForm) {
+        this.view = view;
+        this.session = session;
+        this.isDefaultsForm = isDefaultsForm;
+
+        view.setOnCancel(this::cancel);
+        view.setOnClearOrResetForm(this::clearOrResetForm);
+        view.setOnSubmit(this::submit);
+        view.setFieldNodeFactory(this::createFieldNode);
+
+        // The defaults form publishes on its own button (see submit) rather than leaving them uncommitted for the
+        // toolbar's Publish, so its button says what it does.
+        view.setSubmitButtonText(isDefaultsForm ? "Publish" : "Submit");
+
+        // The form's Clear/Reset button follows the window's mode.
+        session.modeProperty().subscribe((mode) -> {
+            if (mode == FormMode.EDIT) {
+                view.setClearOrResetButtonText("Reset form");
+            } else {
+                view.setClearOrResetButtonText("Clear form");
+            }
+        });
+
+        view.setSubmitDisabled(true); // disable submit until fields changed.
 
         reloadPatternNavigator = true;
 
@@ -311,6 +297,10 @@ public class GenPurposeFieldsController {
         });
     }
 
+    /** The form's layout, to place in the properties panel. */
+    public GenPurposeFieldsView getView() {
+        return view;
+    }
 
     /**
      * Loads the semantic into the form: one editor per field, replacing whatever semantic the form
@@ -327,7 +317,6 @@ public class GenPurposeFieldsController {
                              EditorPatternModel editorPatternModel,
                              ObservableComposer composer, String formTitle) {
         // Clear previous controls that might be there from previously editing another Semantic
-        nodes.clear();
         klFields.clear();
 
         observableEntityHandle = ObservableEntityHandle.get(semanticEntity.nid());
@@ -335,7 +324,7 @@ public class GenPurposeFieldsController {
         currentEditingSemantic = semanticEntity;
         this.editorPatternModel = editorPatternModel;
         this.formComposer = composer;
-        formTitleLabel.setText(formTitle != null ? formTitle : DEFAULT_FORM_TITLE);
+        view.setFormTitle(formTitle != null ? formTitle : DEFAULT_FORM_TITLE);
 
         this.observableEntityHandle.ifSemantic(observableSemantic -> {
             observableEntitySnapshot = observableSemantic.getSnapshot(getViewProperties().calculator());
@@ -388,17 +377,6 @@ public class GenPurposeFieldsController {
         });
     }
 
-    /** Shows the loaded field editors, one under the other with a separator between. */
-    private void loadVBox() {
-        editFieldsVBox.getChildren().clear();
-        for (int i = 0; i < nodes.size(); i++) {
-            editFieldsVBox.getChildren().add(nodes.get(i));
-            if (i < nodes.size() - 1) {
-                editFieldsVBox.getChildren().add(createSeparator());
-            }
-        }
-    }
-
     /**
      * Refactored to use ObservableComposer pattern for proper transaction management.
      */
@@ -429,35 +407,35 @@ public class GenPurposeFieldsController {
             // start as BLANK_CONCEPT (ObservableComposer.generateDefaultFieldValues); any other
             // value was set deliberately — e.g. seeded from a section's display filter — so no
             // create-mode blanking here.
-            for (ObservableField.Editable editableField : editables) {
-                Field field = editableField.field();
-                KlField<?> klField = createEditableKlField(
-                        (FieldRecord<?>) field,
-                        editableField,
-                        getViewProperties(),
-                        currentEditStamp);
-                // detect changes to rebind fields if the semantic version changes.
-                klField.doOnEditableValuePropertyChange(() -> {
-                    // Enable submit button and set flag to rebind if changes occur.
-                    submitButton.setDisable(false);
-                    readyToEditVersion.set(true); // indicate changes present. see listeners to change observable version.
-                    LOG.info("readyToEditVersion = {}, submit button disable = {} %n",
-                            readyToEditVersion.get(), submitButton.disableProperty().get());
-                });
-                getKlFields().add(klField);
-                // A field authored in the KL Editor as not editable in edit mode is still shown in
-                // the form, but can't be changed.
-                klField.fxObject().setDisable(!canEditField(editableField.getObservableFeature().indexInPattern()));
-                // Generate node using the underlying ObservableField (read-only view)
-                nodes.add(klField.fxObject());
-            }
-            submitButton.setDisable(true);
+            view.getFields().setAll(editables);
+            view.setSubmitDisabled(true);
             LOG.info("Loaded UI with {} editable fields using ObservableComposer", getKlFields().size());
         });
 
         //Set the hascode for the committed values.
 //        enableDisableButtons();
-        loadVBox();
+    }
+
+    /** Makes the editor for one of the semantic's fields; the view calls this for each field it shows. */
+    private Node createFieldNode(ObservableField.Editable<?> editableField) {
+        Field field = editableField.field();
+        KlField<?> klField = createEditableKlField(
+                (FieldRecord<?>) field,
+                editableField,
+                getViewProperties(),
+                currentEditStamp);
+        // detect changes to rebind fields if the semantic version changes.
+        klField.doOnEditableValuePropertyChange(() -> {
+            // Enable submit button and set flag to rebind if changes occur.
+            view.setSubmitDisabled(false);
+            readyToEditVersion.set(true); // indicate changes present. see listeners to change observable version.
+            LOG.info("readyToEditVersion = {}, submit button enabled", readyToEditVersion.get());
+        });
+        getKlFields().add(klField);
+        // A field authored in the KL Editor as not editable in edit mode is still shown in
+        // the form, but can't be changed.
+        klField.fxObject().setDisable(!canEditField(editableField.getObservableFeature().indexInPattern()));
+        return klField.fxObject();
     }
 
     /**
@@ -524,22 +502,14 @@ public class GenPurposeFieldsController {
                             // detect changes to rebind fields if the semantic version changes.
                             klField.doOnEditableValuePropertyChange(() -> {
                                 // Enable submit button and set flag to rebind if changes occur.
-                                submitButton.setDisable(false);
+                                view.setSubmitDisabled(false);
                                 readyToEditVersion.set(true); // indicate changes present. see listeners to change observable version.
-                                LOG.info("readyToEditVersion = {}, submit button disable = {} %n",
-                                        readyToEditVersion.get(), submitButton.disableProperty().get());
+                                LOG.info("readyToEditVersion = {}, submit button enabled", readyToEditVersion.get());
                             });
                         }
                         LOG.info("Reconstituted {} editable fields using ObservableComposer", getKlFields().size());
                     });
                 });
-    }
-
-    private static Separator createSeparator() {
-        Separator separator = new Separator();
-        separator.getStyleClass().add("field-separator");
-        separator.setFocusTraversable(false);
-        return separator;
     }
 
     public ViewProperties getViewProperties() {
@@ -552,8 +522,7 @@ public class GenPurposeFieldsController {
      * on this semantic would otherwise come back showing the edits just cancelled — and the window
      * drops the edits from its transaction, or the semantic itself when the form was creating it.
      */
-    @FXML
-    private void cancel(ActionEvent actionEvent) {
+    private void cancel() {
         revertFieldValues();
         onCancelled.accept(currentEditingSemantic);
         onCloseRequested.run();
@@ -569,18 +538,17 @@ public class GenPurposeFieldsController {
         setFieldValuesFrom(openedVersion.getVersionRecord());
     }
 
-    @FXML
-    private void clearOrResetForm(ActionEvent actionEvent) {
+    private void clearOrResetForm() {
         // if create mode display the confirm clear dialog
         if (session.isCreateMode()) {
-            ConfirmationDialogController.showConfirmationDialog(this.cancelButton, CONFIRM_CLEAR_TITLE, CONFIRM_CLEAR_MESSAGE)
+            ConfirmationDialogController.showConfirmationDialog(view, CONFIRM_CLEAR_TITLE, CONFIRM_CLEAR_MESSAGE)
                     .thenAccept(confirmed -> {
                         if (confirmed) {
                             doTheClearOrResetForm();
                         }
                     });
         } else {
-            ConfirmationDialogController.showConfirmationDialog(this.cancelButton,
+            ConfirmationDialogController.showConfirmationDialog(view,
                             "Confirm Reset Form",
                             "Your changes will be lost if you reset the form. Are you sure you want to continue?")
                     .thenAccept(confirmed -> {
@@ -594,7 +562,7 @@ public class GenPurposeFieldsController {
     private void doTheClearOrResetForm() {
         Latest<EntityVersion> latestCommitted = retrieveCommittedLatestVersion(observableEntitySnapshot);
         latestCommitted.ifPresentOrElse(this::setFieldValuesFrom, this::clearField);
-        clearOrResetFormButton.setDisable(true);
+        view.setClearOrResetDisabled(true);
     }
 
     /**
@@ -663,10 +631,9 @@ public class GenPurposeFieldsController {
      * Refactored submit using ObservableComposer pattern.
      * Saves editable version and commits the transaction.
      */
-    @FXML
-    public void submit(ActionEvent actionEvent) {
-        submitButton.setDisable(true);
-        cancelButton.requestFocus();
+    private void submit() {
+        view.setSubmitDisabled(true);
+        view.focusCancelButton();
 
         try {
             try {
@@ -690,7 +657,7 @@ public class GenPurposeFieldsController {
                 // values must be saved, not left pending in the editable overlay.
                 semanticEditor.save();
 
-                if (defaultsForm) {
+                if (isDefaultsForm) {
                     // The pattern's field defaults publish right here: they are not part of the
                     // window's own uncommitted changes, and they only take effect once published (see
                     // PatternFieldDefaults.defaultsSemanticVersion), so there is nothing to gain

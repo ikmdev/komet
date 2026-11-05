@@ -25,13 +25,9 @@ import dev.ikm.tinkar.entity.SemanticEntityVersion;
 import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -49,18 +45,14 @@ public class GenPurposePropertiesController {
      */
     private final ReadOnlyDoubleWrapper requiredHeight = new ReadOnlyDoubleWrapper();
 
-    /** A loaded edit-fields form: its root node and the controller behind it. */
-    private record Form(Pane node, GenPurposeFieldsController controller) {
-    }
-
     /** The ADD/EDIT tab's form, editing the section patterns' semantics. */
-    private final Form editForm;
+    private final GenPurposeFieldsController editForm;
 
     /**
      * The DEFAULTS tab's form — a second instance of the edit-fields form, editing the pattern's
      * defaults semantic (standard Pattern window only).
      */
-    private final Form defaultsForm;
+    private final GenPurposeFieldsController defaultsForm;
 
     /** The INSTANCES tab's panel: the window pattern's instances (standard Pattern window only). */
     private final PatternInstancesPanel instancesPanel;
@@ -71,26 +63,12 @@ public class GenPurposePropertiesController {
     public GenPurposePropertiesController(WindowEditSession session) {
         buildView();
 
-        editForm = loadForm(session);
+        editForm = new GenPurposeFieldsController(new GenPurposeFieldsView(), session, false);
         // The DEFAULTS tab gets its own form instance, so editing the pattern's field defaults
         // never disturbs a semantic edit in progress on the ADD/EDIT tab.
-        defaultsForm = loadForm(session);
-        defaultsForm.controller().setDefaultsForm(true);
+        defaultsForm = new GenPurposeFieldsController(new GenPurposeFieldsView(), session, true);
 
         instancesPanel = new PatternInstancesPanel(session.getViewProperties().calculator());
-    }
-
-    private static Form loadForm(WindowEditSession session) {
-        FXMLLoader loader = new FXMLLoader(GenPurposePropertiesController.class.getResource("genpurpose-edit-fields.fxml"));
-        Pane node;
-        try {
-            node = loader.load();
-        } catch (IOException e) {
-            throw new UncheckedIOException("The edit-fields form's FXML failed to load", e);
-        }
-        GenPurposeFieldsController controller = loader.getController();
-        controller.setSession(session);
-        return new Form(node, controller);
     }
 
     private void buildView() {
@@ -137,7 +115,7 @@ public class GenPurposePropertiesController {
      * saved: the window decides whether it commits now, and answers what became of it.
      */
     public void setOnSemanticSubmitted(Function<SemanticEntity<SemanticEntityVersion>, SubmitOutcome> onSemanticSubmitted) {
-        editForm.controller().setOnSubmitted(onSemanticSubmitted);
+        editForm.setOnSubmitted(onSemanticSubmitted);
     }
 
     /**
@@ -146,15 +124,15 @@ public class GenPurposePropertiesController {
      * creating it.
      */
     public void setOnSemanticCancelled(Consumer<SemanticEntity<SemanticEntityVersion>> onSemanticCancelled) {
-        editForm.controller().setOnCancelled(onSemanticCancelled);
+        editForm.setOnCancelled(onSemanticCancelled);
     }
 
     /**
      * Sets what closes the panel when a form is done with: submitted or cancelled.
      */
     public void setOnCloseRequested(Runnable onCloseRequested) {
-        editForm.controller().setOnCloseRequested(onCloseRequested);
-        defaultsForm.controller().setOnCloseRequested(onCloseRequested);
+        editForm.setOnCloseRequested(onCloseRequested);
+        defaultsForm.setOnCloseRequested(onCloseRequested);
     }
 
     /**
@@ -163,9 +141,9 @@ public class GenPurposePropertiesController {
      * whether they can still be edited in edit mode).
      */
     public void showEditForm(SemanticEntity<SemanticEntityVersion> semantic, EditorPatternModel editorPatternModel) {
-        editForm.controller().showSemantic(semantic, editorPatternModel, null, null);
+        editForm.showSemantic(semantic, editorPatternModel, null, null);
         propertiesTabs.setSelectedTab(Tab.ADD_EDIT);
-        contentBorderPane.setCenter(editForm.node());
+        contentBorderPane.setCenter(editForm.getView());
     }
 
     /**
@@ -178,9 +156,9 @@ public class GenPurposePropertiesController {
      */
     public void showDefaultsForm(SemanticEntity<SemanticEntityVersion> semantic, ObservableComposer composer,
                                  String formTitle) {
-        defaultsForm.controller().showSemantic(semantic, null, composer, formTitle);
+        defaultsForm.showSemantic(semantic, null, composer, formTitle);
         propertiesTabs.setSelectedTab(Tab.DEFAULTS);
-        contentBorderPane.setCenter(defaultsForm.node());
+        contentBorderPane.setCenter(defaultsForm.getView());
     }
 
     /**
