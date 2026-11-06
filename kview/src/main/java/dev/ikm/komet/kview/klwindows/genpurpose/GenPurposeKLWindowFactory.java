@@ -1,6 +1,20 @@
+/*
+ * Copyright © 2015 Integrated Knowledge Management (support@ikm.dev)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package dev.ikm.komet.kview.klwindows.genpurpose;
 
-import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowFactory;
@@ -10,15 +24,20 @@ import dev.ikm.komet.kview.klwindows.EntityKlWindowTypes;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.preferences.NidTextEnum;
-import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
-import static dev.ikm.komet.preferences.KLEditorPreferences.KL_USER_WINDOWS_DIR;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Optional;
+import java.util.OptionalLong;
+import java.util.UUID;
+import java.util.prefs.BackingStoreException;
+
+import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_USER_WINDOWS_DIR;
 
 /**
  * A factory for creating general purpose knowledge layout windows.
@@ -35,9 +54,9 @@ public class GenPurposeKLWindowFactory implements EntityKlWindowFactory {
      */
     @Override
     public GenPurposeKLWindow create(UUID journalTopic,
-                                  EntityFacade entityFacade,
-                                  ViewProperties viewProperties,
-                                  KometPreferences preferences) {
+                                     EntityFacade entityFacade,
+                                     ViewProperties viewProperties,
+                                     KometPreferences preferences) {
         throw new UnsupportedOperationException(
                 "A general-purpose KL window needs the KL-editor window definition it is built from");
     }
@@ -56,69 +75,64 @@ public class GenPurposeKLWindowFactory implements EntityKlWindowFactory {
         return new GenPurposeKLWindow(journalTopic, entityFacade, viewProperties, preferences, editorWindowPreferences);
     }
 
+    /**
+     * Restores a window from the state it saved to {@code preferences}, built from the same
+     * KL-editor window definition, on the same component and with its saved geometry. Derives from
+     * the journal's live view so the restored window tracks the live coordinate and author like a
+     * new one, not a coordinate reconstructed from preferences (ike-issues#756).
+     *
+     * @return the restored window, or null when the state names no journal or its definition is gone
+     */
     @Override
     public GenPurposeKLWindow restore(WindowSettings windowSettings, KometPreferences preferences,
                                       ViewProperties journalViewProperties) {
-        Objects.requireNonNull(preferences, "Preferences cannot be null");
-        try {
-            // Load window state from preferences
-            EntityKlWindowState windowState = EntityKlWindowState.fromPreferences(preferences);
+        EntityKlWindowState windowState = EntityKlWindowState.fromPreferences(preferences);
 
-            // Extract journal topic from saved state
-            Optional<UUID> journalTopicOpt = preferences.getUuid(JOURNAL_TOPIC);
-            if (journalTopicOpt.isPresent()) {
-                final UUID journalTopic = journalTopicOpt.get();
-
-                // Derive from the journal's LIVE view so a restored window tracks the live coordinate/author
-                // like a new window, not a coordinate reconstructed from preferences (ike-issues#756).
-                final ViewProperties viewProperties = journalViewProperties;
-
-                // Try to extract entity facade from saved state
-                final OptionalLong entityNid = windowState.resolveEntityNid();
-                final NidTextEnum nidTextEnum = NidTextEnum.fromString(windowState.getEntityReadType())
-                        .orElse(NidTextEnum.NID_TEXT);
-                EntityFacade entityFacade = null;
-                if (entityNid.isPresent()) {
-                    entityFacade = fetchEntity(entityNid.getAsLong(), nidTextEnum);
-                }
-
-                // Resolve the KL-editor window definition (title, sections, fields) the window
-                // is built from, by its persisted title + folder (komet-desktop#20); the journal seeds
-                // the standard-window definitions before restoring. A window without its definition
-                // would be an empty shell, so it is skipped: no title was saved by builds older than
-                // the #20 fix, and a saved title stops resolving once its definition node is gone.
-                final String editorWindowTitle =
-                        windowState.getStringProperty(GenPurposeKLWindow.KL_EDITOR_WINDOW_TITLE, null);
-                if (editorWindowTitle == null) {
-                    LOG.warn("Skipping general-purpose KL window {}: no KL-editor window definition was saved with it",
-                            windowState.getWindowId());
-                    return null;
-                }
-                final String editorWindowDir = windowState.getStringProperty(
-                        GenPurposeKLWindow.KL_EDITOR_WINDOW_DIR, KL_USER_WINDOWS_DIR);
-                final KometPreferences editorWindowsPreferences =
-                        KometPreferencesImpl.getConfigurationRootPreferences().node(KL_EDITOR_APP).node(editorWindowDir);
-                if (!editorWindowsPreferences.nodeExists(editorWindowTitle)) {
-                    LOG.warn("Skipping general-purpose KL window {}: its KL-editor window definition '{}/{}' no longer exists",
-                            windowState.getWindowId(), editorWindowDir, editorWindowTitle);
-                    return null;
-                }
-
-                // Create the window built from the definition, as the journal does at creation.
-                GenPurposeKLWindow window = create(journalTopic, entityFacade, viewProperties, preferences,
-                        editorWindowsPreferences.node(editorWindowTitle));
-
-                // Restore the window state (geometry) after content init so the saved size/position wins.
-                window.revert();
-
-                LOG.info("Successfully restored general-purpose KL window: {}", window.getWindowTopic());
-                return window;
-            }
+        Optional<UUID> journalTopic = preferences.getUuid(JOURNAL_TOPIC);
+        if (journalTopic.isEmpty()) {
             return null;
-        } catch (Exception e) {
-            LOG.error("Failed to restore concept window from preferences", e);
-            throw new RuntimeException("Concept window restoration failed", e);
         }
+
+        OptionalLong entityNid = windowState.resolveEntityNid();
+        NidTextEnum nidTextEnum = NidTextEnum.fromString(windowState.getEntityReadType())
+                .orElse(NidTextEnum.NID_TEXT);
+        EntityFacade entityFacade = entityNid.isPresent() ? fetchEntity(entityNid.getAsLong(), nidTextEnum) : null;
+
+        // Resolve the KL-editor window definition (title, sections, fields) the window
+        // is built from, by its persisted title + folder (komet-desktop#20); the journal seeds
+        // the standard-window definitions before restoring. A window without its definition
+        // would be an empty shell, so it is skipped: no title was saved by builds older than
+        // the #20 fix, and a saved title stops resolving once its definition node is gone.
+        String editorWindowTitle = windowState.getStringProperty(GenPurposeKLWindow.KL_EDITOR_WINDOW_TITLE, null);
+        if (editorWindowTitle == null) {
+            LOG.warn("Skipping general-purpose KL window {}: no KL-editor window definition was saved with it",
+                    windowState.getWindowId());
+            return null;
+        }
+        String editorWindowDir = windowState.getStringProperty(GenPurposeKLWindow.KL_EDITOR_WINDOW_DIR, KL_USER_WINDOWS_DIR);
+        KometPreferences editorWindowsPreferences =
+                KometPreferencesImpl.getConfigurationRootPreferences().node(KL_EDITOR_APP).node(editorWindowDir);
+        boolean definitionExists;
+        try {
+            definitionExists = editorWindowsPreferences.nodeExists(editorWindowTitle);
+        } catch (BackingStoreException e) {
+            throw new IllegalStateException("Could not read the KL-editor window definitions in " + editorWindowDir, e);
+        }
+        if (!definitionExists) {
+            LOG.warn("Skipping general-purpose KL window {}: its KL-editor window definition '{}/{}' no longer exists",
+                    windowState.getWindowId(), editorWindowDir, editorWindowTitle);
+            return null;
+        }
+
+        // Create the window built from the definition, as the journal does at creation.
+        GenPurposeKLWindow window = create(journalTopic.get(), entityFacade, journalViewProperties, preferences,
+                editorWindowsPreferences.node(editorWindowTitle));
+
+        // Restore the window state (geometry) after content init so the saved size/position wins.
+        window.revert();
+
+        LOG.info("Successfully restored general-purpose KL window: {}", window.getWindowTopic());
+        return window;
     }
 
     @Override
@@ -127,24 +141,21 @@ public class GenPurposeKLWindowFactory implements EntityKlWindowFactory {
     }
 
     /**
-     * Fetches an entity based on the entity NID and NID type.
+     * Fetches the entity a window was saved on. A saved semantic resolves to the concept it
+     * describes, falling back to reading the NID as a concept when no such concept resolves.
      *
-     * @param entityNid   the NID of the entity to create
-     * @param nidTextEnum the NID type (e.g., SEMANTIC_ENTITY, NID_TEXT)
-     * @return the concept entity or null if creation failed
+     * @param entityNid   the NID of the saved entity
+     * @param nidTextEnum how the NID was saved (e.g., SEMANTIC_ENTITY, NID_TEXT)
+     * @return the entity, or null when nothing resolves
      */
-    @SuppressWarnings("unchecked")
     private EntityFacade fetchEntity(long entityNid, NidTextEnum nidTextEnum) {
-        // Only SEMANTIC_ENTITY needs special handling
         if (nidTextEnum == NidTextEnum.SEMANTIC_ENTITY) {
             return Entity.getConceptForSemantic(entityNid)
                     .orElseGet(() -> {
                         LOG.warn("Referenced semantic entity with NID {} no longer exists, falling back to direct access", entityNid);
                         return EntityHandle.get(entityNid).asConcept().orElse(null);
                     });
-        } else {
-            // For other types, just return the entity directly
-            return EntityHandle.get(entityNid).orNull();
         }
+        return EntityHandle.get(entityNid).orNull();
     }
 }
