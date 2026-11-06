@@ -102,5 +102,6 @@ open module dev.ikm.komet.framework {
     uses dev.ikm.tinkar.common.alert.AlertReportingService;
     uses dev.ikm.komet.framework.rulebase.RuleService;
     uses dev.ikm.komet.framework.context.AddToContextMenu;
+    uses dev.ikm.komet.framework.controls.KonceptDisclosure;
     uses dev.ikm.tinkar.events.EvtBus;
 }

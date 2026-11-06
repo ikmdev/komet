@@ -79,6 +79,11 @@ class KonceptStatusTest {
 
     @Test
     void anUndefinedConceptLeadsWithACWhereNoneStaysBare() {
+        assertEquals("⊞", KonceptStatus.COMPLEX.glyph());
+        assertTrue(KonceptStatus.COMPLEX.hasGlyph());
+        assertTrue(KonceptStatus.COMPLEX.accessibleText().startsWith("Complex concept"));
+        assertEquals(KonceptStatus.NONE, KonceptStatus.COMPLEX.shown(false, true));
+        assertEquals(KonceptStatus.COMPLEX, KonceptStatus.COMPLEX.shown(true, false));
         assertEquals("C", KonceptStatus.UNDEFINED.glyph());
         assertTrue(KonceptStatus.UNDEFINED.hasGlyph());
         assertTrue(KonceptStatus.UNDEFINED.isLetter());

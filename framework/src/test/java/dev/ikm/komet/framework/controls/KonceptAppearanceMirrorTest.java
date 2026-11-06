@@ -75,6 +75,7 @@ class KonceptAppearanceMirrorTest {
                 "defined status colour mirrors koncept-core");
         assertTrue(css.contains(KonceptStatus.PRIMITIVE.core().colorHex()),
                 "primitive status colour mirrors koncept-core");
+        assertTrue(css.contains(KonceptStatus.COMPLEX_COLOR_HEX), "komet.css mirrors the complex-concept mark's colour");
         assertTrue(css.contains(KonceptStatus.UNDEFINED_COLOR_HEX),
                 "komet.css must mirror the undefined concept's colour");
         assertTrue(css.contains(KonceptStatus.ROOT.core().colorHex()),

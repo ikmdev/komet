@@ -258,6 +258,7 @@ public class KonceptBadge extends HBox {
     private String sctid;
     private PremiseType premiseType = PremiseType.INFERRED;
     private KonceptStatus status = KonceptStatus.NONE;
+    private Runnable onDisclose;
     private KonceptKind kind = KonceptKind.CONCEPT;
     /** See {@link #setKindSigilShown}. */
     private boolean kindSigilShown = true;
@@ -390,6 +391,12 @@ public class KonceptBadge extends HBox {
 
         getChildren().addAll(sigilBox, statusBox, identicon, nameNode);
         Tooltip.install(statusBox, statusTooltip);
+        statusBox.setOnMouseClicked(event -> {
+            if (status == KonceptStatus.COMPLEX) {
+                disclose();
+                event.consume();
+            }
+        });
 
         ObservableValue<Boolean> onScene = sceneProperty().isNotNull();
 
@@ -519,6 +526,26 @@ public class KonceptBadge extends HBox {
      */
     public static void contributeMenuItems(Node host, MenuContributor contributor) {
         host.getProperties().put(MENU_CONTRIBUTOR, contributor);
+    }
+
+    /**
+     * Sets what a click on the {@link KonceptStatus#COMPLEX} mark opens. A host that holds the
+     * concept's specification sets it. Without one, the click takes the host's Peek, which shows
+     * the concept itself.
+     *
+     * @param onDisclose what opens, or {@code null} for the host's Peek
+     */
+    public void setOnDisclose(Runnable onDisclose) {
+        this.onDisclose = onDisclose;
+    }
+
+    private void disclose() {
+        if (onDisclose != null) {
+            onDisclose.run();
+            return;
+        }
+        contributedMenuItems().stream().filter(item -> "Peek".equals(item.getText())).findFirst()
+                .ifPresent(MenuItem::fire);
     }
 
     /** The items every host above this badge contributes, the nearest host's first. */
@@ -1519,6 +1546,9 @@ public class KonceptBadge extends HBox {
     public static KonceptStatus computeStatus(long nid, ViewCalculator calculator, PremiseType premiseType) {
         if (Nid.isNone(nid) || nid == -1 || nid == KernelConcept.UNINITIALIZED_COMPONENT.nid()) {
             return KonceptStatus.NONE;
+        }
+        if (KonceptDisclosure.any(nid, calculator)) {
+            return KonceptStatus.COMPLEX;
         }
         LongIdList parents;
         try {

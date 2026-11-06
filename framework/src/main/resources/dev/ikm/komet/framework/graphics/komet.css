@@ -1449,6 +1449,14 @@ nested under another sized rule is relative to that one instead.
     -fx-fill: #2a5a8a;
 }
 
+/* A complex concept: the disclosure mark. The text face draws it until the Koncept glyph face holds
+   the symbol. The colour MIRRORS KonceptStatus.COMPLEX_COLOR_HEX. */
+.koncept-status.koncept-complex {
+    -fx-font-family: "System";
+    -fx-font-weight: bold;
+    -fx-fill: #0e7c7b;
+}
+
 /* Component-kind sigil (ike-issues#638): the leading D/S/P/? letter glyph. Its colour is the
    kind's own colour, applied inline from ComponentKind (data, for cross-medium parity), not here. */
 .koncept-sigil {
