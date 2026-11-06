@@ -353,6 +353,10 @@ public class JournalController {
     private Pane trashSlideoutTrayPane;
     private TrashTray trashTray;
 
+    /** The trays plugins add to the sidebar, by their toggles, with the panes they slide in. */
+    private final java.util.Map<Toggle, dev.ikm.komet.layout.tray.KlSidebarTray> pluginTrays = new java.util.HashMap<>();
+    private final java.util.Map<Toggle, Pane> pluginTrayPanes = new java.util.HashMap<>();
+
     @FXML
     private Button addButton;
 
@@ -1020,6 +1024,40 @@ public class JournalController {
                 trashSlideoutTrayPane
         );
         loadTrashPanel();
+        loadPluginTrays();
+    }
+
+    /**
+     * Adds a sidebar toggle and a tray for each {@link dev.ikm.komet.layout.tray.KlSidebarTrayProvider},
+     * below the journal's own trays. A tray that cannot be made is logged and left out.
+     */
+    private void loadPluginTrays() {
+        int at = sidebarVBox.getChildren().indexOf(nextGenReasonerToggleButton) + 1;
+        for (dev.ikm.komet.layout.tray.KlSidebarTrayProvider provider : dev.ikm.komet.layout.tray.KlSidebarTrays.providers()) {
+            try {
+                dev.ikm.komet.layout.tray.KlSidebarTray tray = provider.create(journalTopic);
+                Pane trayPane = new VerticallyFilledPane();
+                trayPane.setLayoutX(10);
+                trayPane.setLayoutY(10);
+                trayPane.setMaxHeight(Double.MAX_VALUE);
+                trayPaneContainer.getChildren().add(trayPane);
+                setupSlideOutTrayPane(tray.fxObject(), trayPane);
+                Region icon = new Region();
+                icon.getStyleClass().add("icon");
+                icon.setStyle("-fx-shape: \"" + provider.iconShape() + "\"; -fx-min-width: 20; -fx-min-height: 20; -fx-max-width: 20; -fx-max-height: 20;");
+                ToggleButton toggle = new ToggleButton("ToggleButton");
+                toggle.setId(provider.toggleId());
+                toggle.setMnemonicParsing(false);
+                toggle.setGraphic(icon);
+                toggle.setTooltip(new javafx.scene.control.Tooltip(provider.tooltip()));
+                toggle.setToggleGroup(sidebarToggleGroup);
+                sidebarVBox.getChildren().add(at++, toggle);
+                pluginTrays.put(toggle, tray);
+                pluginTrayPanes.put(toggle, trayPane);
+            } catch (RuntimeException e) {
+                LOG.warn("Could not add the sidebar tray {}", provider.toggleId(), e);
+            }
+        }
     }
 
     private Pane newTrayPane() {
@@ -1442,6 +1480,9 @@ public class JournalController {
         if (trashToggleButton.equals(toggleButton) && trashTray != null) {
             trashTray.refresh();
         }
+        if (pluginTrays.containsKey(toggleButton)) {
+            pluginTrays.get(toggleButton).shown();
+        }
         SlideOutTrayHelper.slideOut(trayPane);
     }
 
@@ -1463,7 +1504,7 @@ public class JournalController {
         } else if (trashToggleButton.equals(selectedToggleButton)) {
             return trashSlideoutTrayPane;
         }
-        return null;
+        return pluginTrayPanes.get(selectedToggleButton);
     }
 
     private void slideIn(Toggle toggleButton) {
@@ -1503,6 +1544,7 @@ public class JournalController {
         if (trashTray != null) {
             trashTray.shutdown();
         }
+        pluginTrays.values().forEach(dev.ikm.komet.layout.tray.KlSidebarTray::shutdown);
     }
 
     /**
