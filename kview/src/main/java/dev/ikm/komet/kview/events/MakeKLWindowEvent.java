@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.events;
 
+import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.tinkar.events.Evt;
 import dev.ikm.tinkar.events.EvtType;
 import dev.ikm.tinkar.terms.EntityFacade;
@@ -25,11 +26,26 @@ public class MakeKLWindowEvent extends Evt {
      */
     public static final EvtType<MakeKLWindowEvent> PEEK_STANDARD_WINDOW = new EvtType<>(Evt.ANY, "PEEK_STANDARD_WINDOW");
 
+    /**
+     * Opens the entity in the named standard KL window under the event's
+     * {@linkplain #getViewProperties() view}, writing nothing to the store. Unlike
+     * {@link #OPEN_STANDARD_WINDOW}, it does not seed the standard windows first: seeding projects
+     * any pattern changed since the journal opened and commits the projection, which a request
+     * only to look at a component must not do. The journal seeded the definitions when it opened,
+     * so they are there; the one difference is that a pattern changed since then shows its
+     * definition as the journal last projected it.
+     *
+     * @see #viewStandardWindow(Object, EntityFacade, String, ViewProperties)
+     */
+    public static final EvtType<MakeKLWindowEvent> VIEW_STANDARD_WINDOW = new EvtType<>(Evt.ANY, "VIEW_STANDARD_WINDOW");
+
     private final EntityFacade entityFacade;
 
     private final String windowTitle;
 
     private final Node near;
+
+    private final ViewProperties viewProperties;
 
     /**
      * Constructs a prototypical Event.
@@ -53,10 +69,32 @@ public class MakeKLWindowEvent extends Evt {
      * @param near         the node the window opens beside (the chip or row that asked for it); null places it as usual
      */
     public MakeKLWindowEvent(Object source, EvtType eventType, EntityFacade entityFacade, String windowTitle, Node near) {
+        this(source, eventType, entityFacade, windowTitle, near, null);
+    }
+
+    private MakeKLWindowEvent(Object source, EvtType eventType, EntityFacade entityFacade, String windowTitle, Node near,
+                              ViewProperties viewProperties) {
         super(source, eventType);
         this.entityFacade = entityFacade;
         this.windowTitle = windowTitle;
         this.near = near;
+        this.viewProperties = viewProperties;
+    }
+
+    /**
+     * An event opening a standard window on an entity under a view, writing nothing to the store:
+     * see {@link #VIEW_STANDARD_WINDOW}.
+     *
+     * @param source         the object on which the Event initially occurred
+     * @param entityFacade   the entity the window is about
+     * @param windowTitle    the standard window's title
+     * @param viewProperties the view the window reads; the window derives its own coordinate from
+     *                       it, so its coordinates menu does not change the view given
+     * @return the event
+     */
+    public static MakeKLWindowEvent viewStandardWindow(Object source, EntityFacade entityFacade, String windowTitle,
+                                                       ViewProperties viewProperties) {
+        return new MakeKLWindowEvent(source, VIEW_STANDARD_WINDOW, entityFacade, windowTitle, null, viewProperties);
     }
 
     public EntityFacade getEntityFacade() { return entityFacade; }
@@ -65,4 +103,7 @@ public class MakeKLWindowEvent extends Evt {
 
     /** The node the window opens beside, or a peek is anchored at; null when none was given. */
     public Node getNear() { return near; }
+
+    /** The view a {@link #VIEW_STANDARD_WINDOW} window reads; null otherwise. */
+    public ViewProperties getViewProperties() { return viewProperties; }
 }

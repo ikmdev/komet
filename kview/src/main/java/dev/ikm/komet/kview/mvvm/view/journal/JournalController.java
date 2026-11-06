@@ -540,6 +540,8 @@ public class JournalController {
                 newCreateStandardKLWindow(evt.getEntityFacade(), evt.getWindowTitle(), evt.getNear());
             } else if (evt.getEventType() == MakeKLWindowEvent.PEEK_STANDARD_WINDOW) {
                 peekStandardKLWindow(evt.getEntityFacade(), evt.getWindowTitle(), evt.getNear());
+            } else if (evt.getEventType() == MakeKLWindowEvent.VIEW_STANDARD_WINDOW) {
+                viewStandardKLWindow(evt.getEntityFacade(), evt.getWindowTitle(), evt.getViewProperties());
             } else {
                 newCreateGenPurposeKLWindow(evt.getEntityFacade(), evt.getWindowTitle());
             }
@@ -2450,10 +2452,30 @@ public class JournalController {
 
         StandardEditorWindows.ensureStandardWindows(standardWindowsPreferences, journalViewProperties.calculator());
 
+        return standardKLWindow(entityFacade, windowTitle, journalViewProperties);
+    }
+
+    /** The named standard KL window under a view, from the definitions already seeded. */
+    private GenPurposeKLWindow standardKLWindow(EntityFacade entityFacade, String windowTitle, ViewProperties viewProperties) {
         GenPurposeKLWindowFactory factory =
                 (GenPurposeKLWindowFactory) getFactory(EntityKlWindowTypes.GEN_PURPOSE_KL);
-        return factory.create(journalTopic, entityFacade, journalViewProperties, null,
-                standardWindowsPreferences.node(windowTitle));
+        return factory.create(journalTopic, entityFacade, viewProperties, null,
+                KometPreferencesImpl.getConfigurationRootPreferences().node(KL_EDITOR_APP)
+                        .node(KL_STANDARD_WINDOWS_DIR).node(windowTitle));
+    }
+
+    /**
+     * Opens the named standard KL window on an entity under a view, writing nothing to the store:
+     * see {@link MakeKLWindowEvent#VIEW_STANDARD_WINDOW}. The journal seeded the definitions when
+     * it opened.
+     *
+     * @param entityFacade   the entity the window is about
+     * @param windowTitle    the title of the standard window
+     * @param viewProperties the view the window reads; null reads the journal's
+     */
+    public void viewStandardKLWindow(EntityFacade entityFacade, String windowTitle, ViewProperties viewProperties) {
+        setupWorkspaceWindow(standardKLWindow(entityFacade, windowTitle,
+                viewProperties == null ? journalViewProperties : viewProperties));
     }
 
     /** Names the node a new window opens beside, for the workspace's placement. */
