@@ -1,5 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
+import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
 import dev.ikm.komet.framework.dnd.KonceptDragSource;
 import dev.ikm.komet.kview.mvvm.view.JournalNavigationUtils;
@@ -98,13 +99,19 @@ public final class ComponentItemActions {
     }
 
     /**
-     * Builds the clipboard content for a component: the {@code COMPONENT_DRAG_FORMAT} encoded
-     * public id, plus plain-text and HTML renderings of the component's title and icon.
+     * Builds the clipboard content for a component: what a koncept drag carries
+     * ({@link KometClipboard#forComponent}), so a target that reads the proxies takes this item as
+     * it takes a badge, plus the {@code COMPONENT_DRAG_FORMAT} encoded public id and plain-text and
+     * HTML renderings of the component's title and icon. A component the store does not hold has
+     * no proxies, and is given no nid.
      */
     public static ClipboardContent buildClipboardContent(ComponentItem componentItem) {
         ClipboardContent content = new ClipboardContent();
 
         PublicId publicId = componentItem.getPublicId();
+        if (PrimitiveData.running() && PrimitiveData.get().hasPublicId(publicId)) {
+            content.putAll(KometClipboard.forComponent(PrimitiveData.nid(publicId)));
+        }
         content.put(COMPONENT_DRAG_FORMAT, encodePublicId(publicId));
 
         String title = componentItem.getText();
