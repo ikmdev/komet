@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.layout.controls;
 
+import dev.ikm.komet.layout.HeadlessFx;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.CheckBox;
@@ -47,6 +48,7 @@ class SettingsPaneRootTest {
     static void startFx() {
         CountDownLatch latch = new CountDownLatch(1);
         try {
+            HeadlessFx.select();
             Platform.startup(latch::countDown);
             fxReady = latch.await(5, TimeUnit.SECONDS);
         } catch (IllegalStateException alreadyRunning) {

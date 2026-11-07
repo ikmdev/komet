@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.layout.controls;
 
+import dev.ikm.komet.layout.HeadlessFx;
 import dev.ikm.komet.layout.controls.skin.KlDrawerSkin;
 import javafx.application.Platform;
 import javafx.geometry.Side;
@@ -47,6 +48,7 @@ class KlDrawerTest {
     static void startFx() {
         try {
             CountDownLatch latch = new CountDownLatch(1);
+            HeadlessFx.select();
             Platform.startup(latch::countDown);
             fxReady = latch.await(10, TimeUnit.SECONDS);
         } catch (IllegalStateException alreadyStarted) {

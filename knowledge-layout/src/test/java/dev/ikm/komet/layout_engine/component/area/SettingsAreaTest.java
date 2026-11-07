@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.layout_engine.component.area;
 
+import dev.ikm.komet.layout.HeadlessFx;
 import dev.ikm.komet.layout.preferences.KlPreferencesFactory;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
@@ -46,6 +47,7 @@ class SettingsAreaTest {
     static void startFx() {
         try {
             CountDownLatch latch = new CountDownLatch(1);
+            HeadlessFx.select();
             Platform.startup(latch::countDown);
             fxReady = latch.await(10, TimeUnit.SECONDS);
         } catch (IllegalStateException alreadyStarted) {

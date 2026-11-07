@@ -27,6 +27,13 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Headless JavaFX for the control tests (HeadlessFx): no display, and no macOS
+             window-server noise on an agent that runs without a login session. -->
+        <dependency>
+            <groupId>one.jpro.platform.jpms</groupId>
+            <artifactId>openjfx-monocle</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>dev.ikm.komet</groupId>
             <artifactId>preferences</artifactId>
