@@ -15,6 +15,9 @@
  */
 package dev.ikm.komet.layout_engine.window;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -28,6 +31,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
 import javafx.util.Subscription;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
@@ -142,6 +146,9 @@ public class WindowSupport {
 
     // Visual elements
     private Rectangle outlineRect;
+
+    /** The running {@link #flashOutline()}, or null. */
+    private Timeline flashTimeline;
 
     /**
      * Whether the outline highlight (hover and resize feedback) is shown for this window.
@@ -1107,6 +1114,10 @@ public class WindowSupport {
      * Removes all visual elements from the pane.
      */
     private void removeVisualElements() {
+        if (flashTimeline != null) {
+            flashTimeline.stop();
+            flashTimeline = null;
+        }
         pane.getChildren().remove(outlineRect);
 
         // Remove all resize handles
@@ -1215,5 +1226,37 @@ public class WindowSupport {
      */
     public boolean isWindowActive() {
         return windowState != WindowState.IDLE;
+    }
+
+    /**
+     * Flashes the window's outline in the highlight color, three pulses in a little over a
+     * second, so the eye finds a window a gesture has just shown. The outline ends as the pointer
+     * leaves it: lit while the pointer is over the window or a drag or resize is under way, clear
+     * otherwise. A window that opts out of the hover highlight still flashes: the flash answers a
+     * gesture, not the pointer.
+     */
+    public void flashOutline() {
+        if (flashTimeline != null) {
+            flashTimeline.stop();
+        }
+        outlineRect.toFront();
+        Duration pulse = Duration.millis(200);
+        flashTimeline = new Timeline();
+        for (int i = 0; i < 3; i++) {
+            Duration on = pulse.multiply(2 * i);
+            Duration off = pulse.multiply(2 * i + 1);
+            flashTimeline.getKeyFrames().addAll(
+                    new KeyFrame(on, new KeyValue(outlineRect.strokeProperty(), HIGHLIGHT_COLOR),
+                            new KeyValue(outlineRect.strokeWidthProperty(), 2 * HIGHLIGHT_WIDTH)),
+                    new KeyFrame(off, new KeyValue(outlineRect.strokeProperty(), HIGHLIGHT_COLOR.deriveColor(0, 1, 1, 0.25)),
+                            new KeyValue(outlineRect.strokeWidthProperty(), HIGHLIGHT_WIDTH)));
+        }
+        flashTimeline.setOnFinished(_ -> {
+            outlineRect.setStrokeWidth(HIGHLIGHT_WIDTH);
+            boolean lit = highlightEnabled && (pane.isHover() || windowState != WindowState.IDLE);
+            outlineRect.setStroke(lit ? HIGHLIGHT_COLOR : TRANSPARENT);
+            flashTimeline = null;
+        });
+        flashTimeline.play();
     }
 }

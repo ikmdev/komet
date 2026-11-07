@@ -94,6 +94,7 @@ import dev.ikm.komet.layout.KlPeerable;
 import dev.ikm.komet.layout.area.KlToolArea;
 import dev.ikm.komet.layout.editor.StandardEditorWindows;
 import dev.ikm.komet.layout_engine.host.KlCardProvider;
+import dev.ikm.komet.layout_engine.window.RevealWindowEvent;
 import dev.ikm.komet.layout.controls.FilterOptionsPopup;
 import dev.ikm.komet.layout.controls.ViewOptionsPopupHelper;
 import dev.ikm.komet.kview.controls.GraphFilterOptionsNavigator;
@@ -732,10 +733,7 @@ public class JournalController {
             MenuItem primary = new MenuItem(open ? "Show" : "Reopen");
             primary.setOnAction(e -> {
                 if (open) {
-                    findOpenCardWindow(tile.name()).ifPresent(window -> {
-                        window.fxObject().toFront();
-                        window.fxObject().requestFocus();
-                    });
+                    findOpenCardWindow(tile.name()).ifPresent(window -> RevealWindowEvent.reveal(window.fxObject()));
                 } else {
                     reopenCardWindow(tile);
                 }
@@ -841,8 +839,7 @@ public class JournalController {
         for (ChapterKlWindow<Pane> window : workspace.getWindows()) {
             if (window instanceof CardKlWindow cardWindow
                     && providerClassName.equals(cardWindow.providerClassName())) {
-                cardWindow.fxObject().toFront();
-                cardWindow.fxObject().requestFocus();
+                RevealWindowEvent.reveal(cardWindow.fxObject());
                 return;
             }
         }

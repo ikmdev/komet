@@ -18,6 +18,7 @@ package dev.ikm.komet.kview.controls.skin;
 
 import dev.ikm.komet.kview.controls.KLDropRegion;
 import dev.ikm.komet.kview.controls.KLWorkspace;
+import dev.ikm.komet.layout_engine.window.RevealWindowEvent;
 import dev.ikm.komet.layout_engine.window.WindowSupport;
 import dev.ikm.komet.kview.klwindows.ChapterKlWindow;
 import javafx.animation.Interpolator;
@@ -175,6 +176,9 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
      */
     private Timeline autoScrollTimeline;
 
+    /** Answers a {@link RevealWindowEvent} from a node in one of this desktop's windows. */
+    private final EventHandler<RevealWindowEvent> revealHandler = this::reveal;
+
     /**
      * The timeline used to shift existing windows when a new window is added in a LINE drop region.
      */
@@ -251,6 +255,9 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         workspace.getProperties().put(PANNING_SUBSCRIPTION_KEY, panningSubscription);
 
         configureDragDropHandlers(workspace);
+
+        // A card asks to be shown: scroll to its window, raise and flash it, focus the card.
+        workspace.addEventHandler(RevealWindowEvent.REVEAL_WINDOW, revealHandler);
 
         // --------------------------------------------------------------------
         // 5) Listen for property changes that affect layout
@@ -1414,6 +1421,36 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         autoScrollTimeline.play();
     }
 
+    /**
+     * Shows the window holding the node a {@link RevealWindowEvent} was fired at: scrolls the
+     * desktop to it as to a newly placed window, raises it, flashes its outline and focuses the
+     * node. An event from a node in no window of this desktop passes on unconsumed.
+     *
+     * @param event the request
+     */
+    private void reveal(RevealWindowEvent event) {
+        if (!(event.getTarget() instanceof Node target)) {
+            return;
+        }
+        for (Node at = target; at != null; at = at.getParent()) {
+            if (at.getParent() == desktopPane && at instanceof Pane windowPanel) {
+                event.consume();
+                windowPanel.toFront();
+                if (autoScrollTimeline != null) {
+                    autoScrollTimeline.stop();
+                }
+                final double desktopWidth = desktopPane.getWidth() > 0 ? desktopPane.getWidth() : desktopPane.getPrefWidth();
+                final double desktopHeight = desktopPane.getHeight() > 0 ? desktopPane.getHeight() : desktopPane.getPrefHeight();
+                autoScrollToTopEdge(windowPanel, desktopWidth, desktopHeight);
+                if (windowPanel.getProperties().get(WINDOW_SUPPORT_KEY) instanceof WindowSupport support) {
+                    support.flashOutline();
+                }
+                target.requestFocus();
+                return;
+            }
+        }
+    }
+
     // =========================================================================
     //                              HELPER METHODS
     // =========================================================================
@@ -1553,6 +1590,7 @@ public class KLWorkspaceSkin extends SkinBase<KLWorkspace> {
         }
 
         if (getSkinnable() != null) {
+            getSkinnable().removeEventHandler(RevealWindowEvent.REVEAL_WINDOW, revealHandler);
             // Clean up size change subscription
             cleanupSubscription(DESKTOP_RESIZE_SUBSCRIPTION_KEY);
             cleanupSubscription(PANNING_SUBSCRIPTION_KEY);
