@@ -16,7 +16,6 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.controls.ContentSizedSplitPane;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
 import dev.ikm.komet.kview.controls.ReferenceColors;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
@@ -45,7 +44,6 @@ import javafx.collections.ListChangeListener;
 import javafx.css.PseudoClass;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.control.TitledPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -95,7 +93,7 @@ final class WindowSections {
     private final WindowEditSession session;
     private final ViewProperties viewProperties;
     /** The split pane the sections' titled panes stack in. */
-    private final ContentSizedSplitPane content;
+    private final GenPurposeWindowView view;
     /** The owning journal's topic, which the pattern presenters publish their events on. */
     private final UUID journalTopic;
     /**
@@ -160,22 +158,22 @@ final class WindowSections {
     /**
      * @param windowModel     the KL-editor window definition whose sections to show
      * @param session         what the window is editing
-     * @param content         the split pane the sections stack in
+     * @param view            the window's view, whose sections list the sections stack in
      * @param journalTopic    the owning journal's topic
      * @param inlineEditSaver what inline edits are saved through; null to commit them as applied
      */
-    WindowSections(EditorWindowModel windowModel, WindowEditSession session, ContentSizedSplitPane content,
+    WindowSections(EditorWindowModel windowModel, WindowEditSession session, GenPurposeWindowView view,
                    UUID journalTopic, InlineEditSaver inlineEditSaver) {
         this.windowModel = windowModel;
         this.session = session;
         this.viewProperties = session.getViewProperties();
-        this.content = content;
+        this.view = view;
         this.journalTopic = journalTopic;
         this.inlineEditSaver = inlineEditSaver;
 
         // Whether a section's reference component is on screen follows scrolling, collapsing and
         // resizing, so it is re-read after every layout pass of the scene the sections are in.
-        content.sceneProperty().subscribe((oldScene, newScene) -> {
+        view.sceneProperty().subscribe((oldScene, newScene) -> {
             if (oldScene != null) {
                 oldScene.removePostLayoutPulseListener(this::updateReferencesOnScreen);
             }
@@ -217,19 +215,19 @@ final class WindowSections {
         EditorSectionModel mainSection = windowModel.getMainSection();
 
         // Main TitledPane
-        TitledPane mainTitledPane = createTitledPane(mainSection);
+        SectionTitledPane<EntityFacade> mainTitledPane = createTitledPane(mainSection);
         addPatternViewsOfSection(mainSection.getPatterns());
         addSupplementalAreaViewsOfSection(mainSection);
-        content.getItems().add(mainTitledPane);
+        view.getSections().add(mainTitledPane);
 
         mainSection.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) this::onSectionPatternsChanged);
 
         // Additional Sections
         windowModel.getAdditionalSections().forEach(section -> {
-            TitledPane titledPane = createTitledPane(section);
+            SectionTitledPane<EntityFacade> titledPane = createTitledPane(section);
             addPatternViewsOfSection(section.getPatterns());
             addSupplementalAreaViewsOfSection(section);
-            content.getItems().add(titledPane);
+            view.getSections().add(titledPane);
         });
 
         // TODO: will sections need to be refreshed on coordinate changes?
@@ -314,7 +312,7 @@ final class WindowSections {
         });
     }
 
-    private TitledPane createTitledPane(EditorSectionModel sectionModel) {
+    private SectionTitledPane<EntityFacade> createTitledPane(EditorSectionModel sectionModel) {
         SectionTitledPane<EntityFacade> titledPane = new SectionTitledPane<>();
         titledPane.textProperty().bind(sectionModel.nameProperty());
 
@@ -933,11 +931,11 @@ final class WindowSections {
         while (change.next()) {
             if (change.wasAdded()) {
                 for (EditorSectionModel additionalSectionModel : change.getAddedSubList()) {
-                    TitledPane titledPane = createTitledPane(additionalSectionModel);
+                    SectionTitledPane<EntityFacade> titledPane = createTitledPane(additionalSectionModel);
                     addPatternViewsOfSection(additionalSectionModel.getPatterns());
                     additionalSectionModel.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) this::onSectionPatternsChanged);
 
-                    content.getItems().add(titledPane);
+                    view.getSections().add(titledPane);
                 }
                 updateRequiredChips();
                 getOnPublishInputsChanged().run();

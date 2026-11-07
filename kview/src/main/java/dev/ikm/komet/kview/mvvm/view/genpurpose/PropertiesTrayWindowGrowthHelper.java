@@ -20,7 +20,6 @@ import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
-import javafx.beans.value.ObservableDoubleValue;
 import javafx.scene.Parent;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.Region;
@@ -36,7 +35,7 @@ import static dev.ikm.komet.kview.fxutils.FXUtils.DEFAULT_ANIMATION_DURATION;
  * shown after a submit, a shorter form) leaves the height alone, so the window doesn't bounce
  * between consecutive edits. Growth stops at {@link #maxGrownHeight()}.
  */
-public final class WindowHeightFitter {
+public final class PropertiesTrayWindowGrowthHelper {
 
     /**
      * Gap kept between the bottom of a grown window and the bottom of the workspace's visible area
@@ -46,7 +45,6 @@ public final class WindowHeightFitter {
 
     private final Region window;
     private final Region tray;
-    private final ObservableDoubleValue requiredTrayHeight;
 
     /** The preferred height the window was grown to, or a negative value while it isn't grown. */
     private double grownHeight = -1;
@@ -62,22 +60,22 @@ public final class WindowHeightFitter {
     private double prefHeightAfterAnimation;
 
     /**
-     * @param window             the window's root, whose preferred height sizes the window
-     * @param tray               the tray holding the properties panel; it fills the window's height
-     *                           below the window's chrome
-     * @param requiredTrayHeight the height the tray needs to show the panel's content in full
+     * @param window the window's root, whose preferred height sizes the window
+     * @param tray   the tray holding the properties panel; it fills the window's height
+     *               below the window's chrome
      */
-    public WindowHeightFitter(Region window, Region tray, ObservableDoubleValue requiredTrayHeight) {
+    public PropertiesTrayWindowGrowthHelper(Region window, Region tray) {
         this.window = window;
         this.tray = tray;
-        this.requiredTrayHeight = requiredTrayHeight;
     }
 
     /**
      * Grows the window to fit what the tray requires now. Does nothing when the window is tall
      * enough already, or can't grow any further.
+     *
+     * @param requiredTrayHeight the height the tray needs to show the panel's content in full
      */
-    public void growToFitProperties() {
+    public void growToFitProperties(double requiredTrayHeight) {
         if (window.getHeight() <= 0) {
             return;
         }
@@ -85,7 +83,7 @@ public final class WindowHeightFitter {
         // Everything in the window that isn't the tray — the toolbar, the hint strips, the borders —
         // stays as tall as it is, whatever height the window and the tray share at the moment.
         final double chromeHeight = window.getHeight() - tray.getHeight();
-        final double target = Math.ceil(Math.min(maxGrownHeight(), chromeHeight + requiredTrayHeight.get()));
+        final double target = Math.ceil(Math.min(maxGrownHeight(), chromeHeight + requiredTrayHeight));
         final double current = animation != null ? animationTarget : window.getHeight();
         if (target <= current + 1) {
             return;
@@ -102,7 +100,7 @@ public final class WindowHeightFitter {
     }
 
     /**
-     * Gives back the height {@link #growToFitProperties()} added. A window the user has resized in the meantime
+     * Gives back the height {@link #growToFitProperties(double)} added. A window the user has resized in the meantime
      * keeps their height.
      */
     public void restorePreviousHeight() {

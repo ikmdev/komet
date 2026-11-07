@@ -16,23 +16,17 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose;
 
 import static dev.ikm.komet.kview.events.EventTopics.SAVE_PATTERN_TOPIC;
-import static dev.ikm.komet.layout_engine.window.DraggableSupport.addDraggableNodes;
-import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.setupViewCoordinateOptionsPopup;
 import static dev.ikm.komet.kview.mvvm.view.journal.JournalController.toast;
 
 import dev.ikm.komet.framework.observable.ObservableField;
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.controls.ContentSizedSplitPane;
 import dev.ikm.komet.kview.controls.KLWorkspace;
-import dev.ikm.komet.kview.controls.KlWindowControlToolbar;
-import dev.ikm.komet.layout.controls.FilterOptionsPopup;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl.Tab;
-import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.FormMode;
 import dev.ikm.komet.layout.InlineEditSaver;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
@@ -40,7 +34,6 @@ import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowType;
-import dev.ikm.komet.layout_engine.window.WindowSupport;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
@@ -53,11 +46,6 @@ import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.EntityProxy;
 import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.application.Platform;
-import javafx.css.PseudoClass;
-import javafx.scene.control.Label;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,15 +66,11 @@ public class GenPurposeDetailsController {
      * Active while the window is in create mode, i.e. framing a component that doesn't exist yet.
      * Drives the "ghost window" styling in kview.css (dimmed blue chrome, dashed frame, dimmed STAMP).
      */
-    private static final PseudoClass CREATE_MODE = PseudoClass.getPseudoClass("create-mode");
-
     /**
      * Active while the window "has focus": the mouse was pressed inside it or any of its controls
      * holds keyboard focus. Drives the enlarged drop shadow in kview.css that makes the window
      * read as sitting closer to the screen.
      */
-    private static final PseudoClass WINDOW_FOCUSED = PseudoClass.getPseudoClass("window-focused");
-
     /**
      * Key a collapsed section keeps the content height it gave up under, so expanding it again
      * hands the window back the very height its collapse closed (see
@@ -106,25 +90,8 @@ public class GenPurposeDetailsController {
      */
     private final Set<Long> unsubmittedNewSemanticNids = new HashSet<>();
 
-    // The parts of the window's view (see GenPurposeWindowView) this controller wires behavior onto.
-    private final ContentSizedSplitPane mainContent;
-    private final BorderPane detailsOuterBorderPane;
-    private final KlWindowControlToolbar windowControlToolbar;
-    /**
-     * Used slide out the properties view
-     */
-    private final VerticallyFilledPane propertiesSlideoutTrayPane;
-    /** The title, identifiers and STAMP at the top of the window. */
-    private final WindowBanner banner;
-    private final Label createModeHintLabel;
-    /** Strip naming the changes not published yet (see {@link #updatePublishState}). */
-    private final HBox unpublishedHint;
-    private final Label unpublishedHintLabel;
-    private final javafx.scene.control.Hyperlink unpublishedDiscardLink;
-    private PropertiesTray propertiesTray;
+    private final GenPurposeWindowView view;
     private GenPurposePropertiesController propertiesController;
-    /** Grows the window to fit the open properties panel, and gives the height back as it closes. */
-    private WindowHeightFitter windowHeightFitter;
     /** The KL-editor window definition this window is built from; shared with the editor while both are open. */
     private final EditorWindowModel editorWindowModel;
     /**
@@ -163,16 +130,8 @@ public class GenPurposeDetailsController {
         this.session = session;
         this.journalTopic = journalTopic;
         this.viewProperties = session.getViewProperties();
-        this.detailsOuterBorderPane = view;
-        this.windowControlToolbar = view.getWindowControlToolbar();
-        this.mainContent = view.getMainContent();
-        this.propertiesSlideoutTrayPane = view.getPropertiesSlideoutTrayPane();
-        this.banner = view.getBanner();
-        this.createModeHintLabel = view.getCreateModeHintLabel();
-        this.unpublishedHint = view.getUnpublishedHint();
-        this.unpublishedHintLabel = view.getUnpublishedHintLabel();
-        this.unpublishedDiscardLink = view.getUnpublishedDiscardLink();
-        unpublishedDiscardLink.setOnAction(event -> discardUnpublished());
+        this.view = view;
+        view.setOnDiscardUnpublished(this::discardUnpublished);
 
         // The definition comes first: the chrome wiring below already asks its window type
         // (see usesPublishFlow).
@@ -191,7 +150,7 @@ public class GenPurposeDetailsController {
         // tree already shows the edit, so nothing re-renders for it; the required chips and the
         // Publish button follow through the stated-definition change subscriber.
         InlineEditSaver inlineEditSaver = usesPublishFlow() ? session::saveUncommittedFieldEdit : null;
-        this.windowSections = new WindowSections(editorWindowModel, session, mainContent, journalTopic, inlineEditSaver);
+        this.windowSections = new WindowSections(editorWindowModel, session, view, journalTopic, inlineEditSaver);
         windowSections.setOnSectionExpandedChanged(this::resizeWindowWithSection);
         windowSections.setOnPublishInputsChanged(this::updatePublishState);
 
@@ -200,44 +159,36 @@ public class GenPurposeDetailsController {
         sectionEditMenu.setOnCreateSemantic(this::onCreateSemantic);
         sectionEditMenu.setOnCreateStatedDefinition(this::createSeededStatedDefinition);
         windowSections.setOnSectionEditRequested(sectionEditMenu::open);
-        view.getUnpublishedShowLink().setOnAction(event -> windowSections.revealFirstUnpublishedSemantic());
+        view.setOnShowUnpublished(windowSections::revealFirstUnpublishedSemantic);
 
         wireChrome();
         buildWindowFromDefinition(windowTitle);
     }
 
     /**
-     * Wires the window chrome: toolbar actions, the coordinates popup, create-mode and focus
-     * styling, the properties panel and its events, window dragging.
+     * Wires the window chrome: toolbar actions, the coordinates popup, create-mode styling, the
+     * properties panel and its events.
      */
     private void wireChrome() {
         // Drive the coordinates menu from the relocated FilterOptionsPopup (ike-issues#661); the popup
         // writes the window's nodeView override, which the window's KL context + areas resolve through.
-        setupViewCoordinateOptionsPopup(viewProperties, FilterOptionsPopup.FILTER_TYPE.CHAPTER_WINDOW, detailsOuterBorderPane,
-                windowControlToolbar.getCoordinatesMenuButton(), this::updateView);
+        view.setupCoordinatesPopup(viewProperties, this::updateView);
 
-        // Wire the toolbar's behaviour: the close and Publish buttons take actions, while the
-        // properties panel reacts to the toggle's selected state (driven by user clicks or
-        // setPropertiesSelected).
-        windowControlToolbar.setOnCloseAction(this::closeConceptWindow);
-        windowControlToolbar.setOnPublishAction(this::publish);
-        windowControlToolbar.setOnFieldDefaultsAction(this::openPatternFieldDefaults);
+        // Wire the toolbar's behaviour: the close and Publish buttons take actions, while the window's
+        // height follows the properties tray (opened by a toggle click or by setPropertiesTrayOpen).
+        view.setOnClose(this::closeConceptWindow);
+        view.setOnPublish(this::publish);
+        view.setOnFieldDefaults(this::openPatternFieldDefaults);
         // The Publish button follows the session's uncommitted changes (see updatePublishState).
         session.hasUncommittedChangesProperty().subscribe(this::updatePublishState);
-        // Invalidation-based, so it reacts to changes only: the tray it drives is created after
-        // the chrome (see setupProperties), and the panel starts out closed like the toggle.
-        windowControlToolbar.propertiesSelectedProperty()
-                .subscribe(() -> onPropertiesToggleChanged(windowControlToolbar.isPropertiesSelected()));
+        // Invalidation-based, so it reacts to changes only: the tray starts out closed like the toggle.
+        view.propertiesTrayOpenProperty().subscribe(() -> onPropertiesTrayOpenChanged(view.isPropertiesTrayOpen()));
 
         // Ghost-window styling while in create mode: the window frames a component that doesn't
         // exist yet, so the chrome dims and the frame dashes (see :create-mode in kview.css) and
         // the DRAFT chip + hint appear. Publishing flips the mode to EDIT, which clears all of it.
         session.modeProperty().subscribe(mode -> {
-            boolean creating = mode == FormMode.CREATE;
-            detailsOuterBorderPane.pseudoClassStateChanged(CREATE_MODE, creating);
-            windowControlToolbar.setDraftVisible(creating);
-            createModeHintLabel.setVisible(creating);
-            createModeHintLabel.setManaged(creating);
+            view.setCreating(mode == FormMode.CREATE);
             updateRequiredChips();
         });
 
@@ -255,80 +206,30 @@ public class GenPurposeDetailsController {
                 showPatternInstances();
             }
         });
-
-        // This window opts out of WindowSupport's hover/resize outline: the edge resize cursors
-        // are the resize affordance. Must be set before addDraggableNodes below creates the
-        // window support.
-        detailsOuterBorderPane.getProperties().put(WindowSupport.HIGHLIGHT_DISABLED_KEY, Boolean.TRUE);
-
-        // Setup window support with explicit draggable nodes. The toolbar's own title tab is
-        // part of the toolbar control, so it drags the window through the toolbar handle.
-        addDraggableNodes(detailsOuterBorderPane, windowControlToolbar);
-
-        // Window focus shadow: the window counts as focused while keyboard focus is anywhere
-        // inside it (focus-within). A mouse press anywhere in the window routes focus to the
-        // window root first — the filter runs before the pressed control claims focus for
-        // itself — so clicking non-focusable areas also focuses the window. Focus moving into
-        // another window clears it. Drives :window-focused in kview.css.
-        detailsOuterBorderPane.focusWithinProperty().subscribe(() ->
-                detailsOuterBorderPane.pseudoClassStateChanged(WINDOW_FOCUSED,
-                        detailsOuterBorderPane.isFocusWithin()));
-        detailsOuterBorderPane.addEventFilter(MouseEvent.MOUSE_PRESSED, _ -> {
-            if (!detailsOuterBorderPane.isFocusWithin()) {
-                detailsOuterBorderPane.requestFocus();
-            }
-        });
     }
 
     /**
-     * Opens the properties panel: the toolbar's Properties toggle follows, the tray slides out and
-     * the window grows to fit what the panel shows.
+     * Follows the properties tray: as it opens the window grows to fit what the panel shows, and
+     * as it closes the window gets back the height it had before the panel grew it.
      */
-    private void openPropertiesPanel() {
-        LOG.info("propBumpOutListener - Opening Properties bumpout toggle = " + windowControlToolbar.isPropertiesSelected());
-
-        windowControlToolbar.setPropertiesSelected(true);
-        propertiesTray.open();
-
-        // The panel's content may have been swapped in this same pulse, ahead of the layout pass
-        // that measures it — measure it now, so the window grows for what is about to show.
-        propertiesController.refreshRequiredHeight();
-        growWindowToFitProperties();
-    }
-
-    /**
-     * Closes the properties panel: the toolbar's Properties toggle follows, the tray slides back
-     * in and the window gets back the height it had before the panel grew it.
-     */
-    private void closePropertiesPanel() {
-        LOG.info("propBumpOutListener - Close Properties bumpout toggle = " + windowControlToolbar.isPropertiesSelected());
-
-        windowControlToolbar.setPropertiesSelected(false);
-        propertiesTray.close();
-        windowHeightFitter.restorePreviousHeight();
-    }
-
-    /**
-     * Grows the window to fit its properties panel while the panel is open (see
-     * {@link WindowHeightFitter}); closing the panel gives the height back.
-     */
-    private void growWindowToFitProperties() {
-        if (windowControlToolbar.isPropertiesSelected()) {
-            windowHeightFitter.growToFitProperties();
+    private void onPropertiesTrayOpenChanged(boolean open) {
+        if (open) {
+            // The panel's content may have been swapped in this same pulse, ahead of the layout pass
+            // that measures it — measure it now, so the window grows for what is about to show.
+            propertiesController.refreshRequiredHeight();
+            growWindowToFitProperties();
+        } else {
+            view.restorePreviousHeight();
         }
     }
 
     /**
-     * Runs when the toolbar's Properties toggle changes, by a user click or by
-     * {@code setPropertiesSelected}: the panel follows the toggle.
-     *
-     * @param selected the new selected state of the properties toggle
+     * Grows the window to fit its properties panel while the panel is open; closing the panel
+     * gives the height back.
      */
-    private void onPropertiesToggleChanged(boolean selected) {
-        if (selected) {
-            openPropertiesPanel();
-        } else {
-            closePropertiesPanel();
+    private void growWindowToFitProperties() {
+        if (view.isPropertiesTrayOpen()) {
+            view.growToFitProperties(propertiesController.requiredHeightProperty().get());
         }
     }
 
@@ -496,16 +397,13 @@ public class GenPurposeDetailsController {
         // the panel once they are done (submit, cancel).
         propertiesController.setOnSemanticSubmitted(this::onSemanticSubmitted);
         propertiesController.setOnSemanticCancelled(this::onSemanticCancelled);
-        propertiesController.setOnCloseRequested(this::closePropertiesPanel);
+        propertiesController.setOnCloseRequested(() -> view.setPropertiesTrayOpen(false));
         // An instance double-clicked on the INSTANCES tab opens in a semantic window of the journal.
         propertiesController.setOnInstanceOpened(this::openInstanceWindow);
         // The panel's tabs are its drag handle: while the tray is open they drag the window too.
-        this.propertiesTray = new PropertiesTray(detailsOuterBorderPane, propertiesSlideoutTrayPane,
-                propertiesController.getNode(), propertiesController.getPropertiesTabs());
+        view.setPropertiesPanel(propertiesController.getNode(), propertiesController.getPropertiesTabs());
 
         // Follow the open panel's content: a form loaded, or swapped for a taller one, grows the window.
-        windowHeightFitter = new WindowHeightFitter(detailsOuterBorderPane, propertiesSlideoutTrayPane,
-                propertiesController.requiredHeightProperty());
         propertiesController.requiredHeightProperty().subscribe(_ -> growWindowToFitProperties());
     }
 
@@ -533,18 +431,18 @@ public class GenPurposeDetailsController {
      * @param windowTitle the definition's title, as the toolbar's title tab shows it
      */
     private void buildWindowFromDefinition(String windowTitle) {
-        windowControlToolbar.setTitle(windowTitle.substring(0, 1).toUpperCase() + windowTitle.substring(1));
+        view.setWindowTitle(windowTitle.substring(0, 1).toUpperCase() + windowTitle.substring(1));
 
         // The standard Concept window gets the classic concept window's blue chrome (see
         // .concept-window-theme in kview.css) and its own set of properties tabs. User-created
         // Semantics Windows get the light chrome (.custom-window-theme) that sets them apart from
         // the standard windows; the other standard windows keep the default grey chrome and tabs.
         if (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_CONCEPT) {
-            detailsOuterBorderPane.getStyleClass().add("concept-window-theme");
+            view.getStyleClass().add("concept-window-theme");
             propertiesController.getPropertiesTabs().getTabs().setAll(
                     Tab.ADD_EDIT, Tab.HIERARCHY, Tab.HISTORY, Tab.COMMENTS);
         } else if (editorWindowModel.getWindowType() == EditorWindowType.SEMANTICS) {
-            detailsOuterBorderPane.getStyleClass().add("custom-window-theme");
+            view.getStyleClass().add("custom-window-theme");
         } else if (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN) {
             // The standard Pattern window also edits its pattern's field defaults — the values
             // new semantics of the pattern start with in every KL window (see PatternFieldDefaults)
@@ -555,12 +453,12 @@ public class GenPurposeDetailsController {
                 propertiesController.getPropertiesTabs().getTabs().setAll(patternExists
                         ? List.of(Tab.ADD_EDIT, Tab.INSTANCES, Tab.DEFAULTS, Tab.COMMENTS)
                         : List.of(Tab.ADD_EDIT, Tab.COMMENTS));
-                windowControlToolbar.setFieldDefaultsVisible(patternExists);
+                view.setFieldDefaultsVisible(patternExists);
             });
         }
 
         // The create-mode hint names the kind of component this window will create.
-        createModeHintLabel.setText("This " + componentKindString
+        view.setCreateModeHintText("This " + componentKindString
                 + " doesn't exist yet - it's created when you fill out the required values and "
                 + (usesPublishFlow() ? "hit Publish." : "submit."));
 
@@ -568,7 +466,7 @@ public class GenPurposeDetailsController {
         // scoped to the standard Pattern and Concept windows for now; the other window types keep
         // committing on each properties-panel submit (see the PUBLISH event handler and the
         // fields controller's submit toast, both of which branch on this).
-        windowControlToolbar.setPublishVisible(usesPublishFlow());
+        view.setPublishVisible(usesPublishFlow());
 
         // Apply the Window settings authored in the KL editor (this window shares the same model).
         applyEditorWindowSettings();
@@ -579,7 +477,7 @@ public class GenPurposeDetailsController {
         updateView();
 
         if (session.isCreateMode()) {
-            banner.populateStampFromEditCoordinate(viewProperties);
+            view.setStampFromEditCoordinate(viewProperties);
         }
 
         // Sections exist now — show the required-pattern chips (create mode only).
@@ -602,8 +500,8 @@ public class GenPurposeDetailsController {
      */
     private void applyEditorWindowSettings() {
         // Control-bar options: show/hide the Coordinate and Timeline icons.
-        windowControlToolbar.coordinateVisibleProperty().bind(editorWindowModel.coordinateVisibleProperty());
-        windowControlToolbar.timelineVisibleProperty().bind(editorWindowModel.timelineVisibleProperty());
+        view.coordinateVisibleProperty().bind(editorWindowModel.coordinateVisibleProperty());
+        view.timelineVisibleProperty().bind(editorWindowModel.timelineVisibleProperty());
 
         // View size: apply an explicit Width/Height. "Auto" (< 0) leaves the workspace's own sizing
         // alone. The framework sizes this same root pane via setPrefWidth/Height, so we set (not bind) it.
@@ -612,31 +510,31 @@ public class GenPurposeDetailsController {
         editorWindowModel.prefWidthProperty().subscribe(width -> {
             final double w = width.doubleValue();
             if (w >= 0) {
-                detailsOuterBorderPane.setPrefWidth(w);
-                detailsOuterBorderPane.getProperties().put(KLWorkspace.WINDOW_AUTHORED_WIDTH_KEY, w);
+                view.setPrefWidth(w);
+                view.getProperties().put(KLWorkspace.WINDOW_AUTHORED_WIDTH_KEY, w);
             } else {
-                detailsOuterBorderPane.getProperties().remove(KLWorkspace.WINDOW_AUTHORED_WIDTH_KEY);
+                view.getProperties().remove(KLWorkspace.WINDOW_AUTHORED_WIDTH_KEY);
             }
         });
         editorWindowModel.prefHeightProperty().subscribe(height -> {
             final double h = height.doubleValue();
             if (h >= 0) {
-                detailsOuterBorderPane.setPrefHeight(h);
-                detailsOuterBorderPane.getProperties().put(KLWorkspace.WINDOW_AUTHORED_HEIGHT_KEY, h);
+                view.setPrefHeight(h);
+                view.getProperties().put(KLWorkspace.WINDOW_AUTHORED_HEIGHT_KEY, h);
             } else {
-                detailsOuterBorderPane.getProperties().remove(KLWorkspace.WINDOW_AUTHORED_HEIGHT_KEY);
+                view.getProperties().remove(KLWorkspace.WINDOW_AUTHORED_HEIGHT_KEY);
             }
         });
     }
 
     /**
-     * Called to update the view when coordinate changes occur.
+     * Update the current view taking into account the current Reference Component of the Window
      */
     private void updateView() {
         LOG.info("Update view called - implement coordinate changes here.");
         EntityFacade refConcept = session.getComponent();
         if (refConcept != null) {
-            banner.updateComponent(viewProperties, refConcept);
+            view.setComponent(viewProperties, refConcept);
         } else {
             LOG.warn("The window has no component yet, cannot update view.");
         }
@@ -653,8 +551,8 @@ public class GenPurposeDetailsController {
      * collapse on its own and is left alone.
      */
     private void resizeWindowWithSection(SectionTitledPane<EntityFacade> section, boolean expanded) {
-        windowHeightFitter.finishAnimationNow();
-        final double windowHeight = detailsOuterBorderPane.getPrefHeight();
+        view.finishHeightAnimationNow();
+        final double windowHeight = view.getPrefHeight();
         if (windowHeight <= 0 || !(section.getContent() instanceof Region content)) {
             return;
         }
@@ -672,9 +570,9 @@ public class GenPurposeDetailsController {
             section.getProperties().put(COLLAPSED_CONTENT_HEIGHT_KEY, content.getHeight());
         }
 
-        // Through the fitter, so a window grown to fit its properties panel takes the section's
-        // height out of (or into) the height closing the panel restores as well.
-        windowHeightFitter.changeHeightBy(delta);
+        // Through the view's growth helper, so a window grown to fit its properties panel takes the
+        // section's height out of (or into) the height closing the panel restores as well.
+        view.changeHeightBy(delta);
     }
 
     private void onCreateSemantic(EditorSectionModel sectionModelOfPattern,
@@ -707,7 +605,7 @@ public class GenPurposeDetailsController {
     private void showEditSemanticFieldsPanel(SemanticEntity<SemanticEntityVersion> semanticEntity,
                                              EditorPatternModel editorPatternModel) {
         propertiesController.showEditForm(semanticEntity, editorPatternModel);
-        openPropertiesPanel();
+        view.setPropertiesTrayOpen(true);
 
         // Turn on Edit mode on the left side for the Semantic being edited
         windowSections.setEditingSemantic(semanticEntity);
@@ -744,7 +642,7 @@ public class GenPurposeDetailsController {
         }
         propertiesController.showDefaultsForm(session.getOrCreateDefaultsSemantic(), session.getDefaultsComposer(),
                 "Field Default Values");
-        openPropertiesPanel();
+        view.setPropertiesTrayOpen(true);
     }
 
     /**
@@ -759,7 +657,7 @@ public class GenPurposeDetailsController {
             return;
         }
         propertiesController.showInstances(session.getComponent());
-        openPropertiesPanel();
+        view.setPropertiesTrayOpen(true);
     }
 
     /**
@@ -820,18 +718,16 @@ public class GenPurposeDetailsController {
                     : unpublishedChanges == 0 ? "Publish"
                     : "Publish " + unpublishedChanges + (unpublishedChanges == 1 ? " change" : " changes");
         }
-        windowControlToolbar.setPublishDisable(disabled);
-        windowControlToolbar.setPublishTooltip(publishTooltip);
+        view.setPublishDisable(disabled);
+        view.setPublishTooltip(publishTooltip);
 
         // The strip under the toolbar names the changes not published yet. Not in create mode,
         // whose DRAFT chip and hint already say the whole component is unpublished.
         boolean showHint = unpublishedChanges > 0;
-        unpublishedHint.setVisible(showHint);
-        unpublishedHint.setManaged(showHint);
-        unpublishedDiscardLink.setVisible(!session.isCreateMode());
-        unpublishedDiscardLink.setManaged(!session.isCreateMode());
+        view.setUnpublishedHintVisible(showHint);
+        view.setUnpublishedDiscardVisible(!session.isCreateMode());
         if (showHint) {
-            unpublishedHintLabel.setText(unpublishedChanges == 1
+            view.setUnpublishedHintText(unpublishedChanges == 1
                     ? "1 change not published yet. Only you can see it until you publish."
                     : unpublishedChanges + " changes not published yet. Only you can see them until you publish.");
         }

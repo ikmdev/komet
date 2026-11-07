@@ -15,9 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genpurpose.test;
 
-import dev.ikm.komet.kview.mvvm.view.genpurpose.WindowHeightFitter;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.PropertiesTrayWindowGrowthHelper;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
@@ -39,9 +37,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * A window in a scrollable workspace: 50px of chrome on top, 300px of content, and a tray on the
  * right that fills the height below the chrome without asking for any — the general-purpose
- * window's shape, as far as {@link WindowHeightFitter} is concerned.
+ * window's shape, as far as {@link PropertiesTrayWindowGrowthHelper} is concerned.
  */
-class WindowHeightFitterUTestFX {
+class PropertiesTrayWindowGrowthHelperUTestFX {
 
     private static final double CHROME_HEIGHT = 50;
     private static final double CONTENT_HEIGHT = 300;
@@ -50,8 +48,7 @@ class WindowHeightFitterUTestFX {
 
     private ScrollPane workspace;
     private BorderPane window;
-    private final DoubleProperty requiredTrayHeight = new SimpleDoubleProperty();
-    private WindowHeightFitter fitter;
+    private PropertiesTrayWindowGrowthHelper helper;
 
     @BeforeAll
     static void startToolkit() throws Exception {
@@ -73,7 +70,7 @@ class WindowHeightFitterUTestFX {
             window.setLayoutY(WINDOW_Y);
 
             workspace = new ScrollPane(new Pane(window));
-            fitter = new WindowHeightFitter(window, tray, requiredTrayHeight);
+            helper = new PropertiesTrayWindowGrowthHelper(window, tray);
 
             stage.setScene(new Scene(workspace, 800, 700));
             stage.show();
@@ -98,11 +95,10 @@ class WindowHeightFitterUTestFX {
     void growsAndRestoresAContentSizedWindow() throws Exception {
         assertEquals(CHROME_HEIGHT + CONTENT_HEIGHT, window.getHeight(), TOLERANCE);
 
-        requiredTrayHeight.set(450);
-        runAndAwaitAnimation(fitter::growToFitProperties);
+        runAndAwaitAnimation(() -> helper.growToFitProperties(450));
         assertEquals(CHROME_HEIGHT + 450, window.getHeight(), TOLERANCE);
 
-        runAndAwaitAnimation(fitter::restorePreviousHeight);
+        runAndAwaitAnimation(helper::restorePreviousHeight);
         assertEquals(CHROME_HEIGHT + CONTENT_HEIGHT, window.getHeight(), TOLERANCE);
         assertEquals(Region.USE_COMPUTED_SIZE, window.getPrefHeight(), 0);
     }
@@ -110,8 +106,7 @@ class WindowHeightFitterUTestFX {
     @Test
     @DisplayName("The growth is animated rather than applied at once")
     void growthIsAnimated() throws Exception {
-        requiredTrayHeight.set(450);
-        FxToolkit.setupFixture(fitter::growToFitProperties);
+        FxToolkit.setupFixture(() -> helper.growToFitProperties(450));
         WaitForAsyncUtils.waitForFxEvents();
         assertTrue(window.getHeight() < CHROME_HEIGHT + 450, "the window jumped to its grown height");
     }
@@ -122,11 +117,10 @@ class WindowHeightFitterUTestFX {
         FxToolkit.setupFixture(() -> window.setPrefHeight(400));
         WaitForAsyncUtils.waitForFxEvents();
 
-        requiredTrayHeight.set(450);
-        runAndAwaitAnimation(fitter::growToFitProperties);
+        runAndAwaitAnimation(() -> helper.growToFitProperties(450));
         assertEquals(CHROME_HEIGHT + 450, window.getHeight(), TOLERANCE);
 
-        runAndAwaitAnimation(fitter::restorePreviousHeight);
+        runAndAwaitAnimation(helper::restorePreviousHeight);
         assertEquals(400, window.getPrefHeight(), 0);
         assertEquals(400, window.getHeight(), TOLERANCE);
     }
@@ -134,8 +128,7 @@ class WindowHeightFitterUTestFX {
     @Test
     @DisplayName("A tray that needs less than the window has leaves the window alone")
     void neverShrinksTheWindow() throws Exception {
-        requiredTrayHeight.set(100);
-        runAndAwaitAnimation(fitter::growToFitProperties);
+        runAndAwaitAnimation(() -> helper.growToFitProperties(100));
         assertEquals(CHROME_HEIGHT + CONTENT_HEIGHT, window.getHeight(), TOLERANCE);
         assertEquals(Region.USE_COMPUTED_SIZE, window.getPrefHeight(), 0);
     }
@@ -143,21 +136,19 @@ class WindowHeightFitterUTestFX {
     @Test
     @DisplayName("Growth stops short of the bottom of the workspace's visible area")
     void growthIsCappedAtTheVisibleWorkspace() throws Exception {
-        requiredTrayHeight.set(5000);
-        runAndAwaitAnimation(fitter::growToFitProperties);
+        runAndAwaitAnimation(() -> helper.growToFitProperties(5000));
 
         double visibleHeight = workspace.getViewportBounds().getHeight();
-        assertEquals(Math.ceil(visibleHeight - WINDOW_Y - WindowHeightFitter.BOTTOM_GAP), window.getHeight(), 1);
+        assertEquals(Math.ceil(visibleHeight - WINDOW_Y - PropertiesTrayWindowGrowthHelper.BOTTOM_GAP), window.getHeight(), 1);
     }
 
     @Test
     @DisplayName("A grown window the user resized keeps the user's height on restore")
     void keepsAUserResize() throws Exception {
-        requiredTrayHeight.set(450);
-        runAndAwaitAnimation(fitter::growToFitProperties);
+        runAndAwaitAnimation(() -> helper.growToFitProperties(450));
 
         FxToolkit.setupFixture(() -> window.setPrefHeight(420));
-        runAndAwaitAnimation(fitter::restorePreviousHeight);
+        runAndAwaitAnimation(helper::restorePreviousHeight);
         assertEquals(420, window.getPrefHeight(), 0);
     }
 
@@ -167,12 +158,11 @@ class WindowHeightFitterUTestFX {
         FxToolkit.setupFixture(() -> window.setPrefHeight(400));
         WaitForAsyncUtils.waitForFxEvents();
 
-        requiredTrayHeight.set(450);
-        runAndAwaitAnimation(fitter::growToFitProperties);
-        FxToolkit.setupFixture(() -> fitter.changeHeightBy(-60));
+        runAndAwaitAnimation(() -> helper.growToFitProperties(450));
+        FxToolkit.setupFixture(() -> helper.changeHeightBy(-60));
         assertEquals(CHROME_HEIGHT + 450 - 60, window.getPrefHeight(), 0);
 
-        runAndAwaitAnimation(fitter::restorePreviousHeight);
+        runAndAwaitAnimation(helper::restorePreviousHeight);
         assertEquals(340, window.getPrefHeight(), 0);
     }
 }
