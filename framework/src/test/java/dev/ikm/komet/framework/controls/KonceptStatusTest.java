@@ -42,6 +42,8 @@ class KonceptStatusTest {
                 KonceptStatus.PRIMITIVE_MULTIPARENT.glyph());
         assertEquals(network.ike.docs.konceptcore.KonceptStatus.ROOT.glyph(),
                 KonceptStatus.ROOT.glyph());
+        assertEquals(network.ike.docs.konceptcore.KonceptStatus.UNDEFINED.glyph(),
+                KonceptStatus.UNDEFINED.glyph());
         assertNull(KonceptStatus.NONE.glyph());
         assertEquals(network.ike.docs.konceptcore.KonceptStatus.MULTI_PARENT_GLYPH,
                 KonceptStatus.MULTI_PARENT_GLYPH);
@@ -52,6 +54,8 @@ class KonceptStatusTest {
         assertEquals("#3b8c2f", KonceptStatus.DEFINED.core().colorHex());
         assertEquals("#6b7682", KonceptStatus.PRIMITIVE_MULTIPARENT.core().colorHex());
         assertEquals("#8a6d00", KonceptStatus.ROOT.core().colorHex());
+        assertEquals("#2a5a8a", KonceptStatus.UNDEFINED.core().colorHex());
+        assertEquals(KonceptStatus.UNDEFINED.core().colorHex(), KonceptStatus.UNDEFINED.colorHex());
         assertFalse(KonceptStatus.NONE.core().hasGlyph());
     }
 

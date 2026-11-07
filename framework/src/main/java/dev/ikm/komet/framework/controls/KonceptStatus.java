@@ -48,12 +48,10 @@ public enum KonceptStatus {
 
     /**
      * A concept with no stated definition. It has no copula to lead with, so it leads with a
-     * {@value #UNDEFINED_GLYPH} instead of standing bare: a bare badge would read as nothing
-     * known about the concept, when what is known is that it was never defined. koncept-core
-     * has no such status yet, so the glyph and colour are held here, and generated media still
-     * draw these concepts bare.
+     * {@code C} instead of standing bare: a bare badge would read as nothing known about the
+     * concept, when what is known is that it was never defined.
      */
-    UNDEFINED(network.ike.docs.konceptcore.KonceptStatus.NONE, StyleClasses.KONCEPT_UNDEFINED, false),
+    UNDEFINED(network.ike.docs.konceptcore.KonceptStatus.UNDEFINED, StyleClasses.KONCEPT_UNDEFINED, false),
 
     /**
      * A concept defined by a complex-concept specification. {@value #COMPLEX_GLYPH} is a disclosure,
@@ -89,12 +87,6 @@ public enum KonceptStatus {
     public static final String MULTI_PARENT_GLYPH =
             network.ike.docs.konceptcore.KonceptStatus.MULTI_PARENT_GLYPH;
 
-    /** The letter a concept with no stated definition leads with. */
-    public static final String UNDEFINED_GLYPH = "C";
-
-    /** The colour of {@link #UNDEFINED_GLYPH}, as a web hex string: the badge's name colour. */
-    public static final String UNDEFINED_COLOR_HEX = "#2a5a8a";
-
     /** The mark a complex concept leads with: the tree's disclosure. */
     public static final String COMPLEX_GLYPH = "⊞";
 
@@ -126,14 +118,10 @@ public enum KonceptStatus {
      * The classification glyph this status displays.
      *
      * @return the glyph string ({@code ≡} defined, {@code ⊑} primitive, {@code ⊤} root,
-     *         {@value #UNDEFINED_GLYPH} undefined), or {@code null} for {@link #NONE}
+     *         {@code C} undefined), or {@code null} for {@link #NONE}
      */
     public String glyph() {
-        return switch (this) {
-            case UNDEFINED -> UNDEFINED_GLYPH;
-            case COMPLEX -> COMPLEX_GLYPH;
-            default -> core.glyph();
-        };
+        return this == COMPLEX ? COMPLEX_GLYPH : core.glyph();
     }
 
     /**
@@ -142,11 +130,7 @@ public enum KonceptStatus {
      * @return the colour hex, or {@code null} for {@link #NONE}
      */
     public String colorHex() {
-        return switch (this) {
-            case UNDEFINED -> UNDEFINED_COLOR_HEX;
-            case COMPLEX -> COMPLEX_COLOR_HEX;
-            default -> core.colorHex();
-        };
+        return this == COMPLEX ? COMPLEX_COLOR_HEX : core.colorHex();
     }
 
     /**
@@ -156,7 +140,7 @@ public enum KonceptStatus {
      * @return {@code true} for {@link #UNDEFINED}, and for {@link #COMPLEX} until the glyph face holds its symbol
      */
     public boolean isLetter() {
-        return this == UNDEFINED || this == COMPLEX;
+        return this == COMPLEX || core.isLetter();
     }
 
     /**
@@ -232,6 +216,6 @@ public enum KonceptStatus {
      * @return {@code true} for every status except {@link #NONE}
      */
     public boolean hasGlyph() {
-        return this == UNDEFINED || this == COMPLEX || core.hasGlyph();
+        return this == COMPLEX || core.hasGlyph();
     }
 }

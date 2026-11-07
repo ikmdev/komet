@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -76,13 +77,28 @@ class KonceptAppearanceMirrorTest {
         assertTrue(css.contains(KonceptStatus.PRIMITIVE.core().colorHex()),
                 "primitive status colour mirrors koncept-core");
         assertTrue(css.contains(KonceptStatus.COMPLEX_COLOR_HEX), "komet.css mirrors the complex-concept mark's colour");
-        assertTrue(css.contains(KonceptStatus.UNDEFINED_COLOR_HEX),
-                "komet.css must mirror the undefined concept's colour");
+        assertTrue(css.contains(KonceptStatus.UNDEFINED.core().colorHex()),
+                "undefined status colour mirrors koncept-core");
         assertTrue(css.contains(KonceptStatus.ROOT.core().colorHex()),
                 "root status colour mirrors koncept-core");
         assertTrue(css.contains(
                         network.ike.docs.konceptcore.KonceptStatus.MULTI_PARENT_COLOR_HEX),
                 "multi-parent fork colour mirrors koncept-core");
+    }
+
+    @Test
+    void kometCssColoursTheUndefinedLetterFromKonceptCore() throws IOException {
+        String css = komet_css();
+        int rule = css.indexOf(".koncept-status.koncept-undefined {");
+        assertTrue(rule >= 0, "komet.css styles the undefined mark");
+        String body = css.substring(rule, css.indexOf('}', rule));
+
+        assertTrue(body.contains("-fx-fill: " + KonceptStatus.UNDEFINED.core().colorHex() + ";"),
+                ".koncept-undefined fill mirrors koncept-core");
+        assertTrue(body.contains("-fx-font-weight: bold;"),
+                "the letter is set bold, as a kind sigil is");
+        assertFalse(body.contains(KonceptAppearance.defaults().glyphFamilyName()),
+                "the letter stays out of the bundled glyph face, which holds no letters");
     }
 
     @Test
