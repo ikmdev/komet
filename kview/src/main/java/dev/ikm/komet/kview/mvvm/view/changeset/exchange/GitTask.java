@@ -25,8 +25,7 @@ import dev.ikm.tinkar.common.service.SaveState;
 import dev.ikm.tinkar.common.service.TrackingCallable;
 import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.entity.ChangeSetWriterService;
-import dev.ikm.tinkar.common.service.EntityCountSummary;
-import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
+import dev.ikm.tinkar.importer.registry.ChangeSetLoad;
 import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.tinkar.reasoner.service.ClassifierResults;
 import dev.ikm.tinkar.reasoner.service.ReasonerService;
@@ -984,7 +983,10 @@ public class GitTask extends TrackingCallable<Boolean> {
     }
 
     /**
-     * Loads changesets from the specified list of files.
+     * Loads the pulled change sets the knowledge base has not registered, in the order given, and
+     * registers each ({@code dev-ike-dashboard}, decision 20): a file the store already holds, by
+     * an import or an earlier open, is not loaded again, and a file refused for a component no
+     * file before it carried is tried again after the rest.
      *
      * @param startPercentage   the progress percentage at the start of this phase
      * @param endPercentage     the progress percentage at the end of this phase
@@ -998,7 +1000,6 @@ public class GitTask extends TrackingCallable<Boolean> {
         }
 
         updatePhaseProgress(startPercentage, endPercentage, 0.0);
-        MutableList<EntityCountSummary> loadResults = Lists.mutable.empty();
 
         if (relativeFilePaths.isEmpty()) {
             updateMessage("No changeset files found to load.");
@@ -1006,28 +1007,24 @@ public class GitTask extends TrackingCallable<Boolean> {
             return;
         }
 
-        int total = relativeFilePaths.size();
-        int current = 0;
+        List<Path> files = relativeFilePaths.collect(changeSetFolder::resolve).castToList();
+        ChangeSetLoad.Report report = ChangeSetLoad.load(changeSetFolder, files, (index, count, file, retry) -> {
+            updateMessage((retry ? "Retrying changeset " : "Loading changeset ") + index + " of " + count + ": "
+                    + file.getFileName());
+            // Progress based on the file's position in its pass; 10% is reserved for completion.
+            updatePhaseProgress(startPercentage, endPercentage, (double) index / count * 0.9);
+        });
+        LOG.info("Pulled change sets: {}\n{}", report.summary(), report.markdown());
 
-        for (String relativePath : relativeFilePaths) {
-            current++;
-            File file = changeSetFolder.resolve(relativePath).toFile();
-            updateMessage("Loading changeset " + current + " of " + total + ": " + file.getName());
-            // Update progress based on current file's position in the total
-            double loadProgress = (double) current / total;
-            updatePhaseProgress(startPercentage, endPercentage, loadProgress * 0.9); // Reserve 10% for completion
-
-            try {
-                // isValidChangeset check already done when filtering files
-                EntityCountSummary ecs = new LoadEntitiesFromProtobufFile(file).compute();
-                loadResults.add(ecs);
-                LOG.info("Loaded changeset: {}", file.getName());
-            } catch (Exception ex) {
-                LOG.error("Failed to load changeset: {}", file.getName(), ex);
-            }
+        StringBuilder message = new StringBuilder("Loaded " + report.loaded().size() + " of " + files.size() + " changesets");
+        long registeredBefore = report.count(ChangeSetLoad.Outcome.REGISTERED_BEFORE);
+        if (registeredBefore > 0) {
+            message.append(", ").append(registeredBefore).append(" already in the knowledge base");
         }
-
-        updateMessage("Successfully loaded " + loadResults.size() + " of " + total + " changesets.");
+        if (!report.refused().isEmpty()) {
+            message.append(", ").append(report.refused().size()).append(" refused");
+        }
+        updateMessage(message.append('.').toString());
         updatePhaseProgress(startPercentage, endPercentage, 1.0);
     }
 
