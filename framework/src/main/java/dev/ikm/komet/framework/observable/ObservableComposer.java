@@ -1162,25 +1162,90 @@ public final class ObservableComposer {
         followContinuation();
         Transaction owner = Transaction.pendingOwnerOf(entity.nid(), authorNid, module, pathNid, transaction)
                 .orElse(null);
-        if (owner == null) {
-            return;
+        if (owner != null) {
+            continueOwner(owner);
         }
+    }
+
+    /**
+     * Continues the pending work that holds components this composer's work depends on without
+     * editing them: a statement written to name a concept another change, not yet published,
+     * writes. Published alone, the dependent work would publish a reference to a component that
+     * is not, so it joins the change that holds the components, as an edit of one of them would
+     * ({@link #joinPendingWork()}): with nothing written yet, the composer takes that change over;
+     * with work of its own, it moves that work into it. One publish or discard then settles both.
+     * Call before writing what depends on them.
+     * <p>
+     * Nothing changes, and false is returned, when the work cannot join: a component has a pending
+     * version under another author, module or path than this composer's, or in a change not left
+     * pending, or the components' pending versions belong to more than one change, or this
+     * composer's work and that change hold pending versions of one component.
+     *
+     * @param components the components the work depends on
+     * @return true when none of them has a pending version outside this composer's transaction
+     * @throws IllegalStateException if this composer does not join pending work
+     */
+    public boolean continuePendingWorkOf(EntityFacade... components) {
+        requireJavaFXThread();
+        if (!joinsPendingWork) {
+            throw new IllegalStateException("Only a composer that joins pending work continues it: "
+                    + transactionComment);
+        }
+        followContinuation();
+        if (transaction != null && !transaction.isOpen()) {
+            transactionEndedElsewhere();
+        }
+        Transaction owner = null;
+        for (EntityFacade component : components) {
+            if (!(EntityHandle.get(component.nid()).orNull() instanceof Entity<?> entity)) {
+                continue;
+            }
+            Transaction found = Transaction.pendingOwnerOf(entity.nid(), authorNid, moduleNid, pathNid, transaction)
+                    .orElse(null);
+            for (EntityVersion version : entity.versions()) {
+                if (!version.uncommitted()) {
+                    continue;
+                }
+                Transaction holder = Transaction.forVersion(version).orElse(null);
+                if (transaction != null && holder == transaction) {
+                    continue;
+                }
+                if (found == null || holder != found || (owner != null && owner != found)) {
+                    return false;
+                }
+                owner = found;
+            }
+        }
+        return owner == null || continueOwner(owner);
+    }
+
+    /**
+     * Goes on in another change left pending: with nothing written yet, takes it over; with work
+     * of its own, moves that work into it first.
+     *
+     * @param owner the change to continue
+     * @return false when this composer's work and the owner hold pending versions of one
+     *         component, which leaves both as they are
+     */
+    private boolean continueOwner(Transaction owner) {
         if (transaction == null || transaction.stampsInTransactionCount() == 0) {
             if (transaction != null) {
                 transaction.cancel();       // empty: it had written nothing
             }
             transaction = owner;
             transactionStateProperty.set(TransactionState.UNCOMMITTED);
-            return;
+            return true;
         }
         long[] moved = transaction.componentNids();
-        if (transaction.moveInto(owner)) {
-            for (long nid : moved) {
-                ObservableEntity.refresh(nid);
-            }
-            continueIn(owner);
-            transactionStateProperty.set(TransactionState.UNCOMMITTED);
+        if (!transaction.moveInto(owner)) {
+            return false;
         }
+        for (long nid : moved) {
+            ObservableEntity.refresh(nid);
+        }
+        continueIn(owner);
+        transactionStateProperty.set(TransactionState.UNCOMMITTED);
+        return true;
     }
 
     /**

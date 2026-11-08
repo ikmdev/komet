@@ -329,6 +329,72 @@ class ObservableComposerJoinPendingWorkUTestFX {
     }
 
     @Test
+    @DisplayName("Work that depends on a component another change writes, without editing it, joins that change")
+    void workThatDependsOnAPendingComponentJoinsItsChange() {
+        ObservableSemantic named = newCommittedDescription("as published");
+        ObservableSemantic dependent = newCommittedDescription("the dependent's, as published");
+        ObservableSemantic published = newCommittedDescription("published, and left so");
+        ObservableComposer first = joining("First change");
+        edit(first, named, "as the first change left it");
+        Transaction firstTransaction = owner(named);
+
+        ObservableComposer second = joining("Second change");
+        edit(second, dependent, "written before joining");
+        Transaction secondTransaction = owner(dependent);
+        assertNotSame(firstTransaction, secondTransaction);
+
+        assertTrue(second.continuePendingWorkOf(named, published), "a published component needs no joining");
+
+        assertSame(firstTransaction, second.getTransaction(), "the second change continues the first");
+        assertSame(firstTransaction, owner(dependent), "its earlier work moved with it");
+        assertEquals("as the first change left it", pendingText(named), "the component it depends on is untouched");
+        edit(second, dependent, "written after joining");
+        assertSame(firstTransaction, owner(dependent));
+
+        second.commit();
+        assertTrue(uncommitted(named).isEmpty() && uncommitted(dependent).isEmpty(),
+                "one commit published the component and what depends on it");
+    }
+
+    @Test
+    @DisplayName("Work with nothing written that depends on a pending component takes its change over")
+    void workWithNothingWrittenTakesTheDependedOnChangeOver() {
+        ObservableSemantic named = newCommittedDescription("as published");
+        ObservableSemantic dependent = newCommittedDescription("the dependent's, as published");
+        ObservableComposer first = joining("First change");
+        edit(first, named, "as the first change left it");
+
+        ObservableComposer second = joining("Second change");
+        assertTrue(second.continuePendingWorkOf(named));
+        edit(second, dependent, "written after joining");
+
+        assertSame(owner(named), owner(dependent), "one change holds both");
+        first.rollback();
+        assertTrue(uncommitted(named).isEmpty() && uncommitted(dependent).isEmpty(), "one discard settles both");
+    }
+
+    @Test
+    @DisplayName("Work that depends on a component pending under another module does not join, and nothing changes")
+    void workThatDependsOnAComponentPendingUnderAnotherModuleDoesNotJoin() {
+        ObservableSemantic named = newCommittedDescription("as published");
+        ObservableSemantic dependent = newCommittedDescription("the dependent's, as published");
+        ObservableComposer first = newComposer("another module", KernelConcept.SOLOR_MODULE).joinPendingWork();
+        edit(first, named, "in another module");
+        Transaction firstTransaction = owner(named);
+
+        ObservableComposer second = joining("Second change");
+        edit(second, dependent, "written before asking");
+        Transaction secondTransaction = owner(dependent);
+
+        assertFalse(second.continuePendingWorkOf(named));
+        assertSame(secondTransaction, second.getTransaction(), "the work stays where it was");
+        assertSame(secondTransaction, owner(dependent));
+        assertTrue(firstTransaction.isOpen());
+        first.rollback();
+        second.rollback();
+    }
+
+    @Test
     @DisplayName("Two pending versions of one component are not merged: the work stays where it was")
     void twoPendingVersionsOfOneComponentAreNotMerged() {
         ObservableSemantic both = newCommittedDescription("as published");
