@@ -118,9 +118,18 @@ public class CompletionNode extends ExplorationNodeAbstract {
         return progressView;
     }
 
+    /**
+     * Stops mirroring the application-wide task list. The tasks outlive this node, and the progress view puts
+     * handlers on every task it shows, so until the view lets go of them the tasks hold the view, its window
+     * and the journal it is on. Also releases this node's view of the window's coordinate.
+     */
     @Override
     public void close() {
-
+        Bindings.unbindContent(progressView.getTasks(), taskLists.completedTasks());
+        progressView.getTasks().clear();
+        if (viewProperties != null) {
+            viewProperties.dispose();
+        }
     }
 
     @Override

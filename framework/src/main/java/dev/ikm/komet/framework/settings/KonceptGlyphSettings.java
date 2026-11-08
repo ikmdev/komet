@@ -17,6 +17,9 @@ package dev.ikm.komet.framework.settings;
 
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.value.ObservableValue;
+import javafx.scene.Node;
+import javafx.stage.Window;
 import javafx.util.Subscription;
 
 /**
@@ -44,6 +47,22 @@ public final class KonceptGlyphSettings {
             new ReadOnlyBooleanWrapper(KonceptGlyphSettings.class, "showMultipleParents", true);
 
     private KonceptGlyphSettings() {
+    }
+
+    /**
+     * The condition under which {@code node} follows these settings, for {@code showKindSigil().when(...)}
+     * and its siblings: the node is on a scene whose window, if it has one, is showing. These settings live
+     * for the session, so a node following them is held by them; a node of a closed window keeps its scene,
+     * so "on a scene" alone kept every badge of a closed journal, and the journal, reachable. A scene with no
+     * window (an off-screen print layout) still follows them.
+     *
+     * @param node the node whose rendering follows the settings
+     * @return true while the node should follow the settings
+     */
+    public static ObservableValue<Boolean> liveFor(Node node) {
+        return node.sceneProperty()
+                .flatMap(scene -> scene.windowProperty().flatMap(Window::showingProperty).orElse(true))
+                .orElse(false);
     }
 
     /**

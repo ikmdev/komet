@@ -66,6 +66,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.HPos;
@@ -175,12 +176,35 @@ public class MultiParentGraphViewController implements RefreshListener {
         if (newScene == null) {
             this.topBorderPane.sceneProperty().removeListener(this.sceneChangedListener);
             this.getObservableView().removeListener(this.viewChangedListener);
+            stopFollowingPaths();
+        }
+    }
+
+    /**
+     * The application-wide path map ({@link FxGet#pathCoordinates}) outlives every navigator; while this
+     * listener is registered it holds the navigator, its tree view and through the tree's handlers the
+     * journal the navigator is on.
+     */
+    private ObservableMap<PublicIdStringKey, StampPathImmutable> pathCoordinates;
+    private final MapChangeListener<PublicIdStringKey, StampPathImmutable> pathsChangedListener = change -> menuUpdate();
+    /** Registered weakly as well, so a navigator nobody shuts down is still not held by the map. */
+    private final javafx.collections.WeakMapChangeListener<PublicIdStringKey, StampPathImmutable> weakPathsChangedListener =
+            new javafx.collections.WeakMapChangeListener<>(pathsChangedListener);
+
+    private void stopFollowingPaths() {
+        if (pathCoordinates != null) {
+            pathCoordinates.removeListener(weakPathsChangedListener);
+            pathCoordinates = null;
         }
     }
 
     public void shutdownInstance() {
         LOG.info("Shutdown graph view instance");
         this.getObservableView().removeListener(this.viewChangedListener);
+        stopFollowingPaths();
+        if (viewMenuModel != null) {
+            viewMenuModel.dispose();
+        }
         if (rootTreeItem != null) {
             rootTreeItem.clearChildren();  // This recursively cancels any active lookups
         }
@@ -533,7 +557,9 @@ public class MultiParentGraphViewController implements RefreshListener {
         this.navigationCoordinateMenu.setGraphic(Icon.COORDINATES.makeIcon());
         this.viewMenuModel = new ViewMenuModel(viewProperties, navigationMenuButton, navigationCoordinateMenu, "MultiParentGraphViewController");
         this.menuUpdate();
-        FxGet.pathCoordinates(viewProperties.nodeView().calculator()).addListener((MapChangeListener<PublicIdStringKey, StampPathImmutable>) change -> menuUpdate());
+        stopFollowingPaths();
+        this.pathCoordinates = FxGet.pathCoordinates(viewProperties.nodeView().calculator());
+        this.pathCoordinates.addListener(weakPathsChangedListener);
         this.observableView.addListener(this.viewChangedListener);
 
         nodePreferences.getObject(KometNode.PreferenceKey.ACTIVITY_STREAM_KEY).ifPresent(activityStreamKey ->

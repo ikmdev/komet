@@ -312,7 +312,7 @@ public class ConceptPatternNavController {
         conceptNavigatorControl.setShowTags(false);
         // The defined dot and the alternate-parents tree follow the app-wide glyph settings while
         // the navigator is showing.
-        ObservableValue<Boolean> navigatorOnScene = conceptNavigatorControl.sceneProperty().isNotNull();
+        ObservableValue<Boolean> navigatorOnScene = KonceptGlyphSettings.liveFor(conceptNavigatorControl);
         conceptNavigatorControl.showDefinitionStatusProperty()
                 .bind(KonceptGlyphSettings.showDefinitionStatus().when(navigatorOnScene));
         conceptNavigatorControl.showMultipleParentsProperty()
@@ -480,5 +480,16 @@ public class ConceptPatternNavController {
             return;
         }
         conceptNavigatorControl.expandAndSelectConcept(new InvertedTree.ConceptItem(-1, conceptNid, ""));
+    }
+
+    /**
+     * Stops following application-wide events: the event bus outlives the journal this panel is on, and the
+     * subscription holds the panel and, through it, the journal. Called when the journal shuts down.
+     */
+    public void shutdown() {
+        if (patternCreationEventSubscriber != null) {
+            EvtBusFactory.getDefaultEvtBus().unsubscribe(SAVE_PATTERN_TOPIC, PatternSavedEvent.class,
+                    patternCreationEventSubscriber);
+        }
     }
 }

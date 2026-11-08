@@ -131,7 +131,21 @@ public class PatternViewController {
     protected void shutdownInstance() {
         LOG.info("Shutdown graph view instance");
         this.getObservableView().removeListener(this.viewChangedListener);
+        // The application-wide path map outlives this navigator; its listeners would hold it, and its journal.
+        if (pathCoordinates != null) {
+            pathCoordinates.removeListener(weakPathsChangedListener);
+            pathCoordinates = null;
+        }
+        if (viewMenuModel != null) {
+            viewMenuModel.dispose();
+        }
     }
+
+    private javafx.collections.ObservableMap<PublicIdStringKey, StampPathImmutable> pathCoordinates;
+    private final MapChangeListener<PublicIdStringKey, StampPathImmutable> pathsChangedListener = change -> menuUpdate();
+    /** Registered weakly as well, so a navigator nobody shuts down is still not held by the map. */
+    private final javafx.collections.WeakMapChangeListener<PublicIdStringKey, StampPathImmutable> weakPathsChangedListener =
+            new javafx.collections.WeakMapChangeListener<>(pathsChangedListener);
 
     public ObservableView getObservableView() {
         return this.observableView;
@@ -207,7 +221,8 @@ public class PatternViewController {
         this.viewMenuModel = new ViewMenuModel(viewProperties, navigationMenuButton, navigationCoordinateMenu, "PatternViewController");
         treeView.setCellFactory(p -> new EntityNidTreeCell(PatternViewController.this.viewProperties));
         this.menuUpdate();
-        FxGet.pathCoordinates(viewProperties.nodeView().calculator()).addListener((MapChangeListener<PublicIdStringKey, StampPathImmutable>) change -> menuUpdate());
+        this.pathCoordinates = FxGet.pathCoordinates(viewProperties.nodeView().calculator());
+        this.pathCoordinates.addListener(weakPathsChangedListener);
         this.observableView.addListener(this.viewChangedListener);
 
         nodePreferences.getObject(KometNode.PreferenceKey.ACTIVITY_STREAM_KEY).ifPresent(activityStreamKey ->

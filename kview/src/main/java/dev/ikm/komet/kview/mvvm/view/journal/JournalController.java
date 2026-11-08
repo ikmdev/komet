@@ -364,7 +364,16 @@ public class JournalController {
     @FXML
     private ContextMenu addContextMenu;
 
-    private static Toast toast;
+    /** This journal's toast; {@link #toast()} answers an open journal's. */
+    private Toast toast;
+
+    /**
+     * The open journals, oldest first, for {@link #toast()}. A journal joins when its toast exists and
+     * leaves at {@link #shutdown()}; a static field holding the last journal made instead kept that journal,
+     * with every card on it, reachable after it closed.
+     */
+    private static final java.util.List<JournalController> OPEN_JOURNALS =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
 
 
     /////////////////////////////////////////////////////////////////
@@ -397,7 +406,7 @@ public class JournalController {
     private final Executor VIRTUAL_TASK_EXECUTOR = Executors.newVirtualThreadPerTaskExecutor();
     private final List<PublicIdStringKey<ActivityStream>> activityStreams = new ArrayList<>();
 
-    private static Consumer<ToggleButton> reasonerToggleConsumer;
+    private Consumer<ToggleButton> reasonerToggleConsumer;
 
     private GraphNavigatorNode navigatorNode;
     private ObservableList<ChapterKlWindow<Pane>> journalWindows;
@@ -432,6 +441,8 @@ public class JournalController {
     private Subscriber<RefreshCalculatorCacheEvent> refreshCalculatorEventSubscriber;
 
     private Subscriber<MakeKLWindowEvent> makeKLWindowEventSubscriber;
+    /** The progress topic is application-wide; unsubscribed at {@link #shutdown()}, or it holds this journal. */
+    private Subscriber<ProgressEvent> progressPopupSubscriber;
 
     private Subscriber<dev.ikm.komet.layout_engine.host.MakeCardWindowEvent> makeCardWindowEventSubscriber;
     //////////////////////////////////////////////////////////////////////////////////
@@ -465,7 +476,7 @@ public class JournalController {
 
         // Initialize the journal window view, which is provided in the WindowSettings
         windowView = journalViewModel.getPropertyValue(JournalViewModel.PARENT_VIEW_COORDINATES);
-        journalViewProperties = windowView.makeOverridableViewProperties("JournalController.filterOptionsPopup");
+        journalViewProperties = journalOwnedView("JournalController.filterOptionsPopup");
         journalViewCoordAsParent = new ObservableViewNoOverride(journalViewProperties.nodeView());
 
         // Expose the journal's live coordinate as the journal-stratum KlContext on the workspace pane, so a
@@ -618,6 +629,7 @@ public class JournalController {
         journalEventBus.subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
 
         toast = new Toast(workspace);
+        OPEN_JOURNALS.add(this);
 
         // New Concept, Pattern... Context Menu
         initContextMenuWithKLWindows();
@@ -778,7 +790,7 @@ public class JournalController {
         try {
             tile.putUuid(JOURNAL_TOPIC, getJournalTopic());
             ViewProperties viewProperties =
-                    windowView.makeOverridableViewProperties("JournalController.reopenCardWindow");
+                    journalOwnedView("JournalController.reopenCardWindow");
             setupWorkspaceWindow(CardKlWindow.restore(tile, viewProperties));
         } catch (Exception e) {
             LOG.error("Could not reopen card tile {}", tile.name(), e);
@@ -823,7 +835,7 @@ public class JournalController {
      */
     private void createToolAreaWindow(KlToolArea.Factory toolAreaFactory) {
         ViewProperties viewProperties =
-                windowView.makeOverridableViewProperties("JournalController.createToolAreaWindow");
+                journalOwnedView("JournalController.createToolAreaWindow");
         ToolCardKlWindow toolWindow =
                 ToolCardKlWindow.create(journalTopic, toolAreaFactory, viewProperties, null);
         setupWorkspaceWindow(toolWindow);
@@ -865,7 +877,7 @@ public class JournalController {
 
     private CardKlWindow newCardWindow(KlCardProvider cardProvider) {
         ViewProperties viewProperties =
-                windowView.makeOverridableViewProperties("JournalController.createCardWindow");
+                journalOwnedView("JournalController.createCardWindow");
         return CardKlWindow.create(journalTopic, cardProvider, viewProperties, null);
     }
 
@@ -1329,7 +1341,7 @@ public class JournalController {
      */
     private void setupProgressListener() {
         // Subscribe to progress events on the event bus
-        Subscriber<ProgressEvent> progressPopupSubscriber = evt -> {
+        progressPopupSubscriber = evt -> {
             // if SUMMON event type, load stuff and reference task to progress popup
             if (evt.getEventType() == SUMMON) {
                 runOnFxThread(() -> {
@@ -1516,6 +1528,7 @@ public class JournalController {
     public void shutdown() {
         // cleanup code here...
         LOG.info("Journal Window is shutting down...");
+        OPEN_JOURNALS.remove(this);
 
         // The journal's name outlives this window; stop the header following it.
         if (journalNameSubscription != null) {
@@ -1525,6 +1538,8 @@ public class JournalController {
 
         // remove the listener, the node and activity streams
         navigatorNode.getController().getTreeView().getSelectionModel().getSelectedItems().removeListener(navigatorNode.getSelectionListener());
+        // The navigator follows application-wide state (the path map); released, it no longer holds this journal.
+        navigatorNode.getController().shutdownInstance();
         navigatorNode = null;
         activityStreams.forEach(ActivityStreams::delete);
 
@@ -1534,14 +1549,38 @@ public class JournalController {
         journalEventBus.unsubscribe(journalTopic, MakeGenEditingWindowEvent.class, makeGenEditWindowEventSubscriber);
         journalEventBus.unsubscribe(JOURNAL_TOPIC, CloseReasonerPanelEvent.class, closeReasonerPanelEventSubscriber);
         journalEventBus.unsubscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
+        // Every subscription holds this journal until removed: the bus outlives it.
+        journalEventBus.unsubscribe(journalTopic, MakeKLWindowEvent.class, makeKLWindowEventSubscriber);
+        journalEventBus.unsubscribe(journalTopic, dev.ikm.komet.layout_engine.host.MakeCardWindowEvent.class,
+                makeCardWindowEventSubscriber);
+        if (progressPopupSubscriber != null) {
+            journalEventBus.unsubscribe(PROGRESS_TOPIC, ProgressEvent.class, progressPopupSubscriber);
+        }
 
         if (unpublishedChangesController != null) {
             unpublishedChangesController.shutdown();
+        }
+        if (conceptPatternNavController != null) {
+            conceptPatternNavController.shutdown();
         }
         if (trashTray != null) {
             trashTray.shutdown();
         }
         pluginTrays.values().forEach(dev.ikm.komet.layout.tray.KlSidebarTray::shutdown);
+
+        // The journal's cards and its own view go with it: unbound, a card lets go of what outlives the
+        // journal (the plugin Trash's listener lists, its workers), and the journal's view lets go of the
+        // landing page's, which every journal's view overrides.
+        for (ChapterKlWindow<Pane> window : workspace.getWindows()) {
+            if (window instanceof CardKlWindow || window instanceof ToolCardKlWindow
+                    || window instanceof DynamicCardKlWindow) {
+                window.knowledgeLayoutUnbind();
+            }
+        }
+        journalNodes.forEach(KometNode::close);
+        journalNodes.clear();
+        journalOwnedViews.forEach(ViewProperties::dispose);
+        journalOwnedViews.clear();
     }
 
     /**
@@ -1588,7 +1627,7 @@ public class JournalController {
         Config nextGenSearchConfig = new Config(NextGenSearchController.class.getResource(NEXT_GEN_SEARCH_FXML_URL))
                 .updateViewModel("nextGenSearchViewModel", (nextGenSearchViewModel) ->
                             nextGenSearchViewModel.setPropertyValue(MODE, CREATE)
-                                .setPropertyValue(VIEW_PROPERTIES, windowView.makeOverridableViewProperties("JournalController.loadNextGenSearchPanel"))
+                                .setPropertyValue(VIEW_PROPERTIES, journalOwnedView("JournalController.loadNextGenSearchPanel"))
                                 .setPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC, journalTopic)
                 );
 
@@ -1620,7 +1659,7 @@ public class JournalController {
     public void loadUnpublishedChangesPanel() {
         FXMLLoader loader = new FXMLLoader(UnpublishedChangesController.class.getResource(UNPUBLISHED_CHANGES_FXML_URL));
         loader.setController(new UnpublishedChangesController(
-                windowView.makeOverridableViewProperties("JournalController.loadUnpublishedChangesPanel"),
+                journalOwnedView("JournalController.loadUnpublishedChangesPanel"),
                 journalTopic,
                 this::setupWorkspaceWindow));
         try {
@@ -1655,6 +1694,7 @@ public class JournalController {
         // Create search panel and publish on the search activity stream
         SearchNode searchNode = (SearchNode) searchFactory.create(windowView,
                 searchActivityStreamKey, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
+        journalNodes.add(searchNode);
 
         // What to do when you can double-click on a cell
         SearchPanelController controller = searchNode.getController();
@@ -1976,6 +2016,7 @@ public class JournalController {
         // Create navigator panel and publish on the navigation activity stream
         navigatorNode = (GraphNavigatorNode) navigationFactory.create(windowView,
                 navigationActivityStreamKey, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
+        journalNodes.add(navigatorNode);
 
         // What to do when you can double-click on a cell
         ViewProperties viewProperties = journalViewCoordAsParent.makeOverridableViewProperties("JournalController.loadClassicConceptNavigator");
@@ -2037,7 +2078,7 @@ public class JournalController {
     }
 
     private void loadNavigationPanel(ObservableViewNoOverride windowView) {
-        ViewProperties viewProperties = windowView.makeOverridableViewProperties("JournalController.loadNavigationPanel");
+        ViewProperties viewProperties = journalOwnedView("JournalController.loadNavigationPanel");
         Config patternConceptConfig = new Config(ConceptPatternNavController.class.getResource(CONCEPT_PATTERN_NAV_FXML_URL))
                 .controller(new ConceptPatternNavController(this))
                 .updateViewModel("patternNavViewModel", (patternNavViewModel) ->
@@ -2061,18 +2102,21 @@ public class JournalController {
         ReasonerResultsNode reasonerNode = (ReasonerResultsNode) reasonerResultsNodeFactory.create(windowView,
                 null, ActivityStreamOption.PUBLISH.keyForOption(), AlertStreams.ROOT_ALERT_STREAM_KEY);
         DetachableTab resonerResultsTab = new DetachableTab(reasonerNode);
+        journalNodes.add(reasonerNode);
 
         // 2) progress bar / activity tab
         ProgressNodeFactory progressNodeFactory = new ProgressNodeFactory();
         KometNode kometNode = progressNodeFactory.create(windowView,
                 null, null, AlertStreams.ROOT_ALERT_STREAM_KEY);
         DetachableTab progressTab = new DetachableTab(kometNode);
+        journalNodes.add(kometNode);
 
         // 3) completion tab
         CompletionNodeFactory completionNodeFactory = new CompletionNodeFactory();
         KometNode completionNode = completionNodeFactory.create(windowView,
                 null, null, AlertStreams.ROOT_ALERT_STREAM_KEY);
         DetachableTab completionTab = new DetachableTab(completionNode);
+        journalNodes.add(completionNode);
 
         // collect the 3 tabs and add them to the reasoner panel
         ImmutableList<DetachableTab> detachableTabs = Lists.immutable.of(resonerResultsTab, progressTab, completionTab);
@@ -2628,9 +2672,43 @@ public class JournalController {
      */
     @FXML
     public void newCreatePatternWindow(ActionEvent actionEvent) {
-        createPatternWindow(null, windowView.makeOverridableViewProperties("JournalController.newCreatePatternWindow"));
+        createPatternWindow(null, journalOwnedView("JournalController.newCreatePatternWindow"));
     }
 
-    public static Toast toast() { return toast; }
+    /**
+     * Returns the toast of the open journal with the focus, else of the most recently opened open journal,
+     * for the view models that report to "the journal" without holding one.
+     *
+     * @return an open journal's toast, or {@code null} when no journal is open
+     */
+    /**
+     * Every view this journal makes over the landing page's (its own, its panels', its windows'); the landing
+     * page outlives every journal, so {@link #shutdown()} disposes them all, or each would keep the journal
+     * reachable through what observes it.
+     */
+    private final List<ViewProperties> journalOwnedViews = new ArrayList<>();
+
+    /** The Komet nodes this journal makes for its panels, closed at {@link #shutdown()}. */
+    private final List<KometNode> journalNodes = new ArrayList<>();
+
+    /** Makes an override of the landing page's view that this journal owns and disposes at shutdown. */
+    private ViewProperties journalOwnedView(String name) {
+        ViewProperties viewProperties = windowView.makeOverridableViewProperties(name);
+        journalOwnedViews.add(viewProperties);
+        return viewProperties;
+    }
+
+    public static Toast toast() {
+        JournalController latest = null;
+        for (JournalController journal : OPEN_JOURNALS) {
+            latest = journal;
+            if (journal.journalRootPane != null && journal.journalRootPane.getScene() != null
+                    && journal.journalRootPane.getScene().getWindow() != null
+                    && journal.journalRootPane.getScene().getWindow().isFocused()) {
+                return journal.toast;
+            }
+        }
+        return latest == null ? null : latest.toast;
+    }
 
 }

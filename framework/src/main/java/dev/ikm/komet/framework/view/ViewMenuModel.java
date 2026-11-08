@@ -49,6 +49,30 @@ public class ViewMenuModel {
     private MenuButton coordinateMenuButton;
     private String oldFill = null;
     private final ChangeListener<ViewCoordinateRecord> viewChangedListener = this::viewCoordinateChanged;
+    /** The application-wide path map, which outlives this menu model; see {@link #dispose()}. */
+    private javafx.collections.ObservableMap<PublicIdStringKey, StampPathImmutable> pathCoordinates;
+    private final MapChangeListener<PublicIdStringKey, StampPathImmutable> pathsChangedListener =
+            change -> updateCoordinateMenu(this.isClassicViewCoordMenuButton);
+    // Registered weakly: the path map is application-wide, and every concept, pattern and navigator window makes a
+    // menu model, so a strong listener kept each closed one reachable. This field keeps the listener as long as
+    // the menu model lives.
+    private final javafx.collections.WeakMapChangeListener<PublicIdStringKey, StampPathImmutable> weakPathsChangedListener =
+            new javafx.collections.WeakMapChangeListener<>(pathsChangedListener);
+
+    /**
+     * Stops following the application-wide path map and the view, whose listeners otherwise keep this menu
+     * model, its menu controls and whatever holds them (a closed journal's navigator) reachable. Call when the
+     * control owning the menu is discarded.
+     */
+    public void dispose() {
+        if (pathCoordinates != null) {
+            pathCoordinates.removeListener(weakPathsChangedListener);
+            pathCoordinates = null;
+        }
+        if (viewProperties != null) {
+            viewProperties.nodeView().removeListener(viewChangedListener);
+        }
+    }
     // whichMenu added to help with debugging
     private String whichMenu = "Unknown";
 
@@ -92,9 +116,8 @@ public class ViewMenuModel {
 //        }
         this.viewProperties.nodeView().addListener(this.viewChangedListener);
         ViewCalculatorWithCache viewCalculator = ViewCalculatorWithCache.getCalculator(this.viewProperties.nodeView().getValue());
-        FxGet.pathCoordinates(viewCalculator).addListener((MapChangeListener<PublicIdStringKey, StampPathImmutable>) change ->
-                updateCoordinateMenu(isClassicViewCoordMenuButton)
-        );
+        this.pathCoordinates = FxGet.pathCoordinates(viewCalculator);
+        this.pathCoordinates.addListener(this.weakPathsChangedListener);
 
         this.baseControlToShowOverride = baseControlToShowOverride;
         if (isClassicViewCoordMenuButton) {

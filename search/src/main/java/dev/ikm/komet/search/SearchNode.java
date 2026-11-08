@@ -141,7 +141,10 @@ public class SearchNode extends ExplorationNodeAbstract {
 
     @Override
     public void close() {
-
+        // The view was made over the window's coordinate, which outlives this node; release it.
+        if (viewProperties != null) {
+            viewProperties.dispose();
+        }
     }
 
     @Override

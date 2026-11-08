@@ -87,15 +87,22 @@ public class TaskWrapper<V> extends Task<V> implements TrackingListener<V> {
         return result;
     }
 
+    // A task cancelled before its SCHEDULED and RUNNING states reach the FX thread gets cancelled() first and
+    // those two afterwards; listing it then would leave it in the application-wide lists for good, holding
+    // whatever it computes for (a closed journal's navigator, for one), so a task already done is not listed.
     @Override
     protected void scheduled() {
-        TaskListsService.get().pendingTasks().add(this);
+        if (!isDone()) {
+            TaskListsService.get().pendingTasks().add(this);
+        }
     }
 
     @Override
     protected void running() {
         TaskListsService.get().pendingTasks().remove(this);
-        TaskListsService.get().executingTasks().add(this);
+        if (!isDone()) {
+            TaskListsService.get().executingTasks().add(this);
+        }
     }
 
     @Override

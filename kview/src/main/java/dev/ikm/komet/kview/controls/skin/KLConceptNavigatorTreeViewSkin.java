@@ -143,6 +143,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
         }
     };
     private final ModifiedEntitySubscriber modifiedEntitySubscriber;
+    private final javafx.util.Subscription liveSubscription;
     private final EventHandler<MouseEvent> eventFilter;
 
     /**
@@ -349,6 +350,10 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
 
         modifiedEntitySubscriber = new ModifiedEntitySubscriber();
         Entity.provider().addSubscriberWithWeakReference(modifiedEntitySubscriber.getFlowSubscriber());
+        // The event bus outlives the tree; subscribed only while the tree is live, it does not keep a closed
+        // window's navigator (and the journal it is on) reachable.
+        liveSubscription = dev.ikm.komet.framework.settings.KonceptGlyphSettings.liveFor(treeView)
+                .subscribe(modifiedEntitySubscriber::follow);
 
         // Clicking anywhere, unhighlights any item from the treeView
         eventFilter = _ -> {
@@ -1069,11 +1074,30 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                 }
             };
 
-            eventBus.subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshEventSubscriber);
+        }
+
+        private boolean subscribed;
+
+        /** Subscribes to cache refreshes while {@code live}, and unsubscribes otherwise. */
+        void follow(boolean live) {
+            if (live && !subscribed) {
+                eventBus.subscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshEventSubscriber);
+                subscribed = true;
+            } else if (!live && subscribed) {
+                eventBus.unsubscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshEventSubscriber);
+                subscribed = false;
+            }
         }
 
         FlowSubscriber<Long> getFlowSubscriber() {
             return flowSubscriber;
         }
+    }
+
+    @Override
+    public void dispose() {
+        liveSubscription.unsubscribe();
+        modifiedEntitySubscriber.follow(false);
+        super.dispose();
     }
 }

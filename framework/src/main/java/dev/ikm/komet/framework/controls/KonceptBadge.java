@@ -398,7 +398,7 @@ public class KonceptBadge extends HBox {
             }
         });
 
-        ObservableValue<Boolean> onScene = sceneProperty().isNotNull();
+        ObservableValue<Boolean> onScene = KonceptGlyphSettings.liveFor(this);
 
         this.showKindSigil = KonceptGlyphSettings.showKindSigil().when(onScene);
         this.showDefinitionStatus = KonceptGlyphSettings.showDefinitionStatus().when(onScene);

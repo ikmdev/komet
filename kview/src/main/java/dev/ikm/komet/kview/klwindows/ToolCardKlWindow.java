@@ -185,6 +185,15 @@ public final class ToolCardKlWindow extends AbstractChapterKlWindow<Pane> {
         save();
     }
 
+    /**
+     * Unbinds this window's card without deleting it, as when the window closes or its journal does: the
+     * card lets go of what outlives it and its saved state stays.
+     */
+    @Override
+    public void knowledgeLayoutUnbind() {
+        card.knowledgeLayoutUnbindOnClose();
+    }
+
     @Override
     public void delete() {
         // Tear down the card's per-card view context (removes its coordinate listener) before the

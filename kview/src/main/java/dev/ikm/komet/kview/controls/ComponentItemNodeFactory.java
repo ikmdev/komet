@@ -66,8 +66,8 @@ public final class ComponentItemNodeFactory {
         componentItemNode.componentItemProperty()
                 .subscribe(componentItem -> updateGlyphs(componentItemNode, componentItem));
         // Which marks are drawn follows the app-wide glyph settings,
-        // gated on the node being on a scene so the settings hold no reference to a discarded node.
-        ObservableValue<Boolean> onScene = componentItemNode.sceneProperty().isNotNull();
+        // gated on the node being live so the settings hold no reference to a discarded node.
+        ObservableValue<Boolean> onScene = KonceptGlyphSettings.liveFor(componentItemNode);
         componentItemNode.showKindSigilProperty().bind(KonceptGlyphSettings.showKindSigil().when(onScene));
         componentItemNode.showDefinitionStatusProperty()
                 .bind(KonceptGlyphSettings.showDefinitionStatus().when(onScene));
