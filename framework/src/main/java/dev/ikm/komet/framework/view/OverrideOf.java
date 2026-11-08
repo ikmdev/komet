@@ -87,6 +87,12 @@ public class OverrideOf<V> extends SimpleEqualityBasedObjectProperty<V> implemen
     }
 
     @Override
+    public void detach() {
+        this.overriddenProperty.removeListener(this.overriddenChangedListener);
+        this.overriddenProperty.removeListener(this.overriddenInvalidatedListener);
+    }
+
+    @Override
     public boolean isOverridden() {
         return overridden;
     }

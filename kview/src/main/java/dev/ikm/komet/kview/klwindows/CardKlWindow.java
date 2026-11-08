@@ -222,6 +222,17 @@ public final class CardKlWindow extends AbstractChapterKlWindow<Pane> {
         save();
     }
 
+    /**
+     * Closes the tile without deleting it (ike-issues#1047): saves the card, then unbinds it, so the card
+     * lets go of what outlives it (the journal's view, the plugin Trash's listener lists, its workers).
+     * Without the unbind a closed tile, with its whole scene graph and content, stays reachable for as long
+     * as the journal is open. The preferences node survives, so the Tiles menu reopens the tile as before.
+     */
+    public void closeTile() {
+        save();
+        card.knowledgeLayoutUnbind();
+    }
+
     @Override
     public void delete() {
         // Tear down the card's per-card view context (removes its coordinate listener) before the window's

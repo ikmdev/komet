@@ -979,6 +979,9 @@ public abstract class AbstractHostCard extends CardBlueprint {
         reRenderListener = null;
         if (cardViewContext != null) {
             cardViewContext.delete();
+            // Release the journal view's listeners on this card's view; without this, a closed card stays
+            // reachable from the journal's view for the journal's lifetime.
+            cardViewContext.dispose();
             cardViewContext = null;
         }
         cardView = null;

@@ -17,6 +17,7 @@ import dev.ikm.tinkar.common.id.PublicIdStringKey;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord;
+import javafx.beans.value.ChangeListener;
 import javafx.scene.Node;
 
 import java.util.Optional;
@@ -69,6 +70,11 @@ public final class ViewContext implements KlContext, KlStateCommands {
     // The popup-ready ViewProperties (parentView = NoOverride inherited baseline, nodeView = this context's
     // WithOverride), present only for contexts created as a child override (#666); null otherwise.
     private ViewProperties viewProperties;
+    // For a context created by createChildOf only: the parent's view, which outlives this context, and the
+    // listener that keeps the popup's inherited baseline in step with it. Retained so dispose() can remove it
+    // together with the child override's own two parent listeners; null for every other context.
+    private ObservableView parentView;
+    private ChangeListener<ViewCoordinateRecord> inheritedBaselineListener;
     final PublicIdStringKey publicIdStringKey;
     final KlPeerable klPeerable;
 
@@ -243,11 +249,36 @@ public final class ViewContext implements KlContext, KlStateCommands {
         // an ancestor coordinate change flows down to this context's un-pinned facets (#666 resolve-through).
         ObservableViewNoOverride inheritedBaseline =
                 new ObservableViewNoOverride(parentView.toViewCoordinateRecord(), contextName + " inherited");
-        parentView.addListener((obs, oldValue, newValue) -> inheritedBaseline.setValue(newValue));
+        ChangeListener<ViewCoordinateRecord> inheritedBaselineListener =
+                (obs, oldValue, newValue) -> inheritedBaseline.setValue(newValue);
+        parentView.addListener(inheritedBaselineListener);
         PublicIdStringKey<KlContext> publicIdStringKey = new PublicIdStringKey<>(PublicIds.newRandom(), contextName);
         ViewContext viewContext = new ViewContext(contextProvider, childView, publicIdStringKey);
         viewContext.viewProperties = new ViewProperties(childView, inheritedBaseline);
+        viewContext.parentView = parentView;
+        viewContext.inheritedBaselineListener = inheritedBaselineListener;
         return viewContext;
+    }
+
+    /**
+     * Releases a child context's hold on its parent's view. {@link #createChildOf} registers three
+     * listeners on the parent's view: the override's two ({@link ObservableViewWithOverride#dispose()})
+     * and the one that keeps the inherited baseline live. The parent (a journal's view) outlives the
+     * child (a card's), so until they are removed the parent keeps the child's view reachable, and with
+     * it everything that listens to that view: a closed card's whole scene graph and its content.
+     * Call when the context is discarded. Does nothing for a context not made by {@code createChildOf},
+     * whose view belongs to its provider, and does nothing the second time.
+     */
+    public void dispose() {
+        if (parentView == null) {
+            return;
+        }
+        if (observableView instanceof ObservableViewWithOverride overrideView) {
+            overrideView.dispose();
+        }
+        parentView.removeListener(inheritedBaselineListener);
+        parentView = null;
+        inheritedBaselineListener = null;
     }
 
     public static ViewContext restore(KometPreferences preferences, KlContextProvider contextProvider) {

@@ -67,6 +67,21 @@ public interface ObservableCoordinate<T extends ImmutableCoordinate> extends Pro
         this.setValue(getOriginalValue());
     }
 
+    /**
+     * {@linkplain PropertyWithOverride#detach() Detaches} every override property of this coordinate and of
+     * its composite coordinates from the parent's properties. Call only on a coordinate being discarded.
+     */
+    default void detachOverrides() {
+        for (Property<?> property : getBaseProperties()) {
+            if (property instanceof PropertyWithOverride<?> propertyWithOverride) {
+                propertyWithOverride.detach();
+            }
+        }
+        for (ObservableCoordinate<?> coordinate : getCompositeCoordinates()) {
+            coordinate.detachOverrides();
+        }
+    }
+
     void setExceptOverrides(T updatedCoordinate);
 
     /**

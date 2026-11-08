@@ -25,6 +25,17 @@ public interface PropertyWithOverride<T> extends Property<T> {
 
     Property<T> overriddenProperty();
 
+    /**
+     * Stops this property following its {@linkplain #overriddenProperty() overridden property} for good,
+     * removing every listener it registered there. The overridden property belongs to the parent view,
+     * which outlives this one, so a discarded override view must detach its properties, or the parent's
+     * properties keep the whole discarded view reachable (and whatever observes it: a closed card, for
+     * one). Call only when the property is being discarded. The default does nothing, for a property that
+     * registers nothing strong on its parent (a JavaFX binding's listener is weak).
+     */
+    default void detach() {
+    }
+
     default T getOriginalValue() {
         return overriddenProperty().getValue();
     }

@@ -1926,12 +1926,13 @@ public class JournalController {
     private void setupWorkspaceWindow(ChapterKlWindow<Pane> chapterKlWindow) {
         // Calls the remove method to remove the windows that were closed by the user.
         chapterKlWindow.setOnClose(() -> {
-            if (chapterKlWindow instanceof CardKlWindow) {
+            if (chapterKlWindow instanceof CardKlWindow cardKlWindow) {
                 // Close is NOT deletion for card tiles (ike-issues#1047): the preferences node
                 // and its payloads (conversations, instruction sets) survive; the tile drops
                 // off WINDOW_NAMES at the next journal save and reopens from the Tiles menu.
-                // True deletion is that menu's own confirmed gesture.
-                chapterKlWindow.save();
+                // True deletion is that menu's own confirmed gesture. The card is unbound all the
+                // same, or the closed tile stays reachable until the journal closes.
+                cardKlWindow.closeTile();
             } else {
                 chapterKlWindow.delete();
             }

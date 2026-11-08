@@ -58,7 +58,8 @@ public class ObservableViewWithOverride extends ObservableViewBase {
     }
 
     /**
-     * Detaches the two listeners this override registered on its parent view, releasing the reference the parent
+     * Detaches this override from its parent view: the two listeners it registered on the parent view, and those
+     * each of its dimensions registered on the parent's matching dimension, releasing the references the parent
      * otherwise holds to this child for the child's whole lifetime. Call when the override (e.g. a closed inner or
      * journal window's coordinate, or a dismissed View Options popup's working view) is discarded; otherwise the
      * parent's listener list accumulates one entry per discarded override over a session (ike-issues#693).
@@ -66,6 +67,10 @@ public class ObservableViewWithOverride extends ObservableViewBase {
     public void dispose() {
         parentView.baseCoordinateProperty().removeListener(overriddenBaseChangedListener);
         parentView.listening.removeListener(parentListeningListener);
+        // Each dimension of this view follows the matching dimension of the parent's through listeners of
+        // its own; detach them too. The edit coordinate is outside getCompositeCoordinates(), so name it.
+        detachOverrides();
+        editCoordinate().detachOverrides();
     }
 
     // TODO when the story is worked to compare the view coordinate change within the child

@@ -58,6 +58,12 @@ public class LongPropertyWithOverride extends SimpleLongProperty implements Prop
     }
 
     @Override
+    public void detach() {
+        this.overriddenProperty.removeListener(this.overriddenPropertyChangedListener);
+        this.overriddenProperty.removeListener(this.overriddenPropertyInvalidationListener);
+    }
+
+    @Override
     public boolean isOverridden() {
         return overridden;
     }
@@ -91,10 +97,12 @@ public class LongPropertyWithOverride extends SimpleLongProperty implements Prop
 
     @Override
     public void removeListener(InvalidationListener listener) {
-        this.invalidationListeners.remove(listener);
-        if (this.invalidationListeners.isEmpty()) {
-            this.overriddenProperty.removeListener(this.overriddenPropertyInvalidationListener);
-            this.invalidationListeners = null;
+        if (this.invalidationListeners != null) {
+            this.invalidationListeners.remove(listener);
+            if (this.invalidationListeners.isEmpty()) {
+                this.overriddenProperty.removeListener(this.overriddenPropertyInvalidationListener);
+                this.invalidationListeners = null;
+            }
         }
     }
 

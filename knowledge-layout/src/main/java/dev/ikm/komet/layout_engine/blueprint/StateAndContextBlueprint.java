@@ -16,10 +16,13 @@ import javafx.util.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.ref.WeakReference;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.prefs.BackingStoreException;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 
 import static dev.ikm.komet.layout.KlPeerable.PreferenceKeys;
 import static dev.ikm.komet.layout.KlRestorable.camelCaseToWords;
@@ -150,7 +153,7 @@ public sealed abstract class StateAndContextBlueprint<FX>
         if (this instanceof KlView<?> klView) {
             klView.setFxPeer(fxObject);
         }
-        preferences.addPreferenceChangeListener(evt -> changed.setValue(true));
+        preferences.addPreferenceChangeListener(new ChangedFlag(this, preferences));
         if (fxObject instanceof Node node) {
             node.parentProperty().subscribe(this::parentChanged);
         }
@@ -423,4 +426,31 @@ public sealed abstract class StateAndContextBlueprint<FX>
      */
     protected abstract void subContextRevert();
 
+
+    /**
+     * Marks its blueprint {@linkplain #changedProperty() changed} when the blueprint's preferences node
+     * changes, without keeping the blueprint alive. The node outlives the blueprint: the preferences tree
+     * caches every node it has handed out, and a closed card tile's node survives the close by design
+     * (ike-issues#1047), so a lambda over the blueprint held each closed card, with its scene graph and
+     * content, for the whole session. A listener whose blueprint is gone removes itself at the next change.
+     */
+    private static final class ChangedFlag implements PreferenceChangeListener {
+        private final WeakReference<StateAndContextBlueprint> blueprint;
+        private final KometPreferences preferences;
+
+        ChangedFlag(StateAndContextBlueprint blueprint, KometPreferences preferences) {
+            this.blueprint = new WeakReference<>(blueprint);
+            this.preferences = preferences;
+        }
+
+        @Override
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            StateAndContextBlueprint owner = blueprint.get();
+            if (owner != null) {
+                owner.changed.setValue(true);
+            } else {
+                preferences.removePreferenceChangeListener(this);
+            }
+        }
+    }
 }
