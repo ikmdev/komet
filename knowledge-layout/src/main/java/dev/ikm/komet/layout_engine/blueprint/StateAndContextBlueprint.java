@@ -194,9 +194,23 @@ public sealed abstract class StateAndContextBlueprint<FX>
      * @param newParent the new parent object after the change; may be null
      */
     private void parentChanged(Parent oldParent, Parent newParent) {
-        if (oldParent != null && newParent == null) {
+        if (oldParent != null && newParent == null && forgetWhenDetached) {
             this.forget();
         }
+    }
+
+    /** False once {@link #keepPreferencesWhenDetached()} has been called. */
+    private boolean forgetWhenDetached = true;
+
+    /**
+     * Keeps this object's preferences when its node next leaves the scene graph, which otherwise
+     * {@linkplain #forget() forgets} them: clears the node, removes it and flushes. A card tile that closes is
+     * not deleted (ike-issues#1047), so its card keeps the node, with its children and the files stored in
+     * its directory (an Assistant card's conversations), for the tile to reopen from. Deletion removes the
+     * node explicitly.
+     */
+    public final void keepPreferencesWhenDetached() {
+        this.forgetWhenDetached = false;
     }
 
     /**

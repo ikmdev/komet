@@ -36,6 +36,7 @@ import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
 import javafx.application.Platform;
 import javafx.scene.control.MenuButton;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -121,6 +122,80 @@ class ClosedCardReleaseTest {
             assertNull(released.card().get(), "the closed card is still reachable from the journal's view");
             Reference.reachabilityFence(journalViewProperties);
             Reference.reachabilityFence(journalBase);
+        } finally {
+            try {
+                root.removeNode();
+                root.flush();
+            } catch (Exception ignored) {
+                // best effort
+            }
+        }
+    }
+
+    @Test
+    void closingATileUnbindsItAsAClose() throws Exception {
+        KometPreferences root = KometPreferencesImpl.getConfigurationRootPreferences()
+                .node("test-closed-card-unbind-on-close");
+        try {
+            ObservableViewNoOverride journalBase =
+                    new ObservableViewNoOverride(Coordinates.View.DefaultView(), "journal view");
+            ViewProperties journalViewProperties = journalBase.makeOverridableViewProperties("journal");
+            KometPreferences windowNode = root.node("card-window");
+            windowNode.put(EntityKlWindowState.WINDOW_ID, UUID.randomUUID().toString());
+            windowNode.put(EntityKlWindowState.WINDOW_TYPE, CardKlWindow.CARD_WINDOW_TYPE.toString());
+            CardKlWindow window = onFx(() -> CardKlWindow.create(UUID.randomUUID(), new TestCardProvider(),
+                    journalViewProperties, windowNode));
+            onFx(() -> {
+                window.onShown();
+                return null;
+            });
+            onFx(() -> {
+                window.closeTile();
+                return null;
+            });
+            // A close keeps the tile, so a card may let work in flight finish (the Assistant's reply) before it
+            // unbinds; deletion does not wait. The close must take the close path.
+            assertTrue(((TestCard) window.card()).unboundOnClose,
+                    "closing a tile did not unbind its card as a close");
+        } finally {
+            try {
+                root.removeNode();
+                root.flush();
+            } catch (Exception ignored) {
+                // best effort
+            }
+        }
+    }
+
+    @Test
+    void aClosedTileKeepsItsPreferencesWhenItsPaneLeavesTheWorkspace() throws Exception {
+        KometPreferences root = KometPreferencesImpl.getConfigurationRootPreferences()
+                .node("test-closed-card-keeps-preferences");
+        try {
+            ObservableViewNoOverride journalBase =
+                    new ObservableViewNoOverride(Coordinates.View.DefaultView(), "journal view");
+            ViewProperties journalViewProperties = journalBase.makeOverridableViewProperties("journal");
+            KometPreferences windowNode = root.node("card-window");
+            windowNode.put(EntityKlWindowState.WINDOW_ID, UUID.randomUUID().toString());
+            windowNode.put(EntityKlWindowState.WINDOW_TYPE, CardKlWindow.CARD_WINDOW_TYPE.toString());
+            CardKlWindow window = onFx(() -> CardKlWindow.create(UUID.randomUUID(), new TestCardProvider(),
+                    journalViewProperties, windowNode));
+            StackPane workspace = new StackPane();
+            onFx(() -> {
+                workspace.getChildren().add(window.fxObject());
+                window.onShown();
+                return null;
+            });
+            KometPreferences cardNode = onFx(() -> window.card().preferences());
+            onFx(() -> {
+                // The journal's close handler: close the tile, then take it off the workspace.
+                window.closeTile();
+                workspace.getChildren().remove(window.fxObject());
+                return null;
+            });
+            // Close is not deletion (ike-issues#1047): the card's node, and what it stores, stays for a reopen.
+            assertTrue(cardNode.nodeExists(""), "closing the tile removed its card's preferences node");
+            assertTrue(cardNode.keys().length > 0, "closing the tile cleared its card's preferences");
         } finally {
             try {
                 root.removeNode();
@@ -229,6 +304,9 @@ class ClosedCardReleaseTest {
     /** The smallest host card whose toolbar observes the card's view, as {@code ToolCard}'s does. */
     static final class TestCard extends AbstractHostCard {
 
+        /** Set when the card is unbound as a close rather than a deletion. */
+        boolean unboundOnClose;
+
         private TestCard(KometPreferences preferences) {
             super(preferences);
         }
@@ -240,6 +318,12 @@ class ClosedCardReleaseTest {
         @Override
         protected String cardTitle() {
             return "Test card";
+        }
+
+        @Override
+        public void knowledgeLayoutUnbindOnClose() {
+            unboundOnClose = true;
+            super.knowledgeLayoutUnbindOnClose();
         }
 
         @Override

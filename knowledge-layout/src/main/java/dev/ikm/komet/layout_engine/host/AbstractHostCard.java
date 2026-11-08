@@ -956,6 +956,15 @@ public abstract class AbstractHostCard extends CardBlueprint {
         });
     }
 
+    /**
+     * Unbinds a card whose tile is closing but stays saved, to reopen later (ike-issues#1047). Unlike
+     * deletion, work the card has in flight may finish and save its result first, so a card that runs
+     * such work overrides this to unbind once it has. The default unbinds at once.
+     */
+    public void knowledgeLayoutUnbindOnClose() {
+        knowledgeLayoutUnbind();
+    }
+
     @Override
     public void knowledgeLayoutUnbind() {
         unbindDrawers();

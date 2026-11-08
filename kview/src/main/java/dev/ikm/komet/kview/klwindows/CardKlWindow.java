@@ -229,8 +229,20 @@ public final class CardKlWindow extends AbstractChapterKlWindow<Pane> {
      * as the journal is open. The preferences node survives, so the Tiles menu reopens the tile as before.
      */
     public void closeTile() {
+        // The workspace takes the card's pane out next; without this the card would forget (clear and remove)
+        // its preferences node, and with it the tile's content, as the pane leaves the scene graph.
+        card.keepPreferencesWhenDetached();
         save();
-        card.knowledgeLayoutUnbind();
+        knowledgeLayoutUnbind();
+    }
+
+    /**
+     * Unbinds this window's card without deleting it, as when the window closes or its journal does: the
+     * card lets go of what outlives it and its saved state stays.
+     */
+    @Override
+    public void knowledgeLayoutUnbind() {
+        card.knowledgeLayoutUnbindOnClose();
     }
 
     @Override
