@@ -199,6 +199,9 @@ public final class FxWindow
         this.windowViewContext = ViewContext.createChildOf(this,
                 KnowledgeBaseContext.INSTANCE.context(), "Layout window view");
         windowStage().setOnCloseRequest(this::onCloseRequest);
+        // The parent context is the knowledge base's, which lives for the session; once the window has really
+        // gone (a close request may be cancelled), release the window's view from it.
+        windowStage().addEventHandler(WindowEvent.WINDOW_HIDDEN, hidden -> windowViewContext.dispose());
     }
 
     /**
