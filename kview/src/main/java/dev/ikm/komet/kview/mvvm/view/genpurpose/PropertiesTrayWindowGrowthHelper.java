@@ -120,7 +120,7 @@ public final class PropertiesTrayWindowGrowthHelper {
             // The window was sized to its content: close to what the content asks for now (it may
             // have changed while the panel was open), then hand the sizing back to the content.
             window.setPrefHeight(Region.USE_COMPUTED_SIZE);
-            final double contentHeight = Math.min(KLWorkspace.MAX_WINDOW_HEIGHT, window.prefHeight(-1));
+            final double contentHeight = Math.min(maxHeight(), window.prefHeight(-1));
             animate(contentHeight, Region.USE_COMPUTED_SIZE);
         }
     }
@@ -130,18 +130,35 @@ public final class PropertiesTrayWindowGrowthHelper {
      * as something in it (a collapsing section) gives up or takes height. For a grown window the
      * delta goes into the grown height and the height {@link #restorePreviousHeight()} goes back to alike; a
      * window that was sized to its content follows the change on its own once restored.
+     *
+     * <p>The height stays within {@link #maxHeight()} — the window's own ceiling, not the workspace's:
+     * a window the user dragged taller than the workspace allows keeps that height over a collapse
+     * and the expand that follows, instead of being cut back to the workspace's ceiling by the first
+     * collapse and never getting the difference back (komet-desktop#218).
      */
     public void changeHeightBy(double delta) {
         finishAnimationNow();
         final double height = window.getPrefHeight();
-        final double newHeight = Math.min(KLWorkspace.MAX_WINDOW_HEIGHT, height + delta);
+        final double newHeight = Math.min(maxHeight(), height + delta);
         if (height == grownHeight) {
             grownHeight = newHeight;
             if (prefHeightBeforeGrowth > 0) {
-                prefHeightBeforeGrowth = Math.min(KLWorkspace.MAX_WINDOW_HEIGHT, prefHeightBeforeGrowth + delta);
+                prefHeightBeforeGrowth = Math.min(maxHeight(), prefHeightBeforeGrowth + delta);
             }
         }
         window.setPrefHeight(newHeight);
+    }
+
+    /**
+     * The most this helper sets the window's preferred height to: the window's own maximum height.
+     * The workspace sets it to its ceiling ({@link KLWorkspace#MAX_WINDOW_HEIGHT}) or the height the
+     * window's author chose, and raises it when the user drags the window taller than that — so it
+     * is the height the window can actually show, where the workspace's ceiling is not. A window
+     * with no maximum of its own (one not placed in a workspace) gets the workspace's ceiling.
+     */
+    private double maxHeight() {
+        final double maxHeight = window.getMaxHeight();
+        return maxHeight > 0 ? maxHeight : KLWorkspace.MAX_WINDOW_HEIGHT;
     }
 
     /**

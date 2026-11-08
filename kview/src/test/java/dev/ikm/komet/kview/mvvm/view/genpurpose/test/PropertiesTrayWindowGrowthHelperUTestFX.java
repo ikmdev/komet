@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.genpurpose.test;
 
+import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.PropertiesTrayWindowGrowthHelper;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
@@ -164,5 +165,34 @@ class PropertiesTrayWindowGrowthHelperUTestFX {
 
         runAndAwaitAnimation(helper::restorePreviousHeight);
         assertEquals(340, window.getPrefHeight(), 0);
+    }
+
+    @Test
+    @DisplayName("A window dragged taller than the workspace's ceiling keeps that height over a section collapse and expand")
+    void keepsAHeightAboveTheWorkspaceCeiling() throws Exception {
+        // The workspace raises the window's maximum height when the user drags it past the ceiling.
+        final double draggedHeight = KLWorkspace.MAX_WINDOW_HEIGHT + 400;
+        FxToolkit.setupFixture(() -> {
+            window.setMaxHeight(draggedHeight);
+            window.setPrefHeight(draggedHeight);
+        });
+
+        FxToolkit.setupFixture(() -> helper.changeHeightBy(-300));
+        assertEquals(draggedHeight - 300, window.getPrefHeight(), 0);
+
+        FxToolkit.setupFixture(() -> helper.changeHeightBy(300));
+        assertEquals(draggedHeight, window.getPrefHeight(), 0);
+    }
+
+    @Test
+    @DisplayName("A window at the workspace's ceiling grows no further when a section expands")
+    void staysWithinTheWindowsOwnMaximum() throws Exception {
+        FxToolkit.setupFixture(() -> {
+            window.setMaxHeight(KLWorkspace.MAX_WINDOW_HEIGHT);
+            window.setPrefHeight(KLWorkspace.MAX_WINDOW_HEIGHT);
+        });
+
+        FxToolkit.setupFixture(() -> helper.changeHeightBy(300));
+        assertEquals(KLWorkspace.MAX_WINDOW_HEIGHT, window.getPrefHeight(), 0);
     }
 }
