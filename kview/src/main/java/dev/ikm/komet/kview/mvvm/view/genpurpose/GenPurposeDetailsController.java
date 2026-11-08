@@ -105,6 +105,11 @@ public class GenPurposeDetailsController {
     /** The owning journal's topic, which the pattern presenters publish their events on. */
     private final UUID journalTopic;
     private Consumer<GenPurposeDetailsController> onCloseConceptWindow;
+    /**
+     * The Window's size follows the KL editor's window model, which is shared by every Window of that
+     * definition and kept for the session (EditorWindowManager); released by {@link #releaseSubscriptions()}.
+     */
+    private javafx.util.Subscription editorWindowSizeSubscription = javafx.util.Subscription.EMPTY;
 
     /**
      * Re-evaluates the required chips when a stated definition changes: inline axiom edits
@@ -507,7 +512,7 @@ public class GenPurposeDetailsController {
         // alone. The framework sizes this same root pane via setPrefWidth/Height, so we set (not bind) it.
         // We also advertise the authored size on the pane's properties so the workspace honors it when
         // placing the window (otherwise its default placement overrides our preferred width/height).
-        editorWindowModel.prefWidthProperty().subscribe(width -> {
+        editorWindowSizeSubscription = editorWindowModel.prefWidthProperty().subscribe(width -> {
             final double w = width.doubleValue();
             if (w >= 0) {
                 view.setPrefWidth(w);
@@ -516,7 +521,7 @@ public class GenPurposeDetailsController {
                 view.getProperties().remove(KLWorkspace.WINDOW_AUTHORED_WIDTH_KEY);
             }
         });
-        editorWindowModel.prefHeightProperty().subscribe(height -> {
+        editorWindowSizeSubscription = editorWindowSizeSubscription.and(editorWindowModel.prefHeightProperty().subscribe(height -> {
             final double h = height.doubleValue();
             if (h >= 0) {
                 view.setPrefHeight(h);
@@ -524,7 +529,7 @@ public class GenPurposeDetailsController {
             } else {
                 view.getProperties().remove(KLWorkspace.WINDOW_AUTHORED_HEIGHT_KEY);
             }
-        });
+        }));
     }
 
     /**
@@ -831,5 +836,12 @@ public class GenPurposeDetailsController {
                     wasCreateMode ? componentKindString + " created" : "Changes published");
         }
 
+    }
+
+    /** Stops following the shared window model, which otherwise holds this Window and its journal. */
+    public void releaseSubscriptions() {
+        editorWindowSizeSubscription.unsubscribe();
+        editorWindowSizeSubscription = javafx.util.Subscription.EMPTY;
+        windowSections.release();
     }
 }

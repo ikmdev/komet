@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.mvvm.view.concept;
 
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.ExplorationNodeAbstract;
 import dev.ikm.komet.framework.TopPanelFactory;
 import dev.ikm.komet.framework.controls.EntityLabelWithDragAndDrop;
@@ -61,6 +62,8 @@ public class ConceptNode extends ExplorationNodeAbstract {
     protected static final String TITLE = "Concept Details";
     private BorderPane conceptDetailsViewBorderPane;
     private ConceptController conceptDetailsViewController;
+    /** This node's own event topic, which its controllers subscribe on; dropped at {@link #close()}. */
+    private UUID conceptTopic;
 
     /////// Properties slide out //////////////////////////////
     protected static final String CONCEPT_PROPERTIES_VIEW_FXML_FILE = "properties.fxml";
@@ -93,7 +96,7 @@ public class ConceptNode extends ExplorationNodeAbstract {
             UUID journalWindowTopic = nodePreferences().getUuid(PreferenceKey.CURRENT_JOURNAL_WINDOW_TOPIC).get();
 
             // create a unique topic for each concept detail instance
-            UUID conceptTopic = UUID.randomUUID();
+            conceptTopic = UUID.randomUUID();
 
             // Load Concept Details View Panel (FXML & Controller)
             // 1) inside fxml                     - apply(file, ...view models)
@@ -310,6 +313,13 @@ public class ConceptNode extends ExplorationNodeAbstract {
         }
         this.entityFocusProperty.removeListener(this.entityFocusChangeListener);
         Entity.provider().removeSubscriber(this.invalidationSubscriber);
+        // The bus outlives this node: its controllers' subscriptions would hold it, its window and journal.
+        if (conceptTopic != null) {
+            EvtBusFactory.getDefaultEvtBus().unsubscribeAll(conceptTopic);
+        }
+        if (conceptDetailsViewController != null) {
+            conceptDetailsViewController.releaseSubscriptions();
+        }
     }
 
     @Override

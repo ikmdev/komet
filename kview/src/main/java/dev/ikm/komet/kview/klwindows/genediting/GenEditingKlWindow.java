@@ -169,4 +169,11 @@ public class GenEditingKlWindow extends AbstractEntityChapterKlWindow {
     protected void setSelectedPropertyPanel(String panel) {
         jfxNode.controller().getPropertiesController().restoreSelectedView(panel);
     }
+
+    /** Its controllers also subscribe on the journal's topic and an application-wide one. */
+    @Override
+    public void releaseSubscriptions() {
+        super.releaseSubscriptions();
+        jfxNode.controller().releaseSubscriptions();
+    }
 }

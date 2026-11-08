@@ -173,15 +173,19 @@ final class WindowSections {
 
         // Whether a section's reference component is on screen follows scrolling, collapsing and
         // resizing, so it is re-read after every layout pass of the scene the sections are in.
+        // One listener object: a method reference written twice is two objects, so the remove never matched
+        // the add, and the journal's scene kept every closed Window's sections.
         view.sceneProperty().subscribe((oldScene, newScene) -> {
             if (oldScene != null) {
-                oldScene.removePostLayoutPulseListener(this::updateReferencesOnScreen);
+                oldScene.removePostLayoutPulseListener(referencesOnScreenListener);
             }
             if (newScene != null) {
-                newScene.addPostLayoutPulseListener(this::updateReferencesOnScreen);
+                newScene.addPostLayoutPulseListener(referencesOnScreenListener);
             }
         });
     }
+
+    private final Runnable referencesOnScreenListener = this::updateReferencesOnScreen;
 
     /**
      * Re-reads, for each section anchored on a reference pattern, whether the user can currently
@@ -220,7 +224,7 @@ final class WindowSections {
         addSupplementalAreaViewsOfSection(mainSection);
         view.getSections().add(mainTitledPane);
 
-        mainSection.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) this::onSectionPatternsChanged);
+        followSectionPatterns(mainSection);
 
         // Additional Sections
         windowModel.getAdditionalSections().forEach(section -> {
@@ -231,7 +235,35 @@ final class WindowSections {
         });
 
         // TODO: will sections need to be refreshed on coordinate changes?
-        windowModel.getAdditionalSections().addListener(this::onAdditionalSectionsChanged);
+        windowModel.getAdditionalSections().addListener(additionalSectionsListener);
+        sharedModelSubscription = sharedModelSubscription.and(
+                () -> windowModel.getAdditionalSections().removeListener(additionalSectionsListener));
+    }
+
+    /*
+     * The window model is the KL editor's, shared by every Window of the definition and kept for the session
+     * (EditorWindowManager); every listener this Window puts on it is collected here and removed by
+     * release(), or the model would hold each closed Window and its journal.
+     */
+    private javafx.util.Subscription sharedModelSubscription = javafx.util.Subscription.EMPTY;
+    private final ListChangeListener<EditorPatternModel> sectionPatternsListener = this::onSectionPatternsChanged;
+    private final ListChangeListener<EditorSectionModel> additionalSectionsListener = this::onAdditionalSectionsChanged;
+
+    private void followSectionPatterns(EditorSectionModel section) {
+        section.getPatterns().addListener(sectionPatternsListener);
+        sharedModelSubscription = sharedModelSubscription.and(
+                () -> section.getPatterns().removeListener(sectionPatternsListener));
+    }
+
+    /** Collects a subscription on the shared window model, for {@link #release()}. */
+    private void followSharedModel(javafx.util.Subscription subscription) {
+        sharedModelSubscription = sharedModelSubscription.and(subscription);
+    }
+
+    /** Stops following the shared window model. Called when the Window is discarded. */
+    public void release() {
+        sharedModelSubscription.unsubscribe();
+        sharedModelSubscription = javafx.util.Subscription.EMPTY;
     }
 
     /**
@@ -348,7 +380,7 @@ final class WindowSections {
         });
 
         titledPane.getReferenceComponents().subscribe(() -> updateReferenceSummaries(sectionModel, titledPane));
-        sectionModel.getReferenceFieldOrder().subscribe(() -> updateReferenceSummaries(sectionModel, titledPane));
+        followSharedModel(sectionModel.getReferenceFieldOrder().subscribe(() -> updateReferenceSummaries(sectionModel, titledPane)));
         titledPane.selectedReferenceComponentProperty().subscribe(() -> updateReferenceStrip(sectionModel, titledPane));
         updateReferenceSummaries(sectionModel, titledPane);
 
@@ -520,17 +552,17 @@ final class WindowSections {
 
         Node view = createPatternContainer(editorPatternModel, patternSemanticsPresenter.getView());
 
-        editorPatternModel.rowIndexProperty().subscribe(newRowIndex -> {
+        followSharedModel(editorPatternModel.rowIndexProperty().subscribe(newRowIndex -> {
             GridPane.setRowIndex(view, newRowIndex.intValue());
-        });
+        }));
 
-        editorPatternModel.columnIndexProperty().subscribe(newColumnIndex -> {
+        followSharedModel(editorPatternModel.columnIndexProperty().subscribe(newColumnIndex -> {
             GridPane.setColumnIndex(view, newColumnIndex.intValue());
-        });
+        }));
 
-        editorPatternModel.columnSpanProperty().subscribe(newColumnSpan -> {
+        followSharedModel(editorPatternModel.columnSpanProperty().subscribe(newColumnSpan -> {
             GridPane.setColumnSpan(view, newColumnSpan.intValue());
-        });
+        }));
 
         titledPane.getItems().add(view);
     }
@@ -557,14 +589,14 @@ final class WindowSections {
 
         // A shown title needs the room the semantics view claims above itself (see the negative top
         // inset on .pattern-container in kview.css), so the state is exposed to CSS.
-        editorPatternModel.titleVisibleProperty().subscribe(titleVisible ->
-                patternContainer.pseudoClassStateChanged(TITLE_VISIBLE_PSEUDO_CLASS, titleVisible));
+        followSharedModel(editorPatternModel.titleVisibleProperty().subscribe(titleVisible ->
+                patternContainer.pseudoClassStateChanged(TITLE_VISIBLE_PSEUDO_CLASS, titleVisible)));
 
         // The title's gap is likewise sized for the field labels below it, so whether any field still
         // shows one is exposed too. Recomputed as the author toggles the fields in the KL Editor.
         for (EditorFieldModel fieldModel : editorPatternModel.getVisibleFields()) {
-            fieldModel.titleVisibleProperty().subscribe(() ->
-                    updateFieldTitlesHidden(patternContainer, editorPatternModel));
+            followSharedModel(fieldModel.titleVisibleProperty().subscribe(() ->
+                    updateFieldTitlesHidden(patternContainer, editorPatternModel)));
         }
         updateFieldTitlesHidden(patternContainer, editorPatternModel);
 
@@ -933,7 +965,7 @@ final class WindowSections {
                 for (EditorSectionModel additionalSectionModel : change.getAddedSubList()) {
                     SectionTitledPane<EntityFacade> titledPane = createTitledPane(additionalSectionModel);
                     addPatternViewsOfSection(additionalSectionModel.getPatterns());
-                    additionalSectionModel.getPatterns().addListener((ListChangeListener<? super EditorPatternModel>) this::onSectionPatternsChanged);
+                    followSectionPatterns(additionalSectionModel);
 
                     view.getSections().add(titledPane);
                 }

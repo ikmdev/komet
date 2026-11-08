@@ -338,4 +338,14 @@ public class PropertiesController {
     public StampFormViewModelBase getStampFormViewModel() { return stampFormViewModel.get(); }
     public ObjectProperty<StampFormViewModelBase> stampFormViewModelProperty() { return stampFormViewModel; }
     public void setStampFormViewModel(StampFormViewModelBase stampFormViewModel) { this.stampFormViewModel.set(stampFormViewModel); }
+
+    /** Drops the subscriptions that outlive this panel's window: the journal's topic, and the fields pane's. */
+    public void releaseSubscriptions() {
+        if (genEditingEventSubscriber != null) {
+            EvtBusFactory.getDefaultEvtBus().unsubscribe(genEditingEventSubscriber);
+        }
+        if (editFieldsJfxNode != null) {
+            editFieldsJfxNode.controller().releaseSubscriptions();
+        }
+    }
 }

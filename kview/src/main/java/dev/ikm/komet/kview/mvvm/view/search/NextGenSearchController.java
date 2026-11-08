@@ -159,7 +159,7 @@ public class NextGenSearchController {
         clearView();
         setUpSearchOptionsPopOver();
 
-        Subscriber<SearchSortOptionEvent> searchSortOptionListener = (evt -> {
+        searchSortOptionListener = (evt -> {
             if (evt.getEventType() == SORT_BY_COMPONENT) {
                 sortByButton.setText(BUTTON_TEXT_TOP_COMPONENT);
             } else if (evt.getEventType() == SORT_BY_COMPONENT_ALPHA) {
@@ -539,6 +539,16 @@ public class NextGenSearchController {
         TOP_COMPONENT,
         DESCRIPTION_SEMANTICS,
         NID
+    }
+
+    /** The sort topic is application-wide; its subscription would hold this panel and the journal it is on. */
+    private Subscriber<SearchSortOptionEvent> searchSortOptionListener;
+
+    /** Drops this panel's application-wide subscriptions. Called when its journal shuts down. */
+    public void shutdown() {
+        if (searchSortOptionListener != null) {
+            eventBus.unsubscribe(SEARCH_SORT_TOPIC, SearchSortOptionEvent.class, searchSortOptionListener);
+        }
     }
 }
 

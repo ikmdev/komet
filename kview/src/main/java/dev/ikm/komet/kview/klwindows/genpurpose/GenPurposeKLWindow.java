@@ -82,6 +82,7 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
         // Wires the window's behavior onto the view for the definition.
         GenPurposeDetailsController controller =
                 new GenPurposeDetailsController(view, session, journalTopic, klEditorWindowPreferences);
+        this.detailsController = controller;
         controller.setOnCloseConceptWindow(_ -> getOnClose().ifPresent(Runnable::run));
 
         // The component the window frames: in create mode, the one created once it exists. Saved
@@ -125,5 +126,16 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
 
     @Override
     protected void setSelectedPropertyPanel(String selectedPanel) {
+    }
+
+    private GenPurposeDetailsController detailsController;
+
+    /** The Window also follows the KL editor's shared window model. */
+    @Override
+    public void releaseSubscriptions() {
+        super.releaseSubscriptions();
+        if (detailsController != null) {
+            detailsController.releaseSubscriptions();
+        }
     }
 }

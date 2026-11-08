@@ -881,8 +881,18 @@ public class GenEditingDetailsController {
         if (this.onCloseConceptWindow != null) {
             onCloseConceptWindow.accept(this);
         }
-        // TODO Create an event to notify children panes to clean up their subscribers.
+        releaseSubscriptions();
+    }
+
+    /**
+     * Drops this window's subscriptions, its child panes' included: those on the window's topic and those on
+     * the journal's and application-wide topics, which outlive the window. Safe to call more than once.
+     */
+    public void releaseSubscriptions() {
         subscriberList.forEach(subscriber -> EvtBusFactory.getDefaultEvtBus().unsubscribe(subscriber));
+        if (propertiesController != null) {
+            propertiesController.releaseSubscriptions();
+        }
     }
 
     @FXML

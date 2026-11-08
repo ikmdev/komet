@@ -175,4 +175,11 @@ public class ConceptKlWindow extends AbstractEntityChapterKlWindow {
         });
     }
 
+
+    /** The concept node's controllers subscribe on a topic of the node's own, which closing the node drops. */
+    @Override
+    public void releaseSubscriptions() {
+        super.releaseSubscriptions();
+        conceptNode.close();
+    }
 }

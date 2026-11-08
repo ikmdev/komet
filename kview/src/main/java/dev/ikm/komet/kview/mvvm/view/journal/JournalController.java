@@ -1563,6 +1563,9 @@ public class JournalController {
         if (conceptPatternNavController != null) {
             conceptPatternNavController.shutdown();
         }
+        if (nextGenSearchController != null) {
+            nextGenSearchController.shutdown();
+        }
         if (trashTray != null) {
             trashTray.shutdown();
         }
@@ -1575,6 +1578,9 @@ public class JournalController {
             if (window instanceof CardKlWindow || window instanceof ToolCardKlWindow
                     || window instanceof DynamicCardKlWindow) {
                 window.knowledgeLayoutUnbind();
+            } else if (window instanceof AbstractEntityChapterKlWindow entityWindow) {
+                // Concept, pattern, general-editing and LIDR windows: their controllers' bus subscriptions.
+                entityWindow.releaseSubscriptions();
             }
         }
         journalNodes.forEach(KometNode::close);

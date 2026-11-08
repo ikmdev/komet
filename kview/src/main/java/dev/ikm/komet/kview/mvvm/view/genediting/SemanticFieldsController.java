@@ -348,6 +348,8 @@ public class SemanticFieldsController {
               // Not sure this is needed and needs to be revisted
 //            processCommittedValues();
             loadUIData(); // And populates Nodes and Observable fields.
+            // Re-subscribed on every load: drop the previous subscriber, or each load adds one for good.
+            releaseSubscriptions();
             entityVersionChangeEventSubscriber = evt -> {
                 LOG.info("Version has been updated: " + evt.getEventType());
                 // get payload
@@ -687,6 +689,14 @@ public class SemanticFieldsController {
                     ButtonType.OK);
             alert.setHeaderText("Save Failed");
             alert.showAndWait();
+        }
+    }
+
+    /** Drops the application-wide version-change subscription, which outlives this pane and its window. */
+    public void releaseSubscriptions() {
+        if (entityVersionChangeEventSubscriber != null) {
+            EvtBusFactory.getDefaultEvtBus().unsubscribe(VERSION_CHANGED_TOPIC, EntityVersionChangeEvent.class,
+                    entityVersionChangeEventSubscriber);
         }
     }
 }

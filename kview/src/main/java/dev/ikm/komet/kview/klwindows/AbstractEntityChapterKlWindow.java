@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.kview.klwindows;
 
+import dev.ikm.tinkar.events.EvtBusFactory;
 import dev.ikm.komet.framework.view.ObservableView;
 import dev.ikm.komet.framework.view.ObservableViewBase;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
@@ -85,6 +86,8 @@ public abstract class AbstractEntityChapterKlWindow extends AbstractChapterKlWin
      * Options popup uses as the inherited baseline (ike-issues#666).
      */
     private final ObservableView journalParentView;
+    /** Keeps the inherited baseline live; on the journal's view, which outlives the window, so removed at delete. */
+    private final javafx.beans.value.ChangeListener<dev.ikm.tinkar.coordinate.view.ViewCoordinateRecord> inheritedBaselineListener;
 
     /**
      * Constructs a new entity-focused chapter window with references to the journal topic,
@@ -113,7 +116,8 @@ public abstract class AbstractEntityChapterKlWindow extends AbstractChapterKlWin
         // popup's inherited baseline — getViewProperties().parentView() — a live mirror of it.
         this.journalParentView = viewProperties.nodeView();
         final ObservableViewNoOverride inheritedBaseline = getViewProperties().parentView();
-        this.journalParentView.addListener((obs, oldView, newView) -> inheritedBaseline.setValue(newView));
+        this.inheritedBaselineListener = (obs, oldView, newView) -> inheritedBaseline.setValue(newView);
+        this.journalParentView.addListener(inheritedBaselineListener);
         this.journalTopic = Objects.requireNonNull(journalTopic, "journalTopic cannot be null");
         this.entityFacade = entityFacade;
 
@@ -252,5 +256,17 @@ public abstract class AbstractEntityChapterKlWindow extends AbstractChapterKlWin
     public void delete() {
         super.delete();
         getViewProperties().dispose();
+        journalParentView.removeListener(inheritedBaselineListener);
+        releaseSubscriptions();
+    }
+
+    /**
+     * Drops this window's event-bus subscriptions: every subscription on the window's topic, which its
+     * controllers subscribe on. The bus outlives every window, so a subscription nobody removes keeps the
+     * window, its controllers and the journal it is on reachable. Called when the window is deleted and when
+     * its journal shuts down; a window whose controllers also subscribe on another topic overrides this.
+     */
+    public void releaseSubscriptions() {
+        EvtBusFactory.getDefaultEvtBus().unsubscribeAll(getWindowTopic());
     }
 }

@@ -577,13 +577,13 @@ public class ConceptController {
             updateDraggableNodesForPropertiesPanel(true);
         }
 
-        Subscriber<GenEditingEvent> refreshSubscriber = evt -> {
+        journalRefreshSubscriber = evt -> {
             if (evt.getEventType() == GenEditingEvent.PUBLISH){
                 updateView();
             }
         };
-        EvtBusFactory.getDefaultEvtBus().subscribe(conceptViewModel.getPropertyValue(ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC),
-                GenEditingEvent.class, refreshSubscriber);
+        journalRefreshTopic = conceptViewModel.getPropertyValue(ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC);
+        EvtBusFactory.getDefaultEvtBus().subscribe(journalRefreshTopic, GenEditingEvent.class, journalRefreshSubscriber);
 
         conceptViewModel.getViewProperties().nodeView().addListener((obs, oldViewCoord, newViewCoord) -> {
             if (newViewCoord != null) {
@@ -894,8 +894,23 @@ public class ConceptController {
         eventBus.unsubscribe(conceptTopic, ClosePropertiesPanelEvent.class, closePropertiesPanelEventSubscriber);
         eventBus.unsubscribe(conceptTopic, CreateConceptEvent.class, createConceptEventSubscriber);
         eventBus.unsubscribe(conceptTopic, EditConceptEvent.class, editConceptEventSubscriber);
+        releaseSubscriptions();
+    }
+
+    /** The journal's refresh subscription, on the journal's topic rather than this window's. */
+    private Subscriber<GenEditingEvent> journalRefreshSubscriber;
+    private Object journalRefreshTopic;
+
+    /**
+     * Drops this controller's subscriptions on topics that are not its window's own (application-wide ones
+     * and the journal's), which dropping the window's topic does not reach. Safe to call more than once.
+     */
+    public void releaseSubscriptions() {
         eventBus.unsubscribe(RULES_TOPIC, AxiomChangeEvent.class, changeSetTypeEventSubscriber);
         eventBus.unsubscribe(CALCULATOR_CACHE_TOPIC, RefreshCalculatorCacheEvent.class, refreshCalculatorEventSubscriber);
+        if (journalRefreshSubscriber != null) {
+            eventBus.unsubscribe(journalRefreshTopic, GenEditingEvent.class, journalRefreshSubscriber);
+        }
     }
     public Pane getPropertiesSlideoutTrayPane() {
         return propertiesSlideoutTrayPane;
