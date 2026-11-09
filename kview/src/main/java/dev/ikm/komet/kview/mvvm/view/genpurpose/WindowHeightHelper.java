@@ -27,15 +27,23 @@ import javafx.scene.layout.Region;
 import static dev.ikm.komet.kview.fxutils.FXUtils.DEFAULT_ANIMATION_DURATION;
 
 /**
- * Grows a KL window, animated, to the height its open properties panel needs to show in full — so
- * a form's fields can be filled in without scrolling the panel (komet-desktop#184) — and gives the
- * height back as the panel closes.
- *
- * <p>The window only ever grows while the panel is open: content that needs less (the confirmation
- * shown after a submit, a shorter form) leaves the height alone, so the window doesn't bounce
- * between consecutive edits. Growth stops at {@link #maxGrownHeight()}.
+ * Owns every change to a KL window's height. A window has one preferred height, and the changes to
+ * it have to know about each other — a tray closing must not undo a section collapse or a divider
+ * drag that happened while it was open — so they all go through here:
+ * <ul>
+ *   <li>{@link #growToFitProperties(double) Tray growth}: the window grows, animated, to the height
+ *   its open properties panel needs to show in full, so a form's fields can be filled in without
+ *   scrolling the panel (komet-desktop#184), and {@link #restorePreviousHeight() gives the height
+ *   back} as the panel closes. The window only ever grows while the panel is open: content that
+ *   needs less (the confirmation shown after a submit, a shorter form) leaves the height alone, so
+ *   the window doesn't bounce between consecutive edits. Growth stops at {@link #maxGrownHeight()}.</li>
+ *   <li>{@link #changeHeightBy(double) Section collapse and expand}: the window closes and opens by
+ *   the height the section's content occupies (komet-desktop#159, #218).</li>
+ *   <li>{@link #growBy(double) Divider drags}: the window grows as a section is dragged taller than
+ *   the sections below can make room for (komet-desktop#219).</li>
+ * </ul>
  */
-public final class PropertiesTrayWindowGrowthHelper {
+public final class WindowHeightHelper {
 
     /**
      * Gap kept between the bottom of a grown window and the bottom of the workspace's visible area
@@ -64,7 +72,7 @@ public final class PropertiesTrayWindowGrowthHelper {
      * @param tray   the tray holding the properties panel; it fills the window's height
      *               below the window's chrome
      */
-    public PropertiesTrayWindowGrowthHelper(Region window, Region tray) {
+    public WindowHeightHelper(Region window, Region tray) {
         this.window = window;
         this.tray = tray;
     }
@@ -147,6 +155,30 @@ public final class PropertiesTrayWindowGrowthHelper {
             }
         }
         window.setPrefHeight(newHeight);
+    }
+
+    /**
+     * Grows the window by {@code delta} for the user, who is dragging a section's divider past the
+     * height the sections have between them (komet-desktop#219). Like dragging the window's own
+     * edge, this is a user gesture, and it outranks the window's standing height cap: a window at
+     * its ceiling has the ceiling raised to fit, where {@link #changeHeightBy(double)} — which answers
+     * content-driven changes — stops at it. A window sized to its content grows with its sections
+     * on its own, so only its ceiling is seen to.
+     *
+     * @return the height the window grows by: all of {@code delta}
+     */
+    public double growBy(double delta) {
+        finishAnimationNow();
+        final double prefHeight = window.getPrefHeight();
+        final double height = prefHeight > 0 ? prefHeight : window.prefHeight(window.getWidth());
+        final double newHeight = height + delta;
+        if (window.getMaxHeight() > 0 && newHeight > window.getMaxHeight()) {
+            window.setMaxHeight(newHeight);
+        }
+        if (prefHeight > 0) {
+            changeHeightBy(delta);
+        }
+        return delta;
     }
 
     /**

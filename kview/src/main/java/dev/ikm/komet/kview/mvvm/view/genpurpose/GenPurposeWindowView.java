@@ -92,7 +92,7 @@ public final class GenPurposeWindowView extends BorderPane {
     /** The properties tray, once a properties panel is set. */
     private PropertiesTray propertiesTray;
     /** Grows the window to fit the open properties tray, and gives the height back as it closes. */
-    private final PropertiesTrayWindowGrowthHelper windowGrowthHelper;
+    private final WindowHeightHelper windowHeightHelper;
 
     public GenPurposeWindowView() {
         setId("detailsOuterBorderPane");
@@ -147,7 +147,11 @@ public final class GenPurposeWindowView extends BorderPane {
             }
         });
 
-        windowGrowthHelper = new PropertiesTrayWindowGrowthHelper(this, propertiesSlideoutTrayPane);
+        windowHeightHelper = new WindowHeightHelper(this, propertiesSlideoutTrayPane);
+        // A section divider dragged past the height the sections have between them grows the
+        // window, so a section can be enlarged top-down without first making room below it
+        // (komet-desktop#219).
+        mainContent.setGrowHandler(windowHeightHelper::growBy);
     }
 
     /*=========================================================================*
@@ -207,7 +211,7 @@ public final class GenPurposeWindowView extends BorderPane {
      * @param requiredHeight the height the tray needs to show the panel's content in full
      */
     public void growToFitProperties(double requiredHeight) {
-        windowGrowthHelper.growToFitProperties(requiredHeight);
+        windowHeightHelper.growToFitProperties(requiredHeight);
     }
 
     /**
@@ -215,7 +219,7 @@ public final class GenPurposeWindowView extends BorderPane {
      * the meantime keeps their height.
      */
     public void restorePreviousHeight() {
-        windowGrowthHelper.restorePreviousHeight();
+        windowHeightHelper.restorePreviousHeight();
     }
 
     /**
@@ -224,7 +228,7 @@ public final class GenPurposeWindowView extends BorderPane {
      * height {@link #restorePreviousHeight()} goes back to in step.
      */
     public void changeHeightBy(double delta) {
-        windowGrowthHelper.changeHeightBy(delta);
+        windowHeightHelper.changeHeightBy(delta);
     }
 
     /**
@@ -232,7 +236,7 @@ public final class GenPurposeWindowView extends BorderPane {
      * animation was heading to. Call it before reading or changing the window's preferred height.
      */
     public void finishHeightAnimationNow() {
-        windowGrowthHelper.finishAnimationNow();
+        windowHeightHelper.finishAnimationNow();
     }
 
     /*=========================================================================*

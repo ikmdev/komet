@@ -16,7 +16,7 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose.test;
 
 import dev.ikm.komet.kview.controls.KLWorkspace;
-import dev.ikm.komet.kview.mvvm.view.genpurpose.PropertiesTrayWindowGrowthHelper;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.WindowHeightHelper;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
@@ -38,9 +38,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * A window in a scrollable workspace: 50px of chrome on top, 300px of content, and a tray on the
  * right that fills the height below the chrome without asking for any — the general-purpose
- * window's shape, as far as {@link PropertiesTrayWindowGrowthHelper} is concerned.
+ * window's shape, as far as {@link WindowHeightHelper} is concerned.
  */
-class PropertiesTrayWindowGrowthHelperUTestFX {
+class WindowHeightHelperUTestFX {
 
     private static final double CHROME_HEIGHT = 50;
     private static final double CONTENT_HEIGHT = 300;
@@ -49,7 +49,7 @@ class PropertiesTrayWindowGrowthHelperUTestFX {
 
     private ScrollPane workspace;
     private BorderPane window;
-    private PropertiesTrayWindowGrowthHelper helper;
+    private WindowHeightHelper helper;
 
     @BeforeAll
     static void startToolkit() throws Exception {
@@ -71,7 +71,7 @@ class PropertiesTrayWindowGrowthHelperUTestFX {
             window.setLayoutY(WINDOW_Y);
 
             workspace = new ScrollPane(new Pane(window));
-            helper = new PropertiesTrayWindowGrowthHelper(window, tray);
+            helper = new WindowHeightHelper(window, tray);
 
             stage.setScene(new Scene(workspace, 800, 700));
             stage.show();
@@ -140,7 +140,7 @@ class PropertiesTrayWindowGrowthHelperUTestFX {
         runAndAwaitAnimation(() -> helper.growToFitProperties(5000));
 
         double visibleHeight = workspace.getViewportBounds().getHeight();
-        assertEquals(Math.ceil(visibleHeight - WINDOW_Y - PropertiesTrayWindowGrowthHelper.BOTTOM_GAP), window.getHeight(), 1);
+        assertEquals(Math.ceil(visibleHeight - WINDOW_Y - WindowHeightHelper.BOTTOM_GAP), window.getHeight(), 1);
     }
 
     @Test
@@ -194,5 +194,32 @@ class PropertiesTrayWindowGrowthHelperUTestFX {
 
         FxToolkit.setupFixture(() -> helper.changeHeightBy(300));
         assertEquals(KLWorkspace.MAX_WINDOW_HEIGHT, window.getPrefHeight(), 0);
+    }
+
+    @Test
+    @DisplayName("A divider drag grows a window with a height of its own past its ceiling, raising the ceiling")
+    void dividerDragGrowsAFixedHeightWindowPastItsCeiling() throws Exception {
+        FxToolkit.setupFixture(() -> {
+            window.setMaxHeight(500);
+            window.setPrefHeight(400);
+        });
+
+        double[] granted = new double[1];
+        FxToolkit.setupFixture(() -> granted[0] = helper.growBy(200));
+        assertEquals(200, granted[0], 0);
+        assertEquals(600, window.getPrefHeight(), 0);
+        assertEquals(600, window.getMaxHeight(), 0);
+    }
+
+    @Test
+    @DisplayName("A divider drag leaves a content-sized window to its content, and only raises its ceiling")
+    void dividerDragRaisesAContentSizedWindowsCeiling() throws Exception {
+        FxToolkit.setupFixture(() -> window.setMaxHeight(CHROME_HEIGHT + CONTENT_HEIGHT + 10));
+
+        double[] granted = new double[1];
+        FxToolkit.setupFixture(() -> granted[0] = helper.growBy(50));
+        assertEquals(50, granted[0], 0);
+        assertEquals(Region.USE_COMPUTED_SIZE, window.getPrefHeight(), 0);
+        assertEquals(CHROME_HEIGHT + CONTENT_HEIGHT + 50, window.getMaxHeight(), 0);
     }
 }

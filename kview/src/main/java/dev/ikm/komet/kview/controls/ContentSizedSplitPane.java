@@ -12,12 +12,14 @@ import javafx.scene.layout.Region;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.DoubleUnaryOperator;
 
 /**
  * A {@link SplitPane} that gives each of its items the size its content asks for, instead of
  * splitting its length evenly between them. An item holding a couple of rows takes the height
  * those rows need and no more; the space it doesn't use goes to the last item, which is also the
- * one the pane's own resizing grows and shrinks.
+ * one the pane's own resizing grows and shrinks. An item is one of the pane's
+ * {@link #getItems() items}: a child of the pane, which in a KL window is one section.
  *
  * <p>When the items' combined preferred size doesn't fit, each is capped at its fair share of what
  * there is (see {@link FXUtils#capAtFairShare(double[], double)}): the small items keep their full
@@ -25,11 +27,21 @@ import java.util.List;
  *
  * <p>The sizing is re-applied on every layout pass, so an item that gains or loses content resizes
  * with it — until the user drags a divider. From that first drag on, the items hold the lengths the
- * user gives them: every open item keeps the length it had when a divider was last let go of, and
+ * user gives them: every open item keeps the length it had when a divider was last grabbed, and
  * the lowest open item takes up the slack, growing and shrinking with the pane. A collapsed
  * {@link TitledPane} holds no more than its title bar, since there is nothing behind that title bar
  * for the length to show, and opens back up to the length it was last holding open — so a size the
  * user dragged an item to outlives a collapse, and the items around it never move.
+ *
+ * <p>A divider drag sets the length of the item above the divider, and of that item only; the
+ * items below keep their lengths and move with the divider. Dragging it up frees length, which the
+ * lowest open item takes. Dragging it down takes length from the lowest open item while it has any
+ * above its minimum; past that the pane asks for more length through its
+ * {@link #setGrowHandler(DoubleUnaryOperator) grow handler} — in a KL window, the window grows by
+ * it (komet-desktop#219) — and the item grows by what it is granted. SplitPane's own drag, which
+ * shuffles length between the two items either side of the divider and stops where the items
+ * below run out, is taken over for that: it is what made a section impossible to enlarge until
+ * the user had first dragged the window taller and then every divider below, from the bottom up.
  *
  * <p>SplitPane's own skin spreads a change of the pane's length over the items that are
  * {@link SplitPane#setResizableWithParent(Node, Boolean) resizable with the parent}, and pins the
@@ -61,72 +73,157 @@ public class ContentSizedSplitPane extends SplitPane {
     /**
      * Key under which an item keeps the length it holds while open, once the user has taken the
      * sizing over: the length it is placed at on every layout pass, and opens back up to after
-     * being collapsed. Written when the user lets go of a divider — the one moment the lengths are
-     * settled and known to be the ones they chose — and kept up to date for the item carrying the
-     * pane's slack, whose length follows the pane's. An item that was never seen open has no entry,
-     * and opens to what its content asks for.
+     * being collapsed. Written for every open item when the user grabs a divider — the moment the
+     * lengths on screen become the ones they are working from — then for the item above the
+     * divider as the drag moves it, and kept up to date for the item carrying the pane's slack,
+     * whose length follows the pane's. An item that was never seen open has no entry, and opens to
+     * what its content asks for.
      */
     private static final String HELD_LENGTH_KEY = "content-sized-split-pane-held-length";
 
     private boolean sizeToContent = true;
 
-    private boolean draggingDivider;
+    /** The divider drag under way, or null between drags. */
+    private DividerDrag dragDetails;
+
+    private DoubleUnaryOperator growHandler;
 
     public ContentSizedSplitPane() {
-        // Grabbing a divider hands the sizing over to the user, for good. While the divider is
-        // held, SplitPane's own drag handling places it; the lengths are picked up on release.
+        // Grabbing a divider hands the sizing over to the user, for good, and this pane places the
+        // divider from here: the skin's own drag handling runs on the divider, below this filter,
+        // and never sees the drag events.
         addEventFilter(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
             if (isDivider(mouseEvent.getTarget())) {
                 sizeToContent = false;
-                draggingDivider = true;
+                beginDividerDrag(mouseEvent);
             }
         });
 
-        addEventFilter(MouseEvent.MOUSE_RELEASED, _ -> {
-            if (draggingDivider) {
-                draggingDivider = false;
-                rememberHeldLengths();
+        addEventFilter(MouseEvent.MOUSE_DRAGGED, mouseEvent -> {
+            if (dragDetails != null) {
+                mouseEvent.consume();
+                dragDivider(mouseEvent);
             }
         });
+
+        addEventFilter(MouseEvent.MOUSE_RELEASED, _ -> dragDetails = null);
     }
 
     /**
-     * Writes down the length each open item is holding, which is the length it is held at from here
-     * on and returns to after being collapsed and opened again. Taken at the end of a divider drag,
-     * when the lengths are the ones the user settled on and nothing is mid-transition. A collapsed
-     * item keeps the entry it has: its length now is its title bar, not a length it holds open.
+     * Sets what grows this pane when a divider is dragged past the length the pane has: called
+     * with the extra length wanted, it arranges for the pane to be that much longer and returns the
+     * length it is granting — all of it, some of it, or none. Null (the default) grants nothing, so
+     * a divider stops where the lowest open item reaches its minimum.
      */
-    private void rememberHeldLengths() {
-        List<Node> items = getItems();
-        List<Divider> dividers = getDividers();
-        List<Region> dividerNodes = dividerNodes();
-        if (dividers.isEmpty() || items.size() != dividers.size() + 1
-                || dividerNodes.size() != dividers.size()) {
+    public final void setGrowHandler(DoubleUnaryOperator growHandler) {
+        this.growHandler = growHandler;
+    }
+
+    public final DoubleUnaryOperator getGrowHandler() {
+        return growHandler;
+    }
+
+    /**
+     * Starts a drag of the divider under the mouse: writes down the length every open item is
+     * holding, which is the length it is held at from here on and returns to after being collapsed
+     * and opened again, and notes which item the drag resizes and where it starts from.
+     */
+    private void beginDividerDrag(MouseEvent mouseEvent) {
+        Layout layout = Layout.of(this);
+        if (layout == null) {
             return;
         }
 
-        double length = getOrientation() == Orientation.VERTICAL
-                ? getHeight() - snappedTopInset() - snappedBottomInset()
-                : getWidth() - snappedLeftInset() - snappedRightInset();
-        if (length <= 0) {
+        int dividerIndex = layout.dividerNodes.indexOf(dividerOf(mouseEvent.getTarget()));
+        if (dividerIndex < 0) {
             return;
         }
 
-        double[] sizes = currentSizes(length, dividers, dividerNodes);
-        for (int i = 0; i < items.size(); i++) {
-            if (!isCollapsed(items.get(i))) {
-                items.get(i).getProperties().put(HELD_LENGTH_KEY, sizes[i]);
+        double[] sizes = currentSizes(layout.length, layout.dividers, layout.dividerNodes);
+        for (int i = 0; i < layout.items.size(); i++) {
+            if (!isCollapsed(layout.items.get(i))) {
+                layout.items.get(i).getProperties().put(HELD_LENGTH_KEY, sizes[i]);
             }
         }
+
+        Node item = layout.items.get(dividerIndex);
+        if (isCollapsed(item)) {
+            // Nothing to resize: a collapsed item is at its title bar whatever is done to the
+            // divider below it.
+            return;
+        }
+        double pressPosition = layout.vertical ? mouseEvent.getY() : mouseEvent.getX();
+        dragDetails = new DividerDrag(dividerIndex, pressPosition, sizes[dividerIndex]);
+    }
+
+    /**
+     * Moves the dragged divider: the item above it takes the length the mouse has travelled since
+     * the press, the lowest open item gives or takes the difference, and length the lowest open item
+     * cannot give is asked of the grow handler. Where the handler grants less than was asked, the
+     * item grows by what it was granted.
+     */
+    private void dragDivider(MouseEvent mouseEvent) {
+        Layout layout = Layout.of(this);
+        if (layout == null) {
+            return;
+        }
+
+        List<Node> items = layout.items;
+        int draggedIndex = dragDetails.itemIndex;
+        int lowestOpen = lowestOpenItemIndex(items);
+        Node item = items.get(draggedIndex);
+        double position = layout.vertical ? mouseEvent.getY() : mouseEvent.getX();
+        double wanted = Math.max(minLength(item, layout.breadth, layout.vertical),
+                dragDetails.startLength + position - dragDetails.pressPosition);
+
+        // What the items other than the dragged one need as the drag stands: their held lengths,
+        // with the lowest open item down at its minimum since it is the one giving way.
+        double lowestOpenMin = minLength(items.get(lowestOpen), layout.breadth, layout.vertical);
+        double otherItemsLength = 0;
+        for (int i = 0; i < items.size(); i++) {
+            if (i == draggedIndex) {
+                continue;
+            }
+            otherItemsLength += i == lowestOpen
+                    ? lowestOpenMin
+                    : heldLength(items.get(i), layout.breadth, layout.vertical);
+        }
+
+        // Length granted by earlier drag events has been asked for but not laid out yet, so count it
+        // as the pane's until the next layout pass shows it.
+        double available = layout.availableLength + dragDetails.pendingGrowth;
+        double shortfall = wanted + otherItemsLength - available;
+        if (shortfall > 0) {
+            double granted = growHandler == null
+                    ? 0
+                    : Math.max(0, Math.min(shortfall, growHandler.applyAsDouble(shortfall)));
+            dragDetails.pendingGrowth += granted;
+            available += granted;
+            wanted -= shortfall - granted;
+        }
+
+        item.getProperties().put(HELD_LENGTH_KEY, wanted);
+        if (draggedIndex != lowestOpen) {
+            // The lowest open item is left what the others don't take; written here rather than
+            // only in layout, so the pane's preferred length is right when its parent asks for it
+            // before the next pass.
+            double lowestOpenLength = available - wanted - (otherItemsLength - lowestOpenMin);
+            items.get(lowestOpen).getProperties().put(HELD_LENGTH_KEY, lowestOpenLength);
+        }
+        requestLayout();
     }
 
     @Override
     protected void layoutChildren() {
         markDividersBelowCollapsedItems();
+        if (dragDetails != null) {
+            // The pane's length now includes whatever growth was granted since the last pass.
+            dragDetails.pendingGrowth = 0;
+        }
         if (sizeToContent) {
             sizeItemsToContent();
-        } else if (!draggingDivider) {
-            holdItemLengths();
+        } else {
+            sizeItemsToHeldLengths();
         }
         super.layoutChildren();
     }
@@ -151,10 +248,14 @@ public class ContentSizedSplitPane extends SplitPane {
      * depends on its width (wrapped text, say) answers differently then, so the length the pane
      * asks its parent for would not be the length its items go on to fill: the difference reaches
      * the window as space the sections never take up.
+     *
+     * <p>Once the user holds the lengths, it is the lengths they hold that are asked for: the pane
+     * wants the length its items are at, and a divider dragged past the pane's length is a request
+     * for more of it — which is how a window sized to its content grows with the drag.
      */
     @Override
     protected double computePrefHeight(double width) {
-        if (!sizeToContent || getOrientation() != Orientation.VERTICAL) {
+        if (getOrientation() != Orientation.VERTICAL) {
             return super.computePrefHeight(width);
         }
 
@@ -166,7 +267,7 @@ public class ContentSizedSplitPane extends SplitPane {
 
         double length = totalDividerThickness();
         for (Node item : items) {
-            length += item.prefHeight(breadth);
+            length += sizeToContent ? item.prefHeight(breadth) : heldLength(item, breadth, true);
         }
         return snappedTopInset() + length + snappedBottomInset();
     }
@@ -203,55 +304,58 @@ public class ContentSizedSplitPane extends SplitPane {
      * minimum, the others give up the shortfall in proportion to what they hold above their own
      * minimums; their held lengths stay, so they fill out again as the room comes back.
      */
-    private void holdItemLengths() {
+    private void sizeItemsToHeldLengths() {
         Layout layout = Layout.of(this);
         if (layout == null) {
             return;
         }
 
         List<Node> items = layout.items;
-        int slack = slackIndex(items);
+        int lowestOpen = lowestOpenItemIndex(items);
         double[] sizes = new double[items.size()];
         double[] mins = new double[items.size()];
-        double others = 0;
+        double otherItemsLength = 0;
         for (int i = 0; i < items.size(); i++) {
             mins[i] = minLength(items.get(i), layout.breadth, layout.vertical);
-            if (i == slack) {
+            if (i == lowestOpen) {
                 continue;
             }
             sizes[i] = Math.max(mins[i], heldLength(items.get(i), layout.breadth, layout.vertical));
-            others += sizes[i];
+            otherItemsLength += sizes[i];
         }
 
-        double shortfall = mins[slack] - (layout.availableLength - others);
+        double shortfall = mins[lowestOpen] - (layout.availableLength - otherItemsLength);
         if (shortfall > 0) {
             double room = 0;
             for (int i = 0; i < items.size(); i++) {
-                if (i != slack) {
+                if (i != lowestOpen) {
                     room += sizes[i] - mins[i];
                 }
             }
             double taken = Math.min(shortfall, room);
             if (taken > 0) {
                 for (int i = 0; i < items.size(); i++) {
-                    if (i != slack) {
+                    if (i != lowestOpen) {
                         sizes[i] -= (sizes[i] - mins[i]) / room * taken;
                     }
                 }
-                others -= taken;
+                otherItemsLength -= taken;
             }
         }
-        sizes[slack] = layout.availableLength - others;
+        sizes[lowestOpen] = layout.availableLength - otherItemsLength;
 
-        // The slack item's length is whatever the pane leaves it, so that is the length it holds
+        // The lowest open item's length is whatever the pane leaves it, so that is the length it holds
         // from here on — in particular once another item below it opens and takes the slack over.
-        items.get(slack).getProperties().put(HELD_LENGTH_KEY, sizes[slack]);
+        items.get(lowestOpen).getProperties().put(HELD_LENGTH_KEY, sizes[lowestOpen]);
 
         applySizes(sizes, layout.length, layout.dividers, layout.dividerNodes);
     }
 
-    /** The item carrying the pane's slack: the lowest open one, or the last when none is open. */
-    private static int slackIndex(List<Node> items) {
+    /**
+     * The lowest open item, which carries the pane's slack: the lowest one not collapsed, or the last
+     * when none is open.
+     */
+    private static int lowestOpenItemIndex(List<Node> items) {
         for (int i = items.size() - 1; i >= 0; i--) {
             if (!isCollapsed(items.get(i))) {
                 return i;
@@ -350,15 +454,38 @@ public class ContentSizedSplitPane extends SplitPane {
 
     /** Whether the passed in event target is a divider, or a part of one (its grabber). */
     private boolean isDivider(EventTarget target) {
+        return dividerOf(target) != null;
+    }
+
+    /** The divider node the passed in event target is, or is a part of (its grabber); null for none. */
+    private Node dividerOf(EventTarget target) {
         for (Node node = target instanceof Node hit ? hit : null; node != null; node = node.getParent()) {
             if (node.getStyleClass().contains(DIVIDER_STYLE_CLASS)) {
-                return true;
+                return node;
             }
             if (node == this) {
-                return false;
+                return null;
             }
         }
-        return false;
+        return null;
+    }
+
+    /**
+     * A divider drag in progress: which item it resizes (the one above the divider), where along
+     * the pane the mouse was pressed and the length the item had then, and the length the grow
+     * handler has granted since the last layout pass, which the pane doesn't show yet.
+     */
+    private static final class DividerDrag {
+        final int itemIndex;
+        final double pressPosition;
+        final double startLength;
+        double pendingGrowth;
+
+        DividerDrag(int itemIndex, double pressPosition, double startLength) {
+            this.itemIndex = itemIndex;
+            this.pressPosition = pressPosition;
+            this.startLength = startLength;
+        }
     }
 
     /**
