@@ -7,7 +7,7 @@ import javafx.scene.control.Label;
 /**
  * Default skin implementation for the {@link KLStringControl} control
  */
-public class KLStringControlSkin extends KLDebounceControlSkin<KLStringControl> {
+public class KLStringControlSkin extends KLBaseTextFieldControlSkin<KLStringControl> {
 
     private final Label titleLabel;
 
@@ -29,13 +29,18 @@ public class KLStringControlSkin extends KLDebounceControlSkin<KLStringControl> 
         textField.getStyleClass().add("text-field");
 
         getChildren().addAll(titleLabel, textField);
-        control.textProperty().subscribe(textField::setText);
+        control.textProperty().subscribe(_ -> refreshText());
 
     }
 
     @Override
     protected void updateValueProperty() {
         getSkinnable().setText(textField.getText());
+    }
+
+    @Override
+    protected String getValueText() {
+        return getSkinnable().getText();
     }
 
     /** {@inheritDoc} */

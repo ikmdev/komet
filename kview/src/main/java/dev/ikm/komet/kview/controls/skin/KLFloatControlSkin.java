@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 /**
  * Default skin implementation for the {@link KLFloatControl} control
  */
-public class KLFloatControlSkin extends KLDebounceControlSkin<KLFloatControl> {
+public class KLFloatControlSkin extends KLBaseTextFieldControlSkin<KLFloatControl> {
 
     private static final Pattern NUMERICAL_PATTERN = Pattern.compile("^[+-]?(\\d+([.]\\d*)?([eE][+-]?\\d+)?|[.]\\d+([eE][+-]?\\d+)?)$");
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.float-control");
@@ -154,7 +154,7 @@ public class KLFloatControlSkin extends KLDebounceControlSkin<KLFloatControl> {
         }));
 
         // value was set externally
-        subscription = control.valueProperty().subscribe(nv -> textField.setText(toDisplayText(nv)));
+        subscription = control.valueProperty().subscribe(_ -> refreshText());
 
         subscription = subscription.and(textField.textProperty().subscribe(nv ->
                 textField.pseudoClassStateChanged(INFINITY_PSEUDO_CLASS,
@@ -196,6 +196,11 @@ public class KLFloatControlSkin extends KLDebounceControlSkin<KLFloatControl> {
                 // ignore, and keep control with its old value
             }
         }
+    }
+
+    @Override
+    protected String getValueText() {
+        return toDisplayText(getSkinnable().getValue());
     }
 
     /** {@inheritDoc} */

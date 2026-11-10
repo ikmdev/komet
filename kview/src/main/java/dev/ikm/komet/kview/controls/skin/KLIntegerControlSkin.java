@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 /**
  * Default skin implementation for the {@link KLIntegerControl} control
  */
-public class KLIntegerControlSkin extends KLDebounceControlSkin<KLIntegerControl> {
+public class KLIntegerControlSkin extends KLBaseTextFieldControlSkin<KLIntegerControl> {
 
     private static final Pattern NUMERICAL_PATTERN = Pattern.compile("^-?(0|[1-9][0-9]*)$"); // allow '-', don't start with 0, but allow a zero by itself
     private static final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.integer-control");
@@ -98,7 +98,7 @@ public class KLIntegerControlSkin extends KLDebounceControlSkin<KLIntegerControl
         }));
 
         // value was set externally
-        subscription = control.valueProperty().subscribe(nv -> textField.setText(nv == null ? null : nv.toString()));
+        subscription = control.valueProperty().subscribe(_ -> refreshText());
 
         final PauseTransition pauseTransition = new PauseTransition(ERROR_DURATION);
         pauseTransition.setOnFinished(f -> {
@@ -129,6 +129,12 @@ public class KLIntegerControlSkin extends KLDebounceControlSkin<KLIntegerControl
             // ignore, and keep control with its old value
             }
         }
+    }
+
+    @Override
+    protected String getValueText() {
+        Integer value = getSkinnable().getValue();
+        return value == null ? null : value.toString();
     }
 
     /** {@inheritDoc} */
