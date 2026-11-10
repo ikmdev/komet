@@ -187,6 +187,7 @@ public class GenPurposeFieldsController {
         });
 
         view.setSubmitDisabled(true); // disable submit until fields changed.
+        view.setClearOrResetDisabled(true); // likewise Clear/Reset: nothing to undo yet.
 
         reloadPatternNavigator = true;
     }
@@ -293,6 +294,7 @@ public class GenPurposeFieldsController {
             // create-mode blanking here.
             view.getFields().setAll(editables);
             view.setSubmitDisabled(true);
+            view.setClearOrResetDisabled(true);
             LOG.info("Loaded UI with {} editable fields using ObservableComposer", getKlFields().size());
         });
     }
@@ -305,7 +307,10 @@ public class GenPurposeFieldsController {
                 editableField,
                 getViewProperties(),
                 currentEditStamp);
-        klField.doOnEditableValuePropertyChange(() -> view.setSubmitDisabled(false));
+        klField.doOnEditableValuePropertyChange(() -> {
+            view.setSubmitDisabled(false);
+            view.setClearOrResetDisabled(false);
+        });
         getKlFields().add(klField);
         // A field authored in the KL Editor as not editable in edit mode is still shown in
         // the form, but can't be changed.
