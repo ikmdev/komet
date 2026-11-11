@@ -19,7 +19,9 @@ import dev.ikm.tinkar.common.alert.AlertObject;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Pins the alert-dedupe identity (ikmdev/komet#886): repeats of one failure — same title,
@@ -59,5 +61,15 @@ public class AlertDialogSubscriberTest {
 
         assertNotEquals(AlertDialogSubscriber.dedupeKey(warning),
                 AlertDialogSubscriber.dedupeKey(other));
+    }
+
+    @Test
+    public void anAdvisoryGetsNoDialog() {
+        assertFalse(AlertDialogSubscriber.interrupts(
+                        AlertObject.makeAdvisory("UUIDs added to a component", "Component 7 gained one.")),
+                "an advisory is recorded for the Warnings and Errors list, not shown in a dialog");
+        assertTrue(AlertDialogSubscriber.interrupts(AlertObject.makeWarning("Some items stayed in the Trash", "One.")),
+                "a warning that answers what the person just did is shown to them");
+        assertTrue(AlertDialogSubscriber.interrupts(AlertObject.makeError(new IllegalStateException("no store"))));
     }
 }

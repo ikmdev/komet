@@ -198,6 +198,16 @@
                            </Label>
                            <Hyperlink fx:id="githubStatusHyperlink" styleClass="github-status-link" text="Disconnected, Select to connect" />
                         </HBox>
+                        <!-- What Komet reported while starting, importing and working; the link opens the list. -->
+                        <HBox spacing="4.0">
+                           <Label maxHeight="Infinity" text="Warnings and Errors:">
+                              <styleClass>
+                                 <String fx:value="status-label" />
+                                 <String fx:value="github" />
+                              </styleClass>
+                           </Label>
+                           <Hyperlink fx:id="warningsAndErrorsHyperlink" styleClass="github-status-link" text="None" />
+                        </HBox>
                      </VBox>
                   </HBox>
                </children>

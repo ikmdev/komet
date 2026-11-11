@@ -150,6 +150,9 @@ public class LandingPageController implements BasicController {
     private Hyperlink githubStatusHyperlink;
 
     @FXML
+    private Hyperlink warningsAndErrorsHyperlink;
+
+    @FXML
     private Label selectedDatasetTitleLabel;
 
     @FXML
@@ -740,6 +743,14 @@ public class LandingPageController implements BasicController {
 
     public Hyperlink getGithubStatusHyperlink() {
         return githubStatusHyperlink;
+    }
+
+    /**
+     * @return the link that says how many warnings and errors Komet has reported; the
+     * application sets its text and has it open the list
+     */
+    public Hyperlink getWarningsAndErrorsHyperlink() {
+        return warningsAndErrorsHyperlink;
     }
 
     /**

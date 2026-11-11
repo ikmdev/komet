@@ -8717,8 +8717,10 @@ Styling a context menu for kview ui/ux controls
     -fx-shape: "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12ZM8 9h8v10H8V9Zm7.5-5-1-1h-5l-1 1H5v2h14V4h-3.5Z";
 }
 
-/* The graphic is the icon's size; the count rides its top-right corner, as on the pencil. */
-.side-bar .toggle-button .trash-graphic {
+/* The graphic is the icon's size; the count rides its top-right corner, as on the pencil.
+   A plugin tray with a count (KlSidebarTray.badge) is drawn the same way. */
+.side-bar .toggle-button .trash-graphic,
+.side-bar .toggle-button .tray-graphic {
     -fx-min-width: 20;
     -fx-pref-width: 20;
     -fx-max-width: 20;

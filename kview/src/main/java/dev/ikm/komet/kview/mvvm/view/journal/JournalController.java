@@ -1057,7 +1057,7 @@ public class JournalController {
                 ToggleButton toggle = new ToggleButton("ToggleButton");
                 toggle.setId(provider.toggleId());
                 toggle.setMnemonicParsing(false);
-                toggle.setGraphic(icon);
+                toggle.setGraphic(withBadge(icon, tray.badge()));
                 toggle.setTooltip(new javafx.scene.control.Tooltip(provider.tooltip()));
                 toggle.setToggleGroup(sidebarToggleGroup);
                 sidebarVBox.getChildren().add(at++, toggle);
@@ -1067,6 +1067,29 @@ public class JournalController {
                 LOG.warn("Could not add the sidebar tray {}", provider.toggleId(), e);
             }
         }
+    }
+
+    /**
+     * A plugin tray's icon with its count riding the top-right corner, as on the Trash.
+     *
+     * @param icon  the toggle's icon
+     * @param badge the tray's count, or null if it has none
+     * @return the toggle's graphic: the icon alone for a tray with no count
+     */
+    private static Node withBadge(Region icon, javafx.beans.value.ObservableIntegerValue badge) {
+        if (badge == null) {
+            return icon;
+        }
+        Label count = new Label();
+        count.getStyleClass().add("change-count-badge");
+        count.textProperty().bind(javafx.beans.binding.Bindings.createStringBinding(
+                () -> Integer.toString(badge.get()), badge));
+        count.visibleProperty().bind(javafx.beans.binding.Bindings.createBooleanBinding(
+                () -> badge.get() > 0, badge));
+        StackPane.setAlignment(count, javafx.geometry.Pos.TOP_RIGHT);
+        StackPane graphic = new StackPane(icon, count);
+        graphic.getStyleClass().add("tray-graphic");
+        return graphic;
     }
 
     private Pane newTrayPane() {

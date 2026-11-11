@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.layout.tray;
 
+import javafx.beans.value.ObservableIntegerValue;
 import javafx.scene.layout.Pane;
 
 /**
@@ -25,6 +26,16 @@ public interface KlSidebarTray {
 
     /** @return the tray's content, at the width it wants */
     Pane fxObject();
+
+    /**
+     * A count the journal draws on the tray's toggle while it is above zero, as the Trash shows
+     * how many items are in it: what is waiting in the tray to be looked at.
+     *
+     * @return the count, or null for a tray that has none
+     */
+    default ObservableIntegerValue badge() {
+        return null;
+    }
 
     /** Called as the tray slides out, so a look at it starts from a fresh read. */
     default void shown() {

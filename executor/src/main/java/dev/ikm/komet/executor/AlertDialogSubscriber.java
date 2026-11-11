@@ -42,6 +42,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * per-node — a stylesheet hot-swap NPE-ing every CSS-styled icon in the scene, dozens of times
  * per swap — therefore produces one dialog and a counted log line, not a modal storm whose
  * nested event loops feed each other.
+ * <p>An {@linkplain AlertObject#isAdvisory() advisory} gets no dialog at all: see
+ * {@link #interrupts(AlertObject)}.
  */
 public class AlertDialogSubscriber implements AlertReportingService {
     private static final Logger LOG = LoggerFactory.getLogger(AlertDialogSubscriber.class);
@@ -71,6 +73,9 @@ public class AlertDialogSubscriber implements AlertReportingService {
 
     @Override
     public void onNext(AlertObject item) {
+        if (!interrupts(item)) {
+            return;
+        }
         alertQueue.add(item);
         Platform.runLater(this::drainQueue);
     }
@@ -102,6 +107,18 @@ public class AlertDialogSubscriber implements AlertReportingService {
         } finally {
             showing.set(false);
         }
+    }
+
+    /**
+     * Whether an alert gets a dialog. An advisory does not: it asks nothing of the person now,
+     * and the {@link dev.ikm.tinkar.common.alert.AlertLog} records it for the Warnings and
+     * Errors list, where it can be read at any time.
+     *
+     * @param item the alert
+     * @return true if a dialog shows it
+     */
+    static boolean interrupts(AlertObject item) {
+        return !item.isAdvisory();
     }
 
     /**
