@@ -90,7 +90,10 @@
     -fx-background-radius: 0 8 0 0;
     -fx-border-radius: 0 8 0 0;
     -fx-padding: 4 8 4 8;
-    -fx-spacing: 8;
+    /* The toolbar is a grid: the card's controls, a spacer that grows, then the help and close controls.
+       A gap between its columns keeps the help control off the card's last control when the card is as
+       narrow as its controls: 4 either side of the spacer, the 8 the card's own controls stand apart by. */
+    -fx-hgap: 4;
     -fx-alignment: center-left;
     -fx-min-height: 40;
     -fx-pref-height: 40;
