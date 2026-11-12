@@ -35,11 +35,7 @@ public class KLComponentComboBoxControl extends Control {
         // The stylesheet goes on the scene rather than on the control so that — as with
         // KLComponentControl — a hosting application's stylesheet can restyle the control by
         // selector specificity (a control's own stylesheets would outrank the scene's).
-        sceneProperty().subscribe(newScene -> {
-            if (newScene != null && !newScene.getStylesheets().contains(getUserAgentStylesheet())) {
-                newScene.getStylesheets().add(getUserAgentStylesheet());
-            }
-        });
+        sceneProperty().subscribe(scene -> ControlSceneStylesheets.ensure(scene, getUserAgentStylesheet()));
     }
 
     // -- title

@@ -11,11 +11,8 @@ public class KLReadOnlyDataTypeControl<T> extends KLReadOnlyBaseSingleValueContr
     public KLReadOnlyDataTypeControl() {
         getStyleClass().add("read-only-data-control");
 
-        sceneProperty().subscribe(newScene -> {
-            if (newScene != null) {
-                newScene.getStylesheets().add(getUserAgentStylesheet());
-            }
-        });
+        // on the scene, at most once per scene (see ControlSceneStylesheets)
+        sceneProperty().subscribe(scene -> ControlSceneStylesheets.ensure(scene, getUserAgentStylesheet()));
     }
 
     public KLReadOnlyDataTypeControl(Class<T> type) {

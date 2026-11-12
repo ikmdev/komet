@@ -43,14 +43,9 @@ public class KLDiTreeControl extends KLReadOnlyDiTreeControl {
 
     public KLDiTreeControl() {
         getStyleClass().add("ditree-control");
-        sceneProperty().subscribe(newScene -> {
-            if (newScene != null) {
-                String stylesheet = KLDiTreeControl.class.getResource("ditree-control.css").toExternalForm();
-                if (!newScene.getStylesheets().contains(stylesheet)) {
-                    newScene.getStylesheets().add(stylesheet);
-                }
-            }
-        });
+        // on the scene, at most once per scene (see ControlSceneStylesheets)
+        String stylesheet = KLDiTreeControl.class.getResource("ditree-control.css").toExternalForm();
+        sceneProperty().subscribe(scene -> ControlSceneStylesheets.ensure(scene, stylesheet));
     }
 
     // -- rule actions provider

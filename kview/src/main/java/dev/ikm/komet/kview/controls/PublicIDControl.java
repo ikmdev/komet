@@ -1,8 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.PublicIDControlSkin;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Control;
@@ -15,16 +13,10 @@ public class PublicIDControl extends Control {
      /// The public ID (UUID) property
     private StringProperty publicId = new SimpleStringProperty(this, "publicId");
 
+    /// Creates the control. Its stylesheet goes on the scene through [ControlSceneStylesheets],
+    /// which adds it at most once to a scene.
     public PublicIDControl() {
-        sceneProperty().addListener(new InvalidationListener() {
-            @Override
-            public void invalidated(Observable observable) {
-                if (getScene() != null) {
-                    getScene().getStylesheets().add(getUserAgentStylesheet());
-                    sceneProperty().removeListener(this);
-                }
-            }
-        });
+        sceneProperty().subscribe(scene -> ControlSceneStylesheets.ensure(scene, getUserAgentStylesheet()));
     }
 
     public PublicIDControl(String publicId) {

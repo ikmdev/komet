@@ -34,11 +34,7 @@ public class KLFloatControl extends Control {
 
         // the suggestions popup is styled through the scene's stylesheets,
         // the control's own stylesheets don't reach it
-        sceneProperty().subscribe(newScene -> {
-            if (newScene != null && !newScene.getStylesheets().contains(getUserAgentStylesheet())) {
-                newScene.getStylesheets().add(getUserAgentStylesheet());
-            }
-        });
+        sceneProperty().subscribe(scene -> ControlSceneStylesheets.ensure(scene, getUserAgentStylesheet()));
     }
 
     /**

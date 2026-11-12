@@ -4,8 +4,6 @@ import dev.ikm.komet.framework.observable.ObservableEntityHandle;
 import dev.ikm.komet.kview.controls.skin.PublicIDListControlSkin;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.terms.EntityFacade;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
@@ -22,16 +20,8 @@ public class PublicIDListControl extends Control {
     public PublicIDListControl() {
         getStyleClass().add("public-id-list");
 
-        // make styles reloadable
-        sceneProperty().addListener(new InvalidationListener() {
-            @Override
-            public void invalidated(Observable observable) {
-                if (getScene() != null) {
-                    getScene().getStylesheets().add(getUserAgentStylesheet());
-                }
-                sceneProperty().removeListener(this);
-            }
-        });
+        // on the scene, at most once per scene (see ControlSceneStylesheets)
+        sceneProperty().subscribe(scene -> ControlSceneStylesheets.ensure(scene, getUserAgentStylesheet()));
     }
 
     /// Creates a Public ID List from the provided viewCalculator and EntityFacade.

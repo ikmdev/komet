@@ -1,8 +1,6 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.kview.controls.skin.StampViewControlSkin;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -16,15 +14,9 @@ public class StampViewControl extends Control {
 
     public StampViewControl() {
         getStyleClass().add("stamp-view-control");
-        sceneProperty().addListener(new InvalidationListener() {
-            @Override
-            public void invalidated(Observable observable) {
-                if (getScene() != null) {
-                    getScene().getStylesheets().add(getUserAgentStylesheet());
-                }
-                sceneProperty().removeListener(this);
-            }
-        });
+
+        // on the scene, at most once per scene (see ControlSceneStylesheets)
+        sceneProperty().subscribe(scene -> ControlSceneStylesheets.ensure(scene, getUserAgentStylesheet()));
     }
 
     @Override

@@ -45,11 +45,8 @@ public class KLComponentCollectionControl<T extends LongIdCollection> extends Co
     public KLComponentCollectionControl() {
         getStyleClass().add("component-list-control");
 
-        sceneProperty().subscribe(newScene -> {
-            if (newScene != null) {
-                newScene.getStylesheets().add(getUserAgentStylesheet());
-            }
-        });
+        // on the scene, at most once per scene (see ControlSceneStylesheets)
+        sceneProperty().subscribe(scene -> ControlSceneStylesheets.ensure(scene, getUserAgentStylesheet()));
     }
 
     // -- title
