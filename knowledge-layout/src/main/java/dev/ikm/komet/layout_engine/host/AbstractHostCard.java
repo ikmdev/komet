@@ -794,7 +794,20 @@ public abstract class AbstractHostCard extends CardBlueprint {
         if (dragSubscription != null) {
             dragSubscription.unsubscribe();
         }
-        dragSubscription = DraggableSupport.addDraggableNodes(fxObject(), tab, toolBar);
+        if (isWorkspaceWindow()) {
+            dragSubscription = DraggableSupport.addDraggableNodes(fxObject(), tab, toolBar);
+        }
+    }
+
+    /**
+     * Whether the card is a window on a workspace, which the person moves by its tab and toolbar and resizes
+     * by its edges, and which shows the window outline. A card docked in fixed chrome, such as a window's
+     * sidebar, answers {@code false}. Default: {@code true}.
+     *
+     * @return whether the card gets the workspace window behavior
+     */
+    protected boolean isWorkspaceWindow() {
+        return true;
     }
 
     /**

@@ -458,6 +458,11 @@ public class JournalController {
     private ViewProperties journalViewProperties;
     private final HashMap<String, MenuItem> windowTitleToMenuItem = new HashMap<>();
 
+    /** The journal's child preferences node the assistant sidebar keeps its state under. */
+    private static final String ASSISTANT_SIDEBAR_NODE = "assistant-sidebar";
+    /** The assistant sidebar; empty when no plugin provides the assistant. */
+    private Optional<dev.ikm.komet.layout.sidebar.KlAssistantSidebar> assistantSidebar = Optional.empty();
+
     /**
      * Called after JavaFX FXML DI has occurred. Any annotated items above should be valid.
      */
@@ -512,6 +517,14 @@ public class JournalController {
         progressPopupPane.getStyleClass().add("progress-popup-pane");
 
         createTrayPanes();
+
+        // The assistant sidebar: collapsed, a button over the workspace's top-right corner; expanded, a
+        // pane in the window's right slot. Its state lives under this journal's own preferences node.
+        assistantSidebar = dev.ikm.komet.layout.sidebar.KlAssistantSidebar.install(journalRootPane, () -> workspace,
+                getJournalPreferences(journalTopic).node(ASSISTANT_SIDEBAR_NODE),
+                journalOwnedView("JournalController.assistantSidebar"), journalTopic);
+        assistantSidebar.ifPresent(sidebar ->
+                sidebar.hostNameProperty().bind(JournalNames.get().nameProperty(journalTopic)));
 
         // When user clicks on sidebar tray's toggle buttons.
         sidebarToggleGroup.selectedToggleProperty().addListener((observableValue, oldValue, newValue) -> {
@@ -1593,6 +1606,7 @@ public class JournalController {
             trashTray.shutdown();
         }
         pluginTrays.values().forEach(dev.ikm.komet.layout.tray.KlSidebarTray::shutdown);
+        assistantSidebar.ifPresent(dev.ikm.komet.layout.sidebar.KlAssistantSidebar::shutdown);
 
         // The journal's cards and its own view go with it: unbound, a card lets go of what outlives the
         // journal (the plugin Trash's listener lists, its workers), and the journal's view lets go of the

@@ -1,0 +1,51 @@
+/*
+ * The assistant sidebar of a top-level window (KlAssistantSidebar): the floating button that opens it and
+ * the docked container its pane sits in. Colors are literals, not the kview palette's names, because the
+ * KL editor's scene does not load that palette; the blue is the palette's -Secondary-05.
+ */
+
+/* The open button: the one filled, ringed, shadowed control over the working area, so it stands out from
+   the window's flat icon buttons. Two fills: a white ring 2px outside the bounds, then the blue. */
+.kl-assistant-open-button {
+    -fx-background-color: white, #4A7AD2;
+    -fx-background-insets: -2, 0;
+    -fx-background-radius: 13, 11;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.32), 10, 0, 0, 4);
+}
+
+.kl-assistant-open-button:hover {
+    -fx-background-color: white, #5896F6;
+}
+
+.kl-assistant-open-button:armed {
+    -fx-background-color: white, #395C9A;
+}
+
+.kl-assistant-spark {
+    -fx-background-color: white;
+    -fx-shape: "M11 2l2.3 6.7L20 11l-6.7 2.3L11 20l-2.3-6.7L2 11l6.7-2.3z M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z";
+    -fx-min-width: 20;
+    -fx-min-height: 20;
+    -fx-max-width: 20;
+    -fx-max-height: 20;
+}
+
+/* The docked container: a white panel ruled off from the working area, with a soft shadow over it. */
+.kl-assistant-sidebar {
+    -fx-background-color: white;
+    -fx-border-color: transparent transparent transparent #c9ced8;
+    -fx-border-width: 0 0 0 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.10), 10, 0, -3, 0);
+}
+
+/* The strip over the docked container's left edge that resizes it: invisible, the resize cursor is its
+   only sign, as on a window's edge. */
+.kl-assistant-sidebar-grip {
+    -fx-min-width: 5;
+    -fx-pref-width: 5;
+    -fx-max-width: 5;
+    -fx-background-color: transparent;
+    -fx-cursor: h-resize;
+}
