@@ -135,6 +135,11 @@ public final class KlAssistantSidebar {
         dock.getStylesheets().add(stylesheet);
         dock.setId("assistantSidebar");
         dock.setMinWidth(MIN_WIDTH);
+        // As tall as the window, whatever the pane's content asks for. A window root can declare its minimum
+        // height as its preferred height (the journal's does), and a long reply in the pane would then raise
+        // both, pushing the root past the bottom of its window. The right slot is filled whatever these are.
+        dock.setMinHeight(0);
+        dock.setPrefHeight(0);
         dock.setPrefWidth(clampWidth(preferences.getDouble(PREF_WIDTH, DEFAULT_WIDTH)));
         dock.setVisible(false);
         dock.setManaged(false);
@@ -198,6 +203,7 @@ public final class KlAssistantSidebar {
             pane.hostNameProperty().bind(hostName);
             Region paneNode = pane.fxObject();
             paneNode.setMinWidth(0);
+            paneNode.setMinHeight(0);
             paneNode.setMaxWidth(Double.MAX_VALUE);
             dock.getChildren().add(0, paneNode);   // under the grip
         }
