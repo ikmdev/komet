@@ -230,6 +230,9 @@
                                 <ignoredUnusedDeclaredDependency>dev.ikm.tinkar:data-spinedarray64-provider</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>dev.ikm.tinkar:entity-provider</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>dev.ikm.tinkar:executor-provider</ignoredUnusedDeclaredDependency>
+                                <!-- The tests' headless JavaFX platform is named in a system property
+                                     (glass.platform=Monocle), and JavaFX loads it by that name. -->
+                                <ignoredUnusedDeclaredDependency>one.jpro.platform.jpms:openjfx-monocle</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
