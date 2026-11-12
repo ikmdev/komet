@@ -5,12 +5,16 @@
  */
 
 /* The open button: the one filled, ringed, shadowed control over the working area, so it stands out from
-   the window's flat icon buttons. Two fills: a white ring 2px outside the bounds, then the blue. */
+   the window's flat icon buttons. Two fills: a white ring 2px outside the bounds, then the blue. It does
+   not carry the "button" style class, so everything a button's look needs is set here. */
 .kl-assistant-open-button {
     -fx-background-color: white, #4A7AD2;
     -fx-background-insets: -2, 0;
     -fx-background-radius: 13, 11;
+    -fx-border-width: 0;
     -fx-padding: 0;
+    -fx-alignment: center;
+    -fx-content-display: graphic-only;
     -fx-cursor: hand;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.32), 10, 0, 0, 4);
 }

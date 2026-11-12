@@ -110,7 +110,10 @@ public final class KlAssistantSidebar {
         spark.getStyleClass().add("kl-assistant-spark");
         openButton.setGraphic(spark);
         openButton.setId("assistantSidebarOpen");
-        openButton.getStyleClass().add("kl-assistant-open-button");
+        // In place of "button": each window's scene styles ".button" its own way (the landing page's
+        // ".landing-container .button" outranks any single-class rule, the KL editor's adds a border),
+        // and this one looks the same in all of them.
+        openButton.getStyleClass().setAll("kl-assistant-open-button");
         openButton.getStylesheets().add(stylesheet);
         openButton.setTooltip(new Tooltip("Open Komet Assistant"));
         openButton.setFocusTraversable(false);
