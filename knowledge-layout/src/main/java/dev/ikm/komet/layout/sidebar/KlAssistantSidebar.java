@@ -41,6 +41,7 @@ import java.util.function.Supplier;
  * takes no room: a floating button sits over the top-right corner of the window's working area. Expanded,
  * the {@linkplain KlAssistantPane pane} docks in the right slot of the window's root and the working area
  * gives up the width; the pane's own header carries the control that collapses it again.
+ * {@linkplain #maximizedProperty() Maximized}, the open pane covers the working area instead.
  *
  * <p>The pane is made on first opening, by the {@link KlAssistantPaneProvider} a plugin provides, and is
  * then only hidden, never taken out of the scene graph: a card forgets its saved state when its node leaves
@@ -58,9 +59,11 @@ public final class KlAssistantSidebar {
 
     private static final String PREF_EXPANDED = "expanded";
     private static final String PREF_WIDTH = "width";
+    private static final String PREF_MAXIMIZED = "maximized";
 
     private final BorderPane root;
     private final Supplier<Node> workingArea;
+    private Supplier<Node> maximizedArea;
     private final KlAssistantPaneProvider provider;
     private final KometPreferences preferences;
     private final ViewProperties viewProperties;
@@ -99,6 +102,7 @@ public final class KlAssistantSidebar {
                                KometPreferences preferences, ViewProperties viewProperties, UUID journalTopic) {
         this.root = root;
         this.workingArea = workingArea;
+        this.maximizedArea = workingArea;
         this.provider = provider;
         this.preferences = preferences;
         this.viewProperties = viewProperties;
@@ -148,9 +152,11 @@ public final class KlAssistantSidebar {
         dock.setManaged(false);
         root.setRight(dock);
 
-        // Read before the subscription below, which runs at once and records the collapsed state.
+        // Read before the subscriptions below, which run at once and record the state as it is now.
         boolean wasExpanded = preferences.getBoolean(PREF_EXPANDED, false);
+        maximized.set(preferences.getBoolean(PREF_MAXIMIZED, false));
         expanded.subscribe(this::showExpanded);
+        maximized.subscribe(this::showMaximized);
         root.needsLayoutProperty().subscribe(needsLayout -> schedulePlacement());
         schedulePlacement();
         if (wasExpanded) {
@@ -168,6 +174,16 @@ public final class KlAssistantSidebar {
     /** @return the docked container the pane sits in, for a window whose scene lacks stylesheets the pane needs */
     public Region getDock() {
         return dock;
+    }
+
+    /**
+     * Names the part of the window the maximized pane covers, when it is more than the working area the open
+     * button floats over.
+     *
+     * @param maximizedArea the node whose bounds the maximized pane takes; read at each layout
+     */
+    public void setMaximizedArea(Supplier<Node> maximizedArea) {
+        this.maximizedArea = maximizedArea;
     }
 
     /** The window is closing: the pane saves what it keeps and lets go of what outlives it. */
@@ -193,6 +209,16 @@ public final class KlAssistantSidebar {
     public String getHostName() { return hostName.get(); }
     public void setHostName(String value) { hostName.set(value); }
 
+    // -- maximized
+    /**
+     * Whether the open pane covers the window's working area in place of docking at its right edge. The
+     * pane's header carries the control that switches it; kept under the window's preferences node.
+     */
+    private final BooleanProperty maximized = new SimpleBooleanProperty(this, "maximized", false);
+    public BooleanProperty maximizedProperty() { return maximized; }
+    public boolean isMaximized() { return maximized.get(); }
+    public void setMaximized(boolean value) { maximized.set(value); }
+
     /***************************************************************************
      *                                                                         *
      * Implementation                                                          *
@@ -204,6 +230,7 @@ public final class KlAssistantSidebar {
             pane = provider.create(new KlAssistantPaneProvider.Host(preferences, viewProperties, journalTopic,
                     () -> expanded.set(false)));
             pane.hostNameProperty().bind(hostName);
+            pane.maximizedProperty().bindBidirectional(maximized);
             Region paneNode = pane.fxObject();
             paneNode.setMinWidth(0);
             paneNode.setMinHeight(0);
@@ -211,9 +238,27 @@ public final class KlAssistantSidebar {
             dock.getChildren().add(0, paneNode);   // under the grip
         }
         dock.setVisible(show);
-        dock.setManaged(show);
         openButton.setVisible(!show);
         preferences.putBoolean(PREF_EXPANDED, show);
+        placeDock();
+    }
+
+    private void showMaximized(boolean maximize) {
+        preferences.putBoolean(PREF_MAXIMIZED, maximize);
+        placeDock();
+    }
+
+    /**
+     * Docked, the pane is the root's right slot. Maximized, it leaves the root's layout, so the working area
+     * takes the slot's width back, and is placed over that area, above the window's content; its width is
+     * then not the person's to drag, and the docked width is kept for the return.
+     */
+    private void placeDock() {
+        boolean floating = maximized.get();
+        dock.setManaged(expanded.get() && !floating);
+        dock.setViewOrder(floating ? -1000 : 0);
+        grip.setVisible(!floating);
+        schedulePlacement();
     }
 
     private static double clampWidth(double width) {
@@ -221,8 +266,8 @@ public final class KlAssistantSidebar {
     }
 
     /**
-     * Places the open button after the layout pass that asked for it: the root's flag clears before its
-     * children are laid out, so the working area's bounds are read one pulse later.
+     * Places the open button and the maximized pane after the layout pass that asked for it: the root's flag
+     * clears before its children are laid out, so the working area's bounds are read one pulse later.
      */
     private void schedulePlacement() {
         if (placementPending) {
@@ -232,15 +277,26 @@ public final class KlAssistantSidebar {
         Platform.runLater(() -> {
             placementPending = false;
             placeOpenButton();
+            placeMaximizedDock();
         });
     }
 
     private void placeOpenButton() {
-        Node area = workingArea.get();
-        Bounds bounds = area == null || area.getScene() == null
-                ? root.getLayoutBounds()
-                : root.sceneToLocal(area.localToScene(area.getLayoutBounds()));
+        Bounds bounds = boundsInRoot(workingArea.get());
         openButton.resizeRelocate(bounds.getMaxX() - BUTTON_SIZE - BUTTON_RIGHT_GAP, bounds.getMinY() + BUTTON_TOP_GAP,
                 BUTTON_SIZE, BUTTON_SIZE);
+    }
+
+    private void placeMaximizedDock() {
+        if (expanded.get() && maximized.get()) {
+            Bounds bounds = boundsInRoot(maximizedArea.get());
+            dock.resizeRelocate(bounds.getMinX(), bounds.getMinY(), bounds.getWidth(), bounds.getHeight());
+        }
+    }
+
+    private Bounds boundsInRoot(Node area) {
+        return area == null || area.getScene() == null
+                ? root.getLayoutBounds()
+                : root.sceneToLocal(area.localToScene(area.getLayoutBounds()));
     }
 }

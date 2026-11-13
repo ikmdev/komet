@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.layout.sidebar;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.layout.Region;
 
@@ -30,6 +31,22 @@ public interface KlAssistantPane {
     /** The window is closing: save what the pane keeps and let go of what outlives it. */
     default void shutdown() {
     }
+
+    // -- maximized
+    /**
+     * Whether the pane covers the window's working area in place of docking at its right edge. The pane's
+     * header carries the control that switches it; the sidebar binds it to its own
+     * {@linkplain KlAssistantSidebar#maximizedProperty() maximized} property and does the placing.
+     *
+     * @return the maximized property
+     */
+    BooleanProperty maximizedProperty();
+
+    /** @return whether the pane covers the window's working area */
+    default boolean isMaximized() { return maximizedProperty().get(); }
+
+    /** @param value whether the pane covers the window's working area */
+    default void setMaximized(boolean value) { maximizedProperty().set(value); }
 
     // -- host name
     /**
