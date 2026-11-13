@@ -17,6 +17,7 @@ import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToolBar;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -49,6 +50,9 @@ public interface KlExpandable {
 
     /** Style class marking the {@code StackPane} that hosts a figure and its expand icon. */
     String HOST_STYLE_CLASS = "kl-expandable-host";
+
+    /** Style class on an expand icon that is drawn always ({@link #expandIconAlwaysShown()}). */
+    String SHOWN_STYLE_CLASS = "kl-expand-shown";
 
     /** Reveal distance (px) from the corner within which the expand icon fades in. */
     double REVEAL_DISTANCE = 140;
@@ -121,6 +125,31 @@ public interface KlExpandable {
     }
 
     /**
+     * The corner of the expanded view its contract icon is in. By default the corner the figure was
+     * expanded from: the click is then its own inverse, where the reader's hand already is. A figure
+     * whose expanded view fills a place other than its own, so that the two corners are apart anyway,
+     * or whose expand corner is one where the window draws something of its own, names another.
+     *
+     * @return the corner; defaults to {@link #expansionCorner()}
+     */
+    default ExpansionCorner contractionCorner() {
+        return expansionCorner();
+    }
+
+    /**
+     * Whether the expand icon is drawn whenever the figure is, and not only while the pointer is near
+     * its corner. Off by default, which is the video-player convention: the icon fades in near its
+     * corner. That suits a figure that is wholly in view and whose reader knows the corner. A figure in
+     * a document is come to from its top and may be taller than its window, so there the icon is drawn
+     * always, as a quiet button, and is usually put in a top corner ({@code dev-grow-model-review}).
+     *
+     * @return {@code true} to draw the icon always
+     */
+    default boolean expandIconAlwaysShown() {
+        return false;
+    }
+
+    /**
      * Whether this figure may step beyond the top rung into OS full screen. Off by default: full screen
      * takes a figure out of the application's own navigation context, which suits a large tree or a
      * paged document and never suits a small table.
@@ -129,6 +158,32 @@ public interface KlExpandable {
      */
     default boolean osFullScreenCapable() {
         return false;
+    }
+
+    /**
+     * The rungs this figure will use, of the hosts above it. All of them by default, so a figure
+     * opens in the nearest and climbs one at a time. An adopter that needs a certain room leaves
+     * out the hosts too small for it: the figure then opens in the first rung that is left, the
+     * stepping controls name only those rungs, and Escape from the lowest of them collapses the
+     * figure rather than stepping down into a place it does not fit.
+     *
+     * @param hosts the hosts above the figure, nearest first, as {@link KlExpansionHost#ladder} found them
+     * @return the rungs to use, nearest first; empty to not expand at all
+     */
+    default List<KlExpansionHost.Rung> expansionRungs(List<KlExpansionHost.Rung> hosts) {
+        return hosts;
+    }
+
+    /**
+     * What the expansion is tied to: when this node leaves its scene, the expansion is over and is
+     * torn down. The figure by default. An adopter whose figure is rebuilt while it is expanded, as
+     * a document block is after an edit made in its expanded view, names a node that outlives the
+     * figure and still goes when the figure's place does, such as the pane of its nearest host.
+     *
+     * @return the node the expansion is tied to; {@code null} ties it to nothing
+     */
+    default Node expansionAnchor() {
+        return figureNode();
     }
 
     /**
@@ -165,13 +220,19 @@ public interface KlExpandable {
         Button expandIcon = cornerIcon(host, "kl-expand-icon", "expand", "⛶");
         // Tab reaches the icon and reveals it, so a figure is expandable without a mouse.
         expandIcon.setFocusTraversable(true);
-        expandIcon.setOpacity(0);
-        // Opacity does not affect picking in JavaFX: a hidden icon would still swallow a click, or the
-        // press that starts a chip drag, anywhere in the figure's corner. Make it pickable only once it
-        // has faded in — but never while it is pressed. Dragging off the figure fires MOUSE_EXITED and
-        // fades the icon out mid-press; going mouse-transparent then would strand the gesture.
-        expandIcon.mouseTransparentProperty().bind(
-                expandIcon.opacityProperty().lessThan(0.05).and(expandIcon.pressedProperty().not()));
+        expandIcon.setTooltip(new Tooltip("Expand"));
+        boolean alwaysShown = expandIconAlwaysShown();
+        if (alwaysShown) {
+            expandIcon.getStyleClass().add(SHOWN_STYLE_CLASS);
+        } else {
+            expandIcon.setOpacity(0);
+            // Opacity does not affect picking in JavaFX: a hidden icon would still swallow a click, or the
+            // press that starts a chip drag, anywhere in the figure's corner. Make it pickable only once it
+            // has faded in — but never while it is pressed. Dragging off the figure fires MOUSE_EXITED and
+            // fades the icon out mid-press; going mouse-transparent then would strand the gesture.
+            expandIcon.mouseTransparentProperty().bind(
+                    expandIcon.opacityProperty().lessThan(0.05).and(expandIcon.pressedProperty().not()));
+        }
         expandIcon.setOnAction(e -> expand());
         ExpansionCorner corner = expansionCorner();
         Insets iconInsets = expandIconInsets();
@@ -179,7 +240,9 @@ public interface KlExpandable {
         StackPane.setMargin(expandIcon, iconInsets);
         host.getChildren().add(expandIcon);
 
-        installHoverReveal(host, expandIcon, corner);
+        if (!alwaysShown) {
+            installHoverReveal(host, expandIcon, corner);
+        }
         keepClearOfScrollBars(expandIcon, figure, corner, iconInsets);
         return host;
     }
@@ -194,14 +257,14 @@ public interface KlExpandable {
         if (isExpanded()) {
             return;
         }
-        List<KlExpansionHost.Rung> ladder = KlExpansionHost.ladder(figure);
-        if (ladder.isEmpty()) {
+        List<KlExpansionHost.Rung> ladder = expansionRungs(KlExpansionHost.ladder(figure));
+        if (ladder == null || ladder.isEmpty()) {
             return; // no host to fill
         }
         BorderPane chrome = new BorderPane();
         chrome.getStyleClass().add("kl-expanded-content");
         chrome.setStyle("-fx-background-color: -fx-background;"); // opaque surface over the scrim
-        ExpansionCorner corner = expansionCorner();
+        ExpansionCorner corner = contractionCorner();
 
         // The corner that expanded the figure contracts it again: the click is its own inverse, and it
         // is where the reader's hand already is. Persistently visible, unlike the collapsed figure's icon
@@ -335,7 +398,7 @@ public interface KlExpandable {
 
     /** A fresh overlay filling {@code pane}, wired to step down on Escape and clean up on collapse. */
     private KlExpansionOverlay overlayFor(Region figure, Pane pane, ActiveExpansion mine) {
-        KlExpansionOverlay overlay = new KlExpansionOverlay(pane, mine.chrome, figure, () -> {
+        KlExpansionOverlay overlay = new KlExpansionOverlay(pane, mine.chrome, expansionAnchor(), () -> {
             // Clear the state only if it still refers to THIS expansion — a quick re-open during the
             // collapse fade may already have installed a newer one, whose state we must not delete.
             if (figure.getProperties().get(PropertyKeys.EXPANSION) == mine) {
@@ -385,7 +448,7 @@ public interface KlExpandable {
         if (!osFullScreenCapable() || !active.ladder.get(active.rungIndex).osFullScreenBeyond()) {
             return;
         }
-        Stage stage = stageOf();
+        Stage stage = stageOf(active);
         if (stage == null) {
             return;
         }
@@ -442,9 +505,15 @@ public interface KlExpandable {
         updateChrome(active);
     }
 
-    /** The {@link Stage} showing this figure, or {@code null} if it is not in a staged scene. */
-    private Stage stageOf() {
+    /**
+     * The {@link Stage} showing this expansion, or {@code null} if it is not in a staged scene: the
+     * figure's, or the stage of the rung it fills when the figure has been rebuilt beneath it.
+     */
+    private Stage stageOf(ActiveExpansion active) {
         Scene scene = figureNode().getScene();
+        if (scene == null) {
+            scene = active.ladder.get(active.rungIndex).fillPane().getScene();
+        }
         return scene != null && scene.getWindow() instanceof Stage stage ? stage : null;
     }
 

@@ -35,3 +35,26 @@
 .kl-contract-icon > .icon.contract {
     -fx-shape: "M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z";
 }
+
+/*
+ * An expand icon that is drawn always (KlExpandable.expandIconAlwaysShown): a quiet button on the
+ * figure, with two arrows pointing apart, which a reader takes for "make this larger" where the
+ * brackets are a video player's sign. One border and four of padding around the 14 of the icon make
+ * the 24 by 24 a pointer target needs.
+ */
+.kl-expand-icon.kl-expand-shown {
+    -fx-background-color: white;
+    -fx-border-color: #9db3d6;
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+    -fx-padding: 4;
+}
+
+.kl-expand-icon.kl-expand-shown:hover {
+    -fx-background-color: #e6eef8;
+}
+
+.kl-expand-icon.kl-expand-shown > .icon.expand {
+    -fx-background-color: #1f5fa8;
+    -fx-shape: "M21 11V3h-8l3.29 3.29-10 10L3 13v8h8l-3.29-3.29 10-10z";
+}
