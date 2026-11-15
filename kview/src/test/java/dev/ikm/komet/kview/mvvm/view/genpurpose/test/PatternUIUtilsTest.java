@@ -45,4 +45,33 @@ class PatternUIUtilsTest {
         assertEquals("Patterns", PatternUIUtils.stripPatternSuffix("Patterns"));
         assertEquals("Pattern of use", PatternUIUtils.stripPatternSuffix("Pattern of use"));
     }
+
+    @Test
+    @DisplayName("A semantic window's tab names its pattern, without the word Pattern")
+    void aSemanticWindowsTabNamesItsPattern() {
+        assertEquals("Test Performed semantic", PatternUIUtils.semanticTabTitle("Test Performed Pattern"));
+        assertEquals("Description semantic", PatternUIUtils.semanticTabTitle("  Description pattern "));
+        assertEquals("Device Extension Record semantic", PatternUIUtils.semanticTabTitle("Device Extension Record"),
+                "a name with no Pattern word is kept whole");
+        assertEquals("Pattern semantic", PatternUIUtils.semanticTabTitle("Pattern"));
+    }
+
+    @Test
+    @DisplayName("A tag in parentheses at the end of a pattern's name is left off the tab")
+    void aTagAtTheEndOfThePatternsNameIsLeftOffTheTab() {
+        assertEquals("Model Class semantic", PatternUIUtils.semanticTabTitle("Model Class Pattern (IkeFoundation)"));
+        assertEquals("Tissue-Contacting Material as Submitted semantic",
+                PatternUIUtils.semanticTabTitle("Tissue-Contacting Material as Submitted Pattern (DeX materials demonstration)"));
+        assertEquals("Matrix protein (M) gene semantic", PatternUIUtils.semanticTabTitle("Matrix protein (M) gene"),
+                "parentheses inside the name are part of it");
+        assertEquals("(IkeFoundation) semantic", PatternUIUtils.semanticTabTitle("(IkeFoundation)"),
+                "a name that is nothing but a tag is kept whole");
+    }
+
+    @Test
+    @DisplayName("With no pattern name the tab still says what the window shows")
+    void withNoPatternNameTheTabSaysSemantic() {
+        assertEquals("Semantic", PatternUIUtils.semanticTabTitle(null));
+        assertEquals("Semantic", PatternUIUtils.semanticTabTitle("   "));
+    }
 }

@@ -35,4 +35,32 @@ public final class PatternUIUtils {
                 && trimmed.regionMatches(true, suffixStart, "Pattern", 0, "Pattern".length());
         return endsWithPatternWord ? trimmed.substring(0, suffixStart).strip() : trimmed;
     }
+
+    /**
+     * The words on the tab of a window that shows a semantic of a pattern: the pattern's name
+     * without a trailing "Pattern" word, then the word semantic. "Test Performed Pattern" makes
+     * "Test Performed semantic", so two semantic windows are told apart by their tabs. With no
+     * name the tab reads "Semantic".
+     *
+     * <p>A tag in parentheses at the end of the name, as in "Model Class Pattern
+     * (IkeFoundation)", is left off: a tab is read at a glance, and the window's header names
+     * the pattern in full.
+     *
+     * @param patternName the pattern's name; may be {@code null} or blank
+     * @return the tab's words
+     */
+    public static String semanticTabTitle(String patternName) {
+        if (patternName == null || patternName.isBlank()) {
+            return "Semantic";
+        }
+        return stripPatternSuffix(withoutTag(patternName)) + " semantic";
+    }
+
+    /** The name without a tag in parentheses at its end; a name that is nothing but a tag is kept whole. */
+    private static String withoutTag(String name) {
+        String trimmed = name.strip();
+        int open = trimmed.lastIndexOf('(');
+        boolean endsWithTag = trimmed.endsWith(")") && open > 0 && Character.isWhitespace(trimmed.charAt(open - 1));
+        return endsWithTag ? trimmed.substring(0, open).strip() : trimmed;
+    }
 }

@@ -78,6 +78,7 @@ import dev.ikm.komet.kview.events.genediting.GenEditingEvent;
 import dev.ikm.komet.kview.events.genediting.PropertyPanelEvent;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
 import dev.ikm.komet.kview.klfields.KlFieldHelper;
+import dev.ikm.komet.kview.mvvm.view.genpurpose.PatternUIUtils;
 import dev.ikm.komet.kview.mvvm.view.stamp.StampEditController;
 import dev.ikm.komet.kview.mvvm.viewmodel.GenEditingViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.stamp.StampFormViewModelBase;
@@ -115,6 +116,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -208,6 +210,10 @@ public class GenEditingDetailsController {
 
     @FXML
     private HBox tabHeader;
+
+    /** The words on the window's tab: the pattern's name and the word semantic. */
+    @FXML
+    private Label tabTitleLabel;
 
     @FXML
     private HBox conceptHeaderControlToolBarHbox;
@@ -492,6 +498,11 @@ public class GenEditingDetailsController {
             String patternFQN = getViewProperties().calculator().languageCalculator()
                     .getFullyQualifiedDescriptionTextWithFallbackOrNid(patternEntityVersion.nid());
             semanticDescriptionLabel.setText("Semantic for %s".formatted(patternFQN));
+            // the tab names the pattern, by the name the view reads it by elsewhere, so two semantic
+            // windows are told apart by their tabs; a long name is cut there, and whole in the tooltip
+            String patternName = languageCalculator.getDescriptionText(patternEntityVersion.nid()).orElse(patternFQN);
+            tabTitleLabel.setText(PatternUIUtils.semanticTabTitle(patternName));
+            tabTitleLabel.setTooltip(new Tooltip("Semantic for %s".formatted(patternFQN)));
 
             ObjectProperty<EntityFacade> refComponentProp = genEditingViewModel.getProperty(REF_COMPONENT);
             if (refComponentProp != null) {

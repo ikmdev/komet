@@ -47,7 +47,9 @@
                             </styleClass>
                             <children>
                                 <Region prefHeight="12.0" prefWidth="8.4" styleClass="lidr-tab-icon" />
-                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="lidr-tab-text" text="Pattern Semantic" />
+                                <!-- named for the semantic's pattern by the controller; a long name is cut in its middle, so the tab
+                                     still ends in the word semantic, and is whole in the tooltip -->
+                                <Label fx:id="tabTitleLabel" maxWidth="320.0" styleClass="lidr-tab-text" text="Semantic" textOverrun="CENTER_WORD_ELLIPSIS" />
                             </children>
                             <cursor>
                                 <Cursor fx:constant="CLOSED_HAND" />
