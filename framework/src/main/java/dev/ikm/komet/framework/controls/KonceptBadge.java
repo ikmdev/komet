@@ -390,7 +390,8 @@ public class KonceptBadge extends HBox {
         setConceptName(explicitName != null ? explicitName : resolveName(nid, viewProperties));
 
         getChildren().addAll(sigilBox, statusBox, identicon, nameNode);
-        Tooltip.install(statusBox, statusTooltip);
+        // the badge has a tooltip of its own, its identity, which would be shown in place of the status mark's
+        MarkTooltip.install(statusBox, statusTooltip);
         statusBox.setOnMouseClicked(event -> {
             if (status == KonceptStatus.COMPLEX) {
                 disclose();
@@ -632,7 +633,11 @@ public class KonceptBadge extends HBox {
         this.status = (status == null) ? KonceptStatus.NONE : status;
         KonceptStatus shown = shownStatus();
         statusBox.getChildren().clear();
-        if (shown.hasGlyph()) {
+        if (shown == KonceptStatus.COMPLEX) {
+            // a tile, not a glyph of the text's weight: a complex concept is seen before its name is read
+            statusBox.getChildren().add(complexTile());
+            statusTooltip.setText(shown.accessibleText());
+        } else if (shown.hasGlyph()) {
             Text glyph = new Text(shown.glyph());
             glyph.getStyleClass().addAll(StyleClasses.KONCEPT_STATUS.toString(), shown.styleClass().toString());
             statusBox.getChildren().add(glyph);
@@ -660,13 +665,30 @@ public class KonceptBadge extends HBox {
      */
     private void applyStatusFont() {
         Font statusFont = statusFont();
-        for (Node child : statusBox.getChildren()) {
+        for (int i = 0; i < statusBox.getChildren().size(); i++) {
+            Node child = statusBox.getChildren().get(i);
             if (child instanceof Text text) {
                 text.setFont(statusFont);
+            } else if (child.getStyleClass().contains(MarkTile.STYLE_CLASS)
+                    && child.prefWidth(-1) != complexTileSize()) {
+                // a tile is drawn at a size, so a name set in another size has it drawn again
+                statusBox.getChildren().set(i, complexTile());
             }
         }
         // The reserved slot is measured in this font, so it re-applies whenever the font does.
         applyStatusSlot();
+    }
+
+    /** The edge of a complex concept's tile: a little over the status cluster's font size, in whole px. */
+    private double complexTileSize() {
+        return Math.rint(statusFont().getSize() * 1.25);
+    }
+
+    /** A complex concept's status mark, a tile where every other status is a glyph. */
+    private Node complexTile() {
+        Node tile = MarkTile.complexConcept(complexTileSize());
+        tile.getStyleClass().addAll(StyleClasses.KONCEPT_STATUS.toString(), StyleClasses.KONCEPT_COMPLEX.toString());
+        return tile;
     }
 
     /**

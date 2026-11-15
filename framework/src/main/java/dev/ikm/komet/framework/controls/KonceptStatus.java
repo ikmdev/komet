@@ -161,7 +161,8 @@ public enum KonceptStatus {
      */
     public String accessibleText() {
         if (this == COMPLEX) {
-            return "Complex concept: more than EL++ can state. Click to look inside.";
+            return "Complex concept: a concept with a specification inside, which says what must hold for it to apply."
+                    + " That is more than EL++ can state. Click to look inside.";
         }
         return multiParent
                 ? core.accessibleName() + " · "

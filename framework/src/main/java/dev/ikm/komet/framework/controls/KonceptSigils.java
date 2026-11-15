@@ -67,7 +67,8 @@ public final class KonceptSigils {
                 ? new StampSigil(stampSizePx)
                 : letterSigil(resolved, letterSizePx);
         // The accessible name is the non-colour affordance: colour alone never carries the kind.
-        Tooltip.install(sigil, new Tooltip(resolved.accessibleName()));
+        // A sigil stands in a badge, which has a tooltip of its own, so the sigil's is a mark's.
+        MarkTooltip.install(sigil, new Tooltip(resolved.accessibleName()));
         return Optional.of(sigil);
     }
 
