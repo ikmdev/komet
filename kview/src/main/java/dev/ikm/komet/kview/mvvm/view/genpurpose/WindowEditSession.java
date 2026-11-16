@@ -419,6 +419,20 @@ public final class WindowEditSession {
         return stillUnpublished(unpublished);
     }
 
+    /**
+     * Lets go of the transactions of this session that were ended elsewhere: the journal's
+     * unpublished-changes panel publishes and discards open transactions, this window's among
+     * them. What they held is final either way, so the session reports no uncommitted changes
+     * for them and saves its next edit in a fresh transaction.
+     */
+    public void releaseTransactionsEndedElsewhere() {
+        if (composer != null && composer.releaseTransactionEndedElsewhere()) {
+            newPatternComposer = null;
+        }
+        singleSemanticTransactionComposers.values().removeIf(ObservableComposer::releaseTransactionEndedElsewhere);
+        singleSemanticComposersToCommit.removeIf(ObservableComposer::releaseTransactionEndedElsewhere);
+    }
+
     /** The semantics passed in and the window's component. */
     private List<Entity<?>> unpublishedEntities(Collection<SemanticEntity<SemanticEntityVersion>> unpublishedSemantics) {
         List<Entity<?>> unpublished = new ArrayList<>(unpublishedSemantics);

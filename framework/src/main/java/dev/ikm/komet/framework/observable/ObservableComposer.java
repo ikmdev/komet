@@ -976,6 +976,23 @@ public final class ObservableComposer {
     }
 
     /**
+     * Lets go of this composer's transaction when it was ended elsewhere, now rather than at the
+     * composer's next edit, so that what follows the composer's state (a window's Publish button)
+     * follows the publish or discard as it happens.
+     *
+     * @return true when the transaction had been ended elsewhere and was let go of
+     */
+    public boolean releaseTransactionEndedElsewhere() {
+        requireJavaFXThread();
+        followContinuation();
+        if (transaction == null || transaction.isOpen()) {
+            return false;
+        }
+        transactionEndedElsewhere();
+        return true;
+    }
+
+    /**
      * Stops tracking one entity's editable versions, leaving the transaction's edits to every
      * other entity in place: the next {@link #commit()} neither saves what those editable versions
      * hold unsaved nor commits them. A version the entity already saved uncommitted in the open

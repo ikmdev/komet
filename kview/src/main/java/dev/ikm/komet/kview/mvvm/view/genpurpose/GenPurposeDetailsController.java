@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public class GenPurposeDetailsController {
@@ -118,6 +119,23 @@ public class GenPurposeDetailsController {
      * Strong reference: the entity provider holds its subscribers weakly.
      */
     private dev.ikm.tinkar.common.util.broadcast.Subscriber<Long> statedDefinitionChangeSubscriber;
+
+    /**
+     * Follows publishes and discards made outside this window (the journal's unpublished-changes
+     * panel, the change review window): see {@link #followStoreChanges()}. Strong reference: the
+     * entity provider holds its subscribers weakly. Null once the window is released.
+     */
+    private dev.ikm.tinkar.common.util.broadcast.Subscriber<Long> storeChangeSubscriber;
+
+    /** True from a store change until {@link #followStoreChanges()} runs for it: one run per burst. */
+    private final AtomicBoolean storeChangePending = new AtomicBoolean();
+
+    /**
+     * The components this window last showed as not published: the unpublished semantics and,
+     * when its own latest version is unpublished, the window's component. Kept by
+     * {@link #updatePublishState()}; one of them ending elsewhere is what the window follows.
+     */
+    private final Set<Long> shownUnpublishedNids = new HashSet<>();
 
     /**
      * Wires the window's behavior onto its view for the KL-editor window definition held at
@@ -494,6 +512,48 @@ public class GenPurposeDetailsController {
                 .filter(semantic -> semantic.patternNid() == windowSections.statedAxiomsPatternNid())
                 .ifPresent(semantic -> Platform.runLater(this::updateRequiredChips));
         Entity.provider().addSubscriberWithWeakReference(statedDefinitionChangeSubscriber);
+
+        // A publish or discard writes many entities, from a background thread: follow the burst once.
+        storeChangeSubscriber = _ -> {
+            if (storeChangePending.compareAndSet(false, true)) {
+                Platform.runLater(this::followStoreChanges);
+            }
+        };
+        Entity.provider().addSubscriberWithWeakReference(storeChangeSubscriber);
+    }
+
+    /**
+     * Brings the window up to date when something it shows as not published was published or
+     * discarded outside it: the session lets go of the transactions
+     * that ended, and the banner, the semantics and the Publish state are read again from the
+     * store, as after the window's own {@link #publish()}. A window still creating its component
+     * enters edit mode when the component was published, and closes when it was discarded.
+     */
+    private void followStoreChanges() {
+        storeChangePending.set(false);
+        if (storeChangeSubscriber == null || shownUnpublishedNids.stream().allMatch(GenPurposeDetailsController::isSavedButUnpublished)) {
+            return;
+        }
+        session.releaseTransactionsEndedElsewhere();
+        unsubmittedNewSemanticNids.removeIf(nid -> !isSavedButUnpublished(nid));
+
+        EntityFacade component = session.getComponent();
+        if (session.isCreateMode() && component != null && !isSavedButUnpublished(component.nid())) {
+            Entity<?> current = EntityHandle.get(component.nid()).orNull();
+            if (current == null || current.versions().isEmpty() || current.canceled()) {
+                closeConceptWindow();
+                return;
+            }
+            session.enterEditMode();
+        }
+        updateView();
+        windowSections.reloadAllSemanticViews();
+        updatePublishState();
+    }
+
+    /** Whether the component has a version saved and still waiting: neither published nor discarded. */
+    private static boolean isSavedButUnpublished(long nid) {
+        return EntityHandle.get(nid).orNull() instanceof Entity<?> entity && entity.uncommitted();
     }
 
     /**
@@ -738,6 +798,13 @@ public class GenPurposeDetailsController {
         }
 
         windowSections.updateUnpublishedChips();
+
+        shownUnpublishedNids.clear();
+        windowSections.unpublishedSemantics().forEach(semantic -> shownUnpublishedNids.add(semantic.nid()));
+        EntityFacade component = session.getComponent();
+        if (component != null && isSavedButUnpublished(component.nid())) {
+            shownUnpublishedNids.add(component.nid());
+        }
     }
 
     /**
@@ -842,6 +909,7 @@ public class GenPurposeDetailsController {
     public void releaseSubscriptions() {
         editorWindowSizeSubscription.unsubscribe();
         editorWindowSizeSubscription = javafx.util.Subscription.EMPTY;
+        storeChangeSubscriber = null;
         windowSections.release();
     }
 }
