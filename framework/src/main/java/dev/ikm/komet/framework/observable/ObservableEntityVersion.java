@@ -448,7 +448,11 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
          * @return the stamp whose version the save withdraws, or {@code null}
          */
         private StampEntity<?> pendingStampReplacedBy(StampEntity<?> saveStamp) {
-            for (EntityVersion version : EntityHandle.get(observableVersion.nid()).expectEntity().versions()) {
+            if (!(EntityHandle.get(observableVersion.nid()).orNull() instanceof Entity<?> stored)) {
+                // A new component whose first write is this save: nothing of it is pending.
+                return null;
+            }
+            for (EntityVersion version : stored.versions()) {
                 StampEntity<?> stamp = version.stamp();
                 if (version.uncommitted()
                         && stamp.nid() != saveStamp.nid()
