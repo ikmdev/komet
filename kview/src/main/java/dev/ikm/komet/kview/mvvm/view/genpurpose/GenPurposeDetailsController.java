@@ -105,7 +105,7 @@ public class GenPurposeDetailsController {
     private final WindowEditSession session;
     /** The owning journal's topic, which the pattern presenters publish their events on. */
     private final UUID journalTopic;
-    private Consumer<GenPurposeDetailsController> onCloseConceptWindow;
+    private Consumer<GenPurposeDetailsController> onCloseWindow;
     /**
      * The Window's size follows the KL editor's window model, which is shared by every Window of that
      * definition and kept for the session (EditorWindowManager); released by {@link #releaseSubscriptions()}.
@@ -199,7 +199,7 @@ public class GenPurposeDetailsController {
 
         // Wire the toolbar's behaviour: the close and Publish buttons take actions, while the window's
         // height follows the properties tray (opened by a toggle click or by setPropertiesTrayOpen).
-        view.setOnClose(this::closeConceptWindow);
+        view.setOnClose(this::closeWindow);
         view.setOnPublish(this::publish);
         view.setOnFieldDefaults(this::openPatternFieldDefaults);
         // The Publish button follows the session's uncommitted changes (see updatePublishState).
@@ -354,7 +354,7 @@ public class GenPurposeDetailsController {
      * <p>Without the Publish flow, the submit itself commits. In create mode the component only
      * truly gets created once every required pattern has at least one semantic. Until then the
      * commit is deferred: the submitted semantic stays uncommitted in the composer's open
-     * transaction (alongside the lazily created reference concept) and commits together with it
+     * transaction (alongside the lazily created reference component) and commits together with it
      * later. The details area still refreshes so the submitted (still uncommitted) values show.
      *
      * @return what became of the submitted semantic, for the form's toast
@@ -434,15 +434,15 @@ public class GenPurposeDetailsController {
         return viewProperties;
     }
 
-    public void setOnCloseConceptWindow(Consumer<GenPurposeDetailsController> onClose) {
-        this.onCloseConceptWindow = onClose;
+    public void setOnCloseWindow(Consumer<GenPurposeDetailsController> onClose) {
+        this.onCloseWindow = onClose;
     }
 
-    void closeConceptWindow() {
+    void closeWindow() {
         LOG.info("Cleanup occurring: Closing Window: " + session.getComponent());
 
-        if (this.onCloseConceptWindow != null) {
-            onCloseConceptWindow.accept(this);
+        if (this.onCloseWindow != null) {
+            onCloseWindow.accept(this);
         }
     }
 
@@ -541,7 +541,7 @@ public class GenPurposeDetailsController {
         if (session.isCreateMode() && component != null && !isSavedButUnpublished(component.nid())) {
             Entity<?> current = EntityHandle.get(component.nid()).orNull();
             if (current == null || current.versions().isEmpty() || current.canceled()) {
-                closeConceptWindow();
+                closeWindow();
                 return;
             }
             session.enterEditMode();
@@ -597,9 +597,9 @@ public class GenPurposeDetailsController {
      */
     private void updateView() {
         LOG.info("Update view called - implement coordinate changes here.");
-        EntityFacade refConcept = session.getComponent();
-        if (refConcept != null) {
-            view.setComponent(viewProperties, refConcept);
+        EntityFacade refComponent = session.getComponent();
+        if (refComponent != null) {
+            view.setComponent(viewProperties, refComponent);
         } else {
             LOG.warn("The window has no component yet, cannot update view.");
         }

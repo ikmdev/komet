@@ -66,8 +66,8 @@ final class WindowBanner extends BorderPane {
     private final PublicIDListControl identifierControl = new PublicIDListControl();
     // Built bare, off ComponentItemNodeFactory, so the title shows the identicon and name only: no
     // kind sigil or taxonomic status cluster leading it.
-    private final ComponentItemNode windowConceptTitle = new ComponentItemNode();
-    private final Tooltip windowConceptTitleTooltip = new Tooltip("Empty Tooltip");
+    private final ComponentItemNode windowTitle = new ComponentItemNode();
+    private final Tooltip windowTitleTooltip = new Tooltip("Empty Tooltip");
     private final StampViewControl stampViewControl = new StampViewControl();
 
     WindowBanner() {
@@ -96,14 +96,14 @@ final class WindowBanner extends BorderPane {
         GridPane.setHalignment(identifierControl, HPos.LEFT);
         GridPane.setValignment(identifierControl, VPos.TOP);
 
-        windowConceptTitle.setId("windowConceptTitle");
-        windowConceptTitle.setMaxHeight(Double.MAX_VALUE);
-        windowConceptTitle.setPrefWidth(416);
-        windowConceptTitle.getStyleClass().add("window-main-title");
-        windowConceptTitle.setWrapText(true);
-        windowConceptTitle.setTooltip(windowConceptTitleTooltip);
-        GridPane.setColumnIndex(windowConceptTitle, 0);
-        GridPane.setColumnSpan(windowConceptTitle, 3);
+        windowTitle.setId("windowTitle");
+        windowTitle.setMaxHeight(Double.MAX_VALUE);
+        windowTitle.setPrefWidth(416);
+        windowTitle.getStyleClass().add("window-main-title");
+        windowTitle.setWrapText(true);
+        windowTitle.setTooltip(windowTitleTooltip);
+        GridPane.setColumnIndex(windowTitle, 0);
+        GridPane.setColumnSpan(windowTitle, 3);
 
         GridPane bannerGrid = new GridPane();
         bannerGrid.setMaxHeight(Double.MAX_VALUE);
@@ -112,7 +112,7 @@ final class WindowBanner extends BorderPane {
         bannerGrid.getStyleClass().addAll("concept-detail-banner-background", "window-banner-grid");
         bannerGrid.getColumnConstraints().addAll(iconColumn, titleColumn, new ColumnConstraints());
         bannerGrid.getRowConstraints().addAll(titleRow, identifierRow);
-        bannerGrid.getChildren().addAll(identifierControl, windowConceptTitle);
+        bannerGrid.getChildren().addAll(identifierControl, windowTitle);
 
         // The header STAMP is view-only in this window — clicking it must not select it or open
         // the STAMP form.
@@ -145,8 +145,8 @@ final class WindowBanner extends BorderPane {
         identifierControl.updatePublicIdList(viewCalculator, refComponent);
     }
 
-    private void updateStampControl(ViewProperties viewProperties, EntityFacade refConcept) {
-        ObservableEntity observableEntity = ObservableEntityHandle.get(refConcept.nid()).expectEntity();
+    private void updateStampControl(ViewProperties viewProperties, EntityFacade refComponent) {
+        ObservableEntity observableEntity = ObservableEntityHandle.get(refComponent.nid()).expectEntity();
         ObservableEntitySnapshot observableEntitySnapshot;
         try {
             observableEntitySnapshot = observableEntity.getSnapshot(viewProperties.calculator());
@@ -156,7 +156,7 @@ final class WindowBanner extends BorderPane {
             // coordinate-change listener chain — which would also abort the supplemental areas' re-render
             // (ike-issues#666).
             LOG.debug("No latest version for nid {} under the current view coordinate; skipping stamp update",
-                    refConcept.nid());
+                    refComponent.nid());
             return;
         }
         Latest<EntityVersion> latestEntityVersion = retrieveCommittedLatestVersion(observableEntitySnapshot);
@@ -220,17 +220,17 @@ final class WindowBanner extends BorderPane {
         stampViewControl.setPath(ViewCalculatorUtils.getDescriptionTextWithFallbackOrNid(path, viewProperties));
     }
 
-    private void updateWindowTitle(ViewProperties viewProperties, EntityFacade refConcept) {
+    private void updateWindowTitle(ViewProperties viewProperties, EntityFacade refComponent) {
         // Follow the view coordinate's description-type preference (FQN vs preferred), like the axiom
         // badges, so the header tracks the coordinate too (ike-issues#660).
-        String conceptNameStr = viewProperties.calculator().getDescriptionTextOrNid(refConcept.nid());
-        Image identicon = Identicon.generateIdenticonImage(refConcept.publicId());
+        String componentName = viewProperties.calculator().getDescriptionTextOrNid(refComponent.nid());
+        Image identicon = Identicon.generateIdenticonImage(refComponent.publicId());
 
-        boolean isConcept = EntityHandle.get(refConcept).isConcept();
-        ComponentItem componentItem = new ComponentItem(conceptNameStr, identicon, refConcept.publicId(), isConcept);
+        boolean isConcept = EntityHandle.get(refComponent).isConcept();
+        ComponentItem componentItem = new ComponentItem(componentName, identicon, refComponent.publicId(), isConcept);
 
-        windowConceptTitle.setComponentItem(componentItem);
+        windowTitle.setComponentItem(componentItem);
 
-        windowConceptTitleTooltip.setText(conceptNameStr);
+        windowTitleTooltip.setText(componentName);
     }
 }

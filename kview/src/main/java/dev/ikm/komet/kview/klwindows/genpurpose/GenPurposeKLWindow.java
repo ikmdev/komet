@@ -83,7 +83,7 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
         GenPurposeDetailsController controller =
                 new GenPurposeDetailsController(view, session, journalTopic, klEditorWindowPreferences);
         this.detailsController = controller;
-        controller.setOnCloseConceptWindow(_ -> getOnClose().ifPresent(Runnable::run));
+        controller.setOnCloseWindow(_ -> getOnClose().ifPresent(Runnable::run));
 
         // The component the window frames: in create mode, the one created once it exists. Saved
         // to preferences so a reopened journal restores the window on it.
