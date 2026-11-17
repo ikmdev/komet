@@ -39,6 +39,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -139,23 +140,29 @@ class LayoutWatchdogUTestFX {
     @Test
     void aLabelThatChangesNowAndThenIsNotNamed() throws Exception {
         BlockingQueue<String> reports = new LinkedBlockingQueue<>();
-        Label clock = new Label("0");
-        Timeline ticking = new Timeline(new KeyFrame(Duration.millis(40), event -> clock.setText(clock.getText() + "0")));
-        ticking.setCycleCount(Animation.INDEFINITE);
+        // The label is made on the JavaFX thread. The first control of a JVM posts the load of the
+        // default stylesheet to that thread, and a control made on this one meanwhile can wait
+        // forever on a class the load is initializing.
+        AtomicReference<Timeline> ticking = new AtomicReference<>();
         Stage stage = onFx(() -> {
+            Label clock = new Label("0");
+            Timeline timeline = new Timeline(
+                    new KeyFrame(Duration.millis(40), event -> clock.setText(clock.getText() + "0")));
+            timeline.setCycleCount(Animation.INDEFINITE);
+            ticking.set(timeline);
             Subscription watching = LayoutWatchdog.install(SAMPLE_NANOS, REST_NANOS, 3, 10, reports::add);
             Stage shown = new Stage();
             shown.setScene(new Scene(new StackPane(clock), 300, 80));
             shown.setOnHidden(event -> watching.unsubscribe());
             shown.show();
-            ticking.play();
+            timeline.play();
             return shown;
         });
         try {
             assertNull(reports.poll(2, TimeUnit.SECONDS), "two or three layouts a look is no loop");
         } finally {
             onFx(() -> {
-                ticking.stop();
+                ticking.get().stop();
                 stage.hide();
                 return null;
             });

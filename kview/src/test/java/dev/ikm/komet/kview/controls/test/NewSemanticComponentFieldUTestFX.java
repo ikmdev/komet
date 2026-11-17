@@ -103,8 +103,7 @@ class NewSemanticComponentFieldUTestFX {
 
     @Test
     void theComponentControlTakesANewSemanticsSeed() throws Exception {
-        KLComponentControl control = new KLComponentControl();
-        control.setComponentNameRenderer(entity -> "rendered");
+        KLComponentControl control = componentControl();
         show(control);
 
         seed(control.entityProperty());
@@ -115,9 +114,7 @@ class NewSemanticComponentFieldUTestFX {
 
     @Test
     void theComponentComboBoxTakesANewSemanticsSeed() throws Exception {
-        KLComponentComboBoxControl control = new KLComponentComboBoxControl();
-        control.setComponentNameRenderer(entity -> "rendered");
-        control.getItems().setAll(ENGLISH);
+        KLComponentComboBoxControl control = comboBoxControl();
         show(control);
 
         seed(control.valueProperty());
@@ -129,12 +126,9 @@ class NewSemanticComponentFieldUTestFX {
     @Test
     void theComponentControlsTakeABindingEnum() throws Exception {
         // The controls hold any facade, so a binding enum needs no conversion to a proxy
-        KLComponentControl componentControl = new KLComponentControl();
-        componentControl.setComponentNameRenderer(entity -> "rendered");
-        KLComponentComboBoxControl comboBoxControl = new KLComponentComboBoxControl();
-        comboBoxControl.setComponentNameRenderer(entity -> "rendered");
-        comboBoxControl.getItems().setAll(ENGLISH);
-        show(new VBox(componentControl, comboBoxControl));
+        KLComponentControl componentControl = componentControl();
+        KLComponentComboBoxControl comboBoxControl = comboBoxControl();
+        show(FxToolkit.setupFixture(() -> new VBox(componentControl, comboBoxControl)));
 
         FxToolkit.setupFixture(() -> {
             componentControl.setEntity(KernelConcept.ENGLISH_LANGUAGE);
@@ -145,6 +139,28 @@ class NewSemanticComponentFieldUTestFX {
         assertNoFxThreadFailure();
         assertFalse(componentControl.isEmpty(), "a concept is not the blank value");
         assertTrue(EntityFacade.same(KernelConcept.ENGLISH_LANGUAGE, comboBoxControl.getValue()));
+    }
+
+    /**
+     * A component control, made on the JavaFX thread as every node of these tests is. A control
+     * made on the test's thread can wait forever on a class the JavaFX thread is initializing.
+     */
+    private static KLComponentControl componentControl() throws Exception {
+        return FxToolkit.setupFixture(() -> {
+            KLComponentControl control = new KLComponentControl();
+            control.setComponentNameRenderer(entity -> "rendered");
+            return control;
+        });
+    }
+
+    /** A component combo box offering {@link #ENGLISH}, made on the JavaFX thread. */
+    private static KLComponentComboBoxControl comboBoxControl() throws Exception {
+        return FxToolkit.setupFixture(() -> {
+            KLComponentComboBoxControl control = new KLComponentComboBoxControl();
+            control.setComponentNameRenderer(entity -> "rendered");
+            control.getItems().setAll(ENGLISH);
+            return control;
+        });
     }
 
     private void show(Region control) throws Exception {

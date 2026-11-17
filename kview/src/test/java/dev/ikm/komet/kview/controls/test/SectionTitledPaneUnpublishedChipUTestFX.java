@@ -118,9 +118,14 @@ class SectionTitledPaneUnpublishedChipUTestFX {
     @Test
     @DisplayName("A field marked unpublished carries the :unpublished pseudo-class, and drops it when cleared")
     void fieldUnpublishedPseudoClass() throws Exception {
-        KLReadOnlyBaseControl field = new KLReadOnlyBaseControl() {
-        };
-        FxToolkit.setupFixture(() -> field.setUnpublished(true));
+        // The field is made on the JavaFX thread, as the section is. A control made on the test's
+        // thread can wait forever on a class the JavaFX thread is initializing.
+        KLReadOnlyBaseControl field = FxToolkit.setupFixture(() -> {
+            KLReadOnlyBaseControl made = new KLReadOnlyBaseControl() {
+            };
+            made.setUnpublished(true);
+            return made;
+        });
         assertTrue(field.getPseudoClassStates().contains(UNPUBLISHED));
 
         FxToolkit.setupFixture(() -> field.setUnpublished(false));
@@ -130,12 +135,13 @@ class SectionTitledPaneUnpublishedChipUTestFX {
     @Test
     @DisplayName("An axiom tree marked unpublished shows the amber dot after its title")
     void axiomTreeUnpublishedDot() throws Exception {
-        KLDiTreeControl axiomTree = new KLDiTreeControl();
-        FxToolkit.setupFixture(() -> {
-            axiomTree.setTitle("Stated definition");
-            root.getChildren().setAll(axiomTree);
+        KLDiTreeControl axiomTree = FxToolkit.setupFixture(() -> {
+            KLDiTreeControl made = new KLDiTreeControl();
+            made.setTitle("Stated definition");
+            root.getChildren().setAll(made);
             root.applyCss();
             root.layout();
+            return made;
         });
         Node dot = axiomTree.lookup(".ditree-title-row > .unpublished-dot");
         assertFalse(dot.isVisible());
