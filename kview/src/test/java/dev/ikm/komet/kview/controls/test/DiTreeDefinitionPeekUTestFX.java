@@ -32,6 +32,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.testfx.api.FxRobot;
 import org.testfx.api.FxToolkit;
 import org.testfx.framework.junit5.ApplicationExtension;
+import org.testfx.robot.Motion;
 import org.testfx.util.WaitForAsyncUtils;
 
 import java.nio.file.Files;
@@ -156,11 +157,11 @@ class DiTreeDefinitionPeekUTestFX {
         robot.moveTo(chip("Concept A"));
         awaitPopovers(1);
 
-        robot.moveTo(chip("Concept B"));
+        moveIntoPopover(chip("Concept B"));
         awaitPopovers(2);
 
         // C has no definition: nothing more opens, and the two open ones stay.
-        robot.moveTo(chip("Concept C"));
+        moveIntoPopover(chip("Concept C"));
         WaitForAsyncUtils.sleep(1200, TimeUnit.MILLISECONDS);
         assertEquals(2, popovers().size());
 
@@ -173,7 +174,7 @@ class DiTreeDefinitionPeekUTestFX {
     void escapeClosesTheDeepestPopover() throws Exception {
         robot.moveTo(chip("Concept A"));
         awaitPopovers(1);
-        robot.moveTo(chip("Concept B"));
+        moveIntoPopover(chip("Concept B"));
         awaitPopovers(2);
 
         robot.press(KeyCode.ESCAPE).release(KeyCode.ESCAPE);
@@ -188,6 +189,7 @@ class DiTreeDefinitionPeekUTestFX {
         robot.moveTo(chip("Concept A"));
         awaitPopovers(1);
 
+        moveIntoPopover(robot.lookup(PIN).query());
         robot.clickOn(PIN);
         assertTrue(robot.lookup(PIN).queryAs(ToggleButton.class).isSelected());
         robot.moveTo(away);
@@ -196,6 +198,17 @@ class DiTreeDefinitionPeekUTestFX {
 
         robot.clickOn(CLOSE);
         awaitPopovers(0);
+    }
+
+    /**
+     * Moves the pointer from the chip it rests on to a node in that chip's popover: down into the
+     * popover, then across. That way is off the chip and the popover only for the gap under the
+     * chip. The straight line also runs beside the popover's arrow, over neither of them, for up
+     * to a third of its steps, and on a slow machine that lasted longer than the grace before
+     * the popover hides.
+     */
+    private void moveIntoPopover(Node target) {
+        robot.moveTo(target, Motion.VERTICAL_FIRST);
     }
 
     private Node chip(String name) {

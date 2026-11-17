@@ -33,7 +33,6 @@ import org.testfx.util.WaitForAsyncUtils;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * A window in a scrollable workspace: 50px of chrome on top, 300px of content, and a tray on the
@@ -107,9 +106,17 @@ class WindowHeightHelperUTestFX {
     @Test
     @DisplayName("The growth is animated rather than applied at once")
     void growthIsAnimated() throws Exception {
-        FxToolkit.setupFixture(() -> helper.growToFitProperties(450));
-        WaitForAsyncUtils.waitForFxEvents();
-        assertTrue(window.getHeight() < CHROME_HEIGHT + 450, "the window jumped to its grown height");
+        // Read in the JavaFX turn that starts the growth, after a layout pass: no frame of the
+        // animation has run yet, so the window still has the height it had, where a height applied
+        // at once would show. Reading after a wait raced the animation, and lost on a slow machine.
+        double[] heightAsGrowthStarts = new double[1];
+        FxToolkit.setupFixture(() -> {
+            helper.growToFitProperties(450);
+            window.getScene().getRoot().layout();
+            heightAsGrowthStarts[0] = window.getHeight();
+        });
+        assertEquals(CHROME_HEIGHT + CONTENT_HEIGHT, heightAsGrowthStarts[0], TOLERANCE,
+                "the window jumped to its grown height");
     }
 
     @Test
