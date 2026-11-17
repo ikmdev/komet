@@ -112,14 +112,6 @@ public final class WindowEditSession {
     private final Map<Long, ObservableComposer> singleSemanticTransactionComposers = new HashMap<>();
 
     /**
-     * The composers of the single-semantic transactions that {@link #commit()} commits together
-     * with the window's: their semantic was submitted with its seeded values unchanged, so the
-     * submit saved nothing into the window's transaction and the single-semantic transaction is
-     * the only place the submitted semantic exists.
-     */
-    private final List<ObservableComposer> singleSemanticComposersToCommit = new ArrayList<>();
-
-    /**
      * @param viewProperties the window's derived coordinate, which every edit reads and writes through
      * @param component      the component the window was opened on; null to create a new one
      */
@@ -174,14 +166,10 @@ public final class WindowEditSession {
     /**
      * Commits the composer's open transaction, finalizing everything uncommitted since the last
      * commit: submitted semantic versions and, in create mode, the lazily created component
-     * itself — and, with it, the single-semantic transactions of the semantics submitted with
-     * their seeded values unchanged (see {@link #endSingleSemanticTransactionOnSubmit}). The next
-     * edit is saved uncommitted in a fresh transaction.
+     * itself. The next edit is saved uncommitted in a fresh transaction.
      */
     public void commit() {
         createOrGetComposer().commit();
-        singleSemanticComposersToCommit.forEach(ObservableComposer::commit);
-        singleSemanticComposersToCommit.clear();
         hasUncommittedChanges.unbind();
         composer = null;
         newPatternComposer = null;
@@ -271,20 +259,13 @@ public final class WindowEditSession {
      * Ends the single-semantic transaction of a semantic whose edit form was just submitted. The
      * submit saved the edited values in the window's transaction, the way every submit does, so
      * the single-semantic transaction, holding only the seeded values, is canceled: the seeded
-     * version goes away, the submitted one stays. Submitted with the seeded values unchanged, the
-     * submit saved nothing in the window's transaction; the single-semantic transaction is then
-     * the only place the submitted semantic exists, so it is kept and commits with the window's
-     * ({@link #commit()}).
+     * version goes away, the submitted one stays. The form only offers Submit while it holds a
+     * change, so a submit always saves: there is no submitting the seeded values as they are.
      */
     public void endSingleSemanticTransactionOnSubmit(SemanticEntity<SemanticEntityVersion> semantic) {
         ObservableComposer singleSemanticComposer = singleSemanticTransactionComposers.remove(semantic.nid());
-        if (singleSemanticComposer == null || !singleSemanticComposer.getOrCreateTransaction().isOpen()) {
-            return;
-        }
-        if (savedInWindowTransaction(semantic.nid())) {
+        if (singleSemanticComposer != null) {
             singleSemanticComposer.cancel();
-        } else {
-            singleSemanticComposersToCommit.add(singleSemanticComposer);
         }
     }
 
@@ -313,14 +294,6 @@ public final class WindowEditSession {
         if (singleSemanticComposer != null && singleSemanticComposer.getOrCreateTransaction().isOpen()) {
             singleSemanticComposer.cancel();
         }
-    }
-
-    /** Whether a version of the semantic is saved, uncommitted, in the window's open transaction. */
-    private boolean savedInWindowTransaction(long semanticNid) {
-        Transaction windowTransaction = createOrGetComposer().getOrCreateTransaction();
-        return EntityHandle.get(semanticNid).expectEntity().versions().stream()
-                .filter(EntityVersion::uncommitted)
-                .anyMatch(version -> Transaction.forVersion(version).filter(windowTransaction::equals).isPresent());
     }
 
     /**
@@ -414,7 +387,6 @@ public final class WindowEditSession {
             }
             return false;
         });
-        singleSemanticComposersToCommit.removeIf(composerToCommit -> !composerToCommit.getOrCreateTransaction().isOpen());
         transactions.forEach(Transaction::cancel);
         return stillUnpublished(unpublished);
     }
@@ -430,7 +402,6 @@ public final class WindowEditSession {
             newPatternComposer = null;
         }
         singleSemanticTransactionComposers.values().removeIf(ObservableComposer::releaseTransactionEndedElsewhere);
-        singleSemanticComposersToCommit.removeIf(ObservableComposer::releaseTransactionEndedElsewhere);
     }
 
     /** The semantics passed in and the window's component. */

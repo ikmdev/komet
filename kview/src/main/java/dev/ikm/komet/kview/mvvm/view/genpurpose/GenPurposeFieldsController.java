@@ -307,8 +307,12 @@ public class GenPurposeFieldsController {
                 editableField,
                 getViewProperties(),
                 currentEditStamp);
-        klField.doOnEditableValuePropertyChange(() -> {
-            view.setSubmitDisabled(false);
+        // Submit is offered only while the form holds a change: put back to the values it opened
+        // with, there is nothing to submit. The value-based overload, not the lighter invalidation
+        // one: the editable version updates its working copy in a change listener of its own,
+        // registered before this one, and invalidation listeners run before change listeners.
+        klField.doOnEditableValuePropertyChange((_, _) -> {
+            view.setSubmitDisabled(!editableVersion.hasUnsavedChanges());
             view.setClearOrResetDisabled(false);
         });
         getKlFields().add(klField);
