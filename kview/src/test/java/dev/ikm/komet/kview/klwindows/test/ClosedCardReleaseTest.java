@@ -180,7 +180,10 @@ class ClosedCardReleaseTest {
             windowNode.put(EntityKlWindowState.WINDOW_TYPE, CardKlWindow.CARD_WINDOW_TYPE.toString());
             CardKlWindow window = onFx(() -> CardKlWindow.create(UUID.randomUUID(), new TestCardProvider(),
                     journalViewProperties, windowNode));
-            StackPane workspace = new StackPane();
+            // Made on the JavaFX thread, as the card is: a pane made here while that thread is still at
+            // work on the card can wait on it for ever, each thread holding a class the other is
+            // initializing.
+            StackPane workspace = onFx(StackPane::new);
             onFx(() -> {
                 workspace.getChildren().add(window.fxObject());
                 window.onShown();

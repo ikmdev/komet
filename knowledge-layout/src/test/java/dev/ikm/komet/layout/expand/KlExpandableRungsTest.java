@@ -191,9 +191,14 @@ class KlExpandableRungsTest {
     @Test
     @DisplayName("Stepping down from the only rung a figure keeps collapses it to its place")
     void steppingDownFromTheOnlyRungCollapses() throws InterruptedException {
-        Place place = new Place();
+        // The place is made on the JavaFX thread, as in every other test here: panes and a scene made
+        // on the test thread while that thread is at work can wait on it for ever, each thread
+        // holding a class the other is initializing.
+        AtomicReference<Place> placed = new AtomicReference<>();
         AtomicReference<KlExpandable> made = new AtomicReference<>();
         onFx(() -> {
+            Place place = new Place();
+            placed.set(place);
             made.set(figure(place, true, null));
             place.place(made.get());
             made.get().expand();
@@ -202,7 +207,7 @@ class KlExpandableRungsTest {
         Thread.sleep(400);
         onFx(() -> {
             assertFalse(made.get().isExpanded());
-            assertNull(place.filled(), "no overlay is left in any host");
+            assertNull(placed.get().filled(), "no overlay is left in any host");
         });
     }
 
