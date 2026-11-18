@@ -7,6 +7,8 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.ScrollBar;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -82,7 +84,7 @@ class ConceptMatchListUTestFX {
         assertEquals("Phenomenon › Observable Entity", textOf(rows.getLast(), ".match-path"));
         assertEquals("6 · A–Z", summary());
         robot.moveTo(rows.get(1));
-        capture(list);
+        capture("concept-match-list", list);
     }
 
     @Test
@@ -135,6 +137,24 @@ class ConceptMatchListUTestFX {
         assertEquals(List.of(3L, 5L), shown);
     }
 
+    @Test
+    void aListLongerThanItsRoomScrollsWithTheSlimScrollbar() {
+        robot.interact(() -> {
+            List<Match> matches = new ArrayList<>();
+            for (int index = 1; index <= 40; index++) {
+                matches.add(new Match(index, index + " ML ENX sodium 100 MG/ML Prefilled Syringe"));
+            }
+            list.getMatches().setAll(matches);
+        });
+        WaitForAsyncUtils.waitForFxEvents();
+        ScrollBar scrollBar = robot.lookup(".match-list-rows .scroll-bar:vertical").queryAs(ScrollBar.class);
+        assertTrue(scrollBar.isVisible());
+        assertEquals(8, scrollBar.getWidth(), "the width of the scrollbars of the KL windows");
+        assertEquals(0, robot.lookup(".match-list-rows .scroll-bar:vertical .increment-button").queryAs(Region.class).getHeight(),
+                "no arrow buttons");
+        capture("concept-match-list-scrolling", list);
+    }
+
     private List<ListCell<?>> filledRows() {
         WaitForAsyncUtils.waitForFxEvents();
         return robot.lookup(".match-list-rows .list-cell").queryAll().stream()
@@ -154,9 +174,9 @@ class ConceptMatchListUTestFX {
     }
 
     /** A picture of the list under kview/target, to compare against the mockup by eye. */
-    private void capture(Node node) {
+    private void capture(String name, Node node) {
         WaitForAsyncUtils.waitForFxEvents();
         FxService.serviceContext().getCaptureSupport().saveImage(robot.capture(node).getImage(),
-                Path.of("target", "concept-match-list.png"));
+                Path.of("target", name + ".png"));
     }
 }

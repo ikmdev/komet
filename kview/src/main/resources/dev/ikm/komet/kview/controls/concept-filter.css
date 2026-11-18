@@ -739,35 +739,56 @@
     -fx-text-fill: rgba(31, 42, 68, 0.45);
 }
 
-/* ---- Scrollbars, as in the KL windows: a slim rounded thumb, no arrow buttons ---- */
-.concept-filter-picker .scroll-bar {
+/* ---- Scrollbars of the picker and of the list of matches, as in the KL windows: a slim rounded thumb, no arrow buttons ---- */
+.concept-filter-picker .scroll-bar,
+.concept-match-list .scroll-bar {
     -fx-background-color: transparent;
 }
 
-.concept-filter-picker .scroll-bar:vertical {
+.concept-filter-picker .scroll-bar:vertical,
+.concept-match-list .scroll-bar:vertical {
     -fx-pref-width: 8;
     -fx-padding: 0 0 0 2;
 }
 
-.concept-filter-picker .scroll-bar:horizontal {
+.concept-filter-picker .scroll-bar:horizontal,
+.concept-match-list .scroll-bar:horizontal {
     -fx-pref-height: 8;
     -fx-padding: 2 0 0 0;
 }
 
 .concept-filter-picker .scroll-bar .track,
-.concept-filter-picker .scroll-bar .track-background {
+.concept-match-list .scroll-bar .track,
+.concept-filter-picker .scroll-bar .track-background,
+.concept-match-list .scroll-bar .track-background {
     -fx-background-color: transparent;
 }
 
-.concept-filter-picker .scroll-bar .thumb {
+.concept-filter-picker .scroll-bar .thumb,
+.concept-match-list .scroll-bar .thumb {
     -fx-background-color: #FBFBFC, rgba(0, 0, 0, 0.4);
     -fx-background-insets: 0, 1;
     -fx-background-radius: 6px;
     -fx-padding: 0;
 }
 
+/* The list sits on the panel, not on a white plate, so its thumb has no light rim. */
+.concept-match-list .scroll-bar .thumb {
+    -fx-background-color: transparent, rgba(0, 0, 0, 0.4);
+}
+
+.concept-filter-picker .scroll-bar:hover .thumb {
+    -fx-background-color: #FBFBFC, rgba(0, 0, 0, 0.5);
+}
+
+.concept-match-list .scroll-bar:hover .thumb {
+    -fx-background-color: transparent, rgba(0, 0, 0, 0.5);
+}
+
 .concept-filter-picker .scroll-bar .increment-button,
-.concept-filter-picker .scroll-bar .decrement-button {
+.concept-match-list .scroll-bar .increment-button,
+.concept-filter-picker .scroll-bar .decrement-button,
+.concept-match-list .scroll-bar .decrement-button {
     -fx-background-insets: 0;
     -fx-min-width: 0;
     -fx-pref-width: 0;
@@ -777,7 +798,9 @@
 }
 
 .concept-filter-picker .scroll-bar .increment-arrow,
-.concept-filter-picker .scroll-bar .decrement-arrow {
+.concept-match-list .scroll-bar .increment-arrow,
+.concept-filter-picker .scroll-bar .decrement-arrow,
+.concept-match-list .scroll-bar .decrement-arrow {
     -fx-shape: " ";
     -fx-padding: 0;
 }
