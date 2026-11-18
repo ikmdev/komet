@@ -13,6 +13,7 @@ import dev.ikm.komet.kview.controls.InvertedTree;
 import dev.ikm.komet.kview.controls.KLComponentControlFactory;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
 import dev.ikm.komet.kview.controls.KLSearchControl;
+import dev.ikm.komet.kview.controls.SingleSelectionContextMenu;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
@@ -47,6 +48,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
@@ -380,6 +382,15 @@ public class ConceptPatternNavController {
         conceptNavigatorControl.managedProperty().bind(conceptNavigatorControl.visibleProperty());
         conceptFilterController.setOnShowInTree(this::showConcept);
 
+        // A row of the list acts as a row of the tree does: the same windows on a double click, the
+        // same drag, the same menu.
+        matchList.setOnOpen(match ->
+                journalController.newCreateStandardKLWindow(conceptOf(match), StandardEditorWindows.CONCEPT_WINDOW));
+        matchList.setOnOpenAlternative(match -> journalController.createConceptWindow(conceptOf(match)));
+        matchList.setOnDragStarted((match, dragboard) -> ConceptNavigatorUtils.putConceptOnDragboard(dragboard,
+                conceptOf(match), match.name(), conceptNavigatorControl.getNavigator().getViewCalculator()));
+        matchList.setContextMenuProvider(this::contextMenuOf);
+
         VBox nodePanel = new VBox(searchControl, conceptFilterController.getBar(), conceptNavigatorControl, matchList,
                 conceptFilterController.getLegend());
         nodePanel.getStyleClass().add("concept-navigator-container");
@@ -395,6 +406,29 @@ public class ConceptPatternNavController {
         });
 
         return nodePanel;
+    }
+
+    private static ConceptFacade conceptOf(ConceptMatchList.Match match) {
+        return EntityHandle.get(match.nid()).expectConcept();
+    }
+
+    /**
+     * The menu of a row of the list of matching concepts: the one a row of the tree has, with the
+     * same actions. Made anew each time, as it lists the windows of the KL editor of the moment.
+     */
+    private ContextMenu contextMenuOf(ConceptMatchList.Match match) {
+        ConceptFacade concept = conceptOf(match);
+        SingleSelectionContextMenu menu = new SingleSelectionContextMenu();
+        // As in the tree, the related concepts are the parents for now, and choosing one does nothing yet.
+        menu.setRelatedByMenuItemAction(
+                Arrays.stream(conceptNavigatorControl.getNavigator().getParentNids(match.nid())).boxed()
+                        .map(nid -> (ConceptFacade) EntityHandle.get(nid).expectConcept()).toList(),
+                related -> LOG.info("Click on {}", related.description()));
+        menu.setWorkspaceMenuItemAction(_ -> journalController.createConceptWindow(concept));
+        menu.setKLWindowMenuItemAction(windowTitle -> journalController.newCreateGenPurposeKLWindow(concept, windowTitle));
+        menu.setKLDynamicCardMenuItemAction(windowTitle ->
+                journalController.newCreateDynamicComponentCardWindow(concept, windowTitle));
+        return menu;
     }
 
     @FXML

@@ -3,11 +3,17 @@ package dev.ikm.komet.kview.controls.test;
 import dev.ikm.komet.kview.controls.ConceptMatchList;
 import dev.ikm.komet.kview.controls.ConceptMatchList.Match;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
+import javafx.event.Event;
+import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import org.junit.jupiter.api.AfterEach;
@@ -131,10 +137,40 @@ class ConceptMatchListUTestFX {
         assertTrue(link.isVisible());
         robot.clickOn(link);
         assertEquals(List.of(3L), shown);
+    }
 
-        // A double click on a row does the same.
+    @Test
+    void aRowActsAsARowOfTheTreeDoes() {
+        List<String> done = new ArrayList<>();
+        ContextMenu menu = new ContextMenu(new MenuItem("Open in workspace"));
+        robot.interact(() -> {
+            list.setOnOpen(match -> done.add("open " + match.nid()));
+            list.setOnOpenAlternative(match -> done.add("open the other way " + match.nid()));
+            list.setOnDragStarted((match, _) -> done.add("drag " + match.nid()));
+            list.setContextMenuProvider(match -> {
+                done.add("menu " + match.nid());
+                return menu;
+            });
+        });
+
         robot.doubleClickOn(filledRows().get(4));
-        assertEquals(List.of(3L, 5L), shown);
+        assertEquals(List.of("open 5"), done);
+
+        robot.press(KeyCode.SHIFT).doubleClickOn(filledRows().get(1)).release(KeyCode.SHIFT);
+        assertEquals(List.of("open 5", "open the other way 2"), done);
+
+        // The request for a menu is raised by hand: the robot's right click does not raise it.
+        ListCell<?> menuRow = filledRows().get(2);
+        Point2D onScreen = menuRow.localToScreen(20, 20);
+        robot.interact(() -> Event.fireEvent(menuRow, new ContextMenuEvent(ContextMenuEvent.CONTEXT_MENU_REQUESTED,
+                20, 20, onScreen.getX(), onScreen.getY(), false, null)));
+        WaitForAsyncUtils.waitForFxEvents();
+        assertEquals(List.of("open 5", "open the other way 2", "menu 3"), done);
+        assertTrue(menu.isShowing());
+        robot.interact(menu::hide);
+
+        robot.drag(filledRows().get(3)).moveBy(40, 30).drop();
+        assertEquals(List.of("open 5", "open the other way 2", "menu 3", "drag 4"), done);
     }
 
     @Test

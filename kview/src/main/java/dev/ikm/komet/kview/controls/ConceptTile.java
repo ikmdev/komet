@@ -1,6 +1,5 @@
 package dev.ikm.komet.kview.controls;
 
-import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
 import dev.ikm.komet.kview.controls.skin.KLConceptNavigatorTreeViewSkin;
 import dev.ikm.komet.layout.controls.IconRegion;
@@ -13,8 +12,6 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
@@ -26,11 +23,7 @@ import javafx.scene.text.Text;
 import javafx.util.Duration;
 import javafx.util.Subscription;
 
-import java.util.List;
 import java.util.ResourceBundle;
-import java.util.UUID;
-
-import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
 
 /**
  * <p>A ConceptTile is an {@link HBox} container that renders:
@@ -190,20 +183,9 @@ public class ConceptTile extends HBox {
      * gestures cannot drift apart.
      */
     private void beginConceptDrag() {
-        Dragboard dragboard = startDragAndDrop(TransferMode.COPY_OR_MOVE);
-        ClipboardContent clipboardContent = new ClipboardContent();
         ConceptNavigatorTreeItem treeItem = (ConceptNavigatorTreeItem) cell.getTreeItem();
-        if (treeItem.getValue() != null && treeItem.getValue().publicId() != null) {
-            clipboardContent.put(CONCEPT_NAVIGATOR_DRAG_FORMAT,
-                    List.<UUID[]>of(treeItem.getValue().publicId().asUuidArray()));
-            clipboardContent.putAll(KometClipboard.forComponent(treeItem.getValue().nid()));
-        }
-        clipboardContent.putString(treeItem.toString());
-        dragboard.setContent(clipboardContent);
-        if (treeItem.getValue() != null) {
-            KonceptDragGlyph.setDragView(dragboard, treeItem.getValue().nid(),
-                    treeView.getNavigator().getViewCalculator());
-        }
+        ConceptNavigatorUtils.putConceptOnDragboard(startDragAndDrop(TransferMode.COPY_OR_MOVE), treeItem.getValue(),
+                treeItem.toString(), treeView.getNavigator().getViewCalculator());
     }
 
     /**

@@ -9,10 +9,13 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -21,13 +24,15 @@ import javafx.scene.layout.VBox;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.util.ResourceBundle;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
  * The concepts that match the concept navigator's "Show" filter as a flat list, shown in place of
  * the tree so they can be seen without expanding down to them: each row has the concept's name,
- * the path that leads to it in the tree, and a link that shows it there.
+ * the path that leads to it in the tree, and a link that shows it there. A row acts as
+ * a row of the tree does: it opens its concept on a double click, can be dragged, and has a menu.
  * <p>
  * The list only presents. The matches are handed to it in the order to show them; the path of a
  * row is asked from {@link #pathProviderProperty()} when the row comes into view, and what
@@ -171,12 +176,51 @@ public class ConceptMatchList extends VBox {
 
     // -- onShowInTree
     /**
-     * What "Show in tree" on a row, or a double click on it, does with the row's concept.
+     * What "Show in tree" on a row does with the row's concept.
      */
     private final ObjectProperty<Consumer<Match>> onShowInTree = new SimpleObjectProperty<>(this, "onShowInTree");
     public ObjectProperty<Consumer<Match>> onShowInTreeProperty() { return onShowInTree; }
     public Consumer<Match> getOnShowInTree() { return onShowInTree.get(); }
     public void setOnShowInTree(Consumer<Match> value) { onShowInTree.set(value); }
+
+    // -- onOpen
+    /**
+     * What a double click on a row does with the row's concept.
+     */
+    private final ObjectProperty<Consumer<Match>> onOpen = new SimpleObjectProperty<>(this, "onOpen");
+    public ObjectProperty<Consumer<Match>> onOpenProperty() { return onOpen; }
+    public Consumer<Match> getOnOpen() { return onOpen.get(); }
+    public void setOnOpen(Consumer<Match> value) { onOpen.set(value); }
+
+    // -- onOpenAlternative
+    /**
+     * What a double click on a row with Shift held does with the row's concept: the other way of
+     * opening it.
+     */
+    private final ObjectProperty<Consumer<Match>> onOpenAlternative = new SimpleObjectProperty<>(this, "onOpenAlternative");
+    public ObjectProperty<Consumer<Match>> onOpenAlternativeProperty() { return onOpenAlternative; }
+    public Consumer<Match> getOnOpenAlternative() { return onOpenAlternative.get(); }
+    public void setOnOpenAlternative(Consumer<Match> value) { onOpenAlternative.set(value); }
+
+    // -- onDragStarted
+    /**
+     * Puts a row's concept on the dragboard when the row starts being dragged. While it is null
+     * the rows are not dragged.
+     */
+    private final ObjectProperty<BiConsumer<Match, Dragboard>> onDragStarted = new SimpleObjectProperty<>(this, "onDragStarted");
+    public ObjectProperty<BiConsumer<Match, Dragboard>> onDragStartedProperty() { return onDragStarted; }
+    public BiConsumer<Match, Dragboard> getOnDragStarted() { return onDragStarted.get(); }
+    public void setOnDragStarted(BiConsumer<Match, Dragboard> value) { onDragStarted.set(value); }
+
+    // -- contextMenuProvider
+    /**
+     * Gives the menu a right click on a row brings, for the row's concept. While it is null the
+     * rows have no menu.
+     */
+    private final ObjectProperty<Function<Match, ContextMenu>> contextMenuProvider = new SimpleObjectProperty<>(this, "contextMenuProvider");
+    public ObjectProperty<Function<Match, ContextMenu>> contextMenuProviderProperty() { return contextMenuProvider; }
+    public Function<Match, ContextMenu> getContextMenuProvider() { return contextMenuProvider.get(); }
+    public void setContextMenuProvider(Function<Match, ContextMenu> value) { contextMenuProvider.set(value); }
 
     /***************************************************************************
      *                                                                         *
@@ -220,9 +264,27 @@ public class ConceptMatchList extends VBox {
             showInTree.managedProperty().bind(hoverProperty());
             row = new HBox(text, showInTree);
             row.getStyleClass().add("match-row");
+            // What a row of the tree does: a double click opens the concept, with Shift the
+            // other way; the whole row drags the concept; a right click brings its menu.
             setOnMouseClicked(event -> {
-                if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
-                    showInTree(getItem());
+                if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && !isEmpty()) {
+                    Consumer<Match> open = event.isShiftDown() ? getOnOpenAlternative() : getOnOpen();
+                    if (open != null) {
+                        open.accept(getItem());
+                    }
+                }
+            });
+            setOnDragDetected(event -> {
+                if (event.getButton() == MouseButton.PRIMARY && !isEmpty() && getOnDragStarted() != null) {
+                    getOnDragStarted().accept(getItem(), startDragAndDrop(TransferMode.COPY_OR_MOVE));
+                    event.consume();
+                }
+            });
+            setOnContextMenuRequested(event -> {
+                if (!isEmpty() && getContextMenuProvider() != null) {
+                    getContextMenuProvider().apply(getItem())
+                            .show(getScene().getWindow(), event.getScreenX(), event.getScreenY());
+                    event.consume();
                 }
             });
         }

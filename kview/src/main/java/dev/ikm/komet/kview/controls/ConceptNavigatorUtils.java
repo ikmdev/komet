@@ -1,5 +1,7 @@
 package dev.ikm.komet.kview.controls;
 
+import dev.ikm.komet.framework.dnd.KometClipboard;
+import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.tinkar.coordinate.navigation.calculator.Edge;
 import dev.ikm.tinkar.coordinate.stamp.StateSet;
@@ -12,6 +14,8 @@ import dev.ikm.tinkar.terms.State;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
 import javafx.scene.transform.Scale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,10 +24,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static dev.ikm.komet.kview.controls.KLConceptNavigatorControl.MAX_LEVEL;
+import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
 
 /**
  * Utility class for the {@link KLConceptNavigatorControl} and related controls and components.
@@ -456,6 +462,32 @@ public class ConceptNavigatorUtils {
         } catch (Exception e) {
             LOG.error("Exception occurred", e);
             return new long[0];
+        }
+    }
+
+    /**
+     * Puts a concept on a dragboard the way the concept navigator drags one: the navigator's own
+     * format plus the standard component proxies as content, and the generated
+     * {@link KonceptDragGlyph} as the drag image. Shared by the tree's tiles and the rows of the
+     * list of matching concepts, so a concept dragged from either is the same to what it is
+     * dropped on.
+     *
+     * @param dragboard      the dragboard of a drag that has just started
+     * @param concept        the concept dragged, or null for one that cannot be read
+     * @param text           the plain text put on the dragboard
+     * @param viewCalculator names the concept in the drag image
+     */
+    public static void putConceptOnDragboard(Dragboard dragboard, ConceptFacade concept, String text,
+                                             ViewCalculator viewCalculator) {
+        ClipboardContent clipboardContent = new ClipboardContent();
+        if (concept != null && concept.publicId() != null) {
+            clipboardContent.put(CONCEPT_NAVIGATOR_DRAG_FORMAT, List.<UUID[]>of(concept.publicId().asUuidArray()));
+            clipboardContent.putAll(KometClipboard.forComponent(concept.nid()));
+        }
+        clipboardContent.putString(text);
+        dragboard.setContent(clipboardContent);
+        if (concept != null) {
+            KonceptDragGlyph.setDragView(dragboard, concept.nid(), viewCalculator);
         }
     }
 
