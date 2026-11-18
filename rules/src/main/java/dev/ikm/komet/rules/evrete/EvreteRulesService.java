@@ -43,7 +43,6 @@ import org.evrete.api.spi.SourceCompiler;
 import org.evrete.dsl.Constants;
 import org.evrete.dsl.annotation.RuleSet;
 import org.evrete.util.CompilationException;
-import org.evrete.util.JavaSourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,6 +96,9 @@ public class EvreteRulesService implements RuleService {
             Pattern.compile("\\A[^:\\s]+:[^:\\s]+:(\\d+): (?:error: )?(.*)\\z", Pattern.DOTALL);
 
     private static final String LITERAL_DATA_REFUSED = "Literal conditions";
+
+    private static final Pattern PACKAGE_LINE = Pattern.compile("\\bpackage\\s+([\\w.]+)\\s*;");
+    private static final Pattern CLASS_DECLARED = Pattern.compile("\\b(?:class|interface|enum|record)\\s+(\\w+)");
 
     private final KnowledgeService service;
     /** Komet's own rule sets, then the plugins': they do not change while Komet runs. */
@@ -385,7 +387,7 @@ public class EvreteRulesService implements RuleService {
         try {
             SourceCompiler compiler = service.getSourceCompilerProvider()
                     .instance(EvreteRulesService.class.getClassLoader());
-            SourceCompiler.ClassSource parsed = JavaSourceUtils.parse(source.java());
+            SourceCompiler.ClassSource parsed = classSourceOf(source.java());
             Collection<SourceCompiler.Result<SourceCompiler.ClassSource>> results = compiler.compile(List.of(parsed));
             List<Class<?>> classes = new ArrayList<>();
             for (SourceCompiler.Result<SourceCompiler.ClassSource> result : results) {
@@ -399,6 +401,74 @@ public class EvreteRulesService implements RuleService {
             // Text that is not Java, or a class the rule engine will not take as rules.
             return refusedSource(source, Lists.immutable.of(new RuleFinding(0, inItsOwnWords(refusal))));
         }
+    }
+
+    /**
+     * Reads which class a rule source declares: its package, and the name of the first class
+     * after it. Comments and the contents of literals take no part in the reading, so a keyword
+     * or a brace in one of them is not taken for the declaration. The rule engine's own reading
+     * ({@code JavaSourceUtils.parse}) measures the place of the first brace in the text with its
+     * comments and applies it to the text without them, which cuts the class name short, or
+     * loses it, when a comment above the class has a brace in it, as {@code {@code …}} does.
+     *
+     * @param java the source text
+     * @return the source with the binary name of its class
+     * @throws IllegalArgumentException when the text declares no class
+     */
+    private static SourceCompiler.ClassSource classSourceOf(String java) {
+        String code = codeOnly(java);
+        Matcher packageLine = PACKAGE_LINE.matcher(code);
+        boolean packaged = packageLine.find();
+        Matcher declared = CLASS_DECLARED.matcher(code);
+        if (!declared.find(packaged ? packageLine.end() : 0)) {
+            throw new IllegalArgumentException("The text declares no class. A rule source is one public Java class.");
+        }
+        String binaryName = (packaged ? packageLine.group(1) + "." : "") + declared.group(1);
+        return new SourceCompiler.ClassSource() {
+            @Override
+            public String binaryName() {
+                return binaryName;
+            }
+
+            @Override
+            public String getSource() {
+                return java;
+            }
+        };
+    }
+
+    /** The source with a blank in place of each comment and nothing in place of what each literal holds. */
+    private static String codeOnly(String java) {
+        StringBuilder code = new StringBuilder(java.length());
+        int length = java.length();
+        int at = 0;
+        while (at < length) {
+            char here = java.charAt(at);
+            if (java.startsWith("//", at)) {
+                int end = java.indexOf('\n', at);
+                at = end < 0 ? length : end;
+                code.append(' ');
+            } else if (java.startsWith("/*", at)) {
+                int end = java.indexOf("*/", at + 2);
+                at = end < 0 ? length : end + 2;
+                code.append(' ');
+            } else if (java.startsWith("\"\"\"", at)) {
+                int end = java.indexOf("\"\"\"", at + 3);
+                at = end < 0 ? length : end + 3;
+                code.append("\"\"");
+            } else if (here == '"' || here == '\'') {
+                int end = at + 1;
+                while (end < length && java.charAt(end) != here && java.charAt(end) != '\n') {
+                    end += java.charAt(end) == '\\' ? 2 : 1;
+                }
+                at = Math.min(end + 1, length);
+                code.append(here).append(here);
+            } else {
+                code.append(here);
+                at++;
+            }
+        }
+        return code.toString();
     }
 
     private static Candidate refusedSource(RuleSource source, ImmutableList<RuleFinding> findings) {

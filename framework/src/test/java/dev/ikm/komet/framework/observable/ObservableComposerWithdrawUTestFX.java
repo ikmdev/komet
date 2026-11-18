@@ -17,6 +17,7 @@ package dev.ikm.komet.framework.observable;
 
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension;
 import dev.ikm.komet.framework.testing.JavaFXThreadExtension.RunOnJavaFXThread;
+import dev.ikm.tinkar.common.id.PublicId;
 import dev.ikm.tinkar.common.id.PublicIds;
 import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
@@ -143,6 +144,34 @@ class ObservableComposerWithdrawUTestFX {
         assertEquals("kept", latestText(kept.nid()));
         assertTrue(entity(kept.nid()).committed());
         assertTrue(entity(withdrawn.nid()).canceled(), "the commit did not bring the withdrawn semantic back");
+    }
+
+    @Test
+    @DisplayName("A semantic withdrawn and written again under its identity holds what is written, the same text included")
+    void aWithdrawnSemanticWrittenAgainHoldsWhatIsWritten() {
+        ObservableConcept concept = newCommittedConcept();
+        ObservableComposer composer = newComposer("shared");
+        ObservableSemantic kept = saveDescription(composer, concept, "kept");
+        PublicId identity = PublicIds.newRandom();
+        var first = composer.composeSemantic(identity, concept, KernelPattern.DESCRIPTION_PATTERN);
+        setText(first, "written twice");
+        first.save();
+        long nid = first.getEntity().nid();
+        assertTrue(composer.withdraw(nid));
+
+        // The transaction goes on, so the semantic is written again under the stamp it was withdrawn from.
+        var again = composer.composeSemantic(identity, concept, KernelPattern.DESCRIPTION_PATTERN);
+        setText(again, "written twice");
+        again.save();
+
+        assertEquals("written twice", latestText(nid),
+                "the text is the one written, not the empty one a new semantic starts with");
+        assertEquals(1, transactionsOf(kept.nid(), nid).size(), "in the one transaction that went on");
+
+        composer.commit();
+
+        assertEquals("written twice", latestText(nid));
+        assertTrue(entity(nid).committed());
     }
 
     @Test

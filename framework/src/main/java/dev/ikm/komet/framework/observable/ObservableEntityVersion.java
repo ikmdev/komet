@@ -602,6 +602,20 @@ public abstract sealed class ObservableEntityVersion<OE extends ObservableChrono
                     .build();
 
     /**
+     * Forgets the canonical editable version of a component under a stamp, so the next edit of the
+     * component under that stamp starts from the versions the component then holds. A version
+     * withdrawn from a transaction that goes on would otherwise leave its editable behind, and the
+     * component written again under the same stamp would be compared with what was withdrawn: the
+     * same values written again would count as no change, and nothing would be saved.
+     *
+     * @param nid      the nid of the component
+     * @param stampNid the nid of the stamp its editable version was made for
+     */
+    static void forgetEditable(long nid, long stampNid) {
+        EDITABLE_VERSION_CACHE.invalidate(new EditableVersionKey(nid, stampNid));
+    }
+
+    /**
      * Gets or creates the canonical editable version for the given observable version and stamp.
      * <p>     * <b>Canonical Instance Guarantee:</b> For any given combination of ObservableVersion and ObservableStamp,
      * this method will always return the same Editable instance. Multiple calls with the same

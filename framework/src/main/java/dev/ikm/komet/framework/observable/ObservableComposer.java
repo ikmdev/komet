@@ -1069,6 +1069,8 @@ public final class ObservableComposer {
             } catch (Exception e) {
                 throw new IllegalStateException("Could not withdraw " + EntityText.diagnostic(version), e);
             }
+            // The stamp lives on while the transaction does, so an edit of the entity under it starts anew.
+            ObservableEntityVersion.forgetEditable(entityNid, version.stampNid());
         }
         // The canonical observable, when one is held, drops the withdrawn version.
         ObservableEntity.refresh(entityNid);

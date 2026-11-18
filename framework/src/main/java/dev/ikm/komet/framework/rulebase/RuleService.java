@@ -41,6 +41,14 @@ import java.util.UUID;
 public interface RuleService {
 
     /**
+     * The version of the rules API: what a rule source is compiled against, which is the class
+     * its rules extend, the facts a rule's conditions read and the actions a rule offers. A rule
+     * source that is kept is kept with the version it was written for. The version changes when
+     * a rule source written for the version before may no longer compile.
+     */
+    String RULES_API_VERSION = "1";
+
+    /**
      * Answers the rule service Komet runs on.
      *
      * @return the rule service

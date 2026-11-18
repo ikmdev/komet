@@ -232,6 +232,22 @@ class RuleSourceIT {
     }
 
     @Test
+    void aBraceInACommentAboveTheClassDoesNotCutTheClassNameShort() {
+        // Wherever the brace falls: the class name was once read up to the place of the first brace
+        // in the text, counted with its comments, in the text without them. The comment's own
+        // "class" is not the declaration either.
+        for (int length = 0; length <= 40; length++) {
+            String comment = "/** " + "x".repeat(length) + " {@code RulesBase} holds the conditions of this class of rules. */\n";
+            String commented = source().replace("public class OfferActivation", comment + "public class OfferActivation");
+            ListedRuleSet checked = rules.checkRuleSource(new RuleSource(UUID.randomUUID(), "Commented rules", commented));
+            int before = length;
+            assertTrue(checked.findings().isEmpty(),
+                    () -> "with " + before + " characters before the brace in the comment: " + checked.findings());
+            assertEquals(Lists.immutable.of(RULE_NAME), checked.ruleNames());
+        }
+    }
+
+    @Test
     void aProposedRuleSourceIsCompiledAndListedButItsRuleDoesNotFire() {
         RuleSource source = new RuleSource(UUID.randomUUID(), "Activation rules", source());
 
