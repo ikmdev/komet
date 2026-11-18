@@ -244,6 +244,17 @@
     -fx-padding: 2 4 2 2;
 }
 
+/* A concept a filtered navigator keeps only because it leads to a match: no plate, a dashed outline.
+   The outline takes the 1px the plate's border layer had, so the tile keeps its size. Hover and
+   selection, stated below, still give it their plates. */
+.navigator-tree-cell.tree-cell > .concept-tile:filter-context {
+    -fx-background-color: transparent, transparent;
+    -fx-border-color: -Grey-6;
+    -fx-border-style: dashed;
+    -fx-border-radius: 3;
+    -fx-padding: 1 3 1 1;
+}
+
 .navigator-tree-cell.tree-cell:hover > .concept-tile {
     -fx-background-color: -Secondary-04, #F4F9FF;
     -fx-background-insets: 0, 1;
@@ -268,6 +279,18 @@
 .navigator-tree-cell.tree-cell:cn-border-selected > .concept-tile { /* ancestors of selected cell */
     -fx-background-color: -Natural-Grey-Main, white;
     -fx-background-insets: 0, 1;
+}
+
+/* A context row on the way to the selected or long-hovered concept stays without a plate, so it still
+   reads as "does not match": only its dashed outline takes the colour of that state. */
+.navigator-tree-cell.tree-cell:cn-border-selected > .concept-tile:filter-context {
+    -fx-background-color: transparent, transparent;
+    -fx-border-color: -Natural-Grey-Main;
+}
+
+.navigator-tree-cell.tree-cell:cn-border-long-hover > .concept-tile:filter-context {
+    -fx-background-color: transparent, transparent;
+    -fx-border-color: -Secondary-04;
 }
 
 .navigator-tree-cell.tree-cell:drag-selected > .concept-tile,
@@ -297,6 +320,10 @@
     -fx-text-fill: -Grey-11;
     -fx-background-color: transparent;
     -fx-border-color: transparent;
+}
+
+.navigator-tree-cell.tree-cell > .concept-tile:filter-context > .concept-label {
+    -fx-text-fill: -Grey-8;
 }
 
 .navigator-tree-cell.tree-cell:selected > .concept-tile > .concept-label {

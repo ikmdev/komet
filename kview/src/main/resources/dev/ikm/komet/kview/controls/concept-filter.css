@@ -1,0 +1,783 @@
+/*
+ * The concept navigator's "Show" filter: the row between the search box and the tree
+ * (ConceptFilterBar), the legend under the tree, and the picker the row's pill opens
+ * (ConceptFilterPicker).
+ *
+ * The row and the legend sit on the navigator's dark container and size in em, like the search
+ * box above them. The picker is a popup in the light chrome of the knowledge-layout windows and
+ * the assistant sidebar; it sizes in px because a popup does not inherit the window's text size.
+ * Colors are literals: a popup's scene does not load the kview palette.
+ */
+
+/*******************************************************************************
+ *                                                                             *
+ * The "Show" row                                                              *
+ *                                                                             *
+ ******************************************************************************/
+
+.concept-filter-bar {
+    -fx-alignment: center-left;
+    -fx-spacing: 8;
+    -fx-padding: 4 12 8 8;
+    -fx-min-height: 3.5em; /* 42px: the row keeps its height when the two-line count leaves it */
+}
+
+.concept-filter-bar > .filter-caption {
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: #E1E8F1;
+}
+
+.concept-filter-bar > .filter-pill {
+    -fx-alignment: center-left;
+    -fx-spacing: 6;
+    -fx-padding: 0 8 0 8;
+    -fx-min-height: 24;
+    -fx-pref-height: 24;
+    -fx-max-height: 24;
+    -fx-background-color: #B3BDCD, #6E7989;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 12, 11;
+    -fx-cursor: hand;
+}
+
+.concept-filter-bar > .filter-pill:hover {
+    -fx-background-color: #E1E8F1, #6E7989;
+}
+
+.concept-filter-bar > .filter-pill:open {
+    -fx-background-color: #9DC4FF, #DEEBFF;
+}
+
+.concept-filter-bar > .filter-pill:set,
+.concept-filter-bar > .filter-pill:set:hover,
+.concept-filter-bar > .filter-pill:set:open {
+    -fx-background-color: #5DCF16, #5DCF16;
+    -fx-padding: 0 4 0 8;
+}
+
+.concept-filter-bar > .filter-pill > .filter-pill-label {
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 1.083333em; /* 13px */
+    -fx-text-fill: #FBFBFC;
+}
+
+.concept-filter-bar > .filter-pill:open > .filter-pill-label {
+    -fx-text-fill: #2E3240;
+}
+
+.concept-filter-bar > .filter-pill:set > .filter-pill-label {
+    -fx-text-fill: black;
+}
+
+.concept-filter-bar .filter-icon {
+    -fx-background-color: #FBFBFC;
+    -fx-scale-shape: true;
+}
+
+.concept-filter-bar > .filter-pill:open > .filter-icon {
+    -fx-background-color: #2E3240;
+}
+
+.concept-filter-bar > .filter-pill:set .filter-icon {
+    -fx-background-color: black;
+}
+
+.concept-filter-bar .filter-icon.funnel {
+    -fx-shape: "M1 1.5h10L7.2 6.3v3.6L4.8 11V6.3z";
+    -fx-min-width: 11;
+    -fx-pref-width: 11;
+    -fx-max-width: 11;
+    -fx-min-height: 10;
+    -fx-pref-height: 10;
+    -fx-max-height: 10;
+}
+
+.concept-filter-bar .filter-icon.chevron {
+    -fx-shape: "M0.5 2l3.5 4 3.5-4z";
+    -fx-min-width: 8;
+    -fx-pref-width: 8;
+    -fx-max-width: 8;
+    -fx-min-height: 5;
+    -fx-pref-height: 5;
+    -fx-max-height: 5;
+}
+
+.concept-filter-bar > .filter-pill:open > .filter-icon.chevron {
+    -fx-rotate: 180;
+}
+
+.concept-filter-bar .filter-clear {
+    -fx-min-width: 18;
+    -fx-pref-width: 18;
+    -fx-max-width: 18;
+    -fx-min-height: 18;
+    -fx-pref-height: 18;
+    -fx-max-height: 18;
+    -fx-background-color: rgba(0, 0, 0, 0.14);
+    -fx-background-radius: 9;
+    -fx-cursor: hand;
+}
+
+.concept-filter-bar .filter-clear:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.30);
+}
+
+.concept-filter-bar .filter-icon.cross {
+    -fx-shape: "M11.83 1.34L10.66.17 6 4.83 1.34.17.17 1.34 4.83 6 .17 10.66l1.17 1.17L6 7.18l4.66 4.65 1.17-1.17L7.18 6z";
+    -fx-min-width: 8;
+    -fx-pref-width: 8;
+    -fx-max-width: 8;
+    -fx-min-height: 8;
+    -fx-pref-height: 8;
+    -fx-max-height: 8;
+}
+
+.concept-filter-bar > .filter-trailing {
+    -fx-alignment: center-right;
+    -fx-spacing: 8;
+}
+
+.concept-filter-bar .filter-count {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: #E1E8F1;
+    -fx-text-alignment: right;
+    -fx-alignment: center-right;
+}
+
+/* Tree | List: two joined options in one hairline frame, 24px tall like the pill. The chosen one is a
+   light plate that fills its half of the frame. */
+.concept-filter-bar .filter-view-switch {
+    -fx-background-color: #B3BDCD, #6E7989;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 5, 4;
+    -fx-padding: 1;
+    -fx-alignment: center;
+    -fx-min-height: 24;
+    -fx-pref-height: 24;
+    -fx-max-height: 24;
+}
+
+.concept-filter-bar .filter-view-option {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4 0 0 4;
+    -fx-background-insets: 0;
+    -fx-border-width: 0;
+    -fx-padding: 0 7 0 7;
+    -fx-min-height: 22;
+    -fx-pref-height: 22;
+    -fx-max-height: 22;
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 1em; /* 12px */
+    -fx-text-fill: #E1E8F1;
+    -fx-cursor: hand;
+}
+
+.concept-filter-bar .filter-view-option.following {
+    -fx-background-radius: 0 4 4 0;
+}
+
+.concept-filter-bar .filter-view-option:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.14);
+}
+
+.concept-filter-bar .filter-view-option:chosen,
+.concept-filter-bar .filter-view-option:chosen:hover {
+    -fx-background-color: #FBFBFC;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-text-fill: #2E3240;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * The list of matching concepts, shown in place of the tree                   *
+ *                                                                             *
+ ******************************************************************************/
+
+.concept-match-list {
+    /* As wide as the tree it stands in for (.concept-navigator-control.tree-view), so the panel keeps its width. */
+    -fx-min-width: 448;
+    -fx-background-color: #E1E8F1;
+    -fx-background-insets: 8 8 0 8;
+    -fx-background-radius: 5;
+    -fx-padding: 12 13 6 13;
+    -fx-spacing: 4;
+}
+
+.concept-match-list > .match-list-header {
+    -fx-alignment: baseline-left;
+    -fx-padding: 0 3 2 3;
+}
+
+.concept-match-list .match-list-title {
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 1.166667em; /* 14px */
+    -fx-text-fill: #2E3240;
+}
+
+.concept-match-list .match-list-summary {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: #545D72;
+}
+
+.concept-match-list > .match-list-message {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 1em; /* 12px */
+    -fx-text-fill: #545D72;
+    -fx-padding: 6 3 6 3;
+}
+
+.concept-match-list > .match-list-rows,
+.concept-match-list > .match-list-rows:focused {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.concept-match-list > .match-list-rows .list-cell,
+.concept-match-list > .match-list-rows .list-cell:filled:selected,
+.concept-match-list > .match-list-rows .list-cell:filled:hover {
+    -fx-background-color: transparent;
+    -fx-padding: 3 1 3 1;
+}
+
+/* A row: a white plate like a tree tile, with the name over the path. */
+.concept-match-list .match-row {
+    -fx-background-color: #CFD8E4, white;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 3, 2;
+    -fx-padding: 5 8 5 10;
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+}
+
+.concept-match-list .list-cell:filled:hover > .match-row {
+    -fx-background-color: #9DC4FF, #F4F9FF;
+}
+
+.concept-match-list .list-cell:filled:selected > .match-row {
+    -fx-background-color: #4A7AD2, #E8F0FE;
+}
+
+.concept-match-list .match-name {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 1.083333em; /* 13px */
+    -fx-text-fill: #2E3240;
+}
+
+.concept-match-list .match-path {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: #6E7989;
+}
+
+.concept-match-list .match-show-in-tree {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-graphic-text-gap: 4;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: #4A7AD2;
+    -fx-cursor: hand;
+}
+
+.concept-match-list .match-show-in-tree:hover {
+    -fx-underline: true;
+}
+
+.concept-match-list .match-target-icon {
+    -fx-shape: "M12 6.5a5.5 5.5 0 1 0 0 11a5.5 5.5 0 1 0 0-11zM12 8.5a3.5 3.5 0 1 1 0 7a3.5 3.5 0 1 1 0-7zM11 2h2v4h-2zM11 18h2v4h-2zM2 11h4v2H2zM18 11h4v2h-4z";
+    -fx-background-color: #4A7AD2;
+    -fx-min-width: 12;
+    -fx-pref-width: 12;
+    -fx-max-width: 12;
+    -fx-min-height: 12;
+    -fx-pref-height: 12;
+    -fx-max-height: 12;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * The legend under the tree                                                   *
+ *                                                                             *
+ ******************************************************************************/
+
+.concept-filter-legend {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: #E1E8F1;
+    -fx-padding: 2 12 8 12;
+    -fx-graphic-text-gap: 6;
+}
+
+.concept-filter-legend > .filter-legend-swatch {
+    -fx-min-width: 22;
+    -fx-pref-width: 22;
+    -fx-max-width: 22;
+    -fx-min-height: 12;
+    -fx-pref-height: 12;
+    -fx-max-height: 12;
+    -fx-border-color: #E1E8F1;
+    -fx-border-style: dashed;
+    -fx-border-radius: 3;
+}
+
+/*******************************************************************************
+ *                                                                             *
+ * The picker                                                                  *
+ *                                                                             *
+ ******************************************************************************/
+
+/* The transparent margin around the picker that leaves room for its shadow. */
+.concept-filter-popup {
+    -fx-background-color: transparent;
+}
+
+/* The pointer over the picker's top edge, under the pill: a rotated square ruled on its two upper sides. */
+.concept-filter-popup > .picker-caret {
+    -fx-min-width: 11;
+    -fx-pref-width: 11;
+    -fx-max-width: 11;
+    -fx-min-height: 11;
+    -fx-pref-height: 11;
+    -fx-max-height: 11;
+    -fx-background-color: #C9CED8, #F8F8F8;
+    -fx-background-insets: 0, 1 0 0 1;
+    -fx-rotate: 45;
+}
+
+.concept-filter-picker {
+    -fx-background-color: #C9CED8, white;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 8, 7;
+    -fx-padding: 1;
+    -fx-min-width: 340;
+    -fx-pref-width: 340;
+    -fx-max-width: 340;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.28), 20, 0, 0, 6);
+}
+
+/* ---- Line icons: a round 1.8-unit stroke on a 24-unit grid, no fill ---- */
+.concept-filter-picker .picker-line-icon {
+    -fx-fill: transparent;
+    -fx-stroke: #44495E;
+    -fx-stroke-width: 1.8;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+}
+
+.concept-filter-picker .picker-line-icon.accent {
+    -fx-stroke: #4A7AD2;
+}
+
+/* ---- Header: 40px, the knowledge-layout window toolbar's height ---- */
+.concept-filter-picker > .picker-head {
+    -fx-background-color: #EDEDED, #F8F8F8;
+    -fx-background-insets: 0, 0 0 1 0;
+    -fx-background-radius: 7 7 0 0, 7 7 0 0;
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+    -fx-max-height: 40;
+    -fx-padding: 0 8 0 12;
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+}
+
+.concept-filter-picker .picker-title {
+    -fx-font-family: "Noto Sans Bold";
+    -fx-font-size: 13px;
+    -fx-text-fill: #1F2A44;
+}
+
+.concept-filter-picker .picker-icon-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 5;
+    -fx-padding: 0;
+    -fx-min-width: 26;
+    -fx-pref-width: 26;
+    -fx-max-width: 26;
+    -fx-min-height: 26;
+    -fx-pref-height: 26;
+    -fx-max-height: 26;
+    -fx-alignment: center;
+    -fx-content-display: graphic-only;
+}
+
+.concept-filter-picker .picker-icon-button:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.08);
+}
+
+.concept-filter-picker .picker-icon-button:armed {
+    -fx-background-color: rgba(0, 0, 0, 0.14);
+}
+
+/* ---- Hint strip ---- */
+.concept-filter-picker > .picker-strip {
+    -fx-background-color: #E6EAF1, #F4F6FA;
+    -fx-background-insets: 0, 0 0 1 0;
+    -fx-padding: 6 12 7 12;
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 12px;
+    -fx-text-fill: #5D6B84;
+}
+
+/* ---- Body ---- */
+.concept-filter-picker > .picker-body {
+    -fx-padding: 4 12 10 12;
+    -fx-spacing: 4;
+}
+
+.concept-filter-picker .picker-label {
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 12px;
+    -fx-text-fill: #1F2A44;
+    -fx-padding: 6 0 0 0;
+}
+
+.concept-filter-picker .picker-label-row {
+    -fx-spacing: 4;
+    -fx-padding: 6 0 0 0;
+    -fx-alignment: baseline-left;
+}
+
+.concept-filter-picker .picker-label-row > .picker-label {
+    -fx-padding: 0;
+}
+
+.concept-filter-picker .picker-operator {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6B7280;
+}
+
+/* An input: an outlined box holding a glyph and a bare text field. */
+.concept-filter-picker .picker-input {
+    -fx-background-color: #CFD5DF, white;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 6, 5;
+    -fx-padding: 0 6 0 9;
+    -fx-spacing: 6;
+    -fx-alignment: center-left;
+    -fx-min-height: 30;
+    -fx-pref-height: 30;
+    -fx-max-height: 30;
+}
+
+.concept-filter-picker .picker-input:focus-within {
+    -fx-background-color: #4A7AD2, white;
+}
+
+.concept-filter-picker .picker-input .picker-line-icon {
+    -fx-stroke: #9CA3AF;
+}
+
+.concept-filter-picker .picker-input > .text-field,
+.concept-filter-picker .picker-input > .text-field:focused,
+.concept-filter-picker .picker-input > .text-field:hover {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-effect: null;
+    -fx-padding: 4 0 4 0;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-text-fill: #1F2937;
+    -fx-prompt-text-fill: #9CA3AF;
+}
+
+.concept-filter-picker .picker-row-action {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4;
+    -fx-padding: 2;
+    -fx-content-display: graphic-only;
+}
+
+.concept-filter-picker .picker-row-action:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.08);
+}
+
+.concept-filter-picker .picker-row-action .picker-line-icon {
+    -fx-stroke: #6B7280;
+}
+
+/* The link under the pattern that opens the field and value part; its arrow points down while open. */
+.concept-filter-picker .picker-disclosure {
+    -fx-background-color: transparent;
+    -fx-padding: 6 2 2 2;
+    -fx-graphic-text-gap: 6;
+    -fx-alignment: center-left;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 12px;
+    -fx-text-fill: #4A7AD2;
+    -fx-cursor: hand;
+}
+
+.concept-filter-picker .picker-disclosure:hover {
+    -fx-underline: true;
+}
+
+.concept-filter-picker .picker-disclosure-arrow {
+    -fx-shape: "M0 0L5 4L0 8Z";
+    -fx-background-color: #4A7AD2;
+    -fx-min-width: 5;
+    -fx-pref-width: 5;
+    -fx-max-width: 5;
+    -fx-min-height: 8;
+    -fx-pref-height: 8;
+    -fx-max-height: 8;
+}
+
+.concept-filter-picker .picker-disclosure:open .picker-disclosure-arrow {
+    -fx-rotate: 90;
+}
+
+.concept-filter-picker .picker-narrow-pane {
+    -fx-spacing: 4;
+}
+
+/* The pattern's fields as one joined control: the chosen one on a pale blue plate. */
+.concept-filter-picker .picker-segments {
+    -fx-background-color: #CFD5DF, white;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 6, 5;
+    -fx-padding: 1;
+}
+
+.concept-filter-picker .picker-field {
+    -fx-background-color: transparent;
+    -fx-padding: 0 8 0 8;
+    -fx-min-height: 26;
+    -fx-pref-height: 26;
+    -fx-max-height: 26;
+    -fx-alignment: center;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-text-fill: #44495E;
+    -fx-cursor: hand;
+}
+
+.concept-filter-picker .picker-segments > .picker-field.following {
+    -fx-border-color: transparent transparent transparent #CFD5DF;
+    -fx-border-width: 0 0 0 1;
+}
+
+.concept-filter-picker .picker-segments > .picker-field:hover {
+    -fx-background-color: #F5F8FC;
+    -fx-background-radius: 4;
+    -fx-background-insets: 1;
+}
+
+.concept-filter-picker .picker-segments > .picker-field:selected {
+    -fx-background-color: #E8F0FE;
+    -fx-background-radius: 4;
+    -fx-background-insets: 1;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-text-fill: #4A7AD2;
+}
+
+/* More than three fields: separate chips that wrap. */
+.concept-filter-picker .picker-chips {
+    -fx-hgap: 6;
+    -fx-vgap: 6;
+}
+
+.concept-filter-picker .picker-chips > .picker-field {
+    -fx-background-color: #CFD5DF, white;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 6, 5;
+}
+
+.concept-filter-picker .picker-chips > .picker-field:hover {
+    -fx-background-color: #9CAABF, #F5F8FC;
+}
+
+.concept-filter-picker .picker-chips > .picker-field:selected {
+    -fx-background-color: #4A7AD2, #E8F0FE;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-text-fill: #4A7AD2;
+}
+
+/* ---- Lists: the patterns, the values in use ---- */
+.concept-filter-picker .picker-values-header {
+    -fx-padding: 6 9 0 9;
+}
+
+.concept-filter-picker .picker-values-header > .label {
+    -fx-font-size: 11px;
+    -fx-text-fill: #6B7280;
+}
+
+/* The dotted line says the header has a tooltip. */
+.concept-filter-picker .picker-values-header > .picker-values-count-title {
+    -fx-border-color: transparent transparent #9CA3AF transparent;
+    -fx-border-style: dotted;
+    -fx-border-width: 0 0 1 0;
+}
+
+.concept-filter-picker .picker-values-message {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6B7280;
+    -fx-padding: 4 2 4 2;
+}
+
+.concept-filter-picker .picker-list,
+.concept-filter-picker .picker-list:focused {
+    -fx-background-color: #E5E7EB, white;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 6, 5;
+    -fx-padding: 1;
+}
+
+.concept-filter-picker .picker-list .list-cell {
+    -fx-background-color: white;
+    -fx-padding: 0 8 0 8;
+    -fx-border-color: transparent transparent rgba(0, 0, 0, 0.06) transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-cursor: hand;
+}
+
+.concept-filter-picker .picker-list .list-cell:empty {
+    -fx-border-color: transparent;
+    -fx-cursor: default;
+}
+
+.concept-filter-picker .picker-list .list-cell:filled:hover {
+    -fx-background-color: #F5F8FC;
+}
+
+.concept-filter-picker .picker-list .list-cell:filled:selected {
+    -fx-background-color: #E8F0FE;
+}
+
+.concept-filter-picker .picker-choice {
+    -fx-alignment: center-left;
+    -fx-spacing: 8;
+}
+
+.concept-filter-picker .picker-choice-name {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-text-fill: #1F2A44;
+}
+
+.concept-filter-picker .list-cell:selected .picker-choice-name {
+    -fx-font-family: "Noto Sans SemiBold";
+}
+
+.concept-filter-picker .picker-choice-count {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-text-fill: #6B7280;
+}
+
+/* ---- Footer ---- */
+.concept-filter-picker > .picker-foot {
+    -fx-background-color: #E5E7EB, white;
+    -fx-background-insets: 0, 1 0 0 0;
+    -fx-background-radius: 0 0 7 7, 0 0 7 7;
+    -fx-padding: 9 12 9 12;
+    -fx-spacing: 12;
+    -fx-alignment: center-left;
+}
+
+.concept-filter-picker .picker-summary {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+}
+
+.concept-filter-picker .picker-summary > .picker-summary-text {
+    -fx-fill: #44495E;
+}
+
+.concept-filter-picker .picker-summary > .picker-summary-strong {
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-fill: #2E3240;
+}
+
+.concept-filter-picker .picker-link {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 12px;
+    -fx-text-fill: #4A7AD2;
+    -fx-cursor: hand;
+}
+
+.concept-filter-picker .picker-link:hover {
+    -fx-underline: true;
+}
+
+.concept-filter-picker .picker-apply {
+    -fx-background-color: #4A7AD2;
+    -fx-background-radius: 5;
+    -fx-padding: 0 14 0 14;
+    -fx-min-height: 26;
+    -fx-pref-height: 26;
+    -fx-max-height: 26;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 12px;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+}
+
+.concept-filter-picker .picker-apply:hover {
+    -fx-background-color: #5896F6;
+}
+
+.concept-filter-picker .picker-apply:armed {
+    -fx-background-color: #395C9A;
+}
+
+.concept-filter-picker .picker-apply:disabled {
+    -fx-opacity: 1.0;
+    -fx-background-color: rgba(0, 0, 0, 0.06);
+    -fx-text-fill: rgba(31, 42, 68, 0.45);
+}
+
+/* ---- Scrollbars, as in the KL windows: a slim rounded thumb, no arrow buttons ---- */
+.concept-filter-picker .scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.concept-filter-picker .scroll-bar:vertical {
+    -fx-pref-width: 8;
+    -fx-padding: 0 0 0 2;
+}
+
+.concept-filter-picker .scroll-bar:horizontal {
+    -fx-pref-height: 8;
+    -fx-padding: 2 0 0 0;
+}
+
+.concept-filter-picker .scroll-bar .track,
+.concept-filter-picker .scroll-bar .track-background {
+    -fx-background-color: transparent;
+}
+
+.concept-filter-picker .scroll-bar .thumb {
+    -fx-background-color: #FBFBFC, rgba(0, 0, 0, 0.4);
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 6px;
+    -fx-padding: 0;
+}
+
+.concept-filter-picker .scroll-bar .increment-button,
+.concept-filter-picker .scroll-bar .decrement-button {
+    -fx-background-insets: 0;
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
+    -fx-min-height: 0;
+    -fx-pref-height: 0;
+    -fx-padding: 0;
+}
+
+.concept-filter-picker .scroll-bar .increment-arrow,
+.concept-filter-picker .scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
+}

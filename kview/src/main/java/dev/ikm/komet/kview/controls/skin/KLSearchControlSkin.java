@@ -187,10 +187,9 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
         getChildren().addAll(textField, searchPane, closePane, filterPane, resultsPane);
 
         textField.textProperty().bindBidirectional(control.textProperty());
-        if (control.getPromptText() == null) {
-            control.setPromptText(resources.getString("prompt.text"));
-        }
-        textField.promptTextProperty().bind(control.promptTextProperty());
+        // A control with no prompt of its own shows the default one. The default is not written into the
+        // control's property, which its owner may have bound.
+        textField.promptTextProperty().bind(control.promptTextProperty().orElse(resources.getString("prompt.text")));
         closePane.visibleProperty().bind(textField.textProperty().isNotEmpty());
         closePane.managedProperty().bind(closePane.visibleProperty());
 

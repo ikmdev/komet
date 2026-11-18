@@ -339,6 +339,9 @@ public class ConceptNavigatorUtils {
                 summary = "“" + name + "” has status " + state + ", which this navigator does not "
                         + "display (it shows " + vertexStates.toUserString() + " concepts only). Open it in a "
                         + "navigator that includes " + state + " concepts to see it in context.";
+            } else if (navigator instanceof FilteredNavigator filteredNavigator && !filteredNavigator.isVisible(nid)) {
+                summary = "“" + name + "” is hidden by this navigator’s Show filter. Clear the filter "
+                        + "to see it in the tree.";
             } else if (parentNids.length == 0) {
                 summary = "“" + name + "” has no parent concepts in this navigator’s view"
                         + (state != null ? " (status " + state + ")" : "")

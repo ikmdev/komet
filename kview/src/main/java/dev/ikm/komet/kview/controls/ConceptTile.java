@@ -53,6 +53,8 @@ public class ConceptTile extends HBox {
     private static final PseudoClass EXPANDED_PSEUDO_CLASS = PseudoClass.getPseudoClass("expanded");
     private static final PseudoClass LEAF_PSEUDO_CLASS = PseudoClass.getPseudoClass("leaf");
     static final PseudoClass DEFINED_PSEUDO_CLASS = PseudoClass.getPseudoClass("defined");
+    /** A concept a filtered navigator shows only because it leads to a concept that matches the filter. */
+    private static final PseudoClass FILTER_CONTEXT_PSEUDO_CLASS = PseudoClass.getPseudoClass("filter-context");
     public static final PseudoClass DRAG_SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("drag-selected");
 
     private final KLConceptNavigatorTreeCell cell;
@@ -225,6 +227,9 @@ public class ConceptTile extends HBox {
             ConceptNavigatorTreeItem treeItem = get();
             updateDefinedMark();
             updateMultiParentMark();
+            pseudoClassStateChanged(FILTER_CONTEXT_PSEUDO_CLASS, treeItem != null && treeItem.getValue() != null
+                    && treeView.getNavigator() instanceof FilteredNavigator filteredNavigator
+                    && !filteredNavigator.isMatch(treeItem.getValue().nid()));
             if (treeItem != null) {
                 disclosurePane.pseudoClassStateChanged(LEAF_PSEUDO_CLASS, treeItem.isLeaf());
                 disclosureIconRegion.getStyleClass().setAll("icon", treeItem.isLeaf() ? "leaf" : "disclosure");

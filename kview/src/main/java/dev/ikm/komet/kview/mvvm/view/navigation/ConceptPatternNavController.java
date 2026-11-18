@@ -6,6 +6,7 @@ import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
 import dev.ikm.komet.framework.settings.KonceptGlyphSettings;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.ComponentSearchTextField;
+import dev.ikm.komet.kview.controls.ConceptMatchList;
 import dev.ikm.komet.kview.controls.ConceptNavigatorTreeItem;
 import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.InvertedTree;
@@ -267,6 +268,9 @@ public class ConceptPatternNavController {
             searchControl.setActiveSearchQuery(searchControl.getText());
             ViewCalculator calculator = viewProperties.calculator();
             searchControl.setResultsPlaceholder("Searching..."); // DUMMY, resources?
+            // The navigator the tree shows: under a Show filter it gives parents only to the concepts
+            // the tree keeps, so a concept the filter hides is not offered as a result.
+            Navigator shownNavigator = conceptNavigatorControl.getNavigator();
             TinkExecutor.threadPool().execute(() -> {
                 try {
                     List<LatestVersionSearchResult> results = calculator.search(searchControl.getText(), 1000).toList();
@@ -278,7 +282,7 @@ public class ConceptPatternNavController {
                     topNidMatchMap.keySet().forEach(key ->
                             navigator.getViewCalculator().latest(key).ifPresent(_ -> {
                                 // Add one search result per parent, ignoring concepts or patterns that don't have a parent
-                                for (long parentNid : navigator.getParentNids(key)) {
+                                for (long parentNid : shownNavigator.getParentNids(key)) {
                                     searchResultsMap.put(new KLSearchControl.SearchResult(ConceptFacade.make(parentNid),
                                             ConceptFacade.make(key)), topNidMatchMap.get(key));
                                 }
@@ -307,7 +311,12 @@ public class ConceptPatternNavController {
         });
 
         conceptNavigatorControl = new KLConceptNavigatorControl();
-        conceptNavigatorControl.setNavigator(navigator);
+        // The tree shows the Show filter's navigator: the view's own while no filter is set, a
+        // narrowed one while one is. The search box says so while it searches a narrowed tree.
+        ConceptFilterController conceptFilterController = new ConceptFilterController();
+        conceptFilterController.navigatorProperty().subscribe(conceptNavigatorControl::setNavigator);
+        conceptFilterController.setBaseNavigator(navigator);
+        searchControl.promptTextProperty().bind(conceptFilterController.searchPromptProperty());
         conceptNavigatorControl.setHeader("Concept Header");
         conceptNavigatorControl.setShowTags(false);
         // The defined dot and the alternate-parents tree follow the app-wide glyph settings while
@@ -352,20 +361,37 @@ public class ConceptPatternNavController {
             }
         });
 
-        searchControl.setOnLongHover(conceptNavigatorControl::expandAndHighlightConcept);
+        // A search result points at a concept in the tree, so the tree comes back if the list of
+        // matching concepts is standing in for it.
+        searchControl.setOnLongHover(conceptItem -> {
+            conceptFilterController.showTree();
+            conceptNavigatorControl.expandAndHighlightConcept(conceptItem);
+        });
         searchControl.setOnSearchResultClick(_ -> conceptNavigatorControl.unhighlightConceptsWithDelay());
         searchControl.setOnClearSearch(_ -> ConceptNavigatorUtils.resetConceptNavigator(conceptNavigatorControl));
 
-        VBox nodePanel = new VBox(searchControl, conceptNavigatorControl);
+        // Under a Show filter the row's Tree | List switch swaps the tree for the flat list of the
+        // matching concepts. What is typed in the search box narrows that list as it is typed.
+        ConceptMatchList matchList = conceptFilterController.getMatchList();
+        matchList.filterTextProperty().bind(searchControl.textProperty());
+        matchList.visibleProperty().bind(conceptFilterController.listShownProperty());
+        matchList.managedProperty().bind(matchList.visibleProperty());
+        conceptNavigatorControl.visibleProperty().bind(conceptFilterController.listShownProperty().not());
+        conceptNavigatorControl.managedProperty().bind(conceptNavigatorControl.visibleProperty());
+        conceptFilterController.setOnShowInTree(this::showConcept);
+
+        VBox nodePanel = new VBox(searchControl, conceptFilterController.getBar(), conceptNavigatorControl, matchList,
+                conceptFilterController.getLegend());
         nodePanel.getStyleClass().add("concept-navigator-container");
         VBox.setVgrow(conceptNavigatorControl, Priority.ALWAYS);
+        VBox.setVgrow(matchList, Priority.ALWAYS);
 
         // When nodeView changes, update the Navigator, to update the Search Control and the FilterOptionsPopup, and
         // also rebuild the ConceptNavigator treeView
         viewProperties.nodeView().subscribe((_, nv) -> {
             ViewNavigator nav = new ViewNavigator(nv);
             searchControl.setNavigator(nav);
-            conceptNavigatorControl.setNavigator(nav);
+            conceptFilterController.setBaseNavigator(nav);
         });
 
         return nodePanel;
