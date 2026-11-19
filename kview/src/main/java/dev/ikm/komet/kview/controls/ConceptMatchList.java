@@ -13,6 +13,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.OverrunStyle;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
@@ -250,6 +251,8 @@ public class ConceptMatchList extends VBox {
             setPrefWidth(0);
             name.getStyleClass().add("match-name");
             path.getStyleClass().add("match-path");
+            // A path too long for the row loses its start: the parent, at its end, is what places the concept.
+            path.setTextOverrun(OverrunStyle.LEADING_WORD_ELLIPSIS);
             VBox text = new VBox(name, path);
             text.setAlignment(Pos.CENTER_LEFT);
             text.setMinWidth(0);

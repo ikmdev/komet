@@ -11,6 +11,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyCode;
@@ -89,6 +90,9 @@ class ConceptMatchListUTestFX {
         assertEquals(COMPONENT_PATH, textOf(rows.getFirst(), ".match-path"));
         assertEquals("Phenomenon › Observable Entity", textOf(rows.getLast(), ".match-path"));
         assertEquals("6 · A–Z", summary());
+        assertEquals(OverrunStyle.LEADING_WORD_ELLIPSIS,
+                ((Label) robot.from(rows.getFirst()).lookup(".match-path").query()).getTextOverrun(),
+                "a path too long for its row is cut at its start, so the parent at its end stays");
         robot.moveTo(rows.get(1));
         capture("concept-match-list", list);
     }
@@ -182,6 +186,7 @@ class ConceptMatchListUTestFX {
             }
             list.getMatches().setAll(matches);
         });
+        robot.interact(() -> list.setPathProvider(_ -> "… › Product containing enoxaparin › Parenteral form enoxaparin › Enoxaparin only product in parenteral dose form"));
         WaitForAsyncUtils.waitForFxEvents();
         ScrollBar scrollBar = robot.lookup(".match-list-rows .scroll-bar:vertical").queryAs(ScrollBar.class);
         assertTrue(scrollBar.isVisible());

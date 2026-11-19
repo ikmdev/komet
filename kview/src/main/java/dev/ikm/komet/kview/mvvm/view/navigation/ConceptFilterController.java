@@ -80,12 +80,13 @@ public class ConceptFilterController {
      */
     private static final long REOPEN_GUARD_MILLIS = 250;
 
-    /** A path is written in full up to this many concepts; a longer one keeps its first and its last two. */
-    private static final int MAX_PATH_NAMES = 3;
+    /**
+     * A path names this many of a concept's ancestors at most, the nearest ones: the parent matters most,
+     * then its parent, and so on. It also bounds the walk up, whatever the parents lead to.
+     */
+    private static final int MAX_PATH_NAMES = 4;
     private static final String PATH_SEPARATOR = " › ";
     private static final String PATH_GAP = "…";
-    /** How far up a path is followed, which also ends a walk around parents that lead back to each other. */
-    private static final int MAX_PATH_DEPTH = 64;
     /** The paths kept for the rows of the list that were in view lately. */
     private static final int MAX_KEPT_PATHS = 2_000;
 
@@ -540,8 +541,8 @@ public class ConceptFilterController {
     }
 
     /**
-     * The path that leads to a concept in the filtered tree, from the top of the tree down to the
-     * concept's parent. A concept with several parents is given the path through the first one the
+     * The path that leads to a concept in the filtered tree: its nearest ancestors, ending with its
+     * parent, behind a gap when there are more above them. A concept with several parents is given the path through the first one the
      * tree shows. Asked for the rows of the list in view, so the paths are kept for a while.
      */
     private String pathOf(long nid) {
@@ -558,11 +559,16 @@ public class ConceptFilterController {
         long[] rootNids = shownBase.getRootNids();
         Deque<String> names = new ArrayDeque<>();
         long current = nid;
-        for (int depth = 0; depth < MAX_PATH_DEPTH; depth++) {
+        boolean moreAbove = false;
+        while (true) {
             OptionalLong parent = Arrays.stream(calculator.unsortedParentsOf(current).toArray())
                     .filter(shownResult::isVisible)
                     .findFirst();
             if (parent.isEmpty() || Arrays.stream(rootNids).anyMatch(root -> root == parent.getAsLong())) {
+                break;
+            }
+            if (names.size() == MAX_PATH_NAMES) {
+                moreAbove = true;
                 break;
             }
             current = parent.getAsLong();
@@ -571,13 +577,8 @@ public class ConceptFilterController {
         if (names.isEmpty()) {
             return resources.getString("list.path.top");
         }
-        if (names.size() > MAX_PATH_NAMES) {
-            String first = names.removeFirst();
-            while (names.size() > MAX_PATH_NAMES - 1) {
-                names.removeFirst();
-            }
+        if (moreAbove) {
             names.addFirst(PATH_GAP);
-            names.addFirst(first);
         }
         return String.join(PATH_SEPARATOR, names);
     }
