@@ -1,6 +1,7 @@
 package dev.ikm.komet.kview.controls.test;
 
 import dev.ikm.komet.kview.controls.ConceptMatchList;
+import dev.ikm.komet.kview.controls.ConceptMatchList.Lineage;
 import dev.ikm.komet.kview.controls.ConceptMatchList.Match;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
 import javafx.event.Event;
@@ -13,6 +14,7 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Region;
@@ -194,6 +196,38 @@ class ConceptMatchListUTestFX {
         assertEquals(0, robot.lookup(".match-list-rows .scroll-bar:vertical .increment-button").queryAs(Region.class).getHeight(),
                 "no arrow buttons");
         capture("concept-match-list-scrolling", list);
+    }
+
+    @Test
+    void theTooltipOfARowIsTheWholePathToItsConcept() {
+        robot.interact(() -> list.setLineageProvider(match -> new Lineage(
+                List.of("Phenomenon", "Object", "Physical object", "Device", "Medical Devices", "Clinical Chemistry",
+                        "Bromcresol Green Dye-Binding, Albumin"),
+                match.nid() == 5 ? 1 : 0)));
+        ListCell<?> row = filledRows().get(4);
+        Tooltip tooltip = row.getTooltip();
+        Point2D onScreen = row.localToScreen(90, 40);
+        robot.interact(() -> tooltip.show(row, onScreen.getX(), onScreen.getY()));
+        WaitForAsyncUtils.waitForFxEvents();
+
+        Node content = tooltip.getScene().getRoot();
+        List<String> names = robot.from(content).lookup(".match-lineage-name").queryAllAs(Label.class).stream()
+                .sorted((first, second) -> Double.compare(first.localToScene(0, 0).getY(), second.localToScene(0, 0).getY()))
+                .map(Label::getText).toList();
+        assertEquals(List.of("Phenomenon", "Object", "Physical object", "Device", "Medical Devices", "Clinical Chemistry",
+                "Bromcresol Green Dye-Binding, Albumin", "Diameter.hilum-cortex.mean | Fetus | OB ultrasound"), names,
+                "from the top of the tree down to the concept itself");
+        assertEquals("Also under 1 other parent",
+                robot.from(content).lookup(".match-lineage-others").queryAs(Label.class).getText());
+        capture("concept-match-list-tooltip", content);
+        robot.interact(tooltip::hide);
+
+        // A concept with no other parent has no line about them.
+        Tooltip plain = filledRows().get(1).getTooltip();
+        robot.interact(() -> plain.show(row, onScreen.getX(), onScreen.getY()));
+        WaitForAsyncUtils.waitForFxEvents();
+        assertTrue(robot.from(plain.getScene().getRoot()).lookup(".match-lineage-others").queryAll().isEmpty());
+        robot.interact(plain::hide);
     }
 
     private List<ListCell<?>> filledRows() {

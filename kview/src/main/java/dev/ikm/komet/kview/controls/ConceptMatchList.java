@@ -7,23 +7,30 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.css.PseudoClass;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.OverrunStyle;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.text.MessageFormat;
 import java.text.NumberFormat;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -42,6 +49,8 @@ import java.util.function.Function;
 public class ConceptMatchList extends VBox {
 
     private static final double ROW_HEIGHT = 50;
+    private static final PseudoClass FIRST_PSEUDO_CLASS = PseudoClass.getPseudoClass("first");
+    private static final PseudoClass SELF_PSEUDO_CLASS = PseudoClass.getPseudoClass("self");
 
     private final ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.concept-filter");
     private final NumberFormat countFormat = NumberFormat.getIntegerInstance();
@@ -85,6 +94,7 @@ public class ConceptMatchList extends VBox {
         shownMatches.subscribe(this::showSummary);
         message.subscribe(this::showSummary);
         pathProvider.subscribe(list::refresh);
+        lineageProvider.subscribe(list::refresh);
         showSummary();
     }
 
@@ -175,6 +185,17 @@ public class ConceptMatchList extends VBox {
     public Function<Match, String> getPathProvider() { return pathProvider.get(); }
     public void setPathProvider(Function<Match, String> value) { pathProvider.set(value); }
 
+    // -- lineageProvider
+    /**
+     * Gives what the tooltip of a row shows: the whole path that leads to the row's concept in the
+     * tree. It is asked when the tooltip is about to show, not for every row. While it is null the
+     * rows have no tooltip.
+     */
+    private final ObjectProperty<Function<Match, Lineage>> lineageProvider = new SimpleObjectProperty<>(this, "lineageProvider");
+    public ObjectProperty<Function<Match, Lineage>> lineageProviderProperty() { return lineageProvider; }
+    public Function<Match, Lineage> getLineageProvider() { return lineageProvider.get(); }
+    public void setLineageProvider(Function<Match, Lineage> value) { lineageProvider.set(value); }
+
     // -- onShowInTree
     /**
      * What "Show in tree" on a row does with the row's concept.
@@ -238,12 +259,22 @@ public class ConceptMatchList extends VBox {
     public record Match(long nid, String name) {
     }
 
+    /**
+     * The whole path that leads to a concept in the tree.
+     *
+     * @param ancestors        the names of the concept's ancestors, from the top of the tree down to its parent
+     * @param otherParentCount the number of parents the concept has besides the one on this path
+     */
+    public record Lineage(List<String> ancestors, int otherParentCount) {
+    }
+
     /** A row: the name over the path, and the "Show in tree" link while the pointer is on the row. */
     private final class MatchCell extends ListCell<Match> {
 
         private final Label name = new Label();
         private final Label path = new Label();
         private final Button showInTree = new Button(resources.getString("list.showintree"));
+        private final Tooltip lineageTooltip = new Tooltip();
         private final HBox row;
 
         MatchCell() {
@@ -267,6 +298,11 @@ public class ConceptMatchList extends VBox {
             showInTree.managedProperty().bind(hoverProperty());
             row = new HBox(text, showInTree);
             row.getStyleClass().add("match-row");
+            // The tooltip is the whole path, drawn when it is about to show: reading it for every row would be wasted.
+            lineageTooltip.getStyleClass().add("match-lineage-tooltip");
+            lineageTooltip.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+            lineageTooltip.setOnShowing(_ -> lineageTooltip.setGraphic(
+                    isEmpty() || getLineageProvider() == null ? null : createLineageNode(getItem())));
             // What a row of the tree does: a double click opens the concept, with Shift the
             // other way; the whole row drags the concept; a right click brings its menu.
             setOnMouseClicked(event -> {
@@ -297,11 +333,54 @@ public class ConceptMatchList extends VBox {
             super.updateItem(match, empty);
             if (empty || match == null) {
                 setGraphic(null);
+                setTooltip(null);
             } else {
                 name.setText(match.name());
                 path.setText(getPathProvider() == null ? "" : getPathProvider().apply(match));
                 setGraphic(row);
+                setTooltip(getLineageProvider() == null ? null : lineageTooltip);
             }
+        }
+
+        /** The path as a list on a rail: an ancestor a line, the concept last, then a word on its other parents. */
+        private Node createLineageNode(Match match) {
+            Lineage lineage = getLineageProvider().apply(match);
+            Label title = new Label(resources.getString("list.lineage.title"));
+            title.getStyleClass().add("match-lineage-title");
+            VBox steps = new VBox();
+            for (int index = 0; index < lineage.ancestors().size(); index++) {
+                steps.getChildren().add(createLineageStep(lineage.ancestors().get(index), index == 0, false));
+            }
+            steps.getChildren().add(createLineageStep(match.name(), lineage.ancestors().isEmpty(), true));
+            VBox content = new VBox(title, steps);
+            content.getStyleClass().add("match-lineage");
+            if (lineage.otherParentCount() > 0) {
+                Label others = new Label(lineage.otherParentCount() == 1
+                        ? resources.getString("list.lineage.others.one")
+                        : MessageFormat.format(resources.getString("list.lineage.others"), lineage.otherParentCount()));
+                others.getStyleClass().add("match-lineage-others");
+                others.setMaxWidth(Double.MAX_VALUE);
+                VBox.setMargin(others, new Insets(7, 0, 0, 0));
+                content.getChildren().add(others);
+            }
+            return content;
+        }
+
+        /** A line of the path: its dot on the rail, which starts at the first line and ends at the concept's. */
+        private Node createLineageStep(String text, boolean first, boolean self) {
+            Region rail = new Region();
+            rail.getStyleClass().add("match-lineage-rail");
+            Region dot = new Region();
+            dot.getStyleClass().add("match-lineage-dot");
+            StackPane marker = new StackPane(rail, dot);
+            marker.getStyleClass().add("match-lineage-marker");
+            Label label = new Label(text);
+            label.getStyleClass().add("match-lineage-name");
+            HBox step = new HBox(marker, label);
+            step.getStyleClass().add("match-lineage-step");
+            step.pseudoClassStateChanged(FIRST_PSEUDO_CLASS, first);
+            step.pseudoClassStateChanged(SELF_PSEUDO_CLASS, self);
+            return step;
         }
     }
 }

@@ -49,6 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
+import java.util.stream.LongStream;
 
 /**
  * The concept navigator's "Show" filter: it narrows the tree to the concepts that have a semantic
@@ -85,6 +86,8 @@ public class ConceptFilterController {
      * then its parent, and so on. It also bounds the walk up, whatever the parents lead to.
      */
     private static final int MAX_PATH_NAMES = 4;
+    /** How far up the whole path of a tooltip is followed, which also ends a walk around parents that lead back to each other. */
+    private static final int MAX_LINEAGE_DEPTH = 64;
     private static final String PATH_SEPARATOR = " › ";
     private static final String PATH_GAP = "…";
     /** The paths kept for the rows of the list that were in view lately. */
@@ -148,6 +151,7 @@ public class ConceptFilterController {
         bar.listShownProperty().subscribe(() -> showListOrTree());
 
         matchList.setPathProvider(match -> pathOf(match.nid()));
+        matchList.setLineageProvider(match -> readLineage(match.nid()));
         matchList.setOnShowInTree(match -> {
             showTree();
             if (getOnShowInTree() != null) {
@@ -561,9 +565,7 @@ public class ConceptFilterController {
         long current = nid;
         boolean moreAbove = false;
         while (true) {
-            OptionalLong parent = Arrays.stream(calculator.unsortedParentsOf(current).toArray())
-                    .filter(shownResult::isVisible)
-                    .findFirst();
+            OptionalLong parent = shownParentsOf(calculator, current).findFirst();
             if (parent.isEmpty() || Arrays.stream(rootNids).anyMatch(root -> root == parent.getAsLong())) {
                 break;
             }
@@ -581,6 +583,36 @@ public class ConceptFilterController {
             names.addFirst(PATH_GAP);
         }
         return String.join(PATH_SEPARATOR, names);
+    }
+
+    /**
+     * The whole path that leads to a concept in the filtered tree, from the top of the tree down to
+     * its parent, through the same parents as the path of its row. Read when the tooltip of the row
+     * is about to show.
+     */
+    private ConceptMatchList.Lineage readLineage(long nid) {
+        if (shownResult == null) {
+            return new ConceptMatchList.Lineage(List.of(), 0);
+        }
+        ViewCalculator calculator = shownBase.getViewCalculator();
+        long[] rootNids = shownBase.getRootNids();
+        Deque<String> names = new ArrayDeque<>();
+        long current = nid;
+        for (int depth = 0; depth < MAX_LINEAGE_DEPTH; depth++) {
+            OptionalLong parent = shownParentsOf(calculator, current).findFirst();
+            if (parent.isEmpty() || Arrays.stream(rootNids).anyMatch(root -> root == parent.getAsLong())) {
+                break;
+            }
+            current = parent.getAsLong();
+            names.addFirst(calculator.getDescriptionTextOrNid(current));
+        }
+        long shownParentCount = shownParentsOf(calculator, nid).count();
+        return new ConceptMatchList.Lineage(List.copyOf(names), (int) Math.max(0, shownParentCount - 1));
+    }
+
+    /** The parents of a concept that the filtered tree shows, in the order the path of a row takes the first of. */
+    private LongStream shownParentsOf(ViewCalculator calculator, long nid) {
+        return Arrays.stream(calculator.unsortedParentsOf(nid).toArray()).filter(shownResult::isVisible);
     }
 
     /**

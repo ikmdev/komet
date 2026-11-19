@@ -739,6 +739,98 @@
     -fx-text-fill: rgba(31, 42, 68, 0.45);
 }
 
+/* ---- Tooltip of a row of the list: the whole path to its concept, a line an ancestor, on a rail ---- */
+.match-lineage-tooltip {
+    -fx-background-color: #C9D1DC, white;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 6, 5;
+    -fx-padding: 9 12 10 12;
+    /* The shadow stays inside the gap a tooltip keeps from the pointer (10 across, 7 down). A wider one
+       reaches under the pointer, which then leaves the row for the tooltip, and the tooltip hides. */
+    -fx-effect: dropshadow(gaussian, rgba(33, 36, 48, 0.3), 8, 0, 0, 3);
+}
+
+.match-lineage-tooltip .match-lineage-title {
+    -fx-font-family: "Noto Sans Medium";
+    -fx-font-size: 10px;
+    -fx-text-fill: #6E7989;
+    -fx-padding: 0 0 5 0;
+}
+
+.match-lineage-tooltip .match-lineage-step {
+    -fx-spacing: 7;
+    -fx-alignment: center-left;
+}
+
+.match-lineage-tooltip .match-lineage-marker {
+    -fx-min-width: 8;
+    -fx-pref-width: 8;
+    -fx-max-width: 8;
+}
+
+.match-lineage-tooltip .match-lineage-rail {
+    -fx-background-color: #C9D1DC;
+    -fx-min-width: 2;
+    -fx-pref-width: 2;
+    -fx-max-width: 2;
+}
+
+/* The rail runs from the dot of the first line to the dot of the last, the concept's own. */
+.match-lineage-tooltip .match-lineage-step:first .match-lineage-rail {
+    -fx-background-insets: 9 0 0 0;
+}
+
+.match-lineage-tooltip .match-lineage-step:self .match-lineage-rail {
+    -fx-background-insets: 0 0 9 0;
+}
+
+.match-lineage-tooltip .match-lineage-step:first:self .match-lineage-rail {
+    -fx-background-color: transparent;
+}
+
+.match-lineage-tooltip .match-lineage-dot {
+    -fx-background-color: #9AA5B5, white;
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 4;
+    -fx-min-width: 8;
+    -fx-pref-width: 8;
+    -fx-max-width: 8;
+    -fx-min-height: 8;
+    -fx-pref-height: 8;
+    -fx-max-height: 8;
+}
+
+.match-lineage-tooltip .match-lineage-step:self .match-lineage-dot {
+    -fx-background-color: #5DCF16;
+    -fx-background-insets: 0;
+}
+
+.match-lineage-tooltip .match-lineage-name {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 12px;
+    -fx-text-fill: #545D72;
+    -fx-padding: 1 0 1 0;
+    -fx-max-width: 340;
+}
+
+.match-lineage-tooltip .match-lineage-step:self .match-lineage-name {
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-text-fill: #2E3240;
+}
+
+.match-lineage-tooltip .match-lineage-others {
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 11px;
+    -fx-text-fill: #6E7989;
+    -fx-border-color: #E5E7EB transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 6 0 0 0;
+}
+
+.match-lineage-tooltip .match-lineage {
+    -fx-spacing: 0;
+}
+
 /* ---- Scrollbars of the picker and of the list of matches, as in the KL windows: a slim rounded thumb, no arrow buttons ---- */
 .concept-filter-picker .scroll-bar,
 .concept-match-list .scroll-bar {
