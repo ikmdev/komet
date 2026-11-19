@@ -56,10 +56,10 @@ class ConceptFilterUTestFX {
             bar = new ConceptFilterBar();
             picker = new ConceptFilterPicker();
             VBox barHost = new VBox(bar);
-            barHost.setStyle("-fx-background-color: #6E7989;");
+            barHost.setStyle("-fx-background-color: #E7EBF1;");
             VBox root = new VBox(24, barHost, picker);
             root.setPadding(new Insets(16, 24, 24, 24));
-            root.setStyle("-fx-background-color: #6E7989;");
+            root.setStyle("-fx-background-color: #E7EBF1;");
             Scene scene = new Scene(root, 485, 640);
             scene.getStylesheets().add(KLConceptNavigatorControl.class
                     .getResource("/dev/ikm/komet/kview/mvvm/view/kview.css").toExternalForm());

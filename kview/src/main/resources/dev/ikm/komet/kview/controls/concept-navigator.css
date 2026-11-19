@@ -15,12 +15,14 @@
     -fx-dots-cell-color: -Secondary-05;
 }
 
+/* A near-white panel with a hairline, like a card of the pattern side, so it stands out on the
+   navigator's column (#E7EBF1). */
 .concept-navigator-control.tree-view,
 .concept-navigator-control.tree-view:focused {
-    -fx-background: -Grey-3;
-    -fx-background-color: transparent, -fx-background;
-    -fx-background-insets: 0, 8;
-    -fx-background-radius: 0, 5;
+    -fx-background: -Grey-1;
+    -fx-background-color: transparent, -Grey-5, -fx-background;
+    -fx-background-insets: 0, 8, 9;
+    -fx-background-radius: 0, 5, 4;
     -fx-padding: 12 11 12 11;
     -fx-min-width: 448;
 }
@@ -32,7 +34,7 @@
     -fx-text-fill: -Grey-11;
     -fx-padding: 0 0 4 0;
     -fx-alignment: center;
-    -fx-background: -Grey-3;
+    -fx-background: -Grey-1;
     -fx-background-color: transparent, -fx-background;
     -fx-background-radius: 0, 5 5 0 0;
     -fx-background-insets: 0, 0 7 0 7;
@@ -47,8 +49,8 @@
 }
 .concept-navigator-control.tree-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-cell:filled:selected,
 .concept-navigator-control.tree-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-cell:focused {
-    -fx-background: -Grey-3;
-    -fx-table-cell-border-color: -Grey-3;
+    -fx-background: -Grey-1;
+    -fx-table-cell-border-color: -Grey-1;
     -fx-background-insets: 0;
 }
 
@@ -65,7 +67,7 @@
 .concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:horizontal:focused,
 .concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical,
 .concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical:focused {
-    -fx-background-color: -Grey-3;
+    -fx-background-color: -Grey-1;
 }
 
 .concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical > .track,
@@ -79,7 +81,7 @@
 
 .concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:horizontal .track,
 .concept-navigator-control.tree-view > .virtual-flow > .scroll-bar:vertical .track {
-    -fx-background-color: -Grey-3;
+    -fx-background-color: -Grey-1;
     -fx-border-width: 0;
     -fx-background-radius: 0em;
     -fx-border-radius: 0;
@@ -190,8 +192,8 @@
 }
 
 .navigator-tree-cell.tree-cell:filled:selected {
-    -fx-background: -Grey-3;
-    -fx-table-cell-border-color: -Grey-3;
+    -fx-background: -Grey-1;
+    -fx-table-cell-border-color: -Grey-1;
     -fx-background-insets: 0;
 }
 
@@ -244,12 +246,13 @@
     -fx-padding: 2 4 2 2;
 }
 
-/* A concept a filtered navigator keeps only because it leads to a match: no plate, a dashed outline.
-   The outline takes the 1px the plate's border layer had, so the tile keeps its size. Hover and
-   selection, stated below, still give it their plates. */
+/* A concept a filtered navigator keeps only because it leads to a match: a grey plate in place of the
+   white one, and a dashed outline. The panel is near-white, so the plate is what sets it apart from a
+   match at a glance. The outline takes the 1px the plate's border layer had, so the tile keeps its
+   size. Hover and selection, stated below, still give it their plates. */
 .navigator-tree-cell.tree-cell > .concept-tile:filter-context {
-    -fx-background-color: transparent, transparent;
-    -fx-border-color: -Grey-6;
+    -fx-background-color: transparent, -Grey-3;
+    -fx-border-color: -Grey-7;
     -fx-border-style: dashed;
     -fx-border-radius: 3;
     -fx-padding: 1 3 1 1;
@@ -281,15 +284,15 @@
     -fx-background-insets: 0, 1;
 }
 
-/* A context row on the way to the selected or long-hovered concept stays without a plate, so it still
+/* A context row on the way to the selected or long-hovered concept keeps its grey plate, so it still
    reads as "does not match": only its dashed outline takes the colour of that state. */
 .navigator-tree-cell.tree-cell:cn-border-selected > .concept-tile:filter-context {
-    -fx-background-color: transparent, transparent;
+    -fx-background-color: transparent, -Grey-3;
     -fx-border-color: -Natural-Grey-Main;
 }
 
 .navigator-tree-cell.tree-cell:cn-border-long-hover > .concept-tile:filter-context {
-    -fx-background-color: transparent, transparent;
+    -fx-background-color: transparent, -Grey-3;
     -fx-border-color: -Secondary-04;
 }
 

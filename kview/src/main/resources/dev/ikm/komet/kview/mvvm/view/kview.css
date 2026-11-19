@@ -2631,14 +2631,18 @@ Timeline Year line segment (will overlay change circles)
  * Concept / Pattern Navigator                                                   *
  *********************************************************************************/
 
+/* One light column for both sides, the PATTERNS side's (see .pattern-browser): the top keeps its look
+   when the side changes. */
 .concept-pattern-container {
-    -fx-spacing: 10px;
+    -fx-spacing: 0;
+}
+
+.concept-pattern-container.grey-vertical-scroll-area {
+    -fx-background-color: #E7EBF1;
 }
 
 .concept-pattern-header {
-    -fx-border-color: #3f3f3f;
-    -fx-border-width: 0 0 1px 0;
-    -fx-padding: 12 0 10 0;
+    -fx-padding: 10 14 4 14;
 }
 
 /*********************************************************************************
@@ -5475,36 +5479,36 @@ Styling a context menu for kview ui/ux controls
     -fx-background-color: -Grey-9;
 }
 
+/* Concepts | Patterns: a segmented switch, the chosen side a white plate on a grey track. */
+.nav-switch {
+    -fx-background-color: #D5DCE6;
+    -fx-background-radius: 6;
+    -fx-padding: 2;
+}
+
 .nav-toggle.toggle-button {
-    -fx-pref-width: 8.583333em; /* 103px; in em so the pills widen with the text size */
-    -fx-border-color: -Grey-7;
-    -fx-background-color: -Grey-2;
-    -fx-text-fill: -Secondary-05;
+    -fx-pref-width: 7.5em; /* 90px; in em so the switch widens with the text size */
+    -fx-background-color: transparent;
     -fx-background-insets: 0;
+    -fx-background-radius: 4;
+    -fx-border-width: 0;
+    -fx-padding: 0.333333em 0 0.333333em 0; /* 4px above and below */
     -fx-font-family: "Noto Sans";
-    -fx-letter-spacing: 0.2px;
-    -fx-text-transform: uppercase;
     -fx-font-size: 1em; /* 12px */
-    -fx-font-style: normal;
-    -fx-font-weight: bold;
+    -fx-text-fill: -Grey-9;
+    -fx-cursor: hand;
 }
 
-.nav-toggle-left.toggle-button {
-    -fx-border-width: 1 0 1 1;
-    -fx-border-radius: 6 0 0 6;
-    -fx-background-radius: 6 0 0 6;
+.nav-toggle.toggle-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.5);
 }
 
-.nav-toggle-right.toggle-button {
-    -fx-border-width: 1;
-    -fx-border-radius: 0 6 6 0;
-    -fx-background-radius: 0 6 6 0;
-}
-
-.nav-toggle:selected.toggle-button {
-    -fx-border-color: -Grey-7;
-    -fx-background-color: -Primary-03;
-    -fx-text-fill: -Grey-12;
+.nav-toggle:selected.toggle-button,
+.nav-toggle:selected.toggle-button:hover {
+    -fx-background-color: white;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-text-fill: -Grey-11;
+    -fx-effect: dropshadow(gaussian, rgba(33, 36, 48, 0.18), 2, 0, 0, 1);
 }
 
 .pattern-title-container {
@@ -6378,7 +6382,7 @@ Styling a context menu for kview ui/ux controls
  *                                                                             *
  ******************************************************************************/
 .concept-navigator-container {
-    -fx-background-color: -Grey-8;
+    -fx-background-color: transparent;
     -fx-padding: 0;
     -fx-spacing: -8;
 }

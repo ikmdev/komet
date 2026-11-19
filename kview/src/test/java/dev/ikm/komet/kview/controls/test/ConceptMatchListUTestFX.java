@@ -64,7 +64,7 @@ class ConceptMatchListUTestFX {
                     new Match(6, "Diameter.inner orbital"));
             VBox root = new VBox(list);
             VBox.setVgrow(list, javafx.scene.layout.Priority.ALWAYS);
-            root.setStyle("-fx-background-color: #6E7989;");
+            root.setStyle("-fx-background-color: #E7EBF1;");
             Scene scene = new Scene(root, 448, 380);
             scene.getStylesheets().add(KLConceptNavigatorControl.class
                     .getResource("/dev/ikm/komet/kview/mvvm/view/kview.css").toExternalForm());

@@ -3,7 +3,7 @@
  * (ConceptFilterBar), the legend under the tree, and the picker the row's pill opens
  * (ConceptFilterPicker).
  *
- * The row and the legend sit on the navigator's dark container and size in em, like the search
+ * The row and the legend sit on the navigator's light column and size in em, like the search
  * box above them. The picker is a popup in the light chrome of the knowledge-layout windows and
  * the assistant sidebar; it sizes in px because a popup does not inherit the window's text size.
  * Colors are literals: a popup's scene does not load the kview palette.
@@ -18,14 +18,14 @@
 .concept-filter-bar {
     -fx-alignment: center-left;
     -fx-spacing: 8;
-    -fx-padding: 4 12 8 8;
+    -fx-padding: 0 14 6 14;
     -fx-min-height: 3.5em; /* 42px: the row keeps its height when the two-line count leaves it */
 }
 
 .concept-filter-bar > .filter-caption {
     -fx-font-family: "Noto Sans SemiBold";
     -fx-font-size: 0.916667em; /* 11px */
-    -fx-text-fill: #E1E8F1;
+    -fx-text-fill: #6E7989;
 }
 
 .concept-filter-bar > .filter-pill {
@@ -35,14 +35,14 @@
     -fx-min-height: 24;
     -fx-pref-height: 24;
     -fx-max-height: 24;
-    -fx-background-color: #B3BDCD, #6E7989;
+    -fx-background-color: #B3BDCD, white;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 12, 11;
     -fx-cursor: hand;
 }
 
 .concept-filter-bar > .filter-pill:hover {
-    -fx-background-color: #E1E8F1, #6E7989;
+    -fx-background-color: #4A7AD2, white;
 }
 
 .concept-filter-bar > .filter-pill:open {
@@ -59,7 +59,7 @@
 .concept-filter-bar > .filter-pill > .filter-pill-label {
     -fx-font-family: "Noto Sans Medium";
     -fx-font-size: 1.083333em; /* 13px */
-    -fx-text-fill: #FBFBFC;
+    -fx-text-fill: #2E3240;
 }
 
 .concept-filter-bar > .filter-pill:open > .filter-pill-label {
@@ -71,7 +71,7 @@
 }
 
 .concept-filter-bar .filter-icon {
-    -fx-background-color: #FBFBFC;
+    -fx-background-color: #545D72;
     -fx-scale-shape: true;
 }
 
@@ -141,7 +141,7 @@
 .concept-filter-bar .filter-count {
     -fx-font-family: "Noto Sans";
     -fx-font-size: 0.916667em; /* 11px */
-    -fx-text-fill: #E1E8F1;
+    -fx-text-fill: #545D72;
     -fx-text-alignment: right;
     -fx-alignment: center-right;
 }
@@ -149,7 +149,7 @@
 /* Tree | List: two joined options in one hairline frame, 24px tall like the pill. The chosen one is a
    light plate that fills its half of the frame. */
 .concept-filter-bar .filter-view-switch {
-    -fx-background-color: #B3BDCD, #6E7989;
+    -fx-background-color: #B3BDCD, #DDE3EB;
     -fx-background-insets: 0, 1;
     -fx-background-radius: 5, 4;
     -fx-padding: 1;
@@ -170,7 +170,7 @@
     -fx-max-height: 22;
     -fx-font-family: "Noto Sans Medium";
     -fx-font-size: 1em; /* 12px */
-    -fx-text-fill: #E1E8F1;
+    -fx-text-fill: #545D72;
     -fx-cursor: hand;
 }
 
@@ -179,7 +179,7 @@
 }
 
 .concept-filter-bar .filter-view-option:hover {
-    -fx-background-color: rgba(255, 255, 255, 0.14);
+    -fx-background-color: rgba(255, 255, 255, 0.6);
 }
 
 .concept-filter-bar .filter-view-option:chosen,
@@ -198,9 +198,10 @@
 .concept-match-list {
     /* As wide as the tree it stands in for (.concept-navigator-control.tree-view), so the panel keeps its width. */
     -fx-min-width: 448;
-    -fx-background-color: #E1E8F1;
-    -fx-background-insets: 8 8 0 8;
-    -fx-background-radius: 5;
+    /* the tree's panel: light, with a hairline */
+    -fx-background-color: #C3CDDC, #FBFBFC;
+    -fx-background-insets: 8 8 0 8, 9 9 1 9;
+    -fx-background-radius: 5, 4;
     -fx-padding: 12 13 6 13;
     -fx-spacing: 4;
 }
@@ -307,7 +308,7 @@
 .concept-filter-legend {
     -fx-font-family: "Noto Sans";
     -fx-font-size: 0.916667em; /* 11px */
-    -fx-text-fill: #E1E8F1;
+    -fx-text-fill: #6E7989;
     -fx-padding: 2 12 8 12;
     -fx-graphic-text-gap: 6;
 }
@@ -319,7 +320,10 @@
     -fx-min-height: 12;
     -fx-pref-height: 12;
     -fx-max-height: 12;
-    -fx-border-color: #E1E8F1;
+    /* a context row in small: its grey plate and dashed outline */
+    -fx-background-color: #E1E8F1;
+    -fx-background-radius: 3;
+    -fx-border-color: #9CAABF;
     -fx-border-style: dashed;
     -fx-border-radius: 3;
 }

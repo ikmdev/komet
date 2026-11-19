@@ -106,7 +106,10 @@ class ConceptFilterContextRowsUTestFX {
             control.setShowRoot(true);
             control.setRoot(rootItem);
 
-            Scene scene = new Scene(new StackPane(control), 480, 260);
+            // On the navigator's light column, as in the app, so the picture shows the panel against it.
+            StackPane column = new StackPane(control);
+            column.setStyle("-fx-background-color: #E7EBF1;");
+            Scene scene = new Scene(column, 480, 260);
             scene.getStylesheets().add(KLConceptNavigatorControl.class
                     .getResource("/dev/ikm/komet/kview/mvvm/view/kview.css").toExternalForm());
             stage.setScene(scene);
@@ -141,25 +144,26 @@ class ConceptFilterContextRowsUTestFX {
     }
 
     @Test
-    void contextAncestorsOfTheSelectedConceptStayWithoutAPlate() {
+    void contextAncestorsOfTheSelectedConceptDoNotTakeTheWhitePlateOfAMatch() {
         robot.interact(() -> control.getSelectionModel().select(3)); // the Fetus concept, under Diameter
         WaitForAsyncUtils.waitForFxEvents();
         FxService.serviceContext().getCaptureSupport().saveImage(robot.capture(control).getImage(),
                 Path.of("target", "concept-filter-context-rows-selected.png"));
 
-        Map<String, Boolean> plateByName = new HashMap<>();
+        // An ancestor of the selection that matches gets a white plate; one kept for context keeps its grey one.
+        Map<String, Boolean> whitePlateByName = new HashMap<>();
         for (Node tile : robot.lookup(".concept-tile").queryAll()) {
             String name = ((Label) tile.lookup(".concept-label")).getText();
             if (name != null && tile.getParent().getPseudoClassStates().contains(ANCESTOR_OF_SELECTED)) {
-                plateByName.put(name, ((Region) tile).getBackground().getFills().stream()
-                        .anyMatch(fill -> !Color.TRANSPARENT.equals(fill.getFill())));
+                whitePlateByName.put(name, ((Region) tile).getBackground().getFills().stream()
+                        .anyMatch(fill -> Color.WHITE.equals(fill.getFill())));
             }
         }
 
         assertEquals(Map.of(
                 "Integrated Knowledge Management (SOLOR)", false,
                 "Observable entity", false,
-                "Diameter.hilum-cortex.mean", true), plateByName);
+                "Diameter.hilum-cortex.mean", true), whitePlateByName);
     }
 
     private static ConceptFacade concept(String name, ConceptFacade parent) {

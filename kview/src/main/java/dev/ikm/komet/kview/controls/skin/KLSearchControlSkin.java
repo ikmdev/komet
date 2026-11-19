@@ -307,20 +307,22 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
         double searchPaneWidth = snapSizeX(searchPane.prefWidth(contentHeight));
         double closePaneWidth = snapSizeX(closePane.prefWidth(contentHeight));
         double filterPaneWidth = snapSizeX(filterPane.prefWidth(contentHeight));
-        double textFieldWidth = contentWidth - filterPaneWidth - 12;
+        // The field takes the whole width: the view-options glyph sits inside it at the right, the clear
+        // cross just left of the glyph.
+        double textFieldWidth = contentWidth;
         double textFieldHeight = snapSizeY(textField.prefHeight(textFieldWidth));
         textField.resizeRelocate(x, y, textFieldWidth, textFieldHeight);
 
         double searchHeight = snapSizeY(searchPane.prefHeight(searchPaneWidth));
-        searchPane.resizeRelocate(x + 8, y + (textFieldHeight - searchHeight) / 2,
+        searchPane.resizeRelocate(x + 7, y + (textFieldHeight - searchHeight) / 2,
                 searchPaneWidth, searchHeight);
 
         double closeHeight = snapSizeY(closePane.prefHeight(searchPaneWidth));
-        closePane.resizeRelocate(x + textFieldWidth - 4 - closePaneWidth, y + (textFieldHeight - closeHeight) / 2,
+        closePane.resizeRelocate(x + textFieldWidth - 5 - filterPaneWidth - 4 - closePaneWidth, y + (textFieldHeight - closeHeight) / 2,
                 closePaneWidth, closeHeight);
 
         double filterHeight = snapSizeY(filterPane.prefHeight(filterPaneWidth));
-        filterPane.resizeRelocate(contentWidth - filterPaneWidth + snappedLeftInset() - 4, y + (textFieldHeight - filterHeight) / 2,
+        filterPane.resizeRelocate(x + textFieldWidth - 5 - filterPaneWidth, y + (textFieldHeight - filterHeight) / 2,
                 filterPaneWidth, filterHeight);
 
         if (resultsPane.isVisible()) {
