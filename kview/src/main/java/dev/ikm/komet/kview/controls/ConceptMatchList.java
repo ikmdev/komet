@@ -8,6 +8,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.css.PseudoClass;
+import javafx.css.Styleable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -274,7 +275,18 @@ public class ConceptMatchList extends VBox {
         private final Label name = new Label();
         private final Label path = new Label();
         private final Button showInTree = new Button(resources.getString("list.showintree"));
-        private final Tooltip lineageTooltip = new Tooltip();
+        /**
+         * The tooltip takes its styles through this row, always. JavaFX gives a tooltip a hover brings the
+         * hovered node for that, but only until the tooltip is shown: styles worked out after that would
+         * come through the window's scene alone, where the list's stylesheet is not, and the tooltip would
+         * fall back to the default dark look.
+         */
+        private final Tooltip lineageTooltip = new Tooltip() {
+            @Override
+            public Styleable getStyleableParent() {
+                return MatchCell.this;
+            }
+        };
         private final HBox row;
 
         MatchCell() {

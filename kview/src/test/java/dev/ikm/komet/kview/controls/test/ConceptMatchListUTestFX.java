@@ -19,6 +19,7 @@ import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -228,6 +229,27 @@ class ConceptMatchListUTestFX {
         WaitForAsyncUtils.waitForFxEvents();
         assertTrue(robot.from(plain.getScene().getRoot()).lookup(".match-lineage-others").queryAll().isEmpty());
         robot.interact(plain::hide);
+    }
+
+    @Test
+    void theTooltipKeepsItsLookWhenItIsNotStyledThroughItsRow() {
+        // JavaFX styles a tooltip a hover brings through the hovered row only while it remembers the row, which it
+        // stops doing right after showing the tooltip. Shown on the window, as here, the tooltip has no such row
+        // from JavaFX at all: it has its look only because it takes its styles through its row itself.
+        robot.interact(() -> list.setLineageProvider(_ -> new Lineage(List.of("Phenomenon", "Observable Entity"), 0)));
+        ListCell<?> row = filledRows().get(1);
+        Tooltip tooltip = row.getTooltip();
+        Point2D onScreen = row.localToScreen(90, 40);
+        robot.interact(() -> tooltip.show(row.getScene().getWindow(), onScreen.getX(), onScreen.getY()));
+        WaitForAsyncUtils.waitForFxEvents();
+
+        // The tooltip's label is what carries its plate.
+        Region plate = tooltip.getScene().getRoot().lookupAll(".match-lineage-tooltip").stream()
+                .filter(Label.class::isInstance).map(Region.class::cast).findFirst().orElseThrow();
+        assertEquals(Color.WHITE, plate.getBackground().getFills().getLast().getFill(), "the light plate, not the default dark one");
+        Label title = (Label) tooltip.getScene().getRoot().lookup(".match-lineage-title");
+        assertEquals(10, title.getFont().getSize(), "the title in its own size");
+        robot.interact(tooltip::hide);
     }
 
     private List<ListCell<?>> filledRows() {
