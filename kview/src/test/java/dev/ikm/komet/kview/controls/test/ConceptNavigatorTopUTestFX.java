@@ -4,7 +4,7 @@ import dev.ikm.komet.framework.view.ObservableViewNoOverride;
 import dev.ikm.komet.kview.controls.ComponentSearchTextField;
 import dev.ikm.komet.kview.controls.ConceptFilterBar;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
-import dev.ikm.komet.kview.controls.KLSearchControl;
+import dev.ikm.komet.kview.controls.KLConceptSearchControl;
 import dev.ikm.komet.kview.mvvm.view.navigation.ConceptPatternNavController;
 import dev.ikm.tinkar.common.service.CachingService;
 import dev.ikm.tinkar.common.service.PrimitiveData;
@@ -94,7 +94,7 @@ class ConceptNavigatorTopUTestFX {
             header.getStyleClass().add("concept-pattern-header");
 
             bar = new ConceptFilterBar();
-            KLSearchControl search = new KLSearchControl();
+            KLConceptSearchControl search = new KLConceptSearchControl();
             search.setViewProperties(new ObservableViewNoOverride(Coordinates.View.DefaultView(), "navigator view")
                     .makeOverridableViewProperties("navigator"));
             VBox conceptSide = new VBox(search, bar);

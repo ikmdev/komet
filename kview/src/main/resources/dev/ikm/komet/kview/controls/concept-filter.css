@@ -196,8 +196,8 @@
  ******************************************************************************/
 
 .concept-match-list {
-    /* As wide as the tree it stands in for (.concept-navigator-control.tree-view), so the panel keeps its width. */
-    -fx-min-width: 448;
+    /* As wide as the tree it stands in for (.concept-navigator-control.tree-view) until the user resizes the tray. */
+    -fx-pref-width: 470;
     /* the tree's panel: light, with a hairline */
     -fx-background-color: #C3CDDC, #FBFBFC;
     -fx-background-insets: 8 8 0 8, 9 9 1 9;

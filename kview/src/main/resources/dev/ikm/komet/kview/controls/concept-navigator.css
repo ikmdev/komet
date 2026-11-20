@@ -24,7 +24,6 @@
     -fx-background-insets: 0, 8, 9;
     -fx-background-radius: 0, 5, 4;
     -fx-padding: 12 11 12 11;
-    -fx-min-width: 448;
 }
 
 .concept-navigator-control.tree-view > .concept-header.label {
@@ -38,10 +37,8 @@
     -fx-background-color: transparent, -fx-background;
     -fx-background-radius: 0, 5 5 0 0;
     -fx-background-insets: 0, 0 7 0 7;
-    -fx-min-width: 448;
+    /* The tree's width before the user resizes its tray; the tree lays the header out to its own width. */
     -fx-pref-width: 448;
-    -fx-max-width: 448;
-
 }
 
 .concept-navigator-control.tree-view > .virtual-flow > .clipped-container > .sheet {
@@ -182,9 +179,9 @@
     -fx-text-fill: -fx-text-background-color;
     -fx-padding: 1;
     -fx-indent: 15;
-    -fx-min-width: 422;
-    -fx-pref-width: 422;
-    -fx-max-width: 422;
+    /* No width of its own: a row is as wide as the tree, whatever its label needs. */
+    -fx-min-width: 0;
+    -fx-pref-width: 0;
 }
 
 .navigator-tree-cell.tree-cell:show-tags {

@@ -3,7 +3,7 @@ package dev.ikm.komet.kview.controls.skin;
 import dev.ikm.komet.framework.search.HighlightedSegments;
 import dev.ikm.komet.kview.controls.GraphFilterOptionsNavigator;
 import dev.ikm.komet.kview.controls.InvertedTree;
-import dev.ikm.komet.kview.controls.KLSearchControl;
+import dev.ikm.komet.kview.controls.KLConceptSearchControl;
 import dev.ikm.komet.layout.controls.FilterOptionsPopup;
 import dev.ikm.komet.layout.controls.IconRegion;
 import dev.ikm.komet.navigator.graph.Navigator;
@@ -37,15 +37,15 @@ import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * <p>Custom skin implementation for the {@link KLSearchControl}.
+ * <p>Custom skin implementation for the {@link KLConceptSearchControl}.
  * <p>This implementation takes care of adding a {@link TextField} as a search field for the user,
  * with a clear button in it, a filter button and results area to display a
- * {@link ListView<dev.ikm.komet.kview.controls.KLSearchControl.SearchResult>} with the
+ * {@link ListView< KLConceptSearchControl.SearchResult>} with the
  * search results, with a limited height. This area is only shown when the search field contains some text,
  * the user has pressed ENTER and a search engine has performed a certain search, setting the results in
- * the {@link KLSearchControl#resultsProperty()}.
+ * the {@link KLConceptSearchControl#resultsProperty()}.
  */
-public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
+public class KLConceptSearchControlSkin extends SkinBase<KLConceptSearchControl> {
 
     /** Row height until the stylesheet's {@code -fx-fixed-cell-size} has been applied. */
     private static final double SEARCH_RESULT_HEIGHT = 43; // 38 + 5
@@ -58,19 +58,19 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
     private final StackPane filterPane;
     private Subscription subscription;
 
-    private final ListView<KLSearchControl.SearchResult> resultsPane;
+    private final ListView<KLConceptSearchControl.SearchResult> resultsPane;
     private final FilterOptionsPopup filterOptionsPopup;
 
     /**
-     * <p>Creates a {@link KLSearchControlSkin} instance.
-     * <p>Create the {@link ListView<dev.ikm.komet.kview.controls.KLSearchControl.SearchResult>} instance, and
+     * <p>Creates a {@link KLConceptSearchControlSkin} instance.
+     * <p>Create the {@link ListView< KLConceptSearchControl.SearchResult>} instance, and
      * provide a custom cell factory that uses a {@link SearchResultBox} instance for the graphic node.
      * <p>The list height is limited, and up until 4 search results will be visible.
-     * <p>Adds bindings and listeners to perform the necessary actions based on the {@link KLSearchControl}
+     * <p>Adds bindings and listeners to perform the necessary actions based on the {@link KLConceptSearchControl}
      * properties.
      * @param control The control that this skin should be installed onto
      */
-    public KLSearchControlSkin(KLSearchControl control) {
+    public KLConceptSearchControlSkin(KLConceptSearchControl control) {
         super(control);
         ResourceBundle resources = ResourceBundle.getBundle("dev.ikm.komet.kview.controls.search-control");
 
@@ -104,7 +104,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
             }
 
             @Override
-            protected void updateItem(KLSearchControl.SearchResult item, boolean empty) {
+            protected void updateItem(KLConceptSearchControl.SearchResult item, boolean empty) {
                 super.updateItem(item, empty);
                 if (item != null && !empty) {
                     searchResult.setSearchResult(item);
@@ -117,7 +117,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
         resultsPane.managedProperty().bind(resultsPane.visibleProperty());
         resultsPane.setVisible(false);
         resultsPane.setItems(control.resultsProperty());
-        control.resultsProperty().addListener((ListChangeListener<KLSearchControl.SearchResult>) _ -> sizeResultsPane());
+        control.resultsProperty().addListener((ListChangeListener<KLConceptSearchControl.SearchResult>) _ -> sizeResultsPane());
         // The row height and the gap above the rows are em values in the stylesheet, so they
         // follow the text size; re-measure whenever a CSS pass changes either.
         resultsPane.fixedCellSizeProperty().subscribe(this::sizeResultsPane);
@@ -266,6 +266,18 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
         super.dispose();
     }
 
+    /**
+     * {@inheritDoc}
+     * The room for the three glyphs inside the field. Without this the default is taken from where
+     * the children sit now, and the glyphs at the right edge make that nearly the current width, so
+     * the control would lag behind a container that is getting narrower.
+     */
+    @Override
+    protected double computeMinWidth(double height, double topInset, double rightInset, double bottomInset, double leftInset) {
+        return leftInset + 7 + snapSizeX(searchPane.prefWidth(height)) + snapSizeX(closePane.prefWidth(height)) + 4
+                + snapSizeX(filterPane.prefWidth(height)) + 5 + rightInset;
+    }
+
     /** {@inheritDoc} **/
     @Override
     protected double computeMinHeight(double width, double topInset, double rightInset, double bottomInset, double leftInset) {
@@ -333,7 +345,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
 
     /**
      * <p>Custom implementation of a {@link Pane} layout, to render the content of a
-     * {@link dev.ikm.komet.kview.controls.KLSearchControl.SearchResult}.
+     * {@link KLConceptSearchControl.SearchResult}.
      * <p>This can be used to render search results in a {@link ListView} control.
      */
     static class SearchResultBox extends Pane {
@@ -342,23 +354,23 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
 
         private final Label parentDescriptionLabel;
         private final Label descriptionLabel;
-        private final KLSearchControl searchControl;
+        private final KLConceptSearchControl searchControl;
         private final Navigator navigator;
         private Text actualDescriptionText;
         private PauseTransition hoverTransition;
         private Subscription subscription;
-        private KLSearchControl.SearchResult searchResult;
+        private KLConceptSearchControl.SearchResult searchResult;
         private final StringProperty actualTextProperty;
 
         /**
          * <p>Creates an instance of a {@link SearchResultBox}.
          * <p>A {@link Label} node is used on top with the {@link ConceptFacade#description()} of the parent concept.
          * <p>A {@link Label} node is used below with the {@link ConceptFacade#description()} of the concept found in
-         * the search, highlighting the occurrences of the {@link KLSearchControl#textProperty()}.
-         * @param searchControl the {@link KLSearchControl} with a {@link ListView} control, that
+         * the search, highlighting the occurrences of the {@link KLConceptSearchControl#textProperty()}.
+         * @param searchControl the {@link KLConceptSearchControl} with a {@link ListView} control, that
          *                      will use this box as graphic node for its cells.
          */
-        public SearchResultBox(KLSearchControl searchControl) {
+        public SearchResultBox(KLConceptSearchControl searchControl) {
             this.searchControl = searchControl;
             this.navigator = searchControl.getNavigator();
             subscription = Subscription.EMPTY;
@@ -390,15 +402,15 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
             getChildren().addAll(parentDescriptionLabel, descriptionLabel);
 
             getStyleClass().add("search-result");
-            getStylesheets().add(KLSearchControl.class.getResource("search-control.css").toExternalForm());
+            getStylesheets().add(KLConceptSearchControl.class.getResource("search-control.css").toExternalForm());
         }
 
         /**
          * <p>Update the content of this {@link SearchResultBox} with a new
-         * {@link dev.ikm.komet.kview.controls.KLSearchControl.SearchResult}
-         * @param result a {@link dev.ikm.komet.kview.controls.KLSearchControl.SearchResult}
+         * {@link KLConceptSearchControl.SearchResult}
+         * @param result a {@link KLConceptSearchControl.SearchResult}
          */
-        void setSearchResult(KLSearchControl.SearchResult result) {
+        void setSearchResult(KLConceptSearchControl.SearchResult result) {
             cleanup();
             this.searchResult = result;
             parentDescriptionLabel.setText(result.parentConcept() != null ?
@@ -447,7 +459,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
 
         /**
          * Since this {@link SearchResultBox} is reused in the cells of a listView, before a new
-         * {@link dev.ikm.komet.kview.controls.KLSearchControl.SearchResult} is set, this method performs
+         * {@link KLConceptSearchControl.SearchResult} is set, this method performs
          * necessary clean up operations.
          */
         void cleanup() {
@@ -475,7 +487,7 @@ public class KLSearchControlSkin extends SkinBase<KLSearchControl> {
 
         /**
          * Find and add the background {@link Path} nodes to this {@link SearchResultBox}, highlighting
-         * the occurrences of the {@link KLSearchControl#textProperty()} in the
+         * the occurrences of the {@link KLConceptSearchControl#textProperty()} in the
          * {@link ConceptFacade#description()}.
          */
         private void addHighlightPaths() {

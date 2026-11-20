@@ -12,7 +12,7 @@ import dev.ikm.komet.kview.controls.ConceptNavigatorUtils;
 import dev.ikm.komet.kview.controls.InvertedTree;
 import dev.ikm.komet.kview.controls.KLComponentControlFactory;
 import dev.ikm.komet.kview.controls.KLConceptNavigatorControl;
-import dev.ikm.komet.kview.controls.KLSearchControl;
+import dev.ikm.komet.kview.controls.KLConceptSearchControl;
 import dev.ikm.komet.kview.controls.SingleSelectionContextMenu;
 import dev.ikm.komet.kview.controls.Toast;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
@@ -157,8 +157,7 @@ public class ConceptPatternNavController {
         // panel won't change widths when button selected
 
         Platform.runLater(() -> {
-            patternNavigationPane.setPrefWidth(conceptNavigator.getPrefWidth());
-            patternNavigationPane.setMinWidth(conceptNavigator.getWidth());
+            patternNavigationPane.setPrefWidth(conceptNavigator.getWidth());
         });
 
         navContentPane.setCenter(conceptNavigator);
@@ -262,7 +261,7 @@ public class ConceptPatternNavController {
     private Pane loadConceptNavigatorPanel() {
         ViewProperties viewProperties = patternNavViewModel.getPropertyValue(VIEW_PROPERTIES);
         Navigator navigator = new ViewNavigator(viewProperties.nodeView());
-        KLSearchControl searchControl = new KLSearchControl();
+        KLConceptSearchControl searchControl = new KLConceptSearchControl();
         searchControl.setContainer(scrollPaneContent);
         searchControl.setViewProperties(viewProperties);
         searchControl.setNavigator(navigator);
@@ -280,22 +279,22 @@ public class ConceptPatternNavController {
                     Map<Long, List<LatestVersionSearchResult>> topNidMatchMap = new LinkedHashMap<>();
                     results.forEach(result -> topNidMatchMap.computeIfAbsent(result.latestVersion().get()
                             .chronology().topEnclosingComponentNid(), _ -> new ArrayList<>()).add(result));
-                    Map<KLSearchControl.SearchResult, List<LatestVersionSearchResult>> searchResultsMap = new LinkedHashMap<>();
+                    Map<KLConceptSearchControl.SearchResult, List<LatestVersionSearchResult>> searchResultsMap = new LinkedHashMap<>();
                     topNidMatchMap.keySet().forEach(key ->
                             navigator.getViewCalculator().latest(key).ifPresent(_ -> {
                                 // Add one search result per parent, ignoring concepts or patterns that don't have a parent
                                 for (long parentNid : shownNavigator.getParentNids(key)) {
-                                    searchResultsMap.put(new KLSearchControl.SearchResult(ConceptFacade.make(parentNid),
+                                    searchResultsMap.put(new KLConceptSearchControl.SearchResult(ConceptFacade.make(parentNid),
                                             ConceptFacade.make(key)), topNidMatchMap.get(key));
                                 }
                             }));
                     searchResultsMap.forEach((_, v) -> v.sort((o1, o2) -> Float.compare(o2.score(), o1.score())));
 
-                    List<Map.Entry<KLSearchControl.SearchResult, List<LatestVersionSearchResult>>> entries =
+                    List<Map.Entry<KLConceptSearchControl.SearchResult, List<LatestVersionSearchResult>>> entries =
                             new ArrayList<>(searchResultsMap.entrySet());
                     entries.sort((m1, m2) -> Float.compare(m2.getValue().getFirst().score(), m1.getValue().getFirst().score()));
                     // ignore map.Entry::values for now (a list of description semantics)
-                    List<KLSearchControl.SearchResult> searchResults = entries.stream().map(Map.Entry::getKey).toList();
+                    List<KLConceptSearchControl.SearchResult> searchResults = entries.stream().map(Map.Entry::getKey).toList();
 
                     Platform.runLater(() -> {
                         searchControl.setResultsPlaceholder(null);

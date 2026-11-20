@@ -1,7 +1,7 @@
 package dev.ikm.komet.kview.controls;
 
 import dev.ikm.komet.framework.view.ViewProperties;
-import dev.ikm.komet.kview.controls.skin.KLSearchControlSkin;
+import dev.ikm.komet.kview.controls.skin.KLConceptSearchControlSkin;
 import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import javafx.beans.property.BooleanProperty;
@@ -51,12 +51,12 @@ import java.util.function.Consumer;
  *     searchControl.setOnClearSearch(_ -&gt; System.out.println("Results have been cleared"));
  * </code></pre>
  */
-public class KLSearchControl extends Control {
+public class KLConceptSearchControl extends Control {
 
     /**
-     * <p>Creates a {@link KLSearchControl} instance.
+     * <p>Creates a {@link KLConceptSearchControl} instance.
      */
-    public KLSearchControl() {
+    public KLConceptSearchControl() {
 
         getStyleClass().add("search-control");
         getStylesheets().add(getUserAgentStylesheet());
@@ -295,12 +295,12 @@ public class KLSearchControl extends Control {
     /** {@inheritDoc} **/
     @Override
     protected Skin<?> createDefaultSkin() {
-        return new KLSearchControlSkin(this);
+        return new KLConceptSearchControlSkin(this);
     }
 
     /** {@inheritDoc} **/
     @Override
     public String getUserAgentStylesheet() {
-        return KLSearchControl.class.getResource("search-control.css").toExternalForm();
+        return KLConceptSearchControl.class.getResource("search-control.css").toExternalForm();
     }
 }
