@@ -74,6 +74,9 @@ public class SortResultConceptEntryController extends AbstractBasicController {
     private static final Logger LOG = LoggerFactory.getLogger(SortResultConceptEntryController.class);
     private static final int LIST_VIEW_CELL_SIZE = 40;
 
+    /** What the card keeps for itself beside its text: the identicon, the gaps and the paddings. */
+    private static final double TEXT_WIDTH_INSET = 79;
+
     @FXML
     private Pane searchEntryContainer;
 
@@ -115,6 +118,11 @@ public class SortResultConceptEntryController extends AbstractBasicController {
         dragIndicator.setVisible(false);
         searchEntryContainer.setOnMouseEntered(mouseEvent -> dragIndicator.setVisible(entity instanceof ConceptEntity));
         searchEntryContainer.setOnMouseExited(mouseEvent -> dragIndicator.setVisible(false));
+
+        // The card is as wide as the results list, and its text takes what the card leaves it: 253 of the
+        // card's 332 before the tray is resized. The row's height is worked out from this width.
+        searchEntryContainer.widthProperty().subscribe(() -> componentTextFlow.setPrefWidth(
+                Math.max(0, searchEntryContainer.getWidth() - TEXT_WIDTH_INSET)));
 
         searchEntryContainer.setOnMouseClicked(mouseEvent -> {
             // double left click opens the KL-driven general-purpose window; shift + double left

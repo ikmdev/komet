@@ -3246,6 +3246,8 @@ Timeline Year line segment (will overlay change circles)
 .next-gen-search-main-container .outer-list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
     -fx-background-color: transparent;
     -fx-padding: 3px 6px 3px 12px;
+    /* No width of its own: a card is as wide as the list, so its text wraps instead of the list scrolling sideways. */
+    -fx-pref-width: 0;
 }
 
 .next-gen-search-main-container .outer-list-view .scroll-bar {

@@ -15,11 +15,11 @@
     <children>
         <HBox prefHeight="61.0" prefWidth="372.0" styleClass="search-hbox" VBox.vgrow="NEVER">
             <children>
-                <VBox prefHeight="61.0" prefWidth="350.0">
+                <VBox prefHeight="61.0" prefWidth="350.0" HBox.hgrow="ALWAYS">
                     <children>
                         <HBox prefHeight="100.0" prefWidth="200.0" styleClass="search-box">
                             <children>
-                                <AutoCompleteTextField fx:id="searchField" onAction="#doSearch" prefWidth="424.0" promptText="🔍  Search" styleClass="search-text-field">
+                                <AutoCompleteTextField fx:id="searchField" HBox.hgrow="ALWAYS" onAction="#doSearch" prefWidth="424.0" promptText="🔍  Search" styleClass="search-text-field">
                                    <cursor>
                                       <Cursor fx:constant="TEXT" />
                                    </cursor>
@@ -31,7 +31,7 @@
                                 </StackPane>
                             </children>
                         </HBox>
-                        <Button fx:id="sortByButton" mnemonicParsing="false" onAction="#showSearchOptions" prefHeight="25.0" prefWidth="345.0" styleClass="search-sort-button" />
+                        <Button fx:id="sortByButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#showSearchOptions" prefHeight="25.0" styleClass="search-sort-button" />
                     </children>
                 </VBox>
             </children>

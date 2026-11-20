@@ -49,6 +49,9 @@ import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.VIEW_PROPERTIES;
 
 public class SortResultSemanticEntryController  {
 
+    /** What the entry keeps for itself beside its text: the identicon, the retired label, the margins. */
+    private static final double TEXT_WIDTH_INSET = 168;
+
     @FXML
     private Pane searchEntryContainer;
 
@@ -86,6 +89,11 @@ public class SortResultSemanticEntryController  {
         dragIndicator.setVisible(false);
         searchEntryContainer.setOnMouseEntered(_ -> dragIndicator.setVisible(true));
         searchEntryContainer.setOnMouseExited(_ ->  dragIndicator.setVisible(false));
+
+        // The entry is as wide as the results list, and its text takes what the entry leaves it: 164 of
+        // the entry's 332 before the tray is resized. The row's height is worked out from this width.
+        searchEntryContainer.widthProperty().subscribe(() -> textFlow.setPrefWidth(
+                Math.max(0, searchEntryContainer.getWidth() - TEXT_WIDTH_INSET)));
 
 
         searchEntryContainer.setOnMouseClicked(mouseEvent -> {

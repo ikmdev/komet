@@ -45,7 +45,7 @@
                                 <Insets bottom="6.0" left="3.0" right="3.0" top="6.0"/>
                             </padding>
                         </Label>
-                        <TextFlow fx:id="componentTextFlow" styleClass="search-entry-text-container" prefWidth="253.0"/>
+                        <TextFlow fx:id="componentTextFlow" HBox.hgrow="ALWAYS" styleClass="search-entry-text-container" prefWidth="253.0"/>
                     </children>
                 </HBox>
             </center>
