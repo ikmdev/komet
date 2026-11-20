@@ -1669,6 +1669,11 @@ selected(active) - dark black
     -fx-background-color: transparent;
 }
 
+/* The strip across the journal's open left tray's right edge; dragging it resizes the tray. */
+.tray-resize-grip {
+    -fx-background-color: transparent;
+}
+
 .property-toggle-text {
     -fx-text-fill: -Grey-White;
     -fx-fill: -Grey-White;

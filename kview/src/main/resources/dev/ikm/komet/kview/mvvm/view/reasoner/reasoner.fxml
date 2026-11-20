@@ -12,9 +12,10 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<Pane stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController">
+<StackPane stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.reasoner.NextGenReasonerController">
    <children>
       <ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="9000" minWidth="-Infinity" prefHeight="9000.0" prefWidth="372.0">
          <content>
@@ -130,4 +131,4 @@
          </content>
       </ScrollPane>
    </children>
-</Pane>
+</StackPane>

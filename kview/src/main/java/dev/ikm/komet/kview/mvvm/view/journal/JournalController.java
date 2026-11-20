@@ -189,7 +189,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
+import javafx.geometry.Pos;
 import javafx.geometry.Side;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -353,6 +355,19 @@ public class JournalController {
 
     private Pane trashSlideoutTrayPane;
     private TrashTray trashTray;
+
+    /** The narrowest a tray can be dragged to. */
+    private static final double MIN_TRAY_WIDTH = 240;
+    /** The width a tray being dragged wider always leaves to the workspace. */
+    private static final double MIN_WORKSPACE_WIDTH = 200;
+    /** The width of the strip on the open tray's right edge that drags it wider or narrower. */
+    private static final double TRAY_RESIZE_GRIP_WIDTH = 8;
+
+    /** The strip on the open tray's right edge; dragging it resizes that tray. */
+    private Region trayResizeGrip;
+    private double trayResizeStartX;
+    private double trayResizeStartWidth;
+    private double trayResizeMaxWidth;
 
     /** The trays plugins add to the sidebar, by their toggles, with the panes they slide in. */
     private final java.util.Map<Toggle, dev.ikm.komet.layout.tray.KlSidebarTray> pluginTrays = new java.util.HashMap<>();
@@ -534,6 +549,9 @@ public class JournalController {
 
             // slide out new panel selected
             slideOut(newValue);
+
+            // the resize grip is there only while a tray is open
+            trayResizeGrip.setVisible(newValue != null && getCurrentSideBarSelection(newValue) != null);
         });
 
         setupJournalNameEditor();
@@ -1047,6 +1065,45 @@ public class JournalController {
         );
         loadTrashPanel();
         loadPluginTrays();
+        trayPaneContainer.getChildren().add(createTrayResizeGrip());
+    }
+
+    /**
+     * Creates the strip that sits across the open tray's right edge. Dragging it sets the
+     * preferred width of that tray's panel, so each tray keeps the width it was given. It is
+     * shown only while a tray is open.
+     */
+    private Region createTrayResizeGrip() {
+        trayResizeGrip = new Region();
+        trayResizeGrip.getStyleClass().add("tray-resize-grip");
+        trayResizeGrip.setCursor(Cursor.H_RESIZE);
+        trayResizeGrip.setPrefWidth(TRAY_RESIZE_GRIP_WIDTH);
+        trayResizeGrip.setMaxWidth(Region.USE_PREF_SIZE);
+        trayResizeGrip.setMaxHeight(Double.MAX_VALUE);
+        // Half over the tray, half over the workspace.
+        trayResizeGrip.setTranslateX(TRAY_RESIZE_GRIP_WIDTH / 2);
+        StackPane.setAlignment(trayResizeGrip, Pos.CENTER_RIGHT);
+        trayResizeGrip.setVisible(false);
+        trayResizeGrip.managedProperty().bind(trayResizeGrip.visibleProperty());
+
+        trayResizeGrip.setOnMousePressed(mouseEvent -> {
+            trayResizeStartX = mouseEvent.getSceneX();
+            trayResizeStartWidth = getOpenTrayPanel().getWidth();
+            trayResizeMaxWidth = trayResizeStartWidth + Math.max(0, workspace.getWidth() - MIN_WORKSPACE_WIDTH);
+            mouseEvent.consume();
+        });
+        trayResizeGrip.setOnMouseDragged(mouseEvent -> {
+            double width = trayResizeStartWidth + mouseEvent.getSceneX() - trayResizeStartX;
+            getOpenTrayPanel().setPrefWidth(Math.max(MIN_TRAY_WIDTH, Math.min(trayResizeMaxWidth, width)));
+            mouseEvent.consume();
+        });
+        return trayResizeGrip;
+    }
+
+    /** The panel inside the tray that is open now. */
+    private Region getOpenTrayPanel() {
+        Pane trayPane = getCurrentSideBarSelection(sidebarToggleGroup.getSelectedToggle());
+        return (Region) trayPane.getChildren().getFirst();
     }
 
     /**
