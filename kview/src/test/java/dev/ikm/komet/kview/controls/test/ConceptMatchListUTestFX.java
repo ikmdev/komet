@@ -81,8 +81,11 @@ class ConceptMatchListUTestFX {
     }
 
     @Test
-    void theListIsAsWideAsTheTreeItStandsInFor() {
-        assertEquals(448, list.minWidth(-1), "the concept navigator tree has this minimum width; a narrower list would shrink the panel");
+    void theListStartsAsWideAsTheTreeAndNarrowsWithItsTray() {
+        assertEquals(470, list.prefWidth(-1), "the concept navigator tree's width before the user resizes its tray");
+
+        robot.interact(() -> list.getScene().getWindow().setWidth(300));
+        assertEquals(300, list.getWidth(), "a narrower tray narrows the list; the list does not hold the panel open");
     }
 
     @Test
