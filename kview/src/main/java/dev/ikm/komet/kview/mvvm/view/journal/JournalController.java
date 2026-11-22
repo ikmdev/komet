@@ -20,7 +20,6 @@ import static dev.ikm.komet.framework.dnd.KometClipboard.decodeUuids;
 import static dev.ikm.komet.framework.dnd.KometClipboard.MULTI_PARENT_GRAPH_DRAG_FORMAT;
 import static dev.ikm.komet.framework.events.appevents.ProgressEvent.SUMMON;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createFacadeForEntity;
-import static dev.ikm.komet.layout.controls.FilterOptionsPopup.FILTER_TYPE.JOURNAL_VIEW;
 import static dev.ikm.komet.kview.controls.KLConceptNavigatorTreeCell.CONCEPT_NAVIGATOR_DRAG_FORMAT;
 import static dev.ikm.komet.kview.controls.KLWorkspace.DESKTOP_PANE_STYLE_CLASS;
 import static dev.ikm.komet.kview.controls.KometIcon.IconValue.KL_EDITABLE_VIEW;
@@ -28,8 +27,6 @@ import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.kview.events.JournalTileEvent.UPDATE_JOURNAL_TILE;
 import static dev.ikm.komet.kview.fxutils.FXUtils.runOnFxThread;
 import static dev.ikm.komet.kview.fxutils.SlideOutTrayHelper.setupSlideOutTrayPane;
-import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createFromEntity;
-import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createFromUuids;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.createWindow;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.extractEntityFromDragInfo;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowFactory.Registry.getFactory;
@@ -39,8 +36,6 @@ import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.GEN_EDITING;
 import static dev.ikm.komet.kview.klwindows.EntityKlWindowTypes.PATTERN;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.getJournalPreferences;
 import static dev.ikm.komet.kview.klwindows.KlWindowPreferencesUtils.shortenUUID;
-import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SET;
-import static dev.ikm.komet.kview.mvvm.view.common.ChapterWindowHelper.FILTER_SHOWING;
 import static dev.ikm.komet.kview.mvvm.view.landingpage.LandingPageController.DEMO_AUTHOR;
 import static dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.CREATE;
 import static dev.ikm.komet.kview.mvvm.viewmodel.ViewModelKey.CURRENT_JOURNAL_WINDOW_TOPIC;
@@ -112,6 +107,7 @@ import dev.ikm.komet.kview.events.pattern.MakePatternWindowEvent;
 import dev.ikm.komet.kview.events.reasoner.CloseReasonerPanelEvent;
 import dev.ikm.komet.kview.fxutils.MenuHelper;
 import dev.ikm.komet.kview.fxutils.SlideOutTrayHelper;
+import dev.ikm.komet.kview.fxutils.TextFitUtils;
 import dev.ikm.komet.kview.klwindows.AbstractEntityChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.ChapterKlWindow;
 import dev.ikm.komet.kview.klwindows.AbstractChapterKlWindow;
@@ -142,7 +138,6 @@ import dev.ikm.komet.kview.mvvm.viewmodel.JournalViewModel;
 import dev.ikm.komet.kview.mvvm.viewmodel.NextGenSearchViewModel;
 import dev.ikm.komet.framework.dnd.KometClipboard;
 import dev.ikm.komet.navigator.graph.GraphNavigatorNode;
-import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.komet.navigator.graph.ViewNavigator;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.KometPreferencesImpl;
@@ -362,6 +357,8 @@ public class JournalController {
     private static final double MIN_WORKSPACE_WIDTH = 200;
     /** The width of the strip on the open tray's right edge that drags it wider or narrower. */
     private static final double TRAY_RESIZE_GRIP_WIDTH = 8;
+    /** Where a tray's panel keeps the preferred width it had before the user first resized it. */
+    private static final String TRAY_DESIGNED_WIDTH_KEY = "journal.tray.designedWidth";
 
     /** The strip on the open tray's right edge; dragging it resizes that tray. */
     private Region trayResizeGrip;
@@ -1087,6 +1084,8 @@ public class JournalController {
         trayResizeGrip.managedProperty().bind(trayResizeGrip.visibleProperty());
 
         trayResizeGrip.setOnMousePressed(mouseEvent -> {
+            // The width the panel was designed with is kept the first time, for a double click to bring back.
+            getOpenTrayPanel().getProperties().putIfAbsent(TRAY_DESIGNED_WIDTH_KEY, getOpenTrayPanel().getPrefWidth());
             trayResizeStartX = mouseEvent.getSceneX();
             trayResizeStartWidth = getOpenTrayPanel().getWidth();
             trayResizeMaxWidth = trayResizeStartWidth + Math.max(0, workspace.getWidth() - MIN_WORKSPACE_WIDTH);
@@ -1095,6 +1094,22 @@ public class JournalController {
         trayResizeGrip.setOnMouseDragged(mouseEvent -> {
             double width = trayResizeStartWidth + mouseEvent.getSceneX() - trayResizeStartX;
             getOpenTrayPanel().setPrefWidth(Math.max(MIN_TRAY_WIDTH, Math.min(trayResizeMaxWidth, width)));
+            mouseEvent.consume();
+        });
+        // A double click fits the tray to its content: the width its panel was designed with, plus
+        // what the text that is cut off or wrapped at that width is missing, up to half the journal.
+        trayResizeGrip.setOnMouseClicked(mouseEvent -> {
+            if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getClickCount() == 2) {
+                Region panel = getOpenTrayPanel();
+                double widest = Math.min(trayResizeMaxWidth, journalRootPane.getWidth() / 2);
+                // The panel is laid out at its designed width first, unseen, to find what is cut off there.
+                panel.setPrefWidth((double) panel.getProperties().get(TRAY_DESIGNED_WIDTH_KEY));
+                panel.getScene().getRoot().layout();
+                double shortfall = TextFitUtils.getWidthShortfall(panel);
+                if (shortfall > 0) {
+                    panel.setPrefWidth(Math.max(panel.getWidth(), Math.min(widest, panel.getWidth() + shortfall)));
+                }
+            }
             mouseEvent.consume();
         });
         return trayResizeGrip;
