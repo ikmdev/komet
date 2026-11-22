@@ -202,8 +202,8 @@ public class GenPurposeDetailsController {
         view.setOnClose(this::closeWindow);
         view.setOnPublish(this::publish);
         view.setOnFieldDefaults(this::openPatternFieldDefaults);
-        // The Publish button follows the session's uncommitted changes (see updatePublishState).
-        session.hasUncommittedChangesProperty().subscribe(this::updatePublishState);
+        // The Publish button follows the window's own pending edits (see updatePublishState).
+        session.hasPendingEditsInThisWindowProperty().subscribe(this::updatePublishState);
         // Invalidation-based, so it reacts to changes only: the tray starts out closed like the toggle.
         view.propertiesTrayOpenProperty().subscribe(() -> onPropertiesTrayOpenChanged(view.isPropertiesTrayOpen()));
 
@@ -754,7 +754,7 @@ public class GenPurposeDetailsController {
      * pattern satisfied ({@link #allRequiredPatternsSatisfied}) — the component only comes into
      * existence complete. Runs whenever those inputs may have moved: with the required chips
      * (mode changes, PUBLISH submits, inline stated-definition edits) and on the composer's
-     * change tracking (see {@link WindowEditSession#hasUncommittedChangesProperty}).
+     * change tracking (see {@link WindowEditSession#hasPendingEditsInThisWindowProperty}).
      */
     /**
      * Refreshes each section's required-pattern chip (see {@link WindowSections#updateRequiredChips})
@@ -766,19 +766,22 @@ public class GenPurposeDetailsController {
     }
 
     private void updatePublishState() {
-        boolean hasUncommittedChanges = session.hasUncommittedChanges();
         boolean disabled;
         String publishTooltip;
         int unpublishedChanges = 0;
         if (session.isCreateMode()) {
-            disabled = !hasUncommittedChanges || !windowSections.allRequiredPatternsSatisfied();
+            // Read from the store, not from the composer: the component being created is saved
+            // there, unpublished, from the first semantic authored on it, whether this window
+            // saved it or it was opened on one saved elsewhere.
+            disabled = countUnpublishedInStore() == 0 || !windowSections.allRequiredPatternsSatisfied();
             publishTooltip = disabled ? "Complete the required semantics to publish" : "Publish";
         } else {
             // Changes saved but not published count whether this window instance saved them or
             // an earlier one did (the window was closed and reopened): they are read from the
-            // store, not from the composer.
-            unpublishedChanges = unpublishedChangeCount();
-            disabled = !hasUncommittedChanges && unpublishedChanges == 0;
+            // store, not from the composer. The composer adds a semantic whose edit form is open,
+            // which a publish saves as the form stands.
+            unpublishedChanges = countUnpublishedInStore();
+            disabled = !session.hasPendingEditsInThisWindow() && unpublishedChanges == 0;
             publishTooltip = disabled ? "No changes to publish"
                     : unpublishedChanges == 0 ? "Publish"
                     : "Publish " + unpublishedChanges + (unpublishedChanges == 1 ? " change" : " changes");
@@ -808,11 +811,14 @@ public class GenPurposeDetailsController {
     }
 
     /**
-     * How many of the components this window shows carry a version not published yet: the
-     * unpublished semantics plus, when its own latest version is unpublished, the window's
-     * reference component.
+     * How many of the components this window shows have a version saved in the store but not
+     * published yet: the semantics shown, plus the window's own component. Whoever saved it
+     * counts (this window, another one, an earlier instance of this one, the assistant), and it
+     * is the number the unpublished strip and the Publish tooltip show. An edit form that is open
+     * with nothing saved yet is not counted; {@link WindowEditSession#hasPendingEditsInThisWindowProperty}
+     * covers that.
      */
-    private int unpublishedChangeCount() {
+    private int countUnpublishedInStore() {
         int count = windowSections.unpublishedSemantics().size();
         EntityFacade refComponent = session.getComponent();
         if (refComponent != null && EntityHandle.get(refComponent.nid()).expectEntity().uncommitted()) {
@@ -838,7 +844,7 @@ public class GenPurposeDetailsController {
      * where discarding would remove the window's own component; cancelling the window does that.
      */
     private void discardUnpublished() {
-        int changes = unpublishedChangeCount();
+        int changes = countUnpublishedInStore();
         if (session.isCreateMode() || changes == 0) {
             return;
         }

@@ -62,7 +62,8 @@ import java.util.function.Consumer;
  * it starts in {@link FormMode#CREATE create mode} with no component, gets one — still
  * uncommitted — when the user authors the first semantic, and {@link #enterEditMode() enters
  * edit mode} once that component is committed. A window opened on an existing component
- * ("Open as ...") starts in edit mode with it.
+ * ("Open as ...") starts in edit mode with it, unless the component was never published: then
+ * it starts in create mode with it.
  *
  * <p>Every edit goes through the session's {@link #createOrGetComposer() composer}: a new component, a
  * new or edited semantic, is saved as an uncommitted version in the composer's open transaction
@@ -117,8 +118,20 @@ public final class WindowEditSession {
      */
     public WindowEditSession(ViewProperties viewProperties, EntityFacade component) {
         this.viewProperties = viewProperties;
-        this.mode = new SimpleObjectProperty<>(component == null ? FormMode.CREATE : FormMode.EDIT);
+        this.mode = new SimpleObjectProperty<>(component == null || isNeverPublished(component)
+                ? FormMode.CREATE : FormMode.EDIT);
         this.component = new ReadOnlyObjectWrapper<>(component);
+    }
+
+    /**
+     * Whether the component is still being created: every version of it is saved but not
+     * published, so it exists only for its author. A window opened on one (from the journal's
+     * unpublished changes, or restored with the journal) carries on in create mode, the way the
+     * window that created it was until its first publish.
+     */
+    private static boolean isNeverPublished(EntityFacade component) {
+        Entity<?> entity = EntityHandle.get(component.nid()).expectEntity();
+        return !entity.versions().isEmpty() && entity.versions().stream().allMatch(EntityVersion::uncommitted);
     }
 
     public ViewProperties getViewProperties() {
@@ -145,7 +158,7 @@ public final class WindowEditSession {
     public ObservableComposer createOrGetComposer() {
         if (composer == null) {
             composer = newComposer("Edit Semantic Details").joinPendingWork();
-            hasUncommittedChanges.bind(composer.hasUncommittedChangesProperty());
+            hasPendingEditsInThisWindow.bind(composer.hasUncommittedChangesProperty());
         }
         return composer;
     }
@@ -170,7 +183,7 @@ public final class WindowEditSession {
      */
     public void commit() {
         createOrGetComposer().commit();
-        hasUncommittedChanges.unbind();
+        hasPendingEditsInThisWindow.unbind();
         composer = null;
         newPatternComposer = null;
         createOrGetComposer();
@@ -375,7 +388,7 @@ public final class WindowEditSession {
         Set<Transaction> transactions = owningTransactions(unpublished);
         if (composer != null && transactions.remove(composer.getOrCreateTransaction())) {
             composer.cancel();
-            hasUncommittedChanges.unbind();
+            hasPendingEditsInThisWindow.unbind();
             composer = null;
             newPatternComposer = null;
             createOrGetComposer();
@@ -507,12 +520,15 @@ public final class WindowEditSession {
         this.component.set(component);
     }
 
-    // -- has uncommitted changes
+    // -- has pending edits in this window
     /**
-     * Whether the composer's open transaction holds changes saved uncommitted since the last commit. False
-     * until the first edit asks for the composer.
+     * Whether this window itself has an edit its next {@link #commit()} would publish: true from
+     * the moment the window opens a component or semantic for editing (an edit form shown, even
+     * before anything is saved), until the commit or cancel that ends it. It follows this
+     * window's own composer only, so it says nothing of changes saved elsewhere (by another
+     * window, an earlier instance of this one, or the assistant): those are read from the store.
      */
-    private final ReadOnlyBooleanWrapper hasUncommittedChanges = new ReadOnlyBooleanWrapper(false);
-    public ReadOnlyBooleanProperty hasUncommittedChangesProperty() { return hasUncommittedChanges.getReadOnlyProperty(); }
-    public boolean hasUncommittedChanges() { return hasUncommittedChanges.get(); }
+    private final ReadOnlyBooleanWrapper hasPendingEditsInThisWindow = new ReadOnlyBooleanWrapper(false);
+    public ReadOnlyBooleanProperty hasPendingEditsInThisWindowProperty() { return hasPendingEditsInThisWindow.getReadOnlyProperty(); }
+    public boolean hasPendingEditsInThisWindow() { return hasPendingEditsInThisWindow.get(); }
 }

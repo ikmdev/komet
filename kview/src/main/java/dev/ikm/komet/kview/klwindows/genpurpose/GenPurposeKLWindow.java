@@ -69,7 +69,8 @@ public class GenPurposeKLWindow extends AbstractEntityChapterKlWindow {
         this.klEditorWindowPreferences = klEditorWindowPreferences;
 
         // No component to open means the window was launched from the Journal's "+" button to create a
-        // new one; a supplied component means it was opened ("Open as ...") to edit that component.
+        // new one; a supplied component means it was opened ("Open as ...") to edit that component,
+        // or to go on creating it when it was never published (see WindowEditSession).
         // Edits go through the window's derived coordinate (#660), not the raw journal one.
         WindowEditSession session = new WindowEditSession(getViewProperties(), entityFacade);
 
