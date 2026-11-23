@@ -8,6 +8,7 @@ import dev.ikm.komet.kview.mvvm.model.DragAndDropInfo;
 import dev.ikm.komet.kview.mvvm.model.DragAndDropType;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.komet.framework.settings.KonceptGlyphSettings;
 import javafx.scene.Node;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
@@ -58,6 +59,10 @@ public class PatternSemanticListCell extends ListCell<Object> {
         label = new Label();
         label.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(label, Priority.ALWAYS);
+        // The label's graphic is the semantic's identicon, which follows the side panel's setting
+        // for as long as the cell is shown.
+        KonceptGlyphSettings.showSidePanelIdenticons().when(KonceptGlyphSettings.liveFor(this))
+                .subscribe(shown -> label.setContentDisplay(shown ? ContentDisplay.LEFT : ContentDisplay.TEXT_ONLY));
 
         tooltip = new SemanticTooltip(viewProperties);
         tooltip.setOnShowing(windowEvent ->

@@ -16,6 +16,7 @@
 package dev.ikm.komet.kview.mvvm.view.changes;
 
 import dev.ikm.komet.framework.controls.KonceptBadge;
+import dev.ikm.komet.framework.settings.KonceptGlyphSettings;
 import dev.ikm.komet.framework.observable.read.NavigationReads;
 import dev.ikm.komet.framework.view.ObservableEditCoordinate;
 import dev.ikm.komet.framework.view.ViewProperties;
@@ -954,6 +955,9 @@ public class UnpublishedChangesController {
                 badge = new KonceptBadge(nid, viewProperties);
                 // The row already opens its component: the menu's Open, and the chip's Peek.
                 badge.setDefinitionPopoutVisible(false);
+                // The identicon follows the side panel's setting, for as long as the row is shown.
+                badge.showIdenticonProperty().bind(
+                        KonceptGlyphSettings.showSidePanelIdenticons().when(KonceptGlyphSettings.liveFor(badge)));
                 badgeNid = nid;
                 if (text.getChildren().isEmpty()) {
                     text.getChildren().addAll(badge, subtitle);

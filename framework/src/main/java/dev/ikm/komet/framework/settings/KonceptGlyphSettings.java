@@ -45,6 +45,8 @@ public final class KonceptGlyphSettings {
             new ReadOnlyBooleanWrapper(KonceptGlyphSettings.class, "showDefinitionStatus", true);
     private static final ReadOnlyBooleanWrapper showMultipleParents =
             new ReadOnlyBooleanWrapper(KonceptGlyphSettings.class, "showMultipleParents", true);
+    private static final ReadOnlyBooleanWrapper showSidePanelIdenticons =
+            new ReadOnlyBooleanWrapper(KonceptGlyphSettings.class, "showSidePanelIdenticons", true);
 
     private KonceptGlyphSettings() {
     }
@@ -76,9 +78,10 @@ public final class KonceptGlyphSettings {
         showKindSigil.bind(settings.showKindSigilProperty());
         showDefinitionStatus.bind(settings.showDefinitionStatusProperty());
         showMultipleParents.bind(settings.showDefinitionStatusProperty().and(settings.showMultipleParentsProperty()));
+        showSidePanelIdenticons.bind(settings.showSidePanelIdenticonsProperty());
         return () -> {
             for (ReadOnlyBooleanWrapper shown : new ReadOnlyBooleanWrapper[] {
-                    showKindSigil, showDefinitionStatus, showMultipleParents}) {
+                    showKindSigil, showDefinitionStatus, showMultipleParents, showSidePanelIdenticons}) {
                 shown.unbind();
                 shown.set(true);
             }
@@ -114,6 +117,22 @@ public final class KonceptGlyphSettings {
      */
     public static ReadOnlyBooleanProperty showMultipleParents() {
         return showMultipleParents.getReadOnlyProperty();
+    }
+
+    /**
+     * Whether the rows of a journal's left side panel (the pattern navigator, the changes panel)
+     * lead with the component's identicon. Only that panel's rows read this; identicons anywhere
+     * else are always drawn.
+     *
+     * @return the live value, {@code true} until settings are installed
+     */
+    public static ReadOnlyBooleanProperty showSidePanelIdenticons() {
+        return showSidePanelIdenticons.getReadOnlyProperty();
+    }
+
+    /** @see #showSidePanelIdenticons() */
+    public static boolean isShowSidePanelIdenticons() {
+        return showSidePanelIdenticons.get();
     }
 
     /** @see #showKindSigil() */

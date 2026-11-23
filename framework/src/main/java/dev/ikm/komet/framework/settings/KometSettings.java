@@ -49,6 +49,7 @@ public final class KometSettings {
     static final String SHOW_KIND_SIGIL_KEY = KEY_PREFIX + "showKindSigil";
     static final String SHOW_DEFINITION_STATUS_KEY = KEY_PREFIX + "showDefinitionStatus";
     static final String SHOW_MULTIPLE_PARENTS_KEY = KEY_PREFIX + "showMultipleParents";
+    static final String SHOW_SIDE_PANEL_IDENTICONS_KEY = KEY_PREFIX + "showSidePanelIdenticons";
     static final String DISPLAY_LANGUAGE_KEY = KEY_PREFIX + "displayLanguage";
     static final String REOPEN_WINDOWS_KEY = KEY_PREFIX + "reopenWindowsAtLaunch";
 
@@ -85,6 +86,7 @@ public final class KometSettings {
         showKindSigil.set(preferences.getBoolean(SHOW_KIND_SIGIL_KEY, true));
         showDefinitionStatus.set(preferences.getBoolean(SHOW_DEFINITION_STATUS_KEY, true));
         showMultipleParents.set(preferences.getBoolean(SHOW_MULTIPLE_PARENTS_KEY, true));
+        showSidePanelIdenticons.set(preferences.getBoolean(SHOW_SIDE_PANEL_IDENTICONS_KEY, true));
         displayLanguage.set(readEnum(DISPLAY_LANGUAGE_KEY, DisplayLanguage.SYSTEM_DEFAULT));
         reopenWindowsAtLaunch.set(preferences.getBoolean(REOPEN_WINDOWS_KEY, true));
 
@@ -92,6 +94,8 @@ public final class KometSettings {
         showKindSigil.subscribe(() -> store(SHOW_KIND_SIGIL_KEY, showKindSigil.get()));
         showDefinitionStatus.subscribe(() -> store(SHOW_DEFINITION_STATUS_KEY, showDefinitionStatus.get()));
         showMultipleParents.subscribe(() -> store(SHOW_MULTIPLE_PARENTS_KEY, showMultipleParents.get()));
+        showSidePanelIdenticons.subscribe(
+                () -> store(SHOW_SIDE_PANEL_IDENTICONS_KEY, showSidePanelIdenticons.get()));
         displayLanguage.subscribe(() -> store(DISPLAY_LANGUAGE_KEY, displayLanguage.get().name()));
         reopenWindowsAtLaunch.subscribe(() -> store(REOPEN_WINDOWS_KEY, reopenWindowsAtLaunch.get()));
     }
@@ -162,6 +166,24 @@ public final class KometSettings {
     }
     public final void setShowMultipleParents(boolean value) {
         showMultipleParents.set(value);
+    }
+
+    // -- show side panel identicons
+    /**
+     * Whether the rows of a journal's left side panel (the pattern navigator, the changes panel)
+     * lead with the component's identicon. Identicons elsewhere, in the journal's windows and in
+     * what is dragged out of the panel, are not affected.
+     */
+    private final BooleanProperty showSidePanelIdenticons =
+            new SimpleBooleanProperty(this, "showSidePanelIdenticons");
+    public final BooleanProperty showSidePanelIdenticonsProperty() {
+        return showSidePanelIdenticons;
+    }
+    public final boolean isShowSidePanelIdenticons() {
+        return showSidePanelIdenticons.get();
+    }
+    public final void setShowSidePanelIdenticons(boolean value) {
+        showSidePanelIdenticons.set(value);
     }
 
     // -- display language

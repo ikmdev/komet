@@ -3,6 +3,7 @@ package dev.ikm.komet.kview.mvvm.view.navigation;
 import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.controls.KonceptBadge;
 import dev.ikm.komet.framework.settings.KometSettings;
+import dev.ikm.komet.framework.settings.KonceptGlyphSettings;
 import dev.ikm.komet.framework.settings.TextSize;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.common.ViewCalculatorUtils;
@@ -179,6 +180,9 @@ public class PatternNavEntryController {
         // The browser lists patterns and nothing else, so the P sigil would only repeat the column's
         // title; the badge still drags with it, into surfaces that mix kinds.
         patternBadge.setKindSigilShown(false);
+        // The identicon follows the side panel's setting, for as long as the row is shown.
+        patternBadge.showIdenticonProperty().bind(
+                KonceptGlyphSettings.showSidePanelIdenticons().when(KonceptGlyphSettings.liveFor(patternBadge)));
         // Sized to this row rather than the badge's inline default, which is scaled for sitting
         // beside body text and renders far too small in a navigation list. The badge sets its
         // fonts in code, so the stylesheet's root size cannot reach it: the row follows the text

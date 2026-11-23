@@ -101,6 +101,7 @@ public class SettingsDialogController {
     @FXML private HBox definitionStatusSamples;
     @FXML private HBox multipleParentsSamples;
     @FXML private HBox multipleParentsRow;
+    @FXML private CheckBox sidePanelIdenticonsCheck;
     @FXML private VBox glyphPreview;
 
     @FXML private ComboBox<DisplayLanguage> displayLanguageCombo;
@@ -114,6 +115,7 @@ public class SettingsDialogController {
     private final BooleanProperty showKindSigil = new SimpleBooleanProperty(true);
     private final BooleanProperty showDefinitionStatus = new SimpleBooleanProperty(true);
     private final BooleanProperty showMultipleParents = new SimpleBooleanProperty(true);
+    private final BooleanProperty showSidePanelIdenticons = new SimpleBooleanProperty(true);
     private final ObjectProperty<DisplayLanguage> displayLanguage = new SimpleObjectProperty<>(DisplayLanguage.SYSTEM_DEFAULT);
     private final BooleanProperty reopenWindowsAtLaunch = new SimpleBooleanProperty(true);
 
@@ -142,6 +144,7 @@ public class SettingsDialogController {
         showKindSigil.set(settings.isShowKindSigil());
         showDefinitionStatus.set(settings.isShowDefinitionStatus());
         showMultipleParents.set(settings.isShowMultipleParents());
+        showSidePanelIdenticons.set(settings.isShowSidePanelIdenticons());
         displayLanguage.set(settings.getDisplayLanguage());
         reopenWindowsAtLaunch.set(settings.isReopenWindowsAtLaunch());
     }
@@ -196,6 +199,7 @@ public class SettingsDialogController {
         kindSigilCheck.selectedProperty().bindBidirectional(showKindSigil);
         definitionStatusCheck.selectedProperty().bindBidirectional(showDefinitionStatus);
         multipleParentsCheck.selectedProperty().bindBidirectional(showMultipleParents);
+        sidePanelIdenticonsCheck.selectedProperty().bindBidirectional(showSidePanelIdenticons);
         // The fork only exists on top of the status glyph.
         multipleParentsRow.disableProperty().bind(showDefinitionStatus.not());
         BooleanBinding showFork = showDefinitionStatus.and(showMultipleParents);
@@ -307,12 +311,15 @@ public class SettingsDialogController {
                                 && showKindSigil.get() == settings.isShowKindSigil()
                                 && showDefinitionStatus.get() == settings.isShowDefinitionStatus()
                                 && showMultipleParents.get() == settings.isShowMultipleParents()
+                                && showSidePanelIdenticons.get() == settings.isShowSidePanelIdenticons()
                                 && displayLanguage.get() == settings.getDisplayLanguage()
                                 && reopenWindowsAtLaunch.get() == settings.isReopenWindowsAtLaunch(),
-                textSize, showKindSigil, showDefinitionStatus, showMultipleParents, displayLanguage,
+                textSize, showKindSigil, showDefinitionStatus, showMultipleParents, showSidePanelIdenticons,
+                displayLanguage,
                 reopenWindowsAtLaunch,
                 settings.textSizeProperty(), settings.showKindSigilProperty(),
                 settings.showDefinitionStatusProperty(), settings.showMultipleParentsProperty(),
+                settings.showSidePanelIdenticonsProperty(),
                 settings.displayLanguageProperty(), settings.reopenWindowsAtLaunchProperty());
         applyButton.disableProperty().bind(unchanged);
     }
@@ -326,6 +333,7 @@ public class SettingsDialogController {
             showKindSigil.set(true);
             showDefinitionStatus.set(true);
             showMultipleParents.set(true);
+            showSidePanelIdenticons.set(true);
         } else if (languagePage.isVisible()) {
             displayLanguage.set(DisplayLanguage.SYSTEM_DEFAULT);
         } else {
@@ -340,6 +348,7 @@ public class SettingsDialogController {
         settings.setShowKindSigil(showKindSigil.get());
         settings.setShowDefinitionStatus(showDefinitionStatus.get());
         settings.setShowMultipleParents(showMultipleParents.get());
+        settings.setShowSidePanelIdenticons(showSidePanelIdenticons.get());
         settings.setDisplayLanguage(displayLanguage.get());
         settings.setReopenWindowsAtLaunch(reopenWindowsAtLaunch.get());
     }

@@ -64,6 +64,7 @@ class KonceptGlyphSettingsTest {
         settings.setShowKindSigil(true);
         settings.setShowDefinitionStatus(true);
         settings.setShowMultipleParents(true);
+        settings.setShowSidePanelIdenticons(true);
     }
 
     @AfterEach
@@ -117,6 +118,24 @@ class KonceptGlyphSettingsTest {
 
         settings.setShowDefinitionStatus(true);
         assertTrue(KonceptGlyphSettings.isShowMultipleParents(), "the fork returns with the status");
+    }
+
+    @Test
+    void sidePanelIdenticonsFollowTheirSettingWhileInstalled() {
+        settings.setShowSidePanelIdenticons(false);
+        assertTrue(KonceptGlyphSettings.isShowSidePanelIdenticons(), "settings not installed: identicons are drawn");
+
+        installed = KonceptGlyphSettings.install(settings);
+        assertFalse(KonceptGlyphSettings.isShowSidePanelIdenticons());
+        assertFalse(KonceptGlyphSettings.showSidePanelIdenticons().get(), "the observable form follows too");
+        assertTrue(KonceptGlyphSettings.isShowKindSigil(), "the marks are a separate choice");
+        settings.setShowSidePanelIdenticons(true);
+        assertTrue(KonceptGlyphSettings.isShowSidePanelIdenticons());
+
+        settings.setShowSidePanelIdenticons(false);
+        installed.unsubscribe();
+        installed = null;
+        assertTrue(KonceptGlyphSettings.isShowSidePanelIdenticons(), "uninstalled: back to the bare default");
     }
 
     @Test

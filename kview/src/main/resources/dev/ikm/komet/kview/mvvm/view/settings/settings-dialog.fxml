@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefHeight="560.0" prefWidth="640.0" spacing="20.0" styleClass="settings-dialog" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.settings.SettingsDialogController">
+<VBox prefHeight="660.0" prefWidth="640.0" spacing="20.0" styleClass="settings-dialog" stylesheets="@../kview.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.ikm.komet.kview.mvvm.view.settings.SettingsDialogController">
    <padding>
       <Insets bottom="24.0" left="24.0" right="24.0" top="24.0" />
    </padding>
@@ -101,6 +101,18 @@
                   </VBox>
                </HBox>
             </VBox>
+            <Label styleClass="settings-heading" text="Journal side panel" />
+            <HBox spacing="10.0">
+               <CheckBox fx:id="sidePanelIdenticonsCheck" mnemonicParsing="false">
+                  <HBox.margin>
+                     <Insets top="2.0" />
+                  </HBox.margin>
+               </CheckBox>
+               <VBox spacing="2.0" HBox.hgrow="ALWAYS">
+                  <Label styleClass="settings-option-title" text="Identicons" />
+                  <Label styleClass="settings-description" text="Before each name in the pattern navigator and the changes panel." wrapText="true" />
+               </VBox>
+            </HBox>
             <VBox spacing="10.0" styleClass="settings-preview" VBox.vgrow="ALWAYS">
                <Label styleClass="settings-preview-caption" text="PREVIEW" />
                <VBox fx:id="glyphPreview" spacing="8.0" />

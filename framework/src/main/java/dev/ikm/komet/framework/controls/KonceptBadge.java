@@ -41,6 +41,8 @@ import dev.ikm.tinkar.entity.graph.DiTreeEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
 import dev.ikm.tinkar.terms.KernelConcept;
 import dev.ikm.tinkar.terms.State;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
@@ -378,6 +380,9 @@ public class KonceptBadge extends HBox {
                 : new ImageView();
         this.identicon.setSmooth(false);
         this.identicon.getStyleClass().add(StyleClasses.KONCEPT_IDENTICON.toString());
+        // A hidden identicon is unmanaged too, so it leaves no gap ahead of the name.
+        this.identicon.visibleProperty().bind(showIdenticon);
+        this.identicon.managedProperty().bind(showIdenticon);
 
         this.nameNode.textNode().getStyleClass().add(StyleClasses.KONCEPT_LABEL.toString());
         applyNameFont();
@@ -1600,4 +1605,21 @@ public class KonceptBadge extends HBox {
         }
         return multiParent ? KonceptStatus.PRIMITIVE_MULTIPARENT : KonceptStatus.PRIMITIVE;
     }
+
+    /***************************************************************************
+     *                                                                         *
+     * Properties                                                              *
+     *                                                                         *
+     **************************************************************************/
+
+    // -- show identicon
+    /**
+     * Whether this badge draws its identicon. Presentation only: a surface that lets the user
+     * hide identicons (a journal's left side panel) binds this to its setting. On by default. The
+     * drag glyph keeps the identicon either way.
+     */
+    private final BooleanProperty showIdenticon = new SimpleBooleanProperty(this, "showIdenticon", true);
+    public final BooleanProperty showIdenticonProperty() { return showIdenticon; }
+    public final boolean isShowIdenticon() { return showIdenticon.get(); }
+    public final void setShowIdenticon(boolean value) { showIdenticon.set(value); }
 }
