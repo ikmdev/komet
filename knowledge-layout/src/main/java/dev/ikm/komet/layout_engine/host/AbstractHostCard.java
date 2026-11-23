@@ -830,6 +830,15 @@ public abstract class AbstractHostCard extends CardBlueprint {
     protected abstract String cardTitle();
 
     /**
+     * The card's tab title, for what lists the windows open on a journal.
+     *
+     * @return the title text
+     */
+    public final String title() {
+        return cardTitle();
+    }
+
+    /**
      * Realizes (or re-realizes) the card's body content. Called from {@link #realize()} and on each
      * {@link #refresh()}.
      */

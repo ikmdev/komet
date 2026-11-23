@@ -232,6 +232,15 @@ public final class DynamicCardKlWindow extends AbstractChapterKlWindow<Pane> {
         return windowTopic;
     }
 
+    /**
+     * The card this window hosts.
+     *
+     * @return the card
+     */
+    public DynamicCard card() {
+        return card;
+    }
+
     @Override
     public EntityKlWindowType getWindowType() {
         return DYNAMIC_CARD_WINDOW_TYPE;

@@ -33,6 +33,10 @@ import java.util.function.Consumer;
  * <p>{@link #CREATE_NEW} always makes a new card window, as a card does that opens one document
  * or subject among several: it may name the node to open beside and an authored size, and it hands
  * the new card back to the publisher once the card is on the workspace.
+ *
+ * <p>{@link #FOCUS_OR_REOPEN} names one tile rather than a kind of card: its window comes to the
+ * front, or the closed tile reopens with its content, so content kept in a closed tile is never
+ * left behind for a new, empty one.
  */
 public class MakeCardWindowEvent extends Evt {
 
@@ -44,7 +48,17 @@ public class MakeCardWindowEvent extends Evt {
     public static final EvtType<MakeCardWindowEvent> CREATE_NEW =
             new EvtType<>(Evt.ANY, "CREATE_NEW_CARD");
 
+    /**
+     * Front the card window of one tile, the journal's {@code journal_card_…} preferences node the
+     * event names, or reopen that tile from its preferences when its window is closed, with all its
+     * content back: what the journal's Tiles menu does with Show and Reopen. Made with
+     * {@link #focusOrReopen}.
+     */
+    public static final EvtType<MakeCardWindowEvent> FOCUS_OR_REOPEN =
+            new EvtType<>(Evt.ANY, "FOCUS_OR_REOPEN_CARD");
+
     private final String providerClassName;
+    private final String tile;
     private final Node near;
     private final double authoredWidth;
     private final double authoredHeight;
@@ -78,8 +92,15 @@ public class MakeCardWindowEvent extends Evt {
     public MakeCardWindowEvent(Object source, EvtType<MakeCardWindowEvent> eventType, String providerClassName,
                                Node near, double authoredWidth, double authoredHeight,
                                Consumer<AbstractHostCard> onCreated) {
+        this(source, eventType, providerClassName, "", near, authoredWidth, authoredHeight, onCreated);
+    }
+
+    private MakeCardWindowEvent(Object source, EvtType<MakeCardWindowEvent> eventType, String providerClassName,
+                                String tile, Node near, double authoredWidth, double authoredHeight,
+                                Consumer<AbstractHostCard> onCreated) {
         super(source, eventType);
         this.providerClassName = providerClassName;
+        this.tile = tile;
         this.near = near;
         this.authoredWidth = authoredWidth;
         this.authoredHeight = authoredHeight;
@@ -87,12 +108,34 @@ public class MakeCardWindowEvent extends Evt {
     }
 
     /**
+     * The gesture that fronts one tile's card window, or reopens the tile when its window is closed.
+     *
+     * @param source    the publishing object
+     * @param tile      the name of the tile's preferences node, a child of the journal's node
+     * @param onShown   receives the tile's card once its window is on the workspace, fronted or
+     *                  reopened; may be {@code null}
+     * @return the gesture, to publish on the journal's topic
+     */
+    public static MakeCardWindowEvent focusOrReopen(Object source, String tile, Consumer<AbstractHostCard> onShown) {
+        return new MakeCardWindowEvent(source, FOCUS_OR_REOPEN, "", tile, null, -1, -1, onShown);
+    }
+
+    /**
      * The provider class name identifying the card kind.
      *
-     * @return the {@link KlCardProvider} implementation class name
+     * @return the {@link KlCardProvider} implementation class name, empty for {@link #FOCUS_OR_REOPEN}
      */
     public String getProviderClassName() {
         return providerClassName;
+    }
+
+    /**
+     * The tile a {@link #FOCUS_OR_REOPEN} names.
+     *
+     * @return the name of the tile's preferences node, empty for the other gestures
+     */
+    public String getTile() {
+        return tile;
     }
 
     /**
@@ -123,7 +166,7 @@ public class MakeCardWindowEvent extends Evt {
     }
 
     /**
-     * What receives a created card.
+     * What receives a created card, or for {@link #FOCUS_OR_REOPEN} the tile's card once it is shown.
      *
      * @return the consumer, or {@code null}
      */

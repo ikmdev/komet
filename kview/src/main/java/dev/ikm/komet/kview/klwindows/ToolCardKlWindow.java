@@ -172,6 +172,15 @@ public final class ToolCardKlWindow extends AbstractChapterKlWindow<Pane> {
         return windowTopic;
     }
 
+    /**
+     * The card this window hosts.
+     *
+     * @return the card
+     */
+    public ToolCard card() {
+        return card;
+    }
+
     @Override
     public EntityKlWindowType getWindowType() {
         return TOOL_CARD_WINDOW_TYPE;

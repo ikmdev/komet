@@ -88,6 +88,7 @@ import dev.ikm.komet.layout.expand.KlExpansionHost;
 import dev.ikm.komet.layout.KlPeerable;
 import dev.ikm.komet.layout.area.KlToolArea;
 import dev.ikm.komet.layout.editor.StandardEditorWindows;
+import dev.ikm.komet.layout_engine.host.AbstractHostCard;
 import dev.ikm.komet.layout_engine.host.KlCardProvider;
 import dev.ikm.komet.layout_engine.window.RevealWindowEvent;
 import dev.ikm.komet.layout.controls.FilterOptionsPopup;
@@ -457,6 +458,8 @@ public class JournalController {
     private Subscriber<ProgressEvent> progressPopupSubscriber;
 
     private Subscriber<dev.ikm.komet.layout_engine.host.MakeCardWindowEvent> makeCardWindowEventSubscriber;
+    /** Removes this journal's listing of its open windows; run at {@link #shutdown()}. */
+    private Runnable journalWindowsRegistration = () -> { };
     //////////////////////////////////////////////////////////////////////////////////
 
     @InjectViewModel
@@ -597,6 +600,8 @@ public class JournalController {
         makeCardWindowEventSubscriber = evt -> {
             if (evt.getEventType() == dev.ikm.komet.layout_engine.host.MakeCardWindowEvent.CREATE_NEW) {
                 createCardWindow(evt);
+            } else if (evt.getEventType() == dev.ikm.komet.layout_engine.host.MakeCardWindowEvent.FOCUS_OR_REOPEN) {
+                focusOrReopenTile(evt.getTile(), evt.getOnCreated());
             } else {
                 focusOrCreateCardWindow(evt.getProviderClassName());
             }
@@ -604,6 +609,9 @@ public class JournalController {
         journalEventBus.subscribe(journalTopic,
                 dev.ikm.komet.layout_engine.host.MakeCardWindowEvent.class,
                 makeCardWindowEventSubscriber);
+        // What is open on this journal, for what asks from outside it (the Komet Assistant).
+        journalWindowsRegistration = dev.ikm.komet.layout_engine.host.JournalWindows.register(journalTopic,
+                this::openWindows);
 
         makePatternWindowEventSubscriber = evt ->
                 createPatternWindow(evt.getPatternFacade(), evt.getViewProperties());
@@ -815,14 +823,118 @@ public class JournalController {
 
     /** Reopens a closed card tile from its surviving preferences node — full state back. */
     private void reopenCardWindow(KometPreferences tile) {
+        reopenedCardWindow(tile);
+    }
+
+    /** Reopens a closed card tile, as {@link #reopenCardWindow} does, and gives its window. */
+    private Optional<CardKlWindow> reopenedCardWindow(KometPreferences tile) {
         try {
             tile.putUuid(JOURNAL_TOPIC, getJournalTopic());
             ViewProperties viewProperties =
                     journalOwnedView("JournalController.reopenCardWindow");
-            setupWorkspaceWindow(CardKlWindow.restore(tile, viewProperties));
+            CardKlWindow window = CardKlWindow.restore(tile, viewProperties);
+            setupWorkspaceWindow(window);
+            return Optional.of(window);
         } catch (Exception e) {
             LOG.error("Could not reopen card tile {}", tile.name(), e);
+            return Optional.empty();
         }
+    }
+
+    /**
+     * Fronts the open card window of the named tile, or reopens the tile when it is closed
+     * ({@code MakeCardWindowEvent.FOCUS_OR_REOPEN}): Show and Reopen of the Tiles menu, asked for
+     * from outside the journal.
+     *
+     * @param tileName the tile's preferences node name, a child of this journal's node
+     * @param onShown  receives the tile's card once its window is on the workspace; may be null
+     */
+    private void focusOrReopenTile(String tileName, Consumer<AbstractHostCard> onShown) {
+        if (tileName == null || !tileName.startsWith(CardKlWindow.CARD_WINDOW_TYPE.getPrefix())) {
+            LOG.warn("No card tile named {} to focus or reopen", tileName);
+            return;
+        }
+        Optional<CardKlWindow> window = findOpenCardWindow(tileName);
+        if (window.isPresent()) {
+            RevealWindowEvent.reveal(window.get().fxObject());
+        } else {
+            try {
+                KometPreferences journalPreferences = getJournalPreferences(getJournalTopic());
+                if (!journalPreferences.nodeExists(tileName)) {
+                    LOG.warn("This journal has no card tile named {} to reopen", tileName);
+                    return;
+                }
+                window = reopenedCardWindow(journalPreferences.node(tileName));
+            } catch (Exception e) {
+                LOG.error("Could not reopen card tile {}", tileName, e);
+                return;
+            }
+        }
+        if (onShown != null) {
+            window.ifPresent(shown -> onShown.accept(shown.card()));
+        }
+    }
+
+    /**
+     * The windows open on this journal's workspace, described for {@code JournalWindows}: a card's
+     * title and Tiles-menu label, or the component a concept, pattern or semantic window shows.
+     *
+     * @return the windows, in the workspace's order
+     */
+    private List<dev.ikm.komet.layout_engine.host.JournalWindows.OpenWindow> openWindows() {
+        List<dev.ikm.komet.layout_engine.host.JournalWindows.OpenWindow> open = new ArrayList<>();
+        for (ChapterKlWindow<Pane> window : workspace.getWindows()) {
+            try {
+                open.add(openWindow(window));
+            } catch (RuntimeException e) {
+                LOG.warn("Could not describe the open window {}", window.getWindowTopic(), e);
+            }
+        }
+        return open;
+    }
+
+    private dev.ikm.komet.layout_engine.host.JournalWindows.OpenWindow openWindow(ChapterKlWindow<Pane> window) {
+        String tile = window instanceof AbstractChapterKlWindow<?> chapter ? chapter.preferencesNodeName() : "";
+        return switch (window) {
+            case CardKlWindow card -> new dev.ikm.komet.layout_engine.host.JournalWindows.OpenWindow("card",
+                    card.card().title(), tileLabelOrEmpty(card.preferences()), List.of(), card.providerClassName(), tile);
+            case ToolCardKlWindow tool -> new dev.ikm.komet.layout_engine.host.JournalWindows.OpenWindow("card",
+                    tool.card().title(), "", List.of(), "", tile);
+            case DynamicCardKlWindow dynamic -> new dev.ikm.komet.layout_engine.host.JournalWindows.OpenWindow("layout",
+                    dynamic.card().title(), "", uuids(dynamic.card().getReferenceComponent()), "", tile);
+            case AbstractEntityChapterKlWindow entity -> new dev.ikm.komet.layout_engine.host.JournalWindows.OpenWindow(
+                    windowKind(entity.getWindowType()), "", "", uuids(entity.getEntityFacade()), "", tile);
+            default -> new dev.ikm.komet.layout_engine.host.JournalWindows.OpenWindow(
+                    windowKind(window.getWindowType()), "", "", List.of(), "", tile);
+        };
+    }
+
+    /** What a window shows, in words: concept, pattern, semantic, or the window type's own name. */
+    private static String windowKind(dev.ikm.komet.kview.klwindows.EntityKlWindowType type) {
+        if (type == EntityKlWindowTypes.CONCEPT) {
+            return "concept";
+        } else if (type == EntityKlWindowTypes.PATTERN) {
+            return "pattern";
+        } else if (type == EntityKlWindowTypes.GEN_EDITING) {
+            return "semantic";
+        } else if (type == EntityKlWindowTypes.GEN_PURPOSE_KL) {
+            return "layout";
+        }
+        return type == null ? "window" : type.toString().toLowerCase(Locale.ROOT).replace('_', ' ');
+    }
+
+    /** A component's UUIDs, none for a window that shows no component yet. */
+    private static List<UUID> uuids(EntityFacade component) {
+        if (component == null || component.publicId() == null) {
+            return List.of();
+        }
+        return List.of(component.publicId().asUuidArray());
+    }
+
+    /** The tile's Tiles-menu label, or empty when its card minted none. */
+    private String tileLabelOrEmpty(KometPreferences windowNode) {
+        String label = windowNode == null ? "" : tileLabel(windowNode);
+        return windowNode != null && label.equals(windowNode.name()) ? "" : label;
     }
 
     /** True deletion of a card tile — confirmed, closing it first when open. */
@@ -1661,6 +1773,7 @@ public class JournalController {
         journalEventBus.unsubscribe(journalTopic, MakeKLWindowEvent.class, makeKLWindowEventSubscriber);
         journalEventBus.unsubscribe(journalTopic, dev.ikm.komet.layout_engine.host.MakeCardWindowEvent.class,
                 makeCardWindowEventSubscriber);
+        journalWindowsRegistration.run();
         if (progressPopupSubscriber != null) {
             journalEventBus.unsubscribe(PROGRESS_TOPIC, ProgressEvent.class, progressPopupSubscriber);
         }
