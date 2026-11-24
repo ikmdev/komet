@@ -42,6 +42,7 @@ module dev.ikm.komet.kview.test {
     requires org.junit.jupiter.params;
     requires org.junit.jupiter.api;
     requires one.jpro.platform.auth.core;
+    requires dev.ikm.jpms.jgit;
     opens dev.ikm.komet.kview.state.test to org.junit.platform.commons;
     opens dev.ikm.komet.kview.klwindows.test to org.junit.platform.commons;
 

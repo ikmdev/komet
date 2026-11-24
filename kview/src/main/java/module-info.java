@@ -195,6 +195,12 @@ module dev.ikm.komet.kview {
 
     provides dev.ikm.komet.framework.KometNodeFactory with dev.ikm.komet.kview.mvvm.view.concept.ConceptNodeFactory;
 
+    // Exporting a group of local data to a file, and importing one (IKE-Network/ike-issues#1313).
+    exports dev.ikm.komet.kview.storage;
+    provides dev.ikm.komet.actions.KometAction
+            with dev.ikm.komet.kview.storage.ExportToFile,
+                 dev.ikm.komet.kview.storage.ImportFromFile;
+
     provides EntityKlWindowFactory with
             dev.ikm.komet.kview.klwindows.concept.ConceptKlWindowFactory,
             dev.ikm.komet.kview.klwindows.pattern.PatternKlWindowFactory,

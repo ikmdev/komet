@@ -762,6 +762,8 @@ public class GitTask extends TrackingCallable<Boolean> {
 
         // Load changesets phase - pass the list of added files
         loadChangesets(pullPhase.getEnd(), loadPhase.getEnd(), addedFiles);
+        // Shared data after the knowledge it refers to (IKE-Network/ike-issues#1313)
+        receiveShared(pushChanges);
         //Refresh UI after changesets are loaded
         EvtBusFactory.getDefaultEvtBus().publish(CALCULATOR_CACHE_TOPIC, new RefreshCalculatorCacheEvent(this, GLOBAL_REFRESH));
 
@@ -771,6 +773,7 @@ public class GitTask extends TrackingCallable<Boolean> {
         // Push phase (if enabled)
         if (pushChanges) {
             push(reasonerPhase.getEnd(), pushPhase.getEnd());
+            sendShared();
         }
 
         updateMessage("%s completed successfully.".formatted(pushChanges ? "Synchronization" : "Pulling"));
@@ -1026,6 +1029,33 @@ public class GitTask extends TrackingCallable<Boolean> {
         }
         updateMessage(message.append('.').toString());
         updatePhaseProgress(startPercentage, endPercentage, 1.0);
+    }
+
+    // -------------------- Shared data --------------------
+
+    /** The exchange of the knowledge base's shared data, with the same login (IKE-Network/ike-issues#1313). */
+    private SharedDataExchange sharedData() {
+        return new SharedDataExchange(changeSetFolder, chainingCredentialsProvider);
+    }
+
+    /**
+     * Brings the shared data others synced. A failure is reported and the sync of the knowledge goes on.
+     *
+     * @param sending whether this sync also sends, so shared documents are first brought up to date with their files
+     */
+    private void receiveShared(boolean sending) {
+        if (!isCancelled()) {
+            updateMessage("Bringing the shared documents...");
+            sharedData().receive(sending);
+        }
+    }
+
+    /** Sends the shared data of this knowledge base. A failure is reported; the next sync sends it. */
+    private void sendShared() {
+        if (!isCancelled()) {
+            updateMessage("Sending the shared documents...");
+            sharedData().send();
+        }
     }
 
     /**

@@ -22,9 +22,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Empties Komet's Trash as Komet quits, when the person keeps that preference on. An application
- * service shuts down before the data store does, so what a provider deletes from the knowledge
- * base, such as a conversation's journal, goes while the store is still open.
+ * Empties Komet's Trash as Komet quits, when the person keeps that preference on. It is emptied in
+ * {@link #beforeShutdown()}, while the store still answers: by the time a service shuts down the store
+ * does not, and what a provider deletes from the knowledge base, such as a conversation's journal,
+ * stayed in it when the Trash was emptied then (IKE-Network/ike-issues#1313).
  */
 @LifecyclePhase(value = ServiceLifecyclePhase.APPLICATION_SERVICES, subPriority = 50)
 public class KlTrashLifecycle implements ServiceLifecycle {
@@ -42,6 +43,11 @@ public class KlTrashLifecycle implements ServiceLifecycle {
 
     @Override
     public void shutdown() {
+        // The Trash was emptied before the store stopped answering.
+    }
+
+    @Override
+    public void beforeShutdown() {
         try {
             if (!KlTrash.emptyOnQuit()) {
                 return;

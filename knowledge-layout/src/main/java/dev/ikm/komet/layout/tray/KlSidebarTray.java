@@ -15,6 +15,7 @@
  */
 package dev.ikm.komet.layout.tray;
 
+import dev.ikm.komet.framework.view.ObservableView;
 import javafx.beans.value.ObservableIntegerValue;
 import javafx.scene.layout.Pane;
 
@@ -35,6 +36,15 @@ public interface KlSidebarTray {
      */
     default ObservableIntegerValue badge() {
         return null;
+    }
+
+    /**
+     * Gives the tray the journal's view, once, as the journal adds it: what a gesture in the tray is done
+     * by, and where, when it has no card of its own to say so.
+     *
+     * @param view the journal's view, whose edit coordinate names the person signed in
+     */
+    default void view(ObservableView view) {
     }
 
     /** Called as the tray slides out, so a look at it starts from a fresh read. */

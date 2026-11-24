@@ -1242,6 +1242,7 @@ public class JournalController {
         for (dev.ikm.komet.layout.tray.KlSidebarTrayProvider provider : dev.ikm.komet.layout.tray.KlSidebarTrays.providers()) {
             try {
                 dev.ikm.komet.layout.tray.KlSidebarTray tray = provider.create(journalTopic);
+                tray.view(windowView);
                 Pane trayPane = new VerticallyFilledPane();
                 trayPane.setLayoutX(10);
                 trayPane.setLayoutY(10);

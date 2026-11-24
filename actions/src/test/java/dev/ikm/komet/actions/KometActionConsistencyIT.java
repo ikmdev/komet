@@ -55,14 +55,21 @@ class KometActionConsistencyIT {
     private static final File PB_STARTER_DATA = new File("target/data/ike-starter-set-reasoned-pb.zip");
 
     /** Actions the starter set defines that a plugin implements, with the plugin that does. */
-    private static final Map<KometConcept, String> IMPLEMENTED_BY_PLUGINS = Map.of(
-            KometConcept.EDIT_DOCUMENT_BLOCK, "komet-claude-plugin",
-            KometConcept.ADD_ANF_STATEMENT, "komet-claude-plugin",
-            KometConcept.EDIT_ANF_STATEMENT, "komet-claude-plugin",
-            KometConcept.PROMOTE_TO_COMPLEX_CONCEPT, "komet-claude-plugin",
-            KometConcept.EDIT_DOCUMENT_SENTENCE, "komet-claude-plugin",
-            KometConcept.ADD_DOCUMENT_BLOCK, "komet-claude-plugin",
-            KometConcept.DELETE_DOCUMENT_BLOCK, "komet-claude-plugin");
+    private static final Map<KometConcept, String> IMPLEMENTED_BY_PLUGINS = Map.ofEntries(
+            Map.entry(KometConcept.EDIT_DOCUMENT_BLOCK, "komet-claude-plugin"),
+            Map.entry(KometConcept.ADD_ANF_STATEMENT, "komet-claude-plugin"),
+            Map.entry(KometConcept.EDIT_ANF_STATEMENT, "komet-claude-plugin"),
+            Map.entry(KometConcept.PROMOTE_TO_COMPLEX_CONCEPT, "komet-claude-plugin"),
+            Map.entry(KometConcept.EDIT_DOCUMENT_SENTENCE, "komet-claude-plugin"),
+            Map.entry(KometConcept.ADD_DOCUMENT_BLOCK, "komet-claude-plugin"),
+            Map.entry(KometConcept.DELETE_DOCUMENT_BLOCK, "komet-claude-plugin"),
+            // The storage actions and export (IKE-Network/ike-issues#1313).
+            Map.entry(KometConcept.REMOVE_FROM_KNOWLEDGE_BASE, "komet-stamped-document-plugin"),
+            Map.entry(KometConcept.SHARE_DOCUMENT, "komet-stamped-document-plugin"),
+            Map.entry(KometConcept.MAKE_DOCUMENT_LOCAL, "komet-stamped-document-plugin"),
+            Map.entry(KometConcept.DELETE_DOCUMENT, "komet-stamped-document-plugin"),
+            Map.entry(KometConcept.EXPORT_TO_FILE, "kview"),
+            Map.entry(KometConcept.IMPORT_FROM_FILE, "kview"));
 
     private ViewCalculator view;
     private Set<Long> definedActions;
@@ -96,20 +103,32 @@ class KometActionConsistencyIT {
         assertTrue(definedActions.contains(KometConcept.EDIT_DOCUMENT_SENTENCE.nid()), "Edit document sentence is defined");
         assertTrue(definedActions.contains(KometConcept.ADD_DOCUMENT_BLOCK.nid()), "Add document block is defined");
         assertTrue(definedActions.contains(KometConcept.DELETE_DOCUMENT_BLOCK.nid()), "Delete document block is defined");
+        assertTrue(definedActions.contains(KometConcept.REMOVE_FROM_KNOWLEDGE_BASE.nid()), "Remove from knowledge base is defined");
+        assertTrue(definedActions.contains(KometConcept.SHARE_DOCUMENT.nid()), "Share document is defined");
+        assertTrue(definedActions.contains(KometConcept.MAKE_DOCUMENT_LOCAL.nid()), "Make document local is defined");
+        assertTrue(definedActions.contains(KometConcept.DELETE_DOCUMENT.nid()), "Delete document is defined");
+        assertTrue(definedActions.contains(KometConcept.EXPORT_TO_FILE.nid()), "Export to file is defined");
+        assertTrue(definedActions.contains(KometConcept.IMPORT_FROM_FILE.nid()), "Import from file is defined");
     }
 
     @Test
     void eachActionsDefinitionNamesItsInputAndResultPatterns() {
-        Map<KometConcept, KometPattern> inputs = Map.of(
-                KometConcept.ACTIVATE_COMPONENT, KometPattern.COMPONENT_ACTION_INPUT_PATTERN,
-                KometConcept.INACTIVATE_COMPONENT, KometPattern.COMPONENT_ACTION_INPUT_PATTERN,
-                KometConcept.EDIT_DOCUMENT_BLOCK, KometPattern.DOCUMENT_BLOCK_EDIT_INPUT_PATTERN,
-                KometConcept.ADD_ANF_STATEMENT, KometPattern.ANF_STATEMENT_TREE_INPUT_PATTERN,
-                KometConcept.EDIT_ANF_STATEMENT, KometPattern.ANF_STATEMENT_TREE_INPUT_PATTERN,
-                KometConcept.PROMOTE_TO_COMPLEX_CONCEPT, KometPattern.COMPLEX_CONCEPT_PROMOTION_INPUT_PATTERN,
-                KometConcept.EDIT_DOCUMENT_SENTENCE, KometPattern.DOCUMENT_BLOCK_EDIT_INPUT_PATTERN,
-                KometConcept.ADD_DOCUMENT_BLOCK, KometPattern.DOCUMENT_BLOCK_INSERTION_INPUT_PATTERN,
-                KometConcept.DELETE_DOCUMENT_BLOCK, KometPattern.COMPONENT_ACTION_INPUT_PATTERN);
+        Map<KometConcept, KometPattern> inputs = Map.ofEntries(
+                Map.entry(KometConcept.ACTIVATE_COMPONENT, KometPattern.COMPONENT_ACTION_INPUT_PATTERN),
+                Map.entry(KometConcept.INACTIVATE_COMPONENT, KometPattern.COMPONENT_ACTION_INPUT_PATTERN),
+                Map.entry(KometConcept.EDIT_DOCUMENT_BLOCK, KometPattern.DOCUMENT_BLOCK_EDIT_INPUT_PATTERN),
+                Map.entry(KometConcept.ADD_ANF_STATEMENT, KometPattern.ANF_STATEMENT_TREE_INPUT_PATTERN),
+                Map.entry(KometConcept.EDIT_ANF_STATEMENT, KometPattern.ANF_STATEMENT_TREE_INPUT_PATTERN),
+                Map.entry(KometConcept.PROMOTE_TO_COMPLEX_CONCEPT, KometPattern.COMPLEX_CONCEPT_PROMOTION_INPUT_PATTERN),
+                Map.entry(KometConcept.EDIT_DOCUMENT_SENTENCE, KometPattern.DOCUMENT_BLOCK_EDIT_INPUT_PATTERN),
+                Map.entry(KometConcept.ADD_DOCUMENT_BLOCK, KometPattern.DOCUMENT_BLOCK_INSERTION_INPUT_PATTERN),
+                Map.entry(KometConcept.DELETE_DOCUMENT_BLOCK, KometPattern.COMPONENT_ACTION_INPUT_PATTERN),
+                Map.entry(KometConcept.REMOVE_FROM_KNOWLEDGE_BASE, KometPattern.DATA_GROUP_INPUT_PATTERN),
+                Map.entry(KometConcept.SHARE_DOCUMENT, KometPattern.DATA_GROUP_INPUT_PATTERN),
+                Map.entry(KometConcept.MAKE_DOCUMENT_LOCAL, KometPattern.DATA_GROUP_INPUT_PATTERN),
+                Map.entry(KometConcept.DELETE_DOCUMENT, KometPattern.DATA_GROUP_INPUT_PATTERN),
+                Map.entry(KometConcept.EXPORT_TO_FILE, KometPattern.FILE_EXPORT_INPUT_PATTERN),
+                Map.entry(KometConcept.IMPORT_FROM_FILE, KometPattern.FILE_IMPORT_INPUT_PATTERN));
         List<String> problems = new ArrayList<>();
         inputs.forEach((action, input) -> {
             List<SemanticEntityVersion> definitions = EntityService.get()

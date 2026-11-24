@@ -44,6 +44,21 @@ public enum KometPattern implements PatternEnumerationFacade<KometPattern> {
     COMPLEX_CONCEPT_PROMOTION_INPUT_PATTERN("Complex concept promotion input pattern (IkeFoundation)", "3891e739-23c3-51e3-b048-580330566298"),
 
     /**
+     * The input of an action that acts on whole groups of data, such as removing, sharing or deleting documents: the kind of action performed, and the other groups acted on with the referenced component, which is the document or other group itself.
+     */
+    DATA_GROUP_INPUT_PATTERN("Data group input pattern (IkeFoundation)", "8e47c5e8-9adc-510c-a368-e6b7a3530152"),
+
+    /**
+     * The input of an action that writes data of the knowledge base to a file: the kind of action performed on the referenced component, which is the data written, and where the file goes.
+     */
+    FILE_EXPORT_INPUT_PATTERN("File export input pattern (IkeFoundation)", "11b3bbab-e57e-527b-b5ae-7d22cb09dff2"),
+
+    /**
+     * The input of an action that reads data into the knowledge base from a file: the kind of action performed, where the file is, and whether the data replaces a copy already here. The referenced component is the module parent the data is kept under, Local module for data that never syncs with the knowledge base.
+     */
+    FILE_IMPORT_INPUT_PATTERN("File import input pattern (IkeFoundation)", "364689a9-a019-54ba-9628-91517795ec7c"),
+
+    /**
      * The result of an action that writes a new version of its subject, referencing the run's input: the outcome, the STAMP of the version written (the outcome concept itself when nothing was written), and a message.
      */
     VERSION_CHANGE_RESULT_PATTERN("Version change result pattern (IkeFoundation)", "c0f13898-fa2a-5b10-aa22-cf0885144af0");

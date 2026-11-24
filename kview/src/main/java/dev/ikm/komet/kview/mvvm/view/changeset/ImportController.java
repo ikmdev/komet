@@ -29,7 +29,10 @@ import dev.ikm.komet.kview.mvvm.viewmodel.ImportViewModel;
 import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.EntityCountSummary;
 import dev.ikm.tinkar.common.service.TrackingCallable;
+import dev.ikm.komet.kview.storage.StorageGestures;
+import dev.ikm.tinkar.coordinate.Coordinates;
 import dev.ikm.tinkar.entity.load.LoadEntitiesFromProtobufFile;
+import dev.ikm.tinkar.entity.scope.ScopeOperations;
 import dev.ikm.tinkar.importer.registry.Registry;
 import javafx.application.Platform;
 import javafx.css.PseudoClass;
@@ -42,6 +45,7 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import one.jpro.platform.file.ExtensionFilter;
 import one.jpro.platform.file.FileSource;
 import one.jpro.platform.file.dropper.FileDropper;
@@ -219,6 +223,12 @@ public class ImportController {
 
         if (importViewModel.validProperty().get()) {
             File selectedFile = importViewModel.getPropertyValue(SELECTED_FILE);
+            if (ScopeOperations.exportedScope(selectedFile)) {
+                // A conversation, or other local data, that Export wrote: checked before anything is loaded, where
+                // a data set is loaded as it is (IKE-Network/ike-issues#1313).
+                importExported(selectedFile);
+                return;
+            }
             // Connected to a server: import there, where the data lives, rather than into this
             // Komet's local view of it.
             boolean local = RemoteChangesetTask.remote().isEmpty();
@@ -263,6 +273,19 @@ public class ImportController {
             closeDialog();
             LOG.info("Importing dataset from file: {}", selectedFile);
         }
+    }
+
+    /** Closes the dialog and imports a file that Export wrote, reporting in the window the dialog was opened from. */
+    private void importExported(File file) {
+        Window owner = ((Stage) cancelButton.getScene().getWindow()).getOwner();
+        Node from = owner == null || owner.getScene() == null ? null : owner.getScene().getRoot();
+        closeDialog();
+        if (RemoteChangesetTask.remote().isPresent()) {
+            StorageGestures.report(from, StorageGestures.IMPORT, false, "Not imported. This Komet reads its knowledge base from a server,"
+                    + " and an exported conversation is imported into a knowledge base opened here.");
+            return;
+        }
+        StorageGestures.importFile(from, file, Coordinates.Edit.Default(), () -> { });
     }
 
     /**

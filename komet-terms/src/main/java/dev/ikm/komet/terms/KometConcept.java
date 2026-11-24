@@ -426,7 +426,37 @@ public enum KometConcept implements ConceptEnumerationFacade<KometConcept> {
     /**
      * Replaces the text of one sentence of a document materialized from git as semantic vertices (IKE-Network/ike-issues#1313): the sentence goes on a line of its own, a part of it on one line whose words survive keeps that line, and only changed text is broken anew, after a clause or a comma. The block's lines are then edited as Edit document block edits them, and the sentence gets a new version under its own identity. The input's subject is the sentence; its text is the replacement.
      */
-    EDIT_DOCUMENT_SENTENCE("Edit document sentence (IkeFoundation)", "cd4f4488-ca4c-5e44-904e-ca91b5399c6d");
+    EDIT_DOCUMENT_SENTENCE("Edit document sentence (IkeFoundation)", "cd4f4488-ca4c-5e44-904e-ca91b5399c6d"),
+
+    /**
+     * Removes documents saved in files from the knowledge base, each with its annotations and narrations, in one step. Their files stay where they are, and opening a file again reads the document back in under the same identities. A single document or a whole folder of them can be removed. The removal is refused when an edit of one of them is not yet saved to its file, when something outside them refers to one of them, or when the data is not saved in a file.
+     */
+    REMOVE_FROM_KNOWLEDGE_BASE("Remove from knowledge base (IkeFoundation)", "f7f815c1-a9e1-53bf-937d-cf5785b77ce2"),
+
+    /**
+     * Shares documents with everyone who syncs the knowledge base, each with the documents it includes. The others can read a shared document and comment on it. Its file stays its record: whoever has the file edits and commits it, and the shared copy follows each commit. Sharing is refused when an edit of one of the documents is not committed, when one refers to local data outside them, or when a file is in a folder without git.
+     */
+    SHARE_DOCUMENT("Share document (IkeFoundation)", "8dcd9eeb-3849-58ab-8cc8-568a77d43e4b"),
+
+    /**
+     * Makes shared documents local. Everyone else who syncs the knowledge base loses them, with what was said of them, at their next sync. Whoever makes a document local keeps it: read from its file where the file is on their computer, and as local data where it is not. It is refused when another shared document includes one of them.
+     */
+    MAKE_DOCUMENT_LOCAL("Make document local (IkeFoundation)", "4f214783-60e7-555f-9c5f-dff676aa14ed"),
+
+    /**
+     * Deletes shared documents for everyone who syncs the knowledge base, or documents kept in this knowledge base alone. A shared document's file stays where it is, and git history still contains what was shared. Nothing else contains a document kept in this knowledge base alone. It is refused when something else refers to one of them, or when another shared document includes one of them.
+     */
+    DELETE_DOCUMENT("Delete document (IkeFoundation)", "f9804fe7-3176-5a5e-ab25-3e58c02a16e9"),
+
+    /**
+     * Writes a group of local data that is not saved in a file to one file, so another knowledge base can import it. A conversation with the assistant is an example. The file records the concepts, patterns and modules the data needs, and the data's kind. Nothing in the knowledge base changes.
+     */
+    EXPORT_TO_FILE("Export to file (IkeFoundation)", "3c90d8da-8eb0-55e7-ab35-f4c0d42a9b0a"),
+
+    /**
+     * Reads a file written by Export to file into this knowledge base. Before anything is read in, three things are checked. Every concept, pattern and module the file needs must be here. The kind of data recorded in the file must match the kind of its modules here. The data must not be here already, unless the run replaces it. When a check fails, nothing is read in. The data is kept with the knowledge base's own records, so a rebuild of the knowledge base keeps it.
+     */
+    IMPORT_FROM_FILE("Import from file (IkeFoundation)", "f789e6f8-227e-5b6e-85de-3b747a64b8d7");
 
     private final EntityProxy.Concept proxy;
 

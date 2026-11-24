@@ -40,6 +40,7 @@ module dev.ikm.komet.layout {
     exports dev.ikm.komet.layout_engine.window;
     exports dev.ikm.komet.layout.controls;
     exports dev.ikm.komet.layout.help;
+    exports dev.ikm.komet.layout.storage;
     exports dev.ikm.komet.layout.trash;
     exports dev.ikm.komet.layout.tray;
     exports dev.ikm.komet.layout.sidebar;
@@ -61,6 +62,8 @@ module dev.ikm.komet.layout {
     // lifecycle service empties it as Komet quits when the person keeps that preference on.
     uses dev.ikm.komet.layout.trash.KlTrashProvider;
     uses dev.ikm.komet.layout.tray.KlSidebarTrayProvider;
+    // What the Storage window lists: plugins provide the groups of data they wrote.
+    uses dev.ikm.komet.layout.storage.KlStorageProvider;
     // The assistant a window's sidebar shows: a plugin provides it; without one a window has no sidebar.
     uses dev.ikm.komet.layout.sidebar.KlAssistantPaneProvider;
     provides dev.ikm.tinkar.common.service.ServiceLifecycle with dev.ikm.komet.layout.trash.KlTrashLifecycle;
