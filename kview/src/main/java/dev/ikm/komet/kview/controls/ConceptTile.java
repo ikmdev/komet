@@ -1,17 +1,22 @@
 package dev.ikm.komet.kview.controls;
 
+import dev.ikm.komet.framework.Identicon;
 import dev.ikm.komet.framework.dnd.KonceptDragGlyph;
 import dev.ikm.komet.kview.controls.skin.KLConceptNavigatorTreeViewSkin;
 import dev.ikm.komet.layout.controls.IconRegion;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.animation.PauseTransition;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.css.PseudoClass;
 import javafx.geometry.Bounds;
+import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
+import javafx.scene.effect.ColorAdjust;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
@@ -28,6 +33,7 @@ import java.util.ResourceBundle;
 /**
  * <p>A ConceptTile is an {@link HBox} container that renders:
  * - A custom disclosure node
+ * - The identicon of the concept, muted unless the row is hovered, selected or the control's active component
  * - An indication of defined concept, for a given {@link ConceptNavigatorTreeItem}
  * - The description of a {@link dev.ikm.tinkar.terms.ConceptFacade}, for a given {@link ConceptNavigatorTreeItem}
  * - a selection button
@@ -48,6 +54,13 @@ public class ConceptTile extends HBox {
     static final PseudoClass DEFINED_PSEUDO_CLASS = PseudoClass.getPseudoClass("defined");
     /** A concept a filtered navigator shows only because it leads to a concept that matches the filter. */
     private static final PseudoClass FILTER_CONTEXT_PSEUDO_CLASS = PseudoClass.getPseudoClass("filter-context");
+    /** The concept is the control's active component, such as the one in the journal's focused window. */
+    private static final PseudoClass ACTIVE_COMPONENT_PSEUDO_CLASS = PseudoClass.getPseudoClass("active-component");
+    /** Side of the row's identicon, in pixels. */
+    private static final double IDENTICON_SIZE = 16;
+    /** How far a resting row's identicon is faded, so a tree of them stays quieter than the journal's windows. */
+    private static final double MUTED_IDENTICON_OPACITY = 0.5;
+    private static final double MUTED_IDENTICON_SATURATION = -0.7;
     public static final PseudoClass DRAG_SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("drag-selected");
 
     private final KLConceptNavigatorTreeCell cell;
@@ -56,6 +69,7 @@ public class ConceptTile extends HBox {
 
     private final IconRegion disclosureIconRegion;
     private final StackPane disclosurePane;
+    private final ImageView identicon = new ImageView();
     private final Label conceptLabel;
     private final StackPane treePane;
     private final ConceptNavigatorTooltip conceptNavigatorTooltip;
@@ -132,6 +146,20 @@ public class ConceptTile extends HBox {
         treeView.showDefinitionStatusProperty().subscribe(this::updateDefinedMark);
         treeView.showMultipleParentsProperty().subscribe(this::updateMultiParentMark);
 
+        identicon.setFitWidth(IDENTICON_SIZE);
+        identicon.setFitHeight(IDENTICON_SIZE);
+        identicon.getStyleClass().add("identicon");
+        HBox.setMargin(identicon, new Insets(0, 2, 0, 4));
+        // Shown or left out of the row with the control's setting; a tile lives as long as the control.
+        identicon.visibleProperty().bind(treeView.showIdenticonsProperty());
+        identicon.managedProperty().bind(treeView.showIdenticonsProperty());
+        // Full colour only where the user is looking or working: the hovered row, the selected
+        // row, and the row of the control's active component.
+        cell.hoverProperty().subscribe(this::updateEmphasis);
+        cell.selectedProperty().subscribe(this::updateEmphasis);
+        treeView.focusInsideProperty().subscribe(this::updateEmphasis);
+        treeView.activeComponentProperty().subscribe(this::updateEmphasis);
+
         Region ellipse = new Region();
         ellipse.getStyleClass().add("ellipse");
         conceptLabel = new Label(null);
@@ -139,7 +167,7 @@ public class ConceptTile extends HBox {
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        getChildren().addAll(disclosurePane, ellipse, conceptLabel, spacer, selectPane, treePane);
+        getChildren().addAll(disclosurePane, identicon, ellipse, conceptLabel, spacer, selectPane, treePane);
         getStyleClass().add("concept-tile");
 
         conceptNavigatorTooltip = new ConceptNavigatorTooltip(conceptLabel, treeView.activationProperty());
@@ -178,7 +206,7 @@ public class ConceptTile extends HBox {
      * Starts the canonical concept drag from this tile: the navigator's own format plus the
      * standard component proxies (ike-issues#638) on the dragboard, and the generated
      * {@link KonceptDragGlyph} as the drag image — built from the concept's identity rather than a
-     * snapshot of this tile, which has no identicon and so could never be the pill
+     * snapshot of this tile, which is a tree row and so could never be the pill
      * (ike-issues#854). Shared by the select affordance and the whole-tile drag source so the two
      * gestures cannot drift apart.
      */
@@ -209,6 +237,9 @@ public class ConceptTile extends HBox {
             ConceptNavigatorTreeItem treeItem = get();
             updateDefinedMark();
             updateMultiParentMark();
+            identicon.setImage(treeItem != null && treeItem.getValue() != null
+                    ? Identicon.generateIdenticonImage(treeItem.getValue().publicId()) : null);
+            updateEmphasis();
             pseudoClassStateChanged(FILTER_CONTEXT_PSEUDO_CLASS, treeItem != null && treeItem.getValue() != null
                     && treeView.getNavigator() instanceof FilteredNavigator filteredNavigator
                     && !filteredNavigator.isMatch(treeItem.getValue().nid()));
@@ -219,8 +250,10 @@ public class ConceptTile extends HBox {
                 subscription = subscription.and(hoverProperty().subscribe(h -> {
                     if (h) {
                         treeViewSkin.unhoverAllItems();
-                        if (treeView.getSelectionModel().getSelectedItem() == treeItem || treeViewSkin.isMultipleSelectionByBoundingBox()) {
-                            // don't long-hover the selected item or if there's a treeView dragging event
+                        if (treeView.getSelectionModel().getSelectedItem() == treeItem || treeViewSkin.isMultipleSelectionByBoundingBox()
+                                || !treeView.isFocusInside()) {
+                            // don't long-hover the selected item, or if there's a treeView dragging event, or while
+                            // the navigator has no focus (the user is working elsewhere)
                             return;
                         }
                         hoverTransition = new PauseTransition(new Duration(treeView.getActivation()));
@@ -261,6 +294,25 @@ public class ConceptTile extends HBox {
     private void updateMultiParentMark() {
         ConceptNavigatorTreeItem treeItem = getConcept();
         treePane.setVisible(treeItem != null && treeItem.isMultiParent() && treeView.isShowMultipleParents());
+    }
+
+    /**
+     * Marks the row of the control's active component (see concept-navigator.css), and shows the
+     * identicon in full colour on that row, the hovered row and the selected row; faded and
+     * desaturated on every other row.
+     */
+    private void updateEmphasis() {
+        boolean hovered = cell.isHover();
+        boolean selected = cell.isSelected();
+        boolean navigatorFocused = treeView.isFocusInside();
+        EntityFacade activeComponent = treeView.getActiveComponent();
+        ConceptNavigatorTreeItem treeItem = getConcept();
+        boolean active = activeComponent != null && treeItem != null && treeItem.getValue() != null
+                && activeComponent.nid() == treeItem.getValue().nid();
+        pseudoClassStateChanged(ACTIVE_COMPONENT_PSEUDO_CLASS, active);
+        boolean emphasized = hovered || (selected && navigatorFocused) || active;
+        identicon.setOpacity(emphasized ? 1 : MUTED_IDENTICON_OPACITY);
+        identicon.setEffect(emphasized ? null : new ColorAdjust(0, MUTED_IDENTICON_SATURATION, 0, 0));
     }
 
     void updateTooltip() {

@@ -49,7 +49,9 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
      */
     public enum STATE {
         LONG_HOVER,
-        SELECTED
+        SELECTED,
+        /** The item of the control's active component, see {@link KLConceptNavigatorControl#activeComponentProperty()}. */
+        ACTIVE
     }
 
     /**
@@ -103,7 +105,24 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
          * to the 1px gray vertical line that connects the actual selected conceptItem with all its ancestors,
          * at the indentation level i, from 0 to MAX_LEVEL.
          */
-        LINE_I_SELECTED(5 + MAX_LEVEL);
+        LINE_I_SELECTED(5 + MAX_LEVEL),
+
+        /**
+         * Bit 6 + 2 * MAX_LEVEL. Associated with the 'cn-border-active' pseudoClass, refers to the ancestors of the
+         * item of the active component, setting a white background, and 1px dark blue border for the {@link ConceptTile}.
+         */
+        BORDER_ACTIVE(6 + 2 * MAX_LEVEL),
+        /**
+         * Bit 7 + 2 * MAX_LEVEL. Associated with the 'cn-curved-line-active' pseudoClass, refers to the 2px dark blue
+         * curved line that connects to the {@link ConceptTile} of the item of the active component and all of its ancestors.
+         */
+        CURVED_LINE_ACTIVE(7 + 2 * MAX_LEVEL),
+        /**
+         * Bits 8 + 2 * MAX_LEVEL to 7 + 3 * MAX_LEVEL. Associated with the 'cn-line-active-i' pseudoClass, refers
+         * to the 2px dark blue vertical line that connects the item of the active component with all its ancestors,
+         * at the indentation level i, from 0 to MAX_LEVEL.
+         */
+        LINE_I_ACTIVE(8 + 2 * MAX_LEVEL);
 
         final int bit;
 
@@ -122,7 +141,7 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
         /**
          * Clears the bits of a bitSet between the first and last bits that relate to a given {@link STATE}.
          * @param bitSet The {@link BitSet}
-         * @param state The {@link STATE} that can be either {@link STATE#LONG_HOVER} or {@link STATE#SELECTED}
+         * @param state The {@link STATE} whose bits are cleared
          */
         public static void clearBitsRange(BitSet bitSet, STATE state) {
             if (state == STATE.LONG_HOVER) {
@@ -131,6 +150,36 @@ public class ConceptNavigatorTreeItem extends TreeItem<ConceptFacade> {
             if (state == STATE.SELECTED) {
                 bitSet.clear(PS_STATE.BORDER_SELECTED.getBit(), PS_STATE.LINE_I_SELECTED.getBit() + MAX_LEVEL + 1);
             }
+            if (state == STATE.ACTIVE) {
+                bitSet.clear(PS_STATE.BORDER_ACTIVE.getBit(), PS_STATE.LINE_I_ACTIVE.getBit() + MAX_LEVEL);
+            }
+        }
+
+        /** The bit that outlines an ancestor of the item in the given state. */
+        public static PS_STATE border(STATE state) {
+            return switch (state) {
+                case LONG_HOVER -> BORDER_LONG_HOVER;
+                case SELECTED -> BORDER_SELECTED;
+                case ACTIVE -> BORDER_ACTIVE;
+            };
+        }
+
+        /** The bit that shows the curved line into the item in the given state, and into each of its ancestors. */
+        public static PS_STATE curvedLine(STATE state) {
+            return switch (state) {
+                case LONG_HOVER -> CURVED_LINE_LONG_HOVER;
+                case SELECTED -> CURVED_LINE_SELECTED;
+                case ACTIVE -> CURVED_LINE_ACTIVE;
+            };
+        }
+
+        /** The first of the bits, one per indentation level, that show the vertical line for the given state. */
+        public static PS_STATE line(STATE state) {
+            return switch (state) {
+                case LONG_HOVER -> LINE_I_LONG_HOVER;
+                case SELECTED -> LINE_I_SELECTED;
+                case ACTIVE -> LINE_I_ACTIVE;
+            };
         }
     }
 

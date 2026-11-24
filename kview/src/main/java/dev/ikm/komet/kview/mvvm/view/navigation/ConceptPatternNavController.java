@@ -318,15 +318,21 @@ public class ConceptPatternNavController {
         conceptFilterController.navigatorProperty().subscribe(conceptNavigatorControl::setNavigator);
         conceptFilterController.setBaseNavigator(navigator);
         searchControl.promptTextProperty().bind(conceptFilterController.searchPromptProperty());
-        conceptNavigatorControl.setHeader("Concept Header");
         conceptNavigatorControl.setShowTags(false);
-        // The defined dot and the alternate-parents tree follow the app-wide glyph settings while
-        // the navigator is showing.
+        // The row of the concept in the journal's focused window shows its identicon in full colour.
+        conceptNavigatorControl.activeComponentProperty().bind(journalController.focusedWindowComponentProperty());
+        // With the Show row's Follow window switch on, the tree also goes to that row.
+        conceptNavigatorControl.followActiveComponentProperty()
+                .bind(conceptFilterController.getBar().followWindowProperty());
+        // The defined dot, the alternate-parents tree and the identicons follow the app-wide glyph
+        // settings while the navigator is showing.
         ObservableValue<Boolean> navigatorOnScene = KonceptGlyphSettings.liveFor(conceptNavigatorControl);
         conceptNavigatorControl.showDefinitionStatusProperty()
                 .bind(KonceptGlyphSettings.showDefinitionStatus().when(navigatorOnScene));
         conceptNavigatorControl.showMultipleParentsProperty()
                 .bind(KonceptGlyphSettings.showMultipleParents().when(navigatorOnScene));
+        conceptNavigatorControl.showIdenticonsProperty()
+                .bind(KonceptGlyphSettings.showSidePanelIdenticons().when(navigatorOnScene));
         conceptNavigatorControl.setOnAction(action -> switch (action) {
             // single selection
             case OPEN_IN_WORKSPACE -> journalController::createConceptWindow;

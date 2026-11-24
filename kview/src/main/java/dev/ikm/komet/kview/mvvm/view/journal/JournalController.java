@@ -186,9 +186,12 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.geometry.Side;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
@@ -527,6 +530,9 @@ public class JournalController {
 
         // Initialize the journal windows list
         journalWindows = FXCollections.unmodifiableObservableList(workspace.getWindows());
+        // The component of the window that holds keyboard focus, which the concept navigator marks.
+        workspace.sceneProperty().flatMap(Scene::focusOwnerProperty).subscribe(this::updateFocusedWindowComponent);
+        workspace.getWindows().subscribe(this::clearFocusedWindowComponentIfClosed);
 
         reasonerNodePanel = new BorderPane();
         progressPopupPane.getStyleClass().add("progress-popup-pane");
@@ -2927,6 +2933,38 @@ public class JournalController {
         return viewProperties;
     }
 
+    /**
+     * Sets {@link #focusedWindowComponentProperty()} from the scene's focus owner: the component of the
+     * window the focus owner is inside, or null when focus is outside every window. Focus inside the
+     * navigation panel changes nothing, so the window the user came from stays marked in the concept
+     * navigator while they explore the tree around its concept.
+     */
+    private void updateFocusedWindowComponent(Node focusOwner) {
+        EntityFacade component = null;
+        for (Node node = focusOwner; node != null && component == null; node = node.getParent()) {
+            if (node == patternConceptNavigationPanel) {
+                return;
+            }
+            for (ChapterKlWindow<Pane> window : workspace.getWindows()) {
+                if (window.fxObject() == node && window instanceof AbstractEntityChapterKlWindow entityWindow) {
+                    component = entityWindow.getEntityFacade();
+                }
+            }
+        }
+        focusedWindowComponent.set(component);
+    }
+
+    /** Clears {@link #focusedWindowComponentProperty()} once no open window frames its component. */
+    private void clearFocusedWindowComponentIfClosed() {
+        EntityFacade component = getFocusedWindowComponent();
+        if (component != null && workspace.getWindows().stream().noneMatch(window ->
+                window instanceof AbstractEntityChapterKlWindow entityWindow
+                        && entityWindow.getEntityFacade() != null
+                        && entityWindow.getEntityFacade().nid() == component.nid())) {
+            focusedWindowComponent.set(null);
+        }
+    }
+
     public static Toast toast() {
         JournalController latest = null;
         for (JournalController journal : OPEN_JOURNALS) {
@@ -2939,5 +2977,22 @@ public class JournalController {
         }
         return latest == null ? null : latest.toast;
     }
+
+    /***************************************************************************
+     *                                                                         *
+     * Properties                                                              *
+     *                                                                         *
+     **************************************************************************/
+
+    // -- focused window component
+    /**
+     * The component framed by the journal window that holds keyboard focus (the one drawn with the
+     * larger shadow), or that held it before focus moved into the navigation panel; null while focus
+     * is anywhere else.
+     */
+    private final ReadOnlyObjectWrapper<EntityFacade> focusedWindowComponent =
+            new ReadOnlyObjectWrapper<>(this, "focusedWindowComponent");
+    public ReadOnlyObjectProperty<EntityFacade> focusedWindowComponentProperty() { return focusedWindowComponent.getReadOnlyProperty(); }
+    public EntityFacade getFocusedWindowComponent() { return focusedWindowComponent.get(); }
 
 }

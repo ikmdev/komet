@@ -16,17 +16,26 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose.test;
 
 import dev.ikm.komet.kview.mvvm.view.genpurpose.GenPurposeWindowView;
+import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.layout.HBox;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.testfx.api.FxRobot;
+import org.testfx.api.FxService;
 import org.testfx.api.FxToolkit;
 
+import java.nio.file.Path;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * The window view is matched by kview.css through descendant chains of style classes. This
@@ -39,6 +48,7 @@ class GenPurposeWindowViewUTestFX {
     private static final List<String> SELECTORS = List.of(
             ".pattern-window.concept-detail-pane",
             ".gen-purpose-window",
+            ".gen-purpose-window > #detailsCenterBorderPane",
             ".lidr-container",
             ".window-body-frame",
             ".window-body-frame .create-mode-hint",
@@ -56,6 +66,8 @@ class GenPurposeWindowViewUTestFX {
             ".main-center-container .split-pane");
 
     private GenPurposeWindowView view;
+    /** A focusable node outside the window, for taking focus away from it. */
+    private Button elsewhere;
 
     @BeforeAll
     static void startToolkit() throws Exception {
@@ -66,7 +78,14 @@ class GenPurposeWindowViewUTestFX {
     void showView() throws Exception {
         FxToolkit.setupStage(stage -> {
             view = new GenPurposeWindowView();
-            stage.setScene(new Scene(view, 800, 600));
+            view.setWindowTitle("Concept");
+            elsewhere = new Button("Elsewhere");
+            HBox desktop = new HBox(24, view, elsewhere);
+            desktop.setStyle("-fx-background-color: #CAD3E2; -fx-padding: 24;");
+            // The palette is declared on .root, so the stylesheet goes on the scene's root as it
+            // does in the journal; on the window alone its colours don't resolve.
+            desktop.getStylesheets().addAll(view.getStylesheets());
+            stage.setScene(new Scene(desktop, 900, 600));
             stage.show();
         });
         // Apply CSS so skins exist and controls' own style classes are on the tree.
@@ -84,5 +103,28 @@ class GenPurposeWindowViewUTestFX {
         for (String selector : SELECTORS) {
             assertNotNull(view.lookup(selector), "kview.css selector no longer matches: " + selector);
         }
+    }
+
+    @Test
+    @DisplayName("The focused window is ringed, and the ring goes when focus leaves it")
+    void focusedWindowIsRinged() throws Exception {
+        Node frame = view.lookup("#detailsCenterBorderPane");
+        FxRobot robot = new FxRobot();
+
+        FxToolkit.setupFixture(() -> {
+            view.requestFocus();
+            view.applyCss();
+        });
+        assertInstanceOf(DropShadow.class, frame.getEffect(), "the focused window is ringed");
+        FxService.serviceContext().getCaptureSupport().saveImage(robot.capture(view.getParent()).getImage(),
+                Path.of("target", "gen-purpose-window-focused.png"));
+
+        FxToolkit.setupFixture(() -> {
+            elsewhere.requestFocus();
+            view.applyCss();
+        });
+        assertNull(frame.getEffect(), "an unfocused window has no ring");
+        FxService.serviceContext().getCaptureSupport().saveImage(robot.capture(view.getParent()).getImage(),
+                Path.of("target", "gen-purpose-window-unfocused.png"));
     }
 }

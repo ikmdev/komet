@@ -145,6 +145,8 @@ class ConceptFilterContextRowsUTestFX {
 
     @Test
     void contextAncestorsOfTheSelectedConceptDoNotTakeTheWhitePlateOfAMatch() {
+        // The selection and its trail of ancestors are drawn only while the navigator has focus.
+        robot.interact(control::requestFocus);
         robot.interact(() -> control.getSelectionModel().select(3)); // the Fetus concept, under Diameter
         WaitForAsyncUtils.waitForFxEvents();
         FxService.serviceContext().getCaptureSupport().saveImage(robot.capture(control).getImage(),

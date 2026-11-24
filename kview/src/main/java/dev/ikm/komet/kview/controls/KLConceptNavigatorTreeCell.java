@@ -58,17 +58,22 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
     public static final PseudoClass LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-long-hover");
     private static final PseudoClass BORDER_LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-border-long-hover");
     private static final PseudoClass BORDER_SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-border-selected");
+    private static final PseudoClass BORDER_ACTIVE_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-border-active");
 
     private static final PseudoClass CURVED_LINE_LONG_HOVER_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-curved-line-long-hover");
     private static final PseudoClass CURVED_LINE_SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-curved-line-selected");
+    private static final PseudoClass CURVED_LINE_ACTIVE_PSEUDO_CLASS = PseudoClass.getPseudoClass("cn-curved-line-active");
     public static final PseudoClass[] LINE_I_LONG_HOVER_PSEUDO_CLASS;
     public static final PseudoClass[] LINE_I_SELECTED_PSEUDO_CLASS;
+    public static final PseudoClass[] LINE_I_ACTIVE_PSEUDO_CLASS;
     static {
         LINE_I_LONG_HOVER_PSEUDO_CLASS = new PseudoClass[MAX_LEVEL];
         LINE_I_SELECTED_PSEUDO_CLASS = new PseudoClass[MAX_LEVEL];
+        LINE_I_ACTIVE_PSEUDO_CLASS = new PseudoClass[MAX_LEVEL];
         for (int i = 0; i < MAX_LEVEL; i++) {
             LINE_I_LONG_HOVER_PSEUDO_CLASS[i] = PseudoClass.getPseudoClass("cn-line-long-hover-" + i);
             LINE_I_SELECTED_PSEUDO_CLASS[i] = PseudoClass.getPseudoClass("cn-line-selected-" + i);
+            LINE_I_ACTIVE_PSEUDO_CLASS[i] = PseudoClass.getPseudoClass("cn-line-active-" + i);
         }
     }
 
@@ -88,6 +93,8 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
     private static final PseudoClass RETIRED_TAG_PSEUDO_CLASS = PseudoClass.getPseudoClass("retired-tag");
 
     private static final PseudoClass HIGHLIGHTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("highlighted");
+    /** The cell is selected and the navigator has focus: what concept-navigator.css styles as the selected row. */
+    private static final PseudoClass SELECTION_SHOWN_PSEUDO_CLASS = PseudoClass.getPseudoClass("selection-shown");
     /**
      * <p>Custom data format identifier used as means of identifying the data stored on a dragboard
      * when one or more concept items are selected and dragged to a given target.
@@ -148,6 +155,17 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
         });
 
         getStyleClass().add("navigator-tree-cell");
+
+        // The selected look is drawn only while the navigator has focus: without it the user is
+        // working elsewhere, and the row of the control's active component is the one to stand out.
+        selectedProperty().subscribe(this::updateSelectionShown);
+        treeView.focusInsideProperty().subscribe(this::updateSelectionShown);
+    }
+
+    private void updateSelectionShown() {
+        boolean selected = isSelected();
+        boolean navigatorFocused = treeView.isFocusInside();
+        pseudoClassStateChanged(SELECTION_SHOWN_PSEUDO_CLASS, selected && navigatorFocused);
     }
 
     /**
@@ -301,9 +319,12 @@ public class KLConceptNavigatorTreeCell extends TreeCell<ConceptFacade> {
         pseudoClassStateChanged(BORDER_SELECTED_PSEUDO_CLASS, bitSet.get(PS_STATE.BORDER_SELECTED.getBit()));
         pseudoClassStateChanged(CURVED_LINE_LONG_HOVER_PSEUDO_CLASS, bitSet.get(PS_STATE.CURVED_LINE_LONG_HOVER.getBit()));
         pseudoClassStateChanged(CURVED_LINE_SELECTED_PSEUDO_CLASS, bitSet.get(PS_STATE.CURVED_LINE_SELECTED.getBit()));
+        pseudoClassStateChanged(BORDER_ACTIVE_PSEUDO_CLASS, bitSet.get(PS_STATE.BORDER_ACTIVE.getBit()));
+        pseudoClassStateChanged(CURVED_LINE_ACTIVE_PSEUDO_CLASS, bitSet.get(PS_STATE.CURVED_LINE_ACTIVE.getBit()));
         for (int i = 0; i < Math.min(getLevel((ConceptNavigatorTreeItem) getTreeItem()), MAX_LEVEL); i++) {
             pseudoClassStateChanged(LINE_I_LONG_HOVER_PSEUDO_CLASS[i], bitSet.get(PS_STATE.LINE_I_LONG_HOVER.getBit() + i));
             pseudoClassStateChanged(LINE_I_SELECTED_PSEUDO_CLASS[i], bitSet.get(PS_STATE.LINE_I_SELECTED.getBit() + i));
+            pseudoClassStateChanged(LINE_I_ACTIVE_PSEUDO_CLASS[i], bitSet.get(PS_STATE.LINE_I_ACTIVE.getBit() + i));
         }
     }
 
