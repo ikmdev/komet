@@ -58,6 +58,15 @@ public class ConceptNavigatorUtils {
                  -fx-managed: true;
             }
             """;
+    private static final String STYLE_ACTIVE_LINES = ".tree-cell:cn-line-active-# > .solid-line-#,";
+    private static final String STYLE_ACTIVE = """
+            .tree-cell:cn-curved-line-active > .solid-curved-line {
+                 -fx-stroke: #395C9A;
+                 -fx-stroke-width: 2;
+                 visibility: visible;
+                 -fx-managed: true;
+            }
+            """;
     private static final String STYLE6 = ".tree-cell:cn-line-long-hover-# > .solid-line-#,";
     private static final String STYLE7 = """
             .tree-cell:cn-curved-line-long-hover > .solid-curved-line {
@@ -84,6 +93,12 @@ public class ConceptNavigatorUtils {
             builder.append(STYLE4.replaceAll("#", "" + i)).append("\n");
         }
         builder.append(STYLE5);
+        // After the selected lines and before the long-hover ones: where trails share a line, the
+        // active component's shows over the selection's, and a long hover over both.
+        for (int i = 0; i < MAX_LEVEL; i++) {
+            builder.append(STYLE_ACTIVE_LINES.replaceAll("#", "" + i)).append("\n");
+        }
+        builder.append(STYLE_ACTIVE);
         for (int i = 0; i < MAX_LEVEL; i++) {
             builder.append(STYLE6.replaceAll("#", "" + i)).append("\n");
         }

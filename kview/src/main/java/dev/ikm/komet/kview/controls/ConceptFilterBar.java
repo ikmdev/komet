@@ -8,13 +8,18 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.css.PseudoClass;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
+import javafx.scene.Group;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 
 import java.util.ResourceBundle;
 
@@ -24,6 +29,8 @@ import java.util.ResourceBundle;
  * sets it, a cross on the pill that clears the filter, and the number of concepts that match.
  * While a filter is set it also carries a Tree | List switch, which asks for the matching
  * concepts as a flat list in place of the tree.
+ * At its right end is the Follow window switch, which is not about the filter: it asks for the tree
+ * to go to the concept of the journal's focused window. It leaves the row while the list is shown.
  * <p>
  * The row only presents: what the filter is, how many concepts match and what a click does are
  * set by whoever owns it.
@@ -41,6 +48,7 @@ public class ConceptFilterBar extends HBox {
     private final StackPane clearPane = new StackPane();
     private final HBox viewSwitch = new HBox();
     private final Label countLabel = new Label();
+    private final ToggleButton followSwitch = new ToggleButton();
 
     /***************************************************************************
      *                                                                         *
@@ -102,7 +110,23 @@ public class ConceptFilterBar extends HBox {
         trailing.setMinWidth(Region.USE_PREF_SIZE);
         HBox.setHgrow(trailing, Priority.ALWAYS);
 
-        getChildren().addAll(caption, pill, trailing);
+        // The Follow window switch: its caption and a track with a knob, drawn as the windows' Properties switch.
+        Rectangle followTrack = new Rectangle(26, 14);
+        followTrack.setArcWidth(14);
+        followTrack.setArcHeight(14);
+        followTrack.getStyleClass().add("follow-switch-track");
+        Circle followKnob = new Circle(7, 7, 5);
+        followKnob.getStyleClass().add("follow-switch-knob");
+        followSwitch.setText(resources.getString("bar.follow"));
+        followSwitch.setGraphic(new Group(followTrack, followKnob));
+        followSwitch.setContentDisplay(ContentDisplay.RIGHT);
+        followSwitch.setMnemonicParsing(false);
+        followSwitch.setTooltip(new Tooltip(resources.getString("bar.follow.tooltip")));
+        followSwitch.getStyleClass().setAll("follow-switch");
+        followSwitch.setMinWidth(Region.USE_PREF_SIZE);
+        followSwitch.selectedProperty().bindBidirectional(followWindow);
+
+        getChildren().addAll(caption, pill, trailing, followSwitch);
         getStyleClass().add("concept-filter-bar");
         getStylesheets().add(ConceptFilterBar.class.getResource("concept-filter.css").toExternalForm());
 
@@ -133,6 +157,7 @@ public class ConceptFilterBar extends HBox {
     /**
      * The switch is on the row while a filter is set. The count leaves the row while the list is
      * shown: the list's own header says how many concepts it holds, and the room goes to the pill.
+     * The Follow window switch leaves with it: it acts on the tree, which the list stands in for.
      */
     private void showTrailing() {
         boolean set = getFilterText() != null;
@@ -141,6 +166,8 @@ public class ConceptFilterBar extends HBox {
         boolean counted = !(set && isListShown());
         countLabel.setVisible(counted);
         countLabel.setManaged(counted);
+        followSwitch.setVisible(counted);
+        followSwitch.setManaged(counted);
     }
 
     /** A set filter swaps the chevron for the cross, turns the pill green and brings the Tree | List switch. */
@@ -190,6 +217,16 @@ public class ConceptFilterBar extends HBox {
     public BooleanProperty listShownProperty() { return listShown; }
     public boolean isListShown() { return listShown.get(); }
     public void setListShown(boolean value) { listShown.set(value); }
+
+    // -- followWindow
+    /**
+     * Whether the Follow window switch is on: the tree is asked to go to the concept of the journal's
+     * focused window each time that window changes. Off by default.
+     */
+    private final BooleanProperty followWindow = new SimpleBooleanProperty(this, "followWindow");
+    public BooleanProperty followWindowProperty() { return followWindow; }
+    public boolean isFollowWindow() { return followWindow.get(); }
+    public void setFollowWindow(boolean value) { followWindow.set(value); }
 
     // -- pickerShowing
     /**

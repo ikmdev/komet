@@ -119,6 +119,8 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
     private final Path draggingBox;
     private final PinnedAncestorsPane pinnedAncestors;
     private ConceptNavigatorTreeItem scrollTarget;
+    /** Whether any item carries the active component's trail, so it is only cleared when there is one. */
+    private boolean activeTrailShown;
     private Group sheet;
     private double x, y;
     private double xMin, yMin, xMax, yMax;
@@ -494,6 +496,34 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
     }
 
     /**
+     * <p>Draws the trail of the control's active component: the connecting lines and ancestor
+     * outlines, from every loaded item of that component up to the root. Called whenever the
+     * active component changes or the tree shows different items, it first removes the trail
+     * that was drawn before.
+     *
+     * @see KLConceptNavigatorControl#activeComponentProperty()
+     * @see STATE#ACTIVE
+     */
+    public void refreshActiveTrail() {
+        if (activeTrailShown) {
+            unmarkAllItems(STATE.ACTIVE);
+            activeTrailShown = false;
+        }
+        EntityFacade activeComponent = treeView.getActiveComponent();
+        if (activeComponent == null || treeView.getRoot() == null) {
+            return;
+        }
+        List<ConceptNavigatorTreeItem> activeItems = new ArrayList<>();
+        ConceptNavigatorUtils.iterateTree((ConceptNavigatorTreeItem) treeView.getRoot(), model -> {
+            if (model.getValue() != null && model.getValue().nid() == activeComponent.nid()) {
+                activeItems.add(model);
+            }
+        });
+        activeItems.forEach(item -> markAllAncestors(item, STATE.ACTIVE));
+        activeTrailShown = !activeItems.isEmpty();
+    }
+
+    /**
      * {@inheritDoc}
      **/
     @Override
@@ -579,7 +609,11 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
     private void unmarkAllItems(STATE state) {
         getConceptNavigatorTreeCellStream().forEach(ConceptNavigatorHelper::unselectItem);
         pinnedAncestors.getCellStream().forEach(ConceptNavigatorHelper::unselectItem);
-        ConceptNavigatorUtils.iterateTree((ConceptNavigatorTreeItem) getSkinnable().getRoot(), model -> {
+        // iterateTree visits the root's descendants only; the root carries marks too when it is shown.
+        ConceptNavigatorTreeItem root = (ConceptNavigatorTreeItem) getSkinnable().getRoot();
+        PS_STATE.clearBitsRange(root.getBitSet(), state);
+        markCellDirty(root);
+        ConceptNavigatorUtils.iterateTree(root, model -> {
             PS_STATE.clearBitsRange(model.getBitSet(), state);
             markCellDirty(model);
         });
@@ -594,24 +628,23 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
      * @param state the selected or long-hovered {@link STATE}
      */
     private void markAllAncestors(ConceptNavigatorTreeItem child, STATE state) {
-        if (isMultipleSelectionByClicking()) {
+        if (state != STATE.ACTIVE && isMultipleSelectionByClicking()) {
             return;
         }
-        boolean select = state == STATE.SELECTED;
         ConceptNavigatorTreeItem model = child;
         while (model != null) {
             // for each ancestor (including starting one)
             if (model == child) {
-                if (!select) {
+                if (state == STATE.LONG_HOVER) {
                     // mark current item as long-hovered
                     model.getBitSet().set(PS_STATE.LONG_HOVER.getBit());
                 }
             } else {
-                // mark ancestor as selected/long-hovered
-                model.getBitSet().set(select ? PS_STATE.BORDER_SELECTED.getBit() : PS_STATE.BORDER_LONG_HOVER.getBit());
+                // mark ancestor as selected/long-hovered/active
+                model.getBitSet().set(PS_STATE.border(state).getBit());
             }
             // show curved-line
-            model.getBitSet().set(select ? PS_STATE.CURVED_LINE_SELECTED.getBit() : PS_STATE.CURVED_LINE_LONG_HOVER.getBit());
+            model.getBitSet().set(PS_STATE.curvedLine(state).getBit());
             markCellDirty(model);
 
             int level = getSkinnable().getTreeItemLevel(model) - 2;
@@ -642,7 +675,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
      * @param level the indentation level
      */
     private void applyPseudoClassState(ConceptNavigatorTreeItem item, STATE state, int level) {
-        item.getBitSet().set(state == STATE.SELECTED ? PS_STATE.LINE_I_SELECTED.getBit() + level : PS_STATE.LINE_I_LONG_HOVER.getBit() + level);
+        item.getBitSet().set(PS_STATE.line(state).getBit() + level);
         markCellDirty(item);
         if (item.isExpanded()) {
             item.getChildren().forEach(i -> applyPseudoClassState((ConceptNavigatorTreeItem) i, state, level));
@@ -864,7 +897,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
      * @param conceptItem a {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem}
      */
     public void expandAndHighlightConcept(InvertedTree.ConceptItem conceptItem) {
-        expandConcept(conceptItem, true);
+        expandConcept(conceptItem, ExpandGoal.HIGHLIGHT);
     }
 
     /**
@@ -873,33 +906,79 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
      * @param conceptItem a {@link dev.ikm.komet.kview.controls.InvertedTree.ConceptItem}
      */
     public void expandAndSelectConcept(InvertedTree.ConceptItem conceptItem) {
-        expandConcept(conceptItem, false);
+        expandConcept(conceptItem, ExpandGoal.SELECT);
+    }
+
+    /**
+     * <p>Brings a row of the concept into view, leaving the selection and the rest of the treeView as
+     * they are. A row of the concept that is already in the treeView, under expanded ancestors, is only
+     * scrolled to, and only if it is off screen. Otherwise the treeView is expanded along the shorter
+     * lineage of the concept, down to its parent.
+     * <p>A concept this navigator does not hold is reported to the log only.
+     *
+     * @param nid the nid of the concept
+     */
+    public void revealConcept(long nid) {
+        if (lock) {
+            // wait until running expansion ends before starting a new one
+            return;
+        }
+        List<ConceptNavigatorTreeItem> shown = new ArrayList<>();
+        ConceptNavigatorUtils.iterateTree((ConceptNavigatorTreeItem) treeView.getRoot(), item -> {
+            if (item.getValue() != null && item.getValue().nid() == nid && treeView.getRow(item) >= 0) {
+                shown.add(item);
+            }
+        });
+        if (shown.isEmpty()) {
+            expandConcept(new InvertedTree.ConceptItem(-1, nid, ""), ExpandGoal.REVEAL);
+        } else {
+            scrollToIfHidden(shown.getFirst());
+        }
+    }
+
+    /** Scrolls to the item unless a cell already shows it, clear of the pinned ancestors. */
+    private void scrollToIfHidden(ConceptNavigatorTreeItem item) {
+        if (getCellForTreeItem(item).filter(cell -> !pinnedAncestors.covers(cell)).isEmpty()) {
+            treeView.scrollTo(treeView.getRow(item));
+        }
+    }
+
+    /** What an expansion down to a concept ends with. */
+    private enum ExpandGoal {
+        /** The concept's row is selected; the treeView is collapsed first. */
+        SELECT,
+        /** The concept's row is highlighted; the treeView is collapsed first. */
+        HIGHLIGHT,
+        /** The concept's row is brought into view; nothing else in the treeView changes. */
+        REVEAL
     }
 
     private final AtomicInteger counter = new AtomicInteger();
     private boolean lock;
 
-    private void expandConcept(InvertedTree.ConceptItem conceptItem, boolean highlight) {
+    private void expandConcept(InvertedTree.ConceptItem conceptItem, ExpandGoal goal) {
         if (lock) {
             // wait until running expansion ends before starting a new one
             return;
         }
 
-        ConceptNavigatorUtils.resetConceptNavigator(treeView);
+        if (goal != ExpandGoal.REVEAL) {
+            ConceptNavigatorUtils.resetConceptNavigator(treeView);
+        }
         List<InvertedTree.ConceptItem> lineage = ConceptNavigatorUtils.findShorterLineage(conceptItem, treeView.getNavigator());
         if (lineage.isEmpty()) {
             // The concept has no lineage to any root visible in this navigator, so it cannot be expanded here
             // (e.g. it is retired and this navigator shows only active concepts). Investigate its state and report
             // it gracefully, rather than dispatching an expansion that would fail (and leave the navigator locked).
-            // Only an explicit "select" gesture (highlight == false) notifies the user; a passive long-hover
-            // (highlight == true) is reported to the log only, to avoid notification spam while hovering.
-            reportConceptNotDisplayed(conceptItem, !highlight);
+            // Only an explicit "select" gesture notifies the user; a passive long-hover or a reveal that follows
+            // the active component is reported to the log only, to avoid notification spam.
+            reportConceptNotDisplayed(conceptItem, goal == ExpandGoal.SELECT);
             return;
         }
         TinkExecutor.threadPool().execute(() -> {
             lock = true;
             counter.set(0);
-            expandAncestor(lineage, (ConceptNavigatorTreeItem) treeView.getRoot(), highlight);
+            expandAncestor(lineage, (ConceptNavigatorTreeItem) treeView.getRoot(), goal);
         });
     }
 
@@ -926,24 +1005,26 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
         });
     }
 
-    private void expandAncestor(List<InvertedTree.ConceptItem> lineage, ConceptNavigatorTreeItem parent, boolean highlight) {
+    private void expandAncestor(List<InvertedTree.ConceptItem> lineage, ConceptNavigatorTreeItem parent, ExpandGoal goal) {
         int i = counter.get();
-        ConceptNavigatorTreeItem item = getItemAndExpand(lineage, parent, i);
+        // A reveal stops at the concept's row: it does not open the concept itself.
+        boolean expand = goal != ExpandGoal.REVEAL || i < lineage.size() - 1;
+        ConceptNavigatorTreeItem item = getItemAndExpand(lineage, parent, i, expand);
         if (item != null) {
             if (i < lineage.size() - 1) {
-                processAncestor(lineage, highlight, i, item);
+                processAncestor(lineage, goal, i, item);
             } else {
-                processItem(item, highlight);
+                processItem(item, goal);
             }
         } else {
             lock = false;
         }
     }
 
-    private void processAncestor(List<InvertedTree.ConceptItem> lineage, boolean highlight, int i, ConceptNavigatorTreeItem item) {
+    private void processAncestor(List<InvertedTree.ConceptItem> lineage, ExpandGoal goal, int i, ConceptNavigatorTreeItem item) {
         if (item.getChildren() != null) {
             // direct parent of item
-            if (i == lineage.size() - 2) { // select and scroll to parent, so it stays visible on top of the treeView
+            if (i == lineage.size() - 2 && goal != ExpandGoal.REVEAL) { // select and scroll to parent, so it stays visible on top of the treeView
                 Platform.runLater(() -> {
                     treeView.getSelectionModel().select(item);
                     treeView.scrollTo(treeView.getSelectionModel().getSelectedIndex());
@@ -953,15 +1034,20 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
 
             // run next iteration
             counter.getAndIncrement();
-            expandAncestor(lineage, item, highlight);
+            expandAncestor(lineage, item, goal);
         } else {
             lock = false;
         }
     }
 
-    private void processItem(ConceptNavigatorTreeItem item, boolean highlight) {
-        // finally, we reached the item, select or highlight it
+    private void processItem(ConceptNavigatorTreeItem item, ExpandGoal goal) {
+        // finally, we reached the item: select it, highlight it or just bring it into view
         Platform.runLater(() -> {
+            if (goal == ExpandGoal.REVEAL) {
+                scrollToIfHidden(item);
+                lock = false;
+                return;
+            }
             treeView.getSelectionModel().select(item);
             int index = treeView.getSelectionModel().getSelectedIndex();
             // check if the item is visible, and not covered by the pinned ancestors
@@ -970,7 +1056,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                 treeView.scrollTo(index);
             }
             item.setViewLineage(false);
-            if (highlight) {
+            if (goal == ExpandGoal.HIGHLIGHT) {
                 treeView.getSelectionModel().clearSelection();
                 item.setHighlighted(true);
                 highlighted.set(true);
@@ -979,7 +1065,8 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
         });
     }
 
-    private ConceptNavigatorTreeItem getItemAndExpand(List<InvertedTree.ConceptItem> lineage, ConceptNavigatorTreeItem parent, int i) {
+    private ConceptNavigatorTreeItem getItemAndExpand(List<InvertedTree.ConceptItem> lineage, ConceptNavigatorTreeItem parent, int i,
+                                                      boolean expand) {
         long parentNid = lineage.get(i).nid();
         long nid = lineage.get(i).childNid();
         ConceptNavigatorTreeItem item = (ConceptNavigatorTreeItem) parent.getChildren().stream()
@@ -989,6 +1076,9 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
         if (item == null) {
             lock = false;
             return null;
+        }
+        if (!expand) {
+            return item;
         }
         if (item.getChildren().isEmpty()) {
             try {
@@ -1029,7 +1119,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                     try {
                         InvertedTree newInvertedTree = ConceptNavigatorUtils.buildInvertedTree(entityFacade.nid(), treeView.getNavigator());
                         newInvertedTree.compareTo(oldInvertedTree).ifPresent(item -> {
-                            expandConcept(item, false);
+                            expandConcept(item, ExpandGoal.SELECT);
                             setValue(null);
                         });
                         oldInvertedTree = newInvertedTree;
@@ -1068,7 +1158,7 @@ public class KLConceptNavigatorTreeViewSkin extends TreeViewSkin<ConceptFacade> 
                 if (selectedItem != null) {
                     Platform.runLater(() ->
                             expandConcept(new InvertedTree.ConceptItem(-1,
-                                    selectedItem.getValue().nid(), selectedItem.getValue().description()), false));
+                                    selectedItem.getValue().nid(), selectedItem.getValue().description()), ExpandGoal.SELECT));
                 } else {
                     ConceptNavigatorUtils.resetConceptNavigator(treeView);
                 }

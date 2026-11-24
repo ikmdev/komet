@@ -6,16 +6,21 @@ import dev.ikm.komet.navigator.graph.Navigator;
 import dev.ikm.tinkar.common.service.TinkExecutor;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.terms.ConceptFacade;
+import dev.ikm.tinkar.terms.EntityFacade;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Skin;
 import javafx.scene.control.TreeView;
@@ -152,8 +157,22 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
             conceptNavigatorTreeViewSkin.unhoverAllItems();
             conceptNavigatorTreeViewSkin.unselectAllItems();
             ConceptNavigatorTreeItem selectedItem = (ConceptNavigatorTreeItem) getSelectionModel().getSelectedItem();
-            if (selectedItem != null) {
+            if (selectedItem != null && isFocusInside()) {
                 conceptNavigatorTreeViewSkin.selectAllAncestors(selectedItem);
+            }
+            conceptNavigatorTreeViewSkin.refreshActiveTrail();
+        });
+        activeComponent.subscribe(_ -> {
+            if (conceptNavigatorTreeViewSkin != null) {
+                conceptNavigatorTreeViewSkin.refreshActiveTrail();
+            }
+            if (isFollowActiveComponent()) {
+                showActiveComponent();
+            }
+        });
+        followActiveComponent.subscribe(follow -> {
+            if (follow) {
+                showActiveComponent();
             }
         });
         getSelectionModel().selectedItemProperty().subscribe((o, n) -> {
@@ -164,8 +183,28 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
             if (o != null) {
                 conceptNavigatorTreeViewSkin.unselectAllItems();
             }
-            if (n != null) {
+            if (n != null && isFocusInside()) {
                 conceptNavigatorTreeViewSkin.selectAllAncestors((ConceptNavigatorTreeItem) n);
+            }
+        });
+        // The navigator's own marks (the selected row's trail, a long hover) show only while it has
+        // focus. Without it the user is working elsewhere, and only the active component's trail stays.
+        sceneProperty().flatMap(Scene::focusOwnerProperty).subscribe(focusOwner -> {
+            Node node = focusOwner;
+            while (node != null && node != this) {
+                node = node.getParent();
+            }
+            focusInside.set(node == this);
+        });
+        focusInside.subscribe(focused -> {
+            if (conceptNavigatorTreeViewSkin == null) {
+                return;
+            }
+            conceptNavigatorTreeViewSkin.unhoverAllItems();
+            conceptNavigatorTreeViewSkin.unselectAllItems();
+            ConceptNavigatorTreeItem selectedItem = (ConceptNavigatorTreeItem) getSelectionModel().getSelectedItem();
+            if (focused && selectedItem != null) {
+                conceptNavigatorTreeViewSkin.selectAllAncestors(selectedItem);
             }
         });
 
@@ -353,6 +392,50 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
     public final void setShowMultipleParents(boolean value) {
         showMultipleParentsProperty.set(value);
     }
+
+    // -- active component
+    /**
+     * The component the user is working on outside the navigator, such as the one framed by the
+     * journal's focused window. Its row shows its identicon in full colour, like the hovered and
+     * selected rows, while every other row's identicon stays muted. Null when there is none.
+     */
+    private final ObjectProperty<EntityFacade> activeComponent = new SimpleObjectProperty<>(this, "activeComponent");
+    public final ObjectProperty<EntityFacade> activeComponentProperty() { return activeComponent; }
+    public final EntityFacade getActiveComponent() { return activeComponent.get(); }
+    public final void setActiveComponent(EntityFacade value) { activeComponent.set(value); }
+
+    // -- show identicons
+    /**
+     * Whether every concept tile leads with its concept's identicon. On by default; the host follows
+     * the app-wide setting for the identicons of the journal's left side panel. While off, the row
+     * of the active component keeps its other marks: its colour and the trail of its ancestors.
+     */
+    private final BooleanProperty showIdenticons = new SimpleBooleanProperty(this, "showIdenticons", true);
+    public final BooleanProperty showIdenticonsProperty() { return showIdenticons; }
+    public final boolean isShowIdenticons() { return showIdenticons.get(); }
+    public final void setShowIdenticons(boolean value) { showIdenticons.set(value); }
+
+    // -- follow active component
+    /**
+     * Whether the treeView brings the row of the {@link #activeComponentProperty() active component}
+     * into view each time that component changes, and when this is switched on. Off by default.
+     * @see #showActiveComponent()
+     */
+    private final BooleanProperty followActiveComponent = new SimpleBooleanProperty(this, "followActiveComponent");
+    public final BooleanProperty followActiveComponentProperty() { return followActiveComponent; }
+    public final boolean isFollowActiveComponent() { return followActiveComponent.get(); }
+    public final void setFollowActiveComponent(boolean value) { followActiveComponent.set(value); }
+
+    // -- focus inside
+    /**
+     * Whether the scene's focus owner is the navigator or a node inside it. The navigator's own marks
+     * (the selected row and its trail, a long hover) are drawn only while it is. {@code focusWithin}
+     * does not say this for a tree: the cell of the focus model's row counts as focused whether or not
+     * the tree holds the keyboard focus.
+     */
+    private final ReadOnlyBooleanWrapper focusInside = new ReadOnlyBooleanWrapper(this, "focusInside");
+    public final ReadOnlyBooleanProperty focusInsideProperty() { return focusInside.getReadOnlyProperty(); }
+    public final boolean isFocusInside() { return focusInside.get(); }
 
     /**
      * <p>This enum defines the possible actions that can be executed from the
@@ -593,6 +676,19 @@ public class KLConceptNavigatorControl extends TreeView<ConceptFacade> {
      */
     public void expandAndSelectConcept(InvertedTree.ConceptItem conceptItem) {
         conceptNavigatorTreeViewSkin.expandAndSelectConcept(conceptItem);
+    }
+
+    /**
+     * <p>Brings the row of the {@link #activeComponentProperty() active component} into view: expands
+     * the treeView down to it if it has to, and scrolls to it if it is off screen. The selection and
+     * the rest of the treeView stay as they are.
+     * <p>Does nothing while the active component is not a concept.
+     * @see #followActiveComponentProperty()
+     */
+    public void showActiveComponent() {
+        if (getActiveComponent() instanceof ConceptFacade concept && conceptNavigatorTreeViewSkin != null) {
+            conceptNavigatorTreeViewSkin.revealConcept(concept.nid());
+        }
     }
 
 }

@@ -18,7 +18,8 @@
 .concept-filter-bar {
     -fx-alignment: center-left;
     -fx-spacing: 8;
-    -fx-padding: 0 14 6 14;
+    /* Uneven so the row's content sits midway between the search box and the tree's panel. */
+    -fx-padding: 4 14 3 14;
     -fx-min-height: 3.5em; /* 42px: the row keeps its height when the two-line count leaves it */
 }
 
@@ -136,6 +137,45 @@
 .concept-filter-bar > .filter-trailing {
     -fx-alignment: center-right;
     -fx-spacing: 8;
+}
+
+/* The Follow window switch: a caption and a track with a knob, at the right end of the row. */
+.concept-filter-bar > .follow-switch {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-graphic-text-gap: 6;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: #6E7989;
+    -fx-cursor: hand;
+}
+
+.concept-filter-bar > .follow-switch:selected {
+    -fx-text-fill: #395C9A;
+}
+
+.concept-filter-bar > .follow-switch .follow-switch-track {
+    -fx-fill: #B3BDCD;
+    -fx-stroke-width: 0;
+}
+
+.concept-filter-bar > .follow-switch:hover .follow-switch-track {
+    -fx-fill: #8E9AAE;
+}
+
+.concept-filter-bar > .follow-switch:selected .follow-switch-track,
+.concept-filter-bar > .follow-switch:selected:hover .follow-switch-track {
+    -fx-fill: #395C9A;
+}
+
+.concept-filter-bar > .follow-switch .follow-switch-knob {
+    -fx-fill: white;
+    -fx-stroke-width: 0;
+    -fx-translate-x: 0;
+}
+
+.concept-filter-bar > .follow-switch:selected .follow-switch-knob {
+    -fx-translate-x: 12;
 }
 
 .concept-filter-bar .filter-count {
