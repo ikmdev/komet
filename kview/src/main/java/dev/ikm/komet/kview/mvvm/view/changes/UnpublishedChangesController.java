@@ -370,15 +370,7 @@ public class UnpublishedChangesController {
         this.groups = groups;
         List<TreeItem<UnpublishedRow>> items = new ArrayList<>();
         for (UnpublishedGroup group : groups) {
-            // A heading is never a leaf, even with nothing under it. The tree cell skin reserves an
-            // 18 px disclosure slot on leaf rows but uses the (zero-width) disclosure node on the
-            // others, so a childless heading would sit 18 px right of the other headings.
-            TreeItem<UnpublishedRow> item = new TreeItem<>(group) {
-                @Override
-                public boolean isLeaf() {
-                    return false;
-                }
-            };
+            TreeItem<UnpublishedRow> item = new RowItem(group);
             for (UnpublishedChange row : group.rows()) {
                 item.getChildren().add(itemOf(row));
             }
@@ -400,7 +392,7 @@ public class UnpublishedChangesController {
 
     /** A row's tree item, with the changes nested under it; one with children remembers its fold. */
     private TreeItem<UnpublishedRow> itemOf(UnpublishedChange row) {
-        TreeItem<UnpublishedRow> item = new TreeItem<>(row);
+        TreeItem<UnpublishedRow> item = new RowItem(row);
         for (UnpublishedChange child : row.children()) {
             item.getChildren().add(itemOf(child));
         }
@@ -794,6 +786,24 @@ public class UnpublishedChangesController {
      * Supporting Classes                                                      *
      *                                                                         *
      **************************************************************************/
+
+    /**
+     * A row's tree item, which is never a leaf, even with nothing under it. The tree cell skin
+     * reserves an 18 px disclosure slot on leaf rows but uses the (zero-width) disclosure node on
+     * the others, so a row with nothing under it would sit 18 px right of the rows of its level
+     * that fold. The row's own fold arrow shows only when there is something to fold.
+     */
+    private static final class RowItem extends TreeItem<UnpublishedRow> {
+
+        RowItem(UnpublishedRow row) {
+            super(row);
+        }
+
+        @Override
+        public boolean isLeaf() {
+            return false;
+        }
+    }
 
     /**
      * A tree row. A group: the component's badge, its kind tag (Edited when only semantics on
