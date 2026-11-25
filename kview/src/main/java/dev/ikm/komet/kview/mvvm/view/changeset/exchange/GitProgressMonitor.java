@@ -193,8 +193,10 @@ public class GitProgressMonitor implements ProgressMonitor {
         final double taskRangeStart = rangeStart + (currentTask * taskRangeSize);
         final double taskRangeEnd = taskRangeStart + taskRangeSize;
 
-        // Calculate overall progress (as a percentage of the total process)
-        final double overallProgress = taskRangeStart + taskProgressPercentage * (taskRangeEnd - taskRangeStart);
+        // Calculate overall progress (as a percentage of the total process), never past the range: Git may begin
+        // more tasks than it said it would
+        final double overallProgress = Math.min(rangeEnd,
+                taskRangeStart + taskProgressPercentage * (taskRangeEnd - taskRangeStart));
 
         // Map to work units and update the TrackingCallable
         trackingCallable.updateProgress(

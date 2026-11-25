@@ -55,8 +55,6 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.ChainingCredentialsProvider;
 import org.eclipse.jgit.transport.CredentialItem;
-import org.eclipse.jgit.transport.PushResult;
-import org.eclipse.jgit.transport.RemoteRefUpdate;
 import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.slf4j.Logger;
@@ -297,7 +295,7 @@ public class GitTask extends TrackingCallable<Boolean> {
             }
             return result;
         } catch (Exception ex) {
-            handleException("Unexpected error during " + operationMode, ex);
+            handleException(operationMode + " did not complete", ex);
             return false;
         }
     }
@@ -621,27 +619,21 @@ public class GitTask extends TrackingCallable<Boolean> {
         updateMessage("Establishing first connection with remote repository...");
         updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 0.7);
 
-        // Use a progress monitor for the push operation
+        // The monitor ends when everything is sent, before the remote has answered: short of the phase's end
+        final double phaseStart = TaskPhase.CONNECT_COMPLETION.getStart();
+        final double phaseWidth = TaskPhase.CONNECT_COMPLETION.getEnd() - phaseStart;
         final GitProgressMonitor progressMonitor = new GitProgressMonitor(
                 this,
-                TaskPhase.CONNECT_BRANCH_CHECK.getEnd(),
-                TaskPhase.CONNECT_COMPLETION.getEnd(),
+                connectProgress(phaseStart + phaseWidth * 0.7),
+                connectProgress(phaseStart + phaseWidth * 0.9),
                 TOTAL_WORK);
 
-        Iterable<PushResult> results = executeWithRetry(() -> git.push()
+        PushAnswer.requireAccepted(executeWithRetry(() -> git.push()
                 .setRemote(REMOTE_NAME)
                 .setCredentialsProvider(chainingCredentialsProvider)
                 .setProgressMonitor(progressMonitor)
                 .setPushAll()
-                .call(), "push");
-        for (PushResult result : results) {
-            for (RemoteRefUpdate update : result.getRemoteUpdates()) {
-                if (update.getStatus() != RemoteRefUpdate.Status.OK && update.getStatus() != RemoteRefUpdate.Status.UP_TO_DATE) {
-                    throw new IOException("The remote refused %s: %s".formatted(update.getRemoteName(),
-                            update.getMessage() == null ? update.getStatus() : update.getStatus() + ", " + update.getMessage()));
-                }
-            }
-        }
+                .call(), "push"));
 
         updateMessage("Connection established successfully! Remote repository is now linked.");
         updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 1.0);
@@ -1211,16 +1203,17 @@ public class GitTask extends TrackingCallable<Boolean> {
             updateMessage("Pushing changes to remote repository...");
             PushCommand pushCommand = git.push();
 
-            // Set a progress monitor for Git operations
+            // The monitor ends when everything is sent, before the remote has answered: short of the phase's end
+            double phaseWidth = endPercentage - startPercentage;
             GitProgressMonitor progressMonitor = new GitProgressMonitor(
                     this,
-                    startPercentage,
-                    endPercentage,
+                    startPercentage + phaseWidth * 0.7,
+                    startPercentage + phaseWidth * 0.9,
                     TOTAL_WORK);
 
             pushCommand.setProgressMonitor(progressMonitor);
             pushCommand.setCredentialsProvider(chainingCredentialsProvider);
-            executeWithRetry(() -> { pushCommand.call(); return null; }, "push");
+            PushAnswer.requireAccepted(executeWithRetry(pushCommand::call, "push"));
             updatePhaseProgress(startPercentage, endPercentage, 0.95);
 
             updateMessage("Changes successfully pushed to remote repository.");
@@ -1285,13 +1278,29 @@ public class GitTask extends TrackingCallable<Boolean> {
     // -------------------- Common Helper Methods --------------------
 
     /**
-     * Updates the current progress within a phase range.
+     * Updates the current progress within a phase of the connection.
      *
-     * @param phase         the current task phase
+     * @param phase         the current phase of the connection
      * @param phaseProgress fractional progress within phase (0.0 to 1.0)
      */
     private void updatePhaseProgress(TaskPhase phase, double phaseProgress) {
-        updatePhaseProgress(phase.getStart(), phase.getEnd(), phaseProgress);
+        updatePhaseProgress(connectProgress(phase.getStart()), connectProgress(phase.getEnd()), phaseProgress);
+    }
+
+    /**
+     * Where a point of the connection lies in this operation. A pull and a sync connect first, within their
+     * validation phase: progress only moves forward, so a connection that ran to its own end would leave nothing
+     * to show of what follows it.
+     *
+     * @param percentage a percentage of the connection
+     * @return the percentage of the operation
+     */
+    private double connectProgress(double percentage) {
+        return switch (operationMode) {
+            case CONNECT -> percentage;
+            case PULL -> percentage * TaskPhase.PULL_VALIDATION.getEnd() / TOTAL_WORK;
+            case SYNC -> percentage * TaskPhase.SYNC_VALIDATION.getEnd() / TOTAL_WORK;
+        };
     }
 
     /**

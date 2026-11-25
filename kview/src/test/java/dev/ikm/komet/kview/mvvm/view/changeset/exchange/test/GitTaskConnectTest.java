@@ -19,6 +19,7 @@ import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
 import dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitTask;
 import dev.ikm.komet.preferences.KometPreferences;
 import dev.ikm.komet.preferences.PreferencesServiceFactory;
+import dev.ikm.tinkar.common.service.TrackingListener;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
@@ -162,6 +163,54 @@ class GitTaskConnectTest {
         assertTrue(connect());
         assertEquals("Written by a person.", Files.readString(changeSets.resolve("README.md")));
         assertNotNull(main(one));
+    }
+
+    @Test
+    void aPullThatDoesNotConnectShowsLittleProgress() throws Exception {
+        configure(root.resolve("nowhere.git"), "author");
+        Progress progress = new Progress();
+        GitTask pull = new GitTask(GitTask.OperationMode.PULL, changeSets, connections::incrementAndGet, dao);
+        pull.addListener(progress);
+        assertFalse(pull.call());
+        assertTrue(progress.most <= 5, "the connection is the first part of a pull, not all of it: " + progress.most);
+    }
+
+    @Test
+    void aConnectionThatIsMadeIsCompleteAndOneThatIsNotIsNot() throws Exception {
+        Progress made = new Progress();
+        GitTask connect = new GitTask(GitTask.OperationMode.CONNECT, changeSets, connections::incrementAndGet, dao);
+        connect.addListener(made);
+        assertTrue(connect.call());
+        assertEquals(100, made.most);
+
+        configure(root.resolve("nowhere.git"), "author");
+        Progress notMade = new Progress();
+        GitTask again = new GitTask(GitTask.OperationMode.CONNECT, changeSets, connections::incrementAndGet, dao);
+        again.addListener(notMade);
+        assertFalse(again.call());
+        assertTrue(notMade.most < 100, "" + notMade.most);
+    }
+
+    /** The most progress a task reported, of 100. */
+    private static final class Progress implements TrackingListener<Boolean> {
+        private double most;
+
+        @Override
+        public void updateValue(Boolean result) {
+        }
+
+        @Override
+        public void updateMessage(String message) {
+        }
+
+        @Override
+        public void updateTitle(String title) {
+        }
+
+        @Override
+        public void updateProgress(double workDone, double max) {
+            most = Math.max(most, workDone);
+        }
     }
 
     private Path bare(String name) throws Exception {
