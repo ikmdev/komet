@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefWidth="620.0" spacing="20.0" stylesheets="@../../kview.css" styleClass="github-pane"
+<VBox prefWidth="620.0" spacing="20.0" stylesheets="@../../kview.css" styleClass="github-pane, root"
       xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitHubInfoController">
     <VBox spacing="4.0">
@@ -36,7 +36,7 @@
     </VBox>
     <HBox alignment="BOTTOM_RIGHT" spacing="12.0">
         <Button fx:id="closeButton" minHeight="32.0" mnemonicParsing="false"
-                prefHeight="32.0" prefWidth="88.0" styleClass="close-button" text="CLOSE">
+                minWidth="88.0" prefHeight="32.0" styleClass="close-button" text="CLOSE">
         </Button>
     </HBox>
 </VBox>

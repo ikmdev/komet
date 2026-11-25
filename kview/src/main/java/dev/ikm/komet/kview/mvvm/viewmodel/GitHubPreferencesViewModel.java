@@ -75,8 +75,11 @@ public class GitHubPreferencesViewModel extends ValidationViewModel {
 
     private final GitHubPreferencesDao gitHubPreferencesDao;
 
+    /** Starts with what is kept for the open knowledge base; the password is never kept, so it is always asked for. */
     public GitHubPreferencesViewModel() {
-        addProperty(GIT_URL, "")
+        gitHubPreferencesDao = new GitHubPreferencesDao();
+
+        addProperty(GIT_URL, gitHubPreferencesDao.storedUrl())
                 .addValidator(GIT_URL, GIT_URL.name(), (ReadOnlyStringProperty prop, ValidationResult vr, ViewModel vm) -> {
                     if (prop.isEmpty().get()) {
                         vr.error("%s is required.".formatted(GIT_URL.getPropertyName()));
@@ -92,7 +95,7 @@ public class GitHubPreferencesViewModel extends ValidationViewModel {
                     setPropertyValue(CONNECT_ERROR, "");
                 });
 
-        addProperty(GIT_EMAIL, "")
+        addProperty(GIT_EMAIL, gitHubPreferencesDao.storedEmail())
                 .addValidator(GIT_EMAIL, GIT_EMAIL.name(), (ReadOnlyStringProperty prop, ValidationResult vr, ViewModel vm) -> {
                     if (prop.isNotEmpty().get()) {
                         String email = prop.get();
@@ -106,7 +109,7 @@ public class GitHubPreferencesViewModel extends ValidationViewModel {
                     setPropertyValue(CONNECT_ERROR, "");
                 });
 
-        addProperty(GIT_USERNAME, "")
+        addProperty(GIT_USERNAME, gitHubPreferencesDao.storedUsername())
                 .addValidator(GIT_USERNAME, GIT_USERNAME.name(), (ReadOnlyStringProperty prop, ValidationResult vr, ViewModel viewModel) -> {
                     if (prop.isEmpty().get()) {
                         vr.error("%s is required.".formatted(GIT_USERNAME.getPropertyName()));
@@ -179,8 +182,6 @@ public class GitHubPreferencesViewModel extends ValidationViewModel {
                 });
 
         addProperty(CONNECT_ERROR, "");
-
-        gitHubPreferencesDao = new GitHubPreferencesDao();
     }
 
     @Override

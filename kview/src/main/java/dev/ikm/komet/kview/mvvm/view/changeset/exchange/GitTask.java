@@ -470,7 +470,7 @@ public class GitTask extends TrackingCallable<Boolean> {
     }
 
     /**
-     * Loads Git configuration from user preferences and validates required parameters.
+     * Loads Git configuration from the knowledge base's preferences and validates required parameters.
      *
      * @return true if configuration loaded and validated successfully, false otherwise
      */

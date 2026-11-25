@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_EMAIL;
@@ -30,31 +31,66 @@ import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.G
 import static dev.ikm.komet.kview.mvvm.view.changeset.exchange.GitPropertyName.GIT_USERNAME;
 
 /**
- * Data Access Object for GitHub preferences.
+ * Data Access Object for the git configuration of a knowledge base's change set exchange.
+ * <p>The remote's URL, the email and the user name are kept in the knowledge base's own preferences, so each
+ * knowledge base has its own and they are there at the next launch.
+ * <p>The password is never written to preferences: a person may commit and push the preferences of a knowledge
+ * base to a remote, and what preferences do to a password hides it only from a casual look. It is kept in memory,
+ * for every instance in this running Komet, until {@link #forgetPassword()} or Komet quits.
  */
 public class GitHubPreferencesDao {
 
     private static final Logger LOG = LoggerFactory.getLogger(GitHubPreferencesDao.class);
 
+    /** The node of a knowledge base's preferences the configuration is kept under. */
+    private static final String EXCHANGE_NODE = "change-set-exchange";
+
+    // Plain keys: a key derived from an enum carries its package, and a moved enum would lose what was stored.
+    private static final String URL_KEY = "git-url";
+    private static final String EMAIL_KEY = "git-email";
+    private static final String USERNAME_KEY = "git-username";
+
+    /** The password given in this running Komet, or {@code null}. A running Komet has one knowledge base open. */
+    private static volatile char[] password;
+
+    private final Supplier<KometPreferences> exchangePreferences;
+
     /**
-     * Saves GitHub preferences to the user preferences store.
+     * The configuration of the open knowledge base. Its preferences are read when a method needs them, since an
+     * instance may be made before a knowledge base is chosen.
+     */
+    public GitHubPreferencesDao() {
+        this(() -> Preferences.get().getConfigurationPreferences().node(EXCHANGE_NODE));
+    }
+
+    private GitHubPreferencesDao(Supplier<KometPreferences> exchangePreferences) {
+        this.exchangePreferences = exchangePreferences;
+    }
+
+    /**
+     * Returns a DAO that keeps the configuration in the given preferences node.
+     *
+     * @param exchangePreferences supplies the node
+     * @return a DAO over that node
+     */
+    public static GitHubPreferencesDao backedBy(Supplier<KometPreferences> exchangePreferences) {
+        return new GitHubPreferencesDao(Objects.requireNonNull(exchangePreferences));
+    }
+
+    /**
+     * Saves the configuration in the knowledge base's preferences, and keeps the password for this running Komet.
      *
      * @param gitHubPreferences the GitHubPreferences object containing the preferences to save
      * @throws BackingStoreException if there is an error syncing preferences
      */
     public void save(GitHubPreferences gitHubPreferences) throws BackingStoreException {
         Objects.requireNonNull(gitHubPreferences, "GitHubPreferences cannot be null");
-
-        final KometPreferences userPreferences = Preferences.get().getUserPreferences();
-        setGitUrl(userPreferences, gitHubPreferences.gitUrl());
-        setGitEmail(userPreferences, gitHubPreferences.gitEmail());
-        setGitUsername(userPreferences, gitHubPreferences.gitUsername());
-        setGitPassword(userPreferences, gitHubPreferences.gitPassword());
-        userPreferences.sync();
+        save(gitHubPreferences.gitUrl(), gitHubPreferences.gitEmail(), gitHubPreferences.gitUsername(),
+                gitHubPreferences.gitPassword());
     }
 
     /**
-     * Saves GitHub preferences to the user preferences store.
+     * Saves the configuration in the knowledge base's preferences, and keeps the password for this running Komet.
      *
      * @param gitUrl The Git repository URL
      * @param gitEmail The user's Git email address
@@ -64,147 +100,90 @@ public class GitHubPreferencesDao {
      */
     public void save(String gitUrl, String gitEmail, String username, char[] gitPassword)
             throws BackingStoreException {
-        final KometPreferences userPreferences = Preferences.get().getUserPreferences();
-        setGitUrl(userPreferences, gitUrl);
-        setGitEmail(userPreferences, gitEmail);
-        setGitUsername(userPreferences, username);
-        setGitPassword(userPreferences, gitPassword);
-        userPreferences.sync();
+        password = gitPassword.clone();
+        final KometPreferences preferences = exchangePreferences.get();
+        preferences.put(URL_KEY, gitUrl);
+        preferences.put(EMAIL_KEY, gitEmail);
+        preferences.put(USERNAME_KEY, username);
+        preferences.sync();
     }
 
     /**
-     * Loads GitHub preferences from the user preferences store.
+     * Loads the configuration and the password.
      *
      * @return An Optional containing the GitHubPreferences if all preferences are present,
      *         or an empty Optional if any preference is missing
      */
     public Optional<GitHubPreferences> load() {
-        final KometPreferences userPreferences = Preferences.get().getUserPreferences();
-        Optional<String> gitUrl = getGitUrl(userPreferences);
-        Optional<String> gitEmail = getGitEmail(userPreferences);
-        Optional<String> username = getGitUsername(userPreferences);
-        Optional<char[]> gitPassword = getGitPassword(userPreferences);
+        final KometPreferences preferences = exchangePreferences.get();
+        final Optional<String> gitUrl = preferences.get(URL_KEY);
+        final Optional<String> gitEmail = preferences.get(EMAIL_KEY);
+        final Optional<String> username = preferences.get(USERNAME_KEY);
+        final char[] givenPassword = password;
 
-        final boolean preferencesExist = gitUrl.isPresent()
-                && gitEmail.isPresent()
-                && username.isPresent()
-                && gitPassword.isPresent();
-
-        if (!preferencesExist) {
-            LOG.warn("GitHub preferences not found. Please set them up.");
+        if (gitUrl.isEmpty() || gitEmail.isEmpty() || username.isEmpty() || givenPassword == null) {
+            LOG.info("GitHub preferences or password not given yet.");
             return Optional.empty();
         }
 
-        return Optional.of(new GitHubPreferences(gitUrl.get(), gitEmail.get(), username.get(), gitPassword.get()));
+        return Optional.of(new GitHubPreferences(gitUrl.get(), gitEmail.get(), username.get(), givenPassword.clone()));
     }
 
     /**
-     * Validates the GitHub preferences.
+     * Whether the configuration and the password are all present.
      *
-     * @return true if all required fields are present and valid, false otherwise
+     * @return true if all required fields are present, false otherwise
      */
     public boolean validate() {
-        final KometPreferences userPreferences = Preferences.get().getUserPreferences();
-        Optional<String> gitUrl = getGitUrl(userPreferences);
-        Optional<String> gitEmail = getGitEmail(userPreferences);
-        Optional<String> username = getGitUsername(userPreferences);
-        Optional<char[]> gitPassword = getGitPassword(userPreferences);
-
-        return gitUrl.isPresent() && gitEmail.isPresent() && username.isPresent() && gitPassword.isPresent();
+        return load().isPresent();
     }
 
     /**
-     * Deletes the GitHub preferences from the user preferences store.
+     * The repository URL kept for the knowledge base.
      *
-     * @throws BackingStoreException if there is an error deleting the preferences
+     * @return the URL, or the empty string if none is kept
      */
-    public void delete() throws BackingStoreException {
+    public String storedUrl() {
+        return exchangePreferences.get().get(URL_KEY, "");
+    }
+
+    /**
+     * The email kept for the knowledge base.
+     *
+     * @return the email, or the empty string if none is kept
+     */
+    public String storedEmail() {
+        return exchangePreferences.get().get(EMAIL_KEY, "");
+    }
+
+    /**
+     * The user name kept for the knowledge base.
+     *
+     * @return the user name, or the empty string if none is kept
+     */
+    public String storedUsername() {
+        return exchangePreferences.get().get(USERNAME_KEY, "");
+    }
+
+    /**
+     * Forgets the password, so it is asked for at the next connection. The knowledge base's configuration stays.
+     */
+    public void forgetPassword() {
+        password = null;
+    }
+
+    /**
+     * Removes what an earlier Komet kept for all knowledge bases of this computer's user, its password among it.
+     * It deleted that when it quit, so it is there only after a quit that did not finish.
+     *
+     * @throws BackingStoreException if there is an error syncing preferences
+     */
+    public static void removeUserWidePreferences() throws BackingStoreException {
         final KometPreferences userPreferences = Preferences.get().getUserPreferences();
         userPreferences.remove(GIT_URL);
         userPreferences.remove(GIT_EMAIL);
         userPreferences.remove(GIT_USERNAME);
         userPreferences.remove(GIT_PASSWORD);
         userPreferences.sync();
-        LOG.info("GitHub preferences deleted successfully.");
-    }
-
-    /**
-     * Stores the Git repository URL in the specified preferences.
-     *
-     * @param preferences The preferences instance to update
-     * @param gitUrl The Git repository URL to store
-     */
-    private void setGitUrl(KometPreferences preferences, String gitUrl) {
-        preferences.put(GIT_URL, gitUrl);
-    }
-
-    /**
-     * Retrieves the Git repository URL from the specified preferences.
-     *
-     * @param preferences The preferences instance to read from
-     * @return The Git repository URL, or an empty Optional if not found
-     */
-    public Optional<String> getGitUrl(KometPreferences preferences) {
-        return preferences.get(GIT_URL);
-    }
-
-    /**
-     * Stores the Git user email in the specified preferences.
-     *
-     * @param preferences The preferences instance to update
-     * @param gitEmail The Git user email to store
-     */
-    private void setGitEmail(KometPreferences preferences, String gitEmail) {
-        preferences.put(GIT_EMAIL, gitEmail);
-    }
-
-    /**
-     * Retrieves the Git user email from the specified preferences.
-     *
-     * @param preferences The preferences instance to read from
-     * @return The Git user email, or an empty Optional if not found
-     */
-    public Optional<String> getGitEmail(KometPreferences preferences) {
-        return preferences.get(GIT_EMAIL);
-    }
-
-    /**
-     * Stores the Git username in the specified preferences.
-     *
-     * @param preferences The preferences instance to update
-     * @param username The Git username to store
-     */
-    private void setGitUsername(KometPreferences preferences, String username) {
-        preferences.put(GIT_USERNAME, username);
-    }
-
-    /**
-     * Retrieves the Git username from the specified preferences.
-     *
-     * @param preferences The preferences instance to read from
-     * @return The Git username, or an empty Optional if not found
-     */
-    public Optional<String> getGitUsername(KometPreferences preferences) {
-        return preferences.get(GIT_USERNAME);
-    }
-
-    /**
-     * Stores the Git gitPassword in the specified preferences.
-     *
-     * @param preferences The preferences instance to update
-     * @param gitPassword The Git gitPassword to store as a character array
-     */
-    private void setGitPassword(KometPreferences preferences, char[] gitPassword) {
-        preferences.putPassword(GIT_PASSWORD, gitPassword);
-    }
-
-    /**
-     * Retrieves the Git gitPassword from the specified preferences.
-     *
-     * @param preferences The preferences instance to read from
-     * @return The Git gitPassword, or an empty Optional if not found
-     */
-    public Optional<char[]> getGitPassword(KometPreferences preferences) {
-        return preferences.getPassword(GIT_PASSWORD);
     }
 }
