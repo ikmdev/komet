@@ -83,6 +83,20 @@ class SharedFolderSyncTest {
     }
 
     @Test
+    void aChangedRemoteIsSentWhatTheEarlierOneHas() throws Exception {
+        changeSet(ada, "a.adoc", MODULE, "1");
+        of(ada, "Ada").send();
+        Path moved = root.resolve("moved.git");
+        Git.init().setBare(true).setDirectory(moved.toFile()).setInitialBranch("main").call().close();
+        remote = moved.toUri().toString();
+
+        assertFalse(of(ada, "Ada").receive(), "the new remote has nothing yet");
+        assertTrue(of(ada, "Ada").send());
+        assertEquals(List.of("refs/heads/shared"), branches());
+        assertFalse(of(ada, "Ada").send(), "sent once");
+    }
+
+    @Test
     void bothAddAtOnceAndBothHaveAll() throws Exception {
         changeSet(ada, "a.adoc", MODULE, "1");
         of(ada, "Ada").send();

@@ -182,6 +182,8 @@ public final class SharedFolderSync {
                 git.remoteAdd().setName(REMOTE).setUri(new URIish(remote)).call();
             } else if (!remote.equals(config.getString("remote", REMOTE, "url"))) {
                 git.remoteSetUrl().setRemoteName(REMOTE).setRemoteUri(new URIish(remote)).call();
+                // What the earlier remote has says nothing of what this one has.
+                git.branchDelete().setBranchNames(REMOTE_REF).setForce(true).call();
             }
         } catch (URISyntaxException e) {
             git.close();

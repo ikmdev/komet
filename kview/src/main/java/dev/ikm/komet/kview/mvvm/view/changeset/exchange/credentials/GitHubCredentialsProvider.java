@@ -39,7 +39,16 @@ import java.util.Optional;
  */
 public class GitHubCredentialsProvider extends CredentialsProvider {
 
-    private final GitHubPreferencesDao gitHubPreferencesDao = new GitHubPreferencesDao();
+    private final GitHubPreferencesDao gitHubPreferencesDao;
+
+    /**
+     * Provides the login of the given configuration.
+     *
+     * @param gitHubPreferencesDao where the configuration is kept
+     */
+    public GitHubCredentialsProvider(GitHubPreferencesDao gitHubPreferencesDao) {
+        this.gitHubPreferencesDao = gitHubPreferencesDao;
+    }
 
     @Override
     public boolean isInteractive() {

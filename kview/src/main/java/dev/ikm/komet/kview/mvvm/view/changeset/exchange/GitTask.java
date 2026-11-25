@@ -45,6 +45,7 @@ import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.lib.BranchTrackingStatus;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Ref;
@@ -54,19 +55,19 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.ChainingCredentialsProvider;
 import org.eclipse.jgit.transport.CredentialItem;
+import org.eclipse.jgit.transport.PushResult;
+import org.eclipse.jgit.transport.RemoteRefUpdate;
 import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Comparator;
@@ -225,11 +226,26 @@ public class GitTask extends TrackingCallable<Boolean> {
     public GitTask(OperationMode operationMode,
                    Path changeSetFolder,
                    Runnable connectionSuccessCallback) {
+        this(operationMode, changeSetFolder, connectionSuccessCallback, new GitHubPreferencesDao());
+    }
+
+    /**
+     * Creates a new GitTask that takes its configuration from the given DAO.
+     *
+     * @param operationMode             The mode of operation (CONNECT, PULL, or SYNC)
+     * @param changeSetFolder           The folder containing changesets to work with
+     * @param connectionSuccessCallback Callback to run when the connection is successful
+     * @param gitHubPreferencesDao      Where the configuration is kept
+     */
+    public GitTask(OperationMode operationMode,
+                   Path changeSetFolder,
+                   Runnable connectionSuccessCallback,
+                   GitHubPreferencesDao gitHubPreferencesDao) {
         this.operationMode = operationMode;
         this.changeSetFolder = changeSetFolder;
         this.connectionSuccessCallback = connectionSuccessCallback;
 
-        this.gitHubPreferencesDao = new GitHubPreferencesDao();
+        this.gitHubPreferencesDao = gitHubPreferencesDao;
 
         // Initialize credential items for all modes to avoid null pointers
         this.gitUrl = new CredentialItem.StringType("Git URL", false);
@@ -245,7 +261,7 @@ public class GitTask extends TrackingCallable<Boolean> {
         }
 
         this.chainingCredentialsProvider = new ChainingCredentialsProvider(
-                new GitHubCredentialsProvider(),
+                new GitHubCredentialsProvider(gitHubPreferencesDao),
                 new GitSslValidationCredentialsProvider()
         );
 
@@ -282,49 +298,6 @@ public class GitTask extends TrackingCallable<Boolean> {
             return result;
         } catch (Exception ex) {
             handleException("Unexpected error during " + operationMode, ex);
-            return false;
-        }
-    }
-
-    /**
-     * Checks if the Git repository is fully initialized and connected.
-     * This includes checking if the repository exists, has a remote configured,
-     * and has the main branch set up.
-     *
-     * @return true if the repository is fully initialized, false otherwise
-     */
-    private boolean isRepositoryFullyInitialized() {
-        try (Git git = Git.open(changeSetFolder.toFile())) {
-            // Check if remote is configured
-            if (git.getRepository().getRemoteNames().isEmpty()) {
-                LOG.info("Git repository has no remote repositories configured");
-                return false;
-            }
-
-            // Check if main branch exists and is tracking remote
-            try {
-                Collection<Ref> refs = executeWithRetry(() -> {
-                    LsRemoteCommand lsRemoteCommand = git.lsRemote();
-                    lsRemoteCommand.setHeads(true);
-                    lsRemoteCommand.setRemote(REMOTE_NAME);
-                    lsRemoteCommand.setCredentialsProvider(chainingCredentialsProvider);
-                    return lsRemoteCommand.call();
-                }, "ls-remote");
-
-                boolean mainBranchExists = refs.stream()
-                        .anyMatch(ref -> ref.getName().equals("refs/heads/" + DEFAULT_BRANCH));
-
-                if (!mainBranchExists) {
-                    LOG.info("Main branch does not exist on remote repository");
-                    return false;
-                }
-            } catch (GitAPIException ex) {
-                LOG.error("Error checking remote branches after {} retries", MAX_RETRY_ATTEMPTS, ex);
-                return false;
-            }
-
-            return true;
-        } catch (IOException ex) {
             return false;
         }
     }
@@ -423,50 +396,34 @@ public class GitTask extends TrackingCallable<Boolean> {
     // -------------------- CONNECT Operations --------------------
 
     /**
-     * Executes the CONNECT operation and initializes the Git repository if needed.
+     * Executes the CONNECT operation: makes the repository if there is none, reaches the configured remote, and
+     * only then sets it and, when it has no main branch, gives it one. A remote that cannot be reached leaves the
+     * repository as it was.
      *
      * @return true if the connection was successful, false otherwise
-     * @throws IOException if an I/O error occurs
      */
-    private boolean executeConnect() throws IOException {
+    private boolean executeConnect() {
         if (!loadAndValidateConfiguration()) {
             return false;
         }
 
-        if (!isRepositoryFullyInitialized()) {
-            updateMessage("Repository is not fully initialized. Preparing for initialization...");
-            try (Git git = initializeRepository()) {
-                if (git == null) {
-                    updateMessage("Failed to initialize the Git repository");
-                    return false;
-                }
-
-                // Configure the repository
-                if (!configureRepository(git)) {
-                    updateMessage("Failed to configure the Git repository.");
-                    return false;
-                }
-
-                // Check and set up the remote branch
-                if (!checkAndSetupRemoteBranch(git)) {
-                    updateMessage("Failed to set up the remote branch in the Git repository.");
-                    return false;
-                }
-
-                updateMessage("Repository initialized successfully.");
+        try (Git git = openRepository()) {
+            final boolean mainBranchExists = remoteHasMainBranch(git);
+            configureRepository(git);
+            if (!mainBranchExists) {
+                createAndPushMainBranch(git);
             }
-        }
-
-        try (Git git = Git.open(changeSetFolder.toFile())) {
             updateMessage("Connection to remote repository successfully established.");
-
-            // Call the connection success callback if provided
-            if (connectionSuccessCallback != null) {
-                connectionSuccessCallback.run();
-            }
-
-            return true;
+            updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 1.0);
+        } catch (GitAPIException | IOException | URISyntaxException ex) {
+            return handleException("The connection to %s was not made".formatted(gitUrl.getValue().trim()), ex);
         }
+
+        // Call the connection success callback if provided
+        if (connectionSuccessCallback != null) {
+            connectionSuccessCallback.run();
+        }
+        return true;
     }
 
     /**
@@ -510,56 +467,50 @@ public class GitTask extends TrackingCallable<Boolean> {
     }
 
     /**
-     * Initializes a Git repository in the changeset folder.
+     * Opens the Git repository of the changeset folder, made when the folder is not one yet.
      *
-     * @return the Git instance if initialization was successful, null otherwise
+     * @return the Git instance
+     * @throws GitAPIException if the repository cannot be made
+     * @throws IOException     if the repository cannot be opened
      */
-    private Git initializeRepository() {
+    private Git openRepository() throws GitAPIException, IOException {
         updateMessage("Preparing local repository for connection...");
         updatePhaseProgress(TaskPhase.CONNECT_CONFIGURATION, 0.2);
 
-        try {
-            InitCommand initCommand = Git.init();
-            initCommand.setDirectory(changeSetFolder.toFile());
-            initCommand.setInitialBranch(DEFAULT_BRANCH);
-            return initCommand.call();
-        } catch (GitAPIException ex) {
-            handleException("Error initializing repository for connection", ex);
-            return null;
+        if (Files.isDirectory(changeSetFolder.resolve(".git"))) {
+            return Git.open(changeSetFolder.toFile());
         }
+        InitCommand initCommand = Git.init();
+        initCommand.setDirectory(changeSetFolder.toFile());
+        initCommand.setInitialBranch(DEFAULT_BRANCH);
+        return initCommand.call();
     }
 
     /**
-     * Configures the Git repository with remote URL, user settings, and repository settings.
-     * Always checks and updates configuration, even for existing repositories.
+     * Makes the repository's remote and user those of the configuration. A repository without a remote also gets
+     * the settings the exchange works with; the settings of one that has a remote are left as they are.
      *
      * @param git the Git instance
-     * @return true if configuration was successful, false otherwise
+     * @throws GitAPIException    if the remote cannot be set
+     * @throws IOException        if the configuration cannot be saved
+     * @throws URISyntaxException if the configured URL is invalid
      */
-    private boolean configureRepository(Git git) {
-        if (!git.getRepository().getRemoteNames().isEmpty()) {
-            updateMessage("Remote connection already established. No changes required.");
-            updatePhaseProgress(TaskPhase.CONNECT_CONFIGURATION, 1.0);
-            return true;
-        }
-
+    private void configureRepository(Git git) throws GitAPIException, IOException, URISyntaxException {
         updateMessage("Setting up connection to remote repository...");
         updatePhaseProgress(TaskPhase.CONNECT_CONFIGURATION, 0.6);
 
-        try {
-            // Configure remote repository
+        final String url = gitUrl.getValue().trim();
+        final String currentUrl = git.getRepository().getConfig().getString("remote", REMOTE_NAME, "url");
+        if (currentUrl == null) {
             configureRemote(git);
-            updatePhaseProgress(TaskPhase.CONNECT_CONFIGURATION, 0.7);
-
-            // Configure user and repository settings
-            configureUserSettings(git);
             configureRepositorySettings(git);
-
-            updatePhaseProgress(TaskPhase.CONNECT_CONFIGURATION, 1.0);
-            return true;
-        } catch (URISyntaxException | IOException | GitAPIException ex) {
-            return handleException("Error configuring repository connection", ex);
+        } else if (!currentUrl.equals(url)) {
+            git.remoteSetUrl().setRemoteName(REMOTE_NAME).setRemoteUri(new URIish(url)).call();
+            // A URIish prints no password, which an address set by hand may hold.
+            LOG.info("The remote of {} was {} and is now {}", changeSetFolder, new URIish(currentUrl), url);
         }
+        configureUserSettings(git);
+        updatePhaseProgress(TaskPhase.CONNECT_CONFIGURATION, 1.0);
     }
 
     /**
@@ -616,85 +567,55 @@ public class GitTask extends TrackingCallable<Boolean> {
     }
 
     /**
-     * Checks for the existence of the main branch on the remote repository
-     * and creates it if it doesn't exist.
+     * Reaches the configured remote and tells whether it has the main branch. An empty remote is reached and has
+     * no branch; a remote that is not there, or refuses the login, is not reached.
      *
      * @param git the Git instance
-     * @return true if the check was successful, false otherwise
+     * @return whether the remote has the main branch
+     * @throws GitAPIException if the remote cannot be reached
      */
-    private boolean checkAndSetupRemoteBranch(Git git) {
-        updateMessage("Verifying connection to remote repository...");
+    private boolean remoteHasMainBranch(Git git) throws GitAPIException {
+        updateMessage("Testing connection with remote repository...");
         updatePhaseProgress(TaskPhase.CONNECT_BRANCH_CHECK, 0.5);
 
-        try {
-            updateMessage("Testing connection with remote repository...");
-
-            Collection<Ref> refs = executeWithRetry(() -> {
-                LsRemoteCommand lsRemoteCommand = git.lsRemote();
-                lsRemoteCommand.setHeads(true);
-                lsRemoteCommand.setRemote(REMOTE_NAME);
-                lsRemoteCommand.setCredentialsProvider(chainingCredentialsProvider);
-                return lsRemoteCommand.call();
-            }, "ls-remote");
-
-            // Check if main branch exists
-            final boolean mainBranchExists = refs.stream()
-                    .anyMatch(ref -> ref.getName().equals("refs/heads/" + DEFAULT_BRANCH));
-
-            if (!mainBranchExists) {
-                updateMessage("Remote branch not found. Establishing new connection point...");
-                updatePhaseProgress(TaskPhase.CONNECT_BRANCH_CHECK, 0.7);
-
-                try {
-                    createAndPushMainBranch(git);
-                } catch (GitAPIException | IOException ex) {
-                    return handleException("Failed to establish initial connection to remote repository", ex);
-                }
-            } else {
-                updateMessage("Connection to remote branch already established.");
-                updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 1.0);
-            }
-        } catch (GitAPIException ex) {
-            try {
-                // Create and push the main branch to an empty remote repository
-                createAndPushMainBranch(git);
-            } catch (GitAPIException | IOException createEx) {
-                return handleException("Failed to establish initial connection to remote repository", createEx);
-            }
-        }
-
-        return true;
+        Collection<Ref> refs = executeWithRetry(() -> {
+            LsRemoteCommand lsRemoteCommand = git.lsRemote();
+            lsRemoteCommand.setHeads(true);
+            lsRemoteCommand.setRemote(gitUrl.getValue().trim());
+            lsRemoteCommand.setCredentialsProvider(chainingCredentialsProvider);
+            return lsRemoteCommand.call();
+        }, "ls-remote");
+        return refs.stream().anyMatch(ref -> ref.getName().equals("refs/heads/" + DEFAULT_BRANCH));
     }
 
     /**
-     * Creates a main branch with an initial commit and pushes it to remote.
+     * Pushes the repository's branches to a remote that has no main branch. A repository with no commit yet first
+     * gets an initial one, of a README that is written only when there is none.
      *
      * @param git the Git instance
      * @throws GitAPIException if a Git API error occurs
-     * @throws IOException     if an I/O error occurs
+     * @throws IOException     if an I/O error occurs, or the remote refuses the branch
      */
     private void createAndPushMainBranch(Git git) throws GitAPIException, IOException {
         updateMessage("Initializing connection with remote repository...");
         updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 0.3);
 
-        // Always create or update the README file for the initial commit
-        final File readmeFile = new File(changeSetFolder.toFile(), README_FILENAME);
-        Files.write(
-                readmeFile.toPath(),
-                generateReadmeContent().getBytes(),
-                StandardOpenOption.CREATE,
-                StandardOpenOption.TRUNCATE_EXISTING  // This will overwrite if it exists
-        );
+        if (git.getRepository().resolve(Constants.HEAD) == null) {
+            final Path readme = changeSetFolder.resolve(README_FILENAME);
+            if (Files.notExists(readme)) {
+                Files.writeString(readme, generateReadmeContent());
+            }
 
-        // Add and commit the file
-        updateMessage("Preparing initial data for secure transmission...");
-        updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 0.5);
+            // Add and commit the file
+            updateMessage("Preparing initial data for secure transmission...");
+            updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 0.5);
 
-        git.add().addFilepattern(README_FILENAME).call();
-        git.commit()
-                .setMessage("Initial commit for changeset exchange")
-                .setAuthor(gitUsername.getValue(), gitEmail.getValue())
-                .call();
+            git.add().addFilepattern(README_FILENAME).call();
+            git.commit()
+                    .setMessage("Initial commit for changeset exchange")
+                    .setAuthor(gitUsername.getValue(), gitEmail.getValue())
+                    .call();
+        }
 
         // Push the commit to remote
         updateMessage("Establishing first connection with remote repository...");
@@ -707,15 +628,20 @@ public class GitTask extends TrackingCallable<Boolean> {
                 TaskPhase.CONNECT_COMPLETION.getEnd(),
                 TOTAL_WORK);
 
-        executeWithRetry(() -> {
-            git.push()
-                    .setRemote(REMOTE_NAME)
-                    .setCredentialsProvider(chainingCredentialsProvider)
-                    .setProgressMonitor(progressMonitor)
-                    .setPushAll()
-                    .call();
-            return null;
-        }, "push");
+        Iterable<PushResult> results = executeWithRetry(() -> git.push()
+                .setRemote(REMOTE_NAME)
+                .setCredentialsProvider(chainingCredentialsProvider)
+                .setProgressMonitor(progressMonitor)
+                .setPushAll()
+                .call(), "push");
+        for (PushResult result : results) {
+            for (RemoteRefUpdate update : result.getRemoteUpdates()) {
+                if (update.getStatus() != RemoteRefUpdate.Status.OK && update.getStatus() != RemoteRefUpdate.Status.UP_TO_DATE) {
+                    throw new IOException("The remote refused %s: %s".formatted(update.getRemoteName(),
+                            update.getMessage() == null ? update.getStatus() : update.getStatus() + ", " + update.getMessage()));
+                }
+            }
+        }
 
         updateMessage("Connection established successfully! Remote repository is now linked.");
         updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 1.0);
