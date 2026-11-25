@@ -35,9 +35,11 @@ public final class PushAnswer {
      * Requires that the remote took every branch pushed to it.
      *
      * @param results what the push returned
+     * @return whether the remote took something it did not have
      * @throws IOException if the remote refused a branch, with the branch, the reason and what the remote said of it
      */
-    public static void requireAccepted(Iterable<PushResult> results) throws IOException {
+    public static boolean requireAccepted(Iterable<PushResult> results) throws IOException {
+        boolean taken = false;
         for (PushResult result : results) {
             for (RemoteRefUpdate update : result.getRemoteUpdates()) {
                 if (update.getStatus() != RemoteRefUpdate.Status.OK && update.getStatus() != RemoteRefUpdate.Status.UP_TO_DATE) {
@@ -45,8 +47,10 @@ public final class PushAnswer {
                     throw new IOException("The remote refused %s (%s)%s".formatted(branch(update), reason(update),
                             said.isEmpty() ? "." : ": " + said));
                 }
+                taken |= update.getStatus() == RemoteRefUpdate.Status.OK;
             }
         }
+        return taken;
     }
 
     private static String branch(RemoteRefUpdate update) {

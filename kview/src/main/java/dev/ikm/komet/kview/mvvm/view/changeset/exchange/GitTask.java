@@ -20,6 +20,8 @@ import dev.ikm.komet.kview.mvvm.model.GitHubPreferences;
 import dev.ikm.komet.kview.mvvm.model.GitHubPreferencesDao;
 import dev.ikm.komet.kview.mvvm.view.changeset.exchange.credentials.GitHubCredentialsProvider;
 import dev.ikm.komet.kview.mvvm.view.changeset.exchange.credentials.GitSslValidationCredentialsProvider;
+import dev.ikm.tinkar.common.alert.AlertObject;
+import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.service.SaveState;
 import dev.ikm.tinkar.common.service.TrackingCallable;
@@ -74,7 +76,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CancellationException;
 import java.util.stream.Stream;
 
 import static dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent.GLOBAL_REFRESH;
@@ -214,6 +216,9 @@ public class GitTask extends TrackingCallable<Boolean> {
 
     private final ChainingCredentialsProvider chainingCredentialsProvider;
 
+    /** Whether the remote has taken something this operation pushed, which a cancel does not take back. */
+    private boolean sent;
+
     /**
      * Creates a new GitTask with the specified operation mode and changeset folder.
      *
@@ -271,7 +276,7 @@ public class GitTask extends TrackingCallable<Boolean> {
      * For PULL and SYNC modes, first checks if the repository is fully
      * initialized and connected before proceeding.
      *
-     * @return true if the operation was successful, false otherwise
+     * @return true if the operation was successful, false if it failed or was cancelled
      */
     @Override
     public Boolean compute() {
@@ -294,10 +299,53 @@ public class GitTask extends TrackingCallable<Boolean> {
                 updateProgress(TOTAL_WORK, TOTAL_WORK);
             }
             return result;
+        } catch (CancellationException cancelled) {
+            return endCancelled();
         } catch (Exception ex) {
+            if (cancelAsked()) {
+                // How git and the network end what they were doing when they are told to stop
+                LOG.info("{} ended by its cancel: {}", operationMode, ex.toString());
+                return endCancelled();
+            }
             handleException(operationMode + " did not complete", ex);
             return false;
         }
+    }
+
+    /**
+     * Whether a cancel was asked for. The popup's Cancel interrupts this thread, and says so a moment later.
+     */
+    private boolean cancelAsked() {
+        return isCancelled() || Thread.currentThread().isInterrupted();
+    }
+
+    /**
+     * Stops here when a cancel was asked for.
+     *
+     * @throws CancellationException if so
+     */
+    private void stopIfCancelled() {
+        if (cancelAsked()) {
+            throw new CancellationException();
+        }
+    }
+
+    /**
+     * Ends an operation that was cancelled, which is neither a success nor a failure. A cancel that came after the
+     * remote had taken the change sets does not take them back, and that is said.
+     *
+     * @return false, since it did not complete
+     */
+    private boolean endCancelled() {
+        final String message = sent
+                ? operationMode + " was cancelled after the remote had taken the change sets: they are sent."
+                : operationMode + " was cancelled.";
+        LOG.info(message);
+        updateMessage(message);
+        if (sent) {
+            AlertStreams.getRoot().dispatch(AlertObject.makeAdvisory("Exchange", message));
+        }
+        return false;
     }
 
     /**
@@ -318,6 +366,9 @@ public class GitTask extends TrackingCallable<Boolean> {
                 return operation.execute();
             } catch (GitAPIException ex) {
                 lastException = ex;
+                if (cancelAsked()) {
+                    throw ex;
+                }
 
                 // Check if this is a retryable error (5xx server errors)
                 if (isRetryableError(ex) && attempt < MAX_RETRY_ATTEMPTS) {
@@ -407,6 +458,7 @@ public class GitTask extends TrackingCallable<Boolean> {
 
         try (Git git = openRepository()) {
             final boolean mainBranchExists = remoteHasMainBranch(git);
+            stopIfCancelled();
             configureRepository(git);
             if (!mainBranchExists) {
                 createAndPushMainBranch(git);
@@ -414,8 +466,10 @@ public class GitTask extends TrackingCallable<Boolean> {
             updateMessage("Connection to remote repository successfully established.");
             updatePhaseProgress(TaskPhase.CONNECT_COMPLETION, 1.0);
         } catch (GitAPIException | IOException | URISyntaxException ex) {
+            stopIfCancelled();
             return handleException("The connection to %s was not made".formatted(gitUrl.getValue().trim()), ex);
         }
+        stopIfCancelled();
 
         // Call the connection success callback if provided
         if (connectionSuccessCallback != null) {
@@ -628,7 +682,7 @@ public class GitTask extends TrackingCallable<Boolean> {
                 connectProgress(phaseStart + phaseWidth * 0.9),
                 TOTAL_WORK);
 
-        PushAnswer.requireAccepted(executeWithRetry(() -> git.push()
+        sent = PushAnswer.requireAccepted(executeWithRetry(() -> git.push()
                 .setRemote(REMOTE_NAME)
                 .setCredentialsProvider(chainingCredentialsProvider)
                 .setProgressMonitor(progressMonitor)
@@ -685,14 +739,18 @@ public class GitTask extends TrackingCallable<Boolean> {
         //Refresh UI after changesets are loaded
         EvtBusFactory.getDefaultEvtBus().publish(CALCULATOR_CACHE_TOPIC, new RefreshCalculatorCacheEvent(this, GLOBAL_REFRESH));
 
+        stopIfCancelled();
+
         // Run reasoner phase
         runReasoner(loadPhase.getEnd(), reasonerPhase.getEnd());
+        stopIfCancelled();
 
         // Push phase (if enabled)
         if (pushChanges) {
             push(reasonerPhase.getEnd(), pushPhase.getEnd());
             sendShared();
         }
+        stopIfCancelled();
 
         updateMessage("%s completed successfully.".formatted(pushChanges ? "Synchronization" : "Pulling"));
         return true;
@@ -724,10 +782,7 @@ public class GitTask extends TrackingCallable<Boolean> {
      */
     private ImmutableList<String> pull(double startPercentage, double endPercentage,
                                        Comparator<String> fileSorter) throws GitAPIException, IOException {
-        if (isCancelled()) {
-            updateMessage("Operation cancelled by user.");
-            return Lists.immutable.empty();
-        }
+        stopIfCancelled();
         // Starting the pull phase
         updatePhaseProgress(startPercentage, endPercentage, 0.0);
 
@@ -907,7 +962,8 @@ public class GitTask extends TrackingCallable<Boolean> {
      * Loads the pulled change sets the knowledge base has not registered, in the order given, and
      * registers each ({@code dev-ike-dashboard}, decision 20): a file the store already holds, by
      * an import or an earlier open, is not loaded again, and a file refused for a component no
-     * file before it carried is tried again after the rest.
+     * file before it carried is tried again after the rest. A cancel is taken up after the load: the
+     * next pull brings only what is new to the folder, and would leave these unloaded.
      *
      * @param startPercentage   the progress percentage at the start of this phase
      * @param endPercentage     the progress percentage at the end of this phase
@@ -915,11 +971,17 @@ public class GitTask extends TrackingCallable<Boolean> {
      */
     private void loadChangesets(double startPercentage, double endPercentage,
                                 ImmutableList<String> relativeFilePaths) {
-        if (isCancelled()) {
-            updateMessage("Operation cancelled by user.");
-            return;
+        final boolean interrupted = Thread.interrupted();    // so a load that waits is not cut short by it
+        try {
+            loadPulled(startPercentage, endPercentage, relativeFilePaths);
+        } finally {
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
         }
+    }
 
+    private void loadPulled(double startPercentage, double endPercentage, ImmutableList<String> relativeFilePaths) {
         updatePhaseProgress(startPercentage, endPercentage, 0.0);
 
         if (relativeFilePaths.isEmpty()) {
@@ -962,7 +1024,7 @@ public class GitTask extends TrackingCallable<Boolean> {
      * @param sending whether this sync also sends, so shared documents are first brought up to date with their files
      */
     private void receiveShared(boolean sending) {
-        if (!isCancelled()) {
+        if (!cancelAsked()) {
             updateMessage("Bringing the shared documents...");
             sharedData().receive(sending);
         }
@@ -970,7 +1032,7 @@ public class GitTask extends TrackingCallable<Boolean> {
 
     /** Sends the shared data of this knowledge base. A failure is reported; the next sync sends it. */
     private void sendShared() {
-        if (!isCancelled()) {
+        if (!cancelAsked()) {
             updateMessage("Sending the shared documents...");
             sharedData().send();
         }
@@ -983,11 +1045,6 @@ public class GitTask extends TrackingCallable<Boolean> {
      * @param endPercentage   the progress percentage at the end of this phase
      */
     private void runReasoner(double startPercentage, double endPercentage) {
-        if (isCancelled()) {
-            updateMessage("Operation cancelled by user.");
-            return;
-        }
-
         updateMessage("Starting reasoning process...");
         updatePhaseProgress(startPercentage, endPercentage, 0.0);
 
@@ -1083,6 +1140,7 @@ public class GitTask extends TrackingCallable<Boolean> {
                 LOG.info("ClassifierResults: classificationconcept size {}", results.getClassificationConceptSet().size());
                 resultList.add(results);
             } catch (Exception ex) {
+                stopIfCancelled();
                 LOG.error("Failed to load data for reasoning", ex);
             }
         }
@@ -1094,29 +1152,22 @@ public class GitTask extends TrackingCallable<Boolean> {
      * @param startPercentage the progress percentage at the start of this phase
      * @param endPercentage   the progress percentage at the end of this phase
      * @throws GitAPIException if a Git API error occurs
-     * @throws IOException     if an I/O error occurs
+     * @throws IOException     if the change set cannot be saved, or an I/O error occurs
      */
     private void push(double startPercentage, double endPercentage) throws GitAPIException, IOException {
-        if (isCancelled()) {
-            updateMessage("Operation cancelled by user.");
-            return;
-        }
-
         updatePhaseProgress(startPercentage, endPercentage, 0.0);
 
         updateMessage("Saving current change set...");
         updatePhaseProgress(startPercentage, endPercentage, 0.2);
 
-        if (!saveCurrentChangeSet()) {
-            updatePhaseProgress(startPercentage, endPercentage, 1.0);
-            return;
-        }
+        saveCurrentChangeSet();
 
         updatePhaseProgress(startPercentage, endPercentage, 0.4);
 
         try {
             pushToRemoteRepository(startPercentage, endPercentage);
         } catch (GitAPIException | IOException pushEx) {
+            stopIfCancelled();
             StringBuilder msg = new StringBuilder("Push failed (network/remote error). Local changes are saved; please retry Sync to push them.");
             appendAheadHintIfAny(msg);
             updateMessage(msg.toString());
@@ -1128,28 +1179,13 @@ public class GitTask extends TrackingCallable<Boolean> {
     /**
      * Saves the current change set using the ChangeSetWriterService.
      *
-     * @return true if the save operation was successful, false otherwise
+     * @throws IOException if it is not saved, so a push would send the folder without it
      */
-    private boolean saveCurrentChangeSet() {
-        ChangeSetWriterService changeSetWriterService = PluggableService.first(ChangeSetWriterService.class);
-        if (changeSetWriterService == null) {
-            updateMessage("No ChangeSetWriterService available. Cannot save changes.");
-            LOG.error("No ChangeSetWriterService found, cannot save changes");
-            return false;
-        }
-
-        if (changeSetWriterService instanceof SaveState savableChangeSetWriterService) {
-            // TODO: Refactor to return CompletableFuture<Boolean>
-            try {
-                savableChangeSetWriterService.save().get();
-            } catch (InterruptedException | ExecutionException e) {
-                updateMessage("Error while saving changes: " + e.getLocalizedMessage());
-                LOG.error("Error while saving changes", e);
-                return false;
-            }
-        }
+    private void saveCurrentChangeSet() throws IOException {
         // TODO: Do we want to shutdown non-savable ChangeSetWriterServices?
-        return true;
+        if (PluggableService.first(ChangeSetWriterService.class) instanceof SaveState savableChangeSetWriterService) {
+            SaveAnswer.requireSaved(savableChangeSetWriterService.save());
+        }
     }
 
     /**
@@ -1200,6 +1236,7 @@ public class GitTask extends TrackingCallable<Boolean> {
             }
 
             // Push changes
+            stopIfCancelled();
             updateMessage("Pushing changes to remote repository...");
             PushCommand pushCommand = git.push();
 
@@ -1213,7 +1250,7 @@ public class GitTask extends TrackingCallable<Boolean> {
 
             pushCommand.setProgressMonitor(progressMonitor);
             pushCommand.setCredentialsProvider(chainingCredentialsProvider);
-            PushAnswer.requireAccepted(executeWithRetry(pushCommand::call, "push"));
+            sent |= PushAnswer.requireAccepted(executeWithRetry(pushCommand::call, "push"));
             updatePhaseProgress(startPercentage, endPercentage, 0.95);
 
             updateMessage("Changes successfully pushed to remote repository.");

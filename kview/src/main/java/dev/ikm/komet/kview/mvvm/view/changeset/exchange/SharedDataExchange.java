@@ -111,10 +111,10 @@ public final class SharedDataExchange {
     }
 
     /** Closes the session's change sets, so the folder holds everything written before now. */
-    private static void saveChangeSets() {
+    private static void saveChangeSets() throws IOException {
         for (SaveState state : PrimitiveData.getStatesToSave()) {
             if (state instanceof ChangeSetWriterService) {
-                state.save().join();
+                SaveAnswer.requireSaved(state.save());
             }
         }
     }
