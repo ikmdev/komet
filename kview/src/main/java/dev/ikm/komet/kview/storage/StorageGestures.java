@@ -233,7 +233,8 @@ public final class StorageGestures {
 
     /**
      * Shows an outcome as a toast in the window of a node, when it is still shown, and keeps it as a
-     * line in Warnings and Errors. Call on the JavaFX thread.
+     * line in Warnings and Errors: a note when it was done, a warning when it was not. Call on the
+     * JavaFX thread.
      *
      * @param from    the node
      * @param title   what was done
@@ -242,7 +243,7 @@ public final class StorageGestures {
      */
     public static void report(Node from, String title, boolean done, String message) {
         LOG.info("{}: {}", title, message);
-        AlertStreams.getRoot().dispatch(AlertObject.makeAdvisory(title, message));
+        AlertStreams.getRoot().dispatch(AlertObject.makeOutcome(done, title, message));
         if (window(from) != null) {
             new Toast(from).show(done ? Toast.Status.SUCCESS : Toast.Status.FAILURE, message);
         }
