@@ -8680,6 +8680,33 @@ Styling a context menu for kview ui/ux controls
 
 /*********************************************************************************
  *                                                                               *
+ * Shortcut keys (ShortcutKeys: a keyboard shortcut as a row of keycaps)         *
+ *                                                                               *
+ *********************************************************************************/
+
+.shortcut-keys {
+    -fx-spacing: 3;
+    -fx-alignment: center;
+}
+
+/* One keycap. The heavier bottom edge is what makes it read as a key rather than a tag. */
+.shortcut-keys > .key {
+    -fx-min-width: 20;
+    -fx-alignment: center;
+    -fx-padding: 0 5 0 5;
+    -fx-background-color: -Grey-1;
+    -fx-background-radius: 4;
+    -fx-border-color: -Grey-5;
+    -fx-border-width: 1 1 2 1;
+    -fx-border-radius: 4;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-weight: 600;
+    -fx-font-size: 0.916667em; /* 11px */
+    -fx-text-fill: -Grey-9;
+}
+
+/*********************************************************************************
+ *                                                                               *
  * Unpublished changes (sidebar pencil toggle and its tray)                      *
  *                                                                               *
  *********************************************************************************/

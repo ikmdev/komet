@@ -20,7 +20,9 @@ import dev.ikm.komet.framework.controls.KonceptSigils;
 import dev.ikm.komet.framework.controls.KonceptStatus;
 import dev.ikm.komet.framework.settings.DisplayLanguage;
 import dev.ikm.komet.framework.settings.KometSettings;
+import dev.ikm.komet.framework.settings.KometShortcuts;
 import dev.ikm.komet.framework.settings.TextSize;
+import dev.ikm.komet.kview.controls.ShortcutKeys;
 import dev.ikm.tinkar.common.id.PublicIds;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -102,6 +104,7 @@ public class SettingsDialogController {
     @FXML private HBox multipleParentsSamples;
     @FXML private HBox multipleParentsRow;
     @FXML private CheckBox sidePanelIdenticonsCheck;
+    @FXML private ShortcutKeys sidePanelIdenticonsShortcut;
     @FXML private VBox glyphPreview;
 
     @FXML private ComboBox<DisplayLanguage> displayLanguageCombo;
@@ -115,7 +118,8 @@ public class SettingsDialogController {
     private final BooleanProperty showKindSigil = new SimpleBooleanProperty(true);
     private final BooleanProperty showDefinitionStatus = new SimpleBooleanProperty(true);
     private final BooleanProperty showMultipleParents = new SimpleBooleanProperty(true);
-    private final BooleanProperty showSidePanelIdenticons = new SimpleBooleanProperty(true);
+    private final BooleanProperty showSidePanelIdenticons =
+            new SimpleBooleanProperty(KometSettings.DEFAULT_SHOW_SIDE_PANEL_IDENTICONS);
     private final ObjectProperty<DisplayLanguage> displayLanguage = new SimpleObjectProperty<>(DisplayLanguage.SYSTEM_DEFAULT);
     private final BooleanProperty reopenWindowsAtLaunch = new SimpleBooleanProperty(true);
 
@@ -200,6 +204,7 @@ public class SettingsDialogController {
         definitionStatusCheck.selectedProperty().bindBidirectional(showDefinitionStatus);
         multipleParentsCheck.selectedProperty().bindBidirectional(showMultipleParents);
         sidePanelIdenticonsCheck.selectedProperty().bindBidirectional(showSidePanelIdenticons);
+        sidePanelIdenticonsShortcut.setShortcut(KometShortcuts.TOGGLE_SIDE_PANEL_IDENTICONS);
         // The fork only exists on top of the status glyph.
         multipleParentsRow.disableProperty().bind(showDefinitionStatus.not());
         BooleanBinding showFork = showDefinitionStatus.and(showMultipleParents);
@@ -333,7 +338,7 @@ public class SettingsDialogController {
             showKindSigil.set(true);
             showDefinitionStatus.set(true);
             showMultipleParents.set(true);
-            showSidePanelIdenticons.set(true);
+            showSidePanelIdenticons.set(KometSettings.DEFAULT_SHOW_SIDE_PANEL_IDENTICONS);
         } else if (languagePage.isVisible()) {
             displayLanguage.set(DisplayLanguage.SYSTEM_DEFAULT);
         } else {

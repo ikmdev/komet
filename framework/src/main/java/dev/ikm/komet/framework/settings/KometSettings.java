@@ -53,6 +53,12 @@ public final class KometSettings {
     static final String DISPLAY_LANGUAGE_KEY = KEY_PREFIX + "displayLanguage";
     static final String REOPEN_WINDOWS_KEY = KEY_PREFIX + "reopenWindowsAtLaunch";
 
+    /**
+     * The side panel identicons setting of a user who has never chosen: off. The Settings dialog's
+     * "Reset to default" goes back to this.
+     */
+    public static final boolean DEFAULT_SHOW_SIDE_PANEL_IDENTICONS = false;
+
     /** Lazily created so the preferences service is only looked up on first use. */
     private static final class Holder {
         private static final KometSettings INSTANCE = new KometSettings(PreferencesService.userPreferences());
@@ -86,7 +92,8 @@ public final class KometSettings {
         showKindSigil.set(preferences.getBoolean(SHOW_KIND_SIGIL_KEY, true));
         showDefinitionStatus.set(preferences.getBoolean(SHOW_DEFINITION_STATUS_KEY, true));
         showMultipleParents.set(preferences.getBoolean(SHOW_MULTIPLE_PARENTS_KEY, true));
-        showSidePanelIdenticons.set(preferences.getBoolean(SHOW_SIDE_PANEL_IDENTICONS_KEY, true));
+        showSidePanelIdenticons.set(
+                preferences.getBoolean(SHOW_SIDE_PANEL_IDENTICONS_KEY, DEFAULT_SHOW_SIDE_PANEL_IDENTICONS));
         displayLanguage.set(readEnum(DISPLAY_LANGUAGE_KEY, DisplayLanguage.SYSTEM_DEFAULT));
         reopenWindowsAtLaunch.set(preferences.getBoolean(REOPEN_WINDOWS_KEY, true));
 
@@ -172,7 +179,8 @@ public final class KometSettings {
     /**
      * Whether the rows of a journal's left side panel (the pattern navigator, the changes panel)
      * lead with the component's identicon. Identicons elsewhere, in the journal's windows and in
-     * what is dragged out of the panel, are not affected.
+     * what is dragged out of the panel, are not affected. Off until the user turns it on
+     * ({@link #DEFAULT_SHOW_SIDE_PANEL_IDENTICONS}).
      */
     private final BooleanProperty showSidePanelIdenticons =
             new SimpleBooleanProperty(this, "showSidePanelIdenticons");

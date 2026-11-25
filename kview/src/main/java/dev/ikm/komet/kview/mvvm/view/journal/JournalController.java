@@ -77,6 +77,8 @@ import dev.ikm.komet.framework.preferences.PrefX;
 import dev.ikm.komet.framework.progress.ProgressHelper;
 import dev.ikm.komet.framework.search.SearchPanelController;
 import dev.ikm.komet.framework.search.SearchResultCell;
+import dev.ikm.komet.framework.settings.KometSettings;
+import dev.ikm.komet.framework.settings.KometShortcuts;
 import dev.ikm.komet.framework.tabs.DetachableTab;
 import dev.ikm.komet.framework.tabs.TabGroup;
 import dev.ikm.komet.framework.view.ObservableViewNoOverride;
@@ -533,6 +535,14 @@ public class JournalController {
         // The component of the window that holds keyboard focus, which the concept navigator marks.
         workspace.sceneProperty().flatMap(Scene::focusOwnerProperty).subscribe(this::updateFocusedWindowComponent);
         workspace.getWindows().subscribe(this::clearFocusedWindowComponentIfClosed);
+
+        // The side panel's identicons come and go on a shortcut, from anywhere in this journal window.
+        journalRootPane.sceneProperty().subscribe(scene -> {
+            if (scene != null) {
+                scene.getAccelerators().put(KometShortcuts.TOGGLE_SIDE_PANEL_IDENTICONS,
+                        JournalController::toggleSidePanelIdenticons);
+            }
+        });
 
         reasonerNodePanel = new BorderPane();
         progressPopupPane.getStyleClass().add("progress-popup-pane");
@@ -1700,6 +1710,15 @@ public class JournalController {
     private void openSettings() {
         SettingsDialog.show(settingsToggleButton.getScene().getWindow());
         settingsToggleButton.setSelected(false);
+    }
+
+    /**
+     * Flips the app-wide side panel identicons setting, the one the Settings dialog edits, so every
+     * journal follows and the choice is kept for the next launch.
+     */
+    private static void toggleSidePanelIdenticons() {
+        KometSettings settings = KometSettings.get();
+        settings.setShowSidePanelIdenticons(!settings.isShowSidePanelIdenticons());
     }
 
     public BorderPane getJournalRootPane() {

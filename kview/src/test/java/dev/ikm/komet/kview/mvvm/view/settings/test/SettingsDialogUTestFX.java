@@ -17,7 +17,9 @@ package dev.ikm.komet.kview.mvvm.view.settings.test;
 
 import dev.ikm.komet.framework.settings.DisplayLanguage;
 import dev.ikm.komet.framework.settings.KometSettings;
+import dev.ikm.komet.framework.settings.KometShortcuts;
 import dev.ikm.komet.framework.settings.TextSize;
+import dev.ikm.komet.kview.controls.ShortcutKeys;
 import dev.ikm.komet.kview.mvvm.view.settings.SettingsDialog;
 import dev.ikm.komet.kview.mvvm.view.settings.SettingsDialogController;
 import dev.ikm.komet.preferences.KometPreferences;
@@ -49,6 +51,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.prefs.BackingStoreException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -161,10 +164,34 @@ class SettingsDialogUTestFX {
         robot.clickOn("#kindSigilCheck");
         assertFalse(checkBox("kindSigilCheck").isSelected());
 
+        assertFalse(checkBox("sidePanelIdenticonsCheck").isSelected(), "identicons start off");
+        robot.clickOn("#sidePanelIdenticonsCheck");
+        assertTrue(checkBox("sidePanelIdenticonsCheck").isSelected());
+
         robot.clickOn("Reset to default");
+        assertFalse(checkBox("sidePanelIdenticonsCheck").isSelected(), "and Reset turns them off again");
         assertTrue(checkBox("definitionStatusCheck").isSelected());
         assertTrue(checkBox("kindSigilCheck").isSelected());
         assertFalse(page("multipleParentsRow").isDisabled());
+    }
+
+    @Test
+    @DisplayName("The Identicons setting shows its shortcut as keycaps at the end of its title line")
+    void identiconsShowTheirShortcut() {
+        robot.clickOn("#componentsNav");
+
+        List<String> keys = robot.lookup("#sidePanelIdenticonsShortcut .key").<Label>queryAll().stream()
+                .map(Label::getText)
+                .toList();
+        assertEquals(ShortcutKeys.keysOf(KometShortcuts.TOGGLE_SIDE_PANEL_IDENTICONS.getDisplayText()), keys);
+        assertEquals(3, keys.size(), keys.toString());
+        assertEquals("I", keys.getLast());
+
+        Region shortcut = page("sidePanelIdenticonsShortcut");
+        Region componentsPage = page("componentsPage");
+        assertEquals(componentsPage.localToScene(componentsPage.getLayoutBounds()).getMaxX(),
+                shortcut.localToScene(shortcut.getLayoutBounds()).getMaxX(), 0.5,
+                "the keycaps end where the page's content column ends");
     }
 
     @Test
