@@ -635,11 +635,11 @@ public class JournalController {
 
         // Listening for when a General authoring Window needs to be summoned.
         makeGenEditWindowEventSubscriber = evt ->
-            // If the pattern is passed as a component, then it is a right click > new semantic and therefore
-            // the flag for opening the properties panel should be set to true.
-            // If the semantic is passed as a component, then we are in general editing mode and therefore
-            // the flag for opening the properties panel should be set to false.
-            createGenEditWindow(evt.getComponent(), evt.getViewProperties(), evt.getComponent() instanceof PatternFacade);
+            // A semantic opens in the standard KL Semantic window; a pattern passed as the component
+            // is a right click > new semantic, which opens that window to create a semantic of the
+            // pattern. The classic general editing window stays reachable through shift + double
+            // click (see makeComponentWindowEventSubscriber).
+            newCreateSemanticKLWindow(evt.getComponent());
 
         journalEventBus.subscribe(journalTopic, MakeGenEditingWindowEvent.class, makeGenEditWindowEventSubscriber);
 
@@ -1544,8 +1544,9 @@ public class JournalController {
      * Opens the window for an entity dropped on the workspace, mirroring what a double-click on the
      * same entity in the search results and navigators opens (ikmdev/komet-desktop#196): a concept
      * opens the standard KL {@link StandardEditorWindows#CONCEPT_WINDOW}, a pattern the standard KL
-     * {@link StandardEditorWindows#PATTERN_WINDOW}, and a semantic the general editing window. The
-     * classic windows remain reachable through shift + double-click.
+     * {@link StandardEditorWindows#PATTERN_WINDOW}, and a semantic the standard KL
+     * {@link StandardEditorWindows#SEMANTIC_WINDOW}. The classic windows remain reachable through
+     * shift + double-click.
      *
      * @param entityFacade the entity to display in the new window, or null to skip creation
      */
@@ -1556,7 +1557,7 @@ public class JournalController {
             case PatternFacade patternFacade ->
                     newCreateStandardKLWindow(patternFacade, StandardEditorWindows.PATTERN_WINDOW);
             case SemanticFacade semanticFacade ->
-                    createGenEditWindow(semanticFacade, journalViewProperties, false);
+                    newCreateSemanticKLWindow(semanticFacade);
             case null -> { }
             default -> throw new UnsupportedOperationException(
                     "Unsupported entity facade type: " + entityFacade.getClass().getSimpleName());
@@ -2781,6 +2782,28 @@ public class JournalController {
         window.setOnClose(peek::hide);
         KonceptBadge.contributeMenuItems(peek.content(), this::componentMenuItems);
         window.onShown();
+    }
+
+    /**
+     * Opens the standard KL Semantic window: on a semantic, or, given a pattern, to create a new
+     * semantic of that pattern. Its definition is generated for the pattern rather than seeded,
+     * so there is nothing to ensure first. Like the other standard windows it derives its
+     * coordinate from the journal's.
+     *
+     * @param semanticOrPattern the semantic to show, or the pattern to create a semantic of
+     */
+    public void newCreateSemanticKLWindow(EntityFacade semanticOrPattern) {
+        GenPurposeKLWindowFactory factory =
+                (GenPurposeKLWindowFactory) getFactory(EntityKlWindowTypes.GEN_PURPOSE_KL);
+        GenPurposeKLWindow window;
+        if (semanticOrPattern instanceof PatternFacade pattern) {
+            window = factory.createSemanticWindow(journalTopic, null, pattern, journalViewProperties, null);
+        } else {
+            long patternNid = EntityHandle.get(semanticOrPattern.nid()).expectSemantic().patternNid();
+            window = factory.createSemanticWindow(journalTopic, semanticOrPattern, PatternFacade.make(patternNid),
+                    journalViewProperties, null);
+        }
+        setupWorkspaceWindow(window);
     }
 
     private GenPurposeKLWindow standardKLWindow(EntityFacade entityFacade, String windowTitle) {

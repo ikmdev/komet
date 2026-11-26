@@ -21,6 +21,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.paint.Color;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +35,7 @@ import org.testfx.api.FxToolkit;
 import java.nio.file.Path;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -62,7 +65,10 @@ class GenPurposeWindowViewUTestFX {
             ".main-center-container .concept-detail-banner-background",
             ".concept-detail-banner-background .window-banner-grid",
             ".window-banner-grid > .concept-definition-title",
-            ".window-banner-grid > .window-main-title",
+            ".window-banner-grid > .window-banner-title-box",
+            ".window-banner-title-box > .window-main-title",
+            ".window-banner-title-box > .window-banner-pattern-line",
+            ".window-banner-pattern-line .banner-pattern-link",
             ".main-center-container .split-pane");
 
     private GenPurposeWindowView view;
@@ -126,5 +132,41 @@ class GenPurposeWindowViewUTestFX {
         assertNull(frame.getEffect(), "an unfocused window has no ring");
         FxService.serviceContext().getCaptureSupport().saveImage(robot.capture(view.getParent()).getImage(),
                 Path.of("target", "gen-purpose-window-unfocused.png"));
+    }
+
+    @Test
+    @DisplayName("The standard Semantic window's chrome is teal, and washed out while it creates its semantic")
+    void semanticWindowIsTeal() throws Exception {
+        FxRobot robot = new FxRobot();
+
+        FxToolkit.setupFixture(() -> {
+            view.setTheme(GenPurposeWindowView.Theme.SEMANTIC);
+            view.setWindowTitle("Comment semantic");
+            view.requestFocus();
+            view.applyCss();
+        });
+        assertEquals(Color.web("#2A6A6F"), fillOf(".kl-window-control-toolbar .window-header-control"),
+                "the Semantic window's bar is teal");
+        assertEquals(Color.web("#1F5054"), fillOf(".lidr-rounded-tab"), "its tab is the darker teal");
+        FxService.serviceContext().getCaptureSupport().saveImage(robot.capture(view.getParent()).getImage(),
+                Path.of("target", "semantic-window-chrome.png"));
+
+        FxToolkit.setupFixture(() -> {
+            view.setCreating(true);
+            view.setCreateModeHintText("This Semantic doesn't exist yet - it's created when you fill out the required values and hit Publish.");
+            view.showPlaceholderTitle("New Comment semantic");
+            view.applyCss();
+        });
+        assertEquals(Color.web("#7FA7AA"), fillOf(".kl-window-control-toolbar .window-header-control"),
+                "the bar is washed out while the semantic doesn't exist");
+        assertEquals(Color.web("#5F8E92"), fillOf(".lidr-rounded-tab"), "and so is the tab");
+        FxService.serviceContext().getCaptureSupport().saveImage(robot.capture(view.getParent()).getImage(),
+                Path.of("target", "semantic-window-chrome-create.png"));
+    }
+
+    /** The fill of the first background layer of the node the selector finds in the window. */
+    private Color fillOf(String selector) {
+        Region region = (Region) view.lookup(selector);
+        return (Color) region.getBackground().getFills().getFirst().getFill();
     }
 }

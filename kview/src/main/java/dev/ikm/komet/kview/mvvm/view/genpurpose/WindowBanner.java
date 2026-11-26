@@ -32,14 +32,21 @@ import dev.ikm.tinkar.coordinate.stamp.calculator.Latest;
 import dev.ikm.tinkar.coordinate.view.calculator.ViewCalculator;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityVersion;
+import dev.ikm.tinkar.entity.PatternEntityVersion;
+import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.entity.StampEntity;
 import dev.ikm.tinkar.terms.ConceptFacade;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.PatternFacade;
 import dev.ikm.tinkar.terms.State;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.css.PseudoClass;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
@@ -49,6 +56,9 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,10 +68,24 @@ import org.slf4j.LoggerFactory;
  * on open, after a coordinate change, after a publish — and, in create mode, with the STAMP a
  * component would be committed with instead. Owns its layout: the title grid on the left, the
  * STAMP on the right.
+ *
+ * <p>In the standard Semantic window the banner also says what the semantic is a semantic of: a
+ * line under the title naming its pattern, as a link to the pattern, with the pattern's meaning
+ * and purpose ({@link #updateSemanticPattern}). Before the semantic exists that line and a muted
+ * placeholder are all the title shows ({@link #showPlaceholderTitle}).
  */
 final class WindowBanner extends BorderPane {
 
     private static final Logger LOG = LoggerFactory.getLogger(WindowBanner.class);
+
+    /** Marks the title as standing in for a component that doesn't exist yet (see kview.css). */
+    private static final PseudoClass PLACEHOLDER = PseudoClass.getPseudoClass("placeholder");
+
+    /** The line under the title naming a semantic's pattern; shown in the standard Semantic window only. */
+    private final TextFlow patternLine = new TextFlow();
+    private final Hyperlink patternLink = new Hyperlink();
+    private final Text meaningText = new Text();
+    private final Text purposeText = new Text();
 
     private final PublicIDListControl identifierControl = new PublicIDListControl();
     // Built bare, off ComponentItemNodeFactory, so the title shows the identicon and name only: no
@@ -102,8 +126,25 @@ final class WindowBanner extends BorderPane {
         windowTitle.getStyleClass().add("window-main-title");
         windowTitle.setWrapText(true);
         windowTitle.setTooltip(windowTitleTooltip);
-        GridPane.setColumnIndex(windowTitle, 0);
-        GridPane.setColumnSpan(windowTitle, 3);
+
+        // The pattern line sits right under the title, in the title's own grid cell, so a window
+        // without one (every window but the Semantic window) keeps the grid's rows as they were.
+        patternLink.getStyleClass().add("banner-pattern-link");
+        patternLink.setOnAction(_ -> getOnOpenPattern().run());
+        meaningText.getStyleClass().add("banner-pattern-value");
+        purposeText.getStyleClass().add("banner-pattern-value");
+        patternLine.getStyleClass().add("window-banner-pattern-line");
+        patternLine.getChildren().addAll(
+                patternLineLabel("Pattern: "), patternLink,
+                patternLineSeparator(), patternLineLabel("Meaning: "), meaningText,
+                patternLineSeparator(), patternLineLabel("Purpose: "), purposeText);
+        patternLine.setVisible(false);
+        patternLine.setManaged(false);
+
+        VBox titleBox = new VBox(windowTitle, patternLine);
+        titleBox.getStyleClass().add("window-banner-title-box");
+        GridPane.setColumnIndex(titleBox, 0);
+        GridPane.setColumnSpan(titleBox, 3);
 
         GridPane bannerGrid = new GridPane();
         bannerGrid.setMaxHeight(Double.MAX_VALUE);
@@ -112,7 +153,7 @@ final class WindowBanner extends BorderPane {
         bannerGrid.getStyleClass().addAll("concept-detail-banner-background", "window-banner-grid");
         bannerGrid.getColumnConstraints().addAll(iconColumn, titleColumn, new ColumnConstraints());
         bannerGrid.getRowConstraints().addAll(titleRow, identifierRow);
-        bannerGrid.getChildren().addAll(identifierControl, windowTitle);
+        bannerGrid.getChildren().addAll(identifierControl, titleBox);
 
         // The header STAMP is view-only in this window — clicking it must not select it or open
         // the STAMP form.
@@ -137,6 +178,50 @@ final class WindowBanner extends BorderPane {
         updateDisplayIdentifier(viewProperties, component);
         updateWindowTitle(viewProperties, component);
         updateStampControl(viewProperties, component);
+    }
+
+    /**
+     * Shows, under the title, the pattern a semantic is a semantic of: its name, which opens the
+     * pattern ({@link #onOpenPatternProperty()}), and its meaning and purpose, read through the view.
+     */
+    void updateSemanticPattern(ViewProperties viewProperties, PatternFacade pattern) {
+        var languageCalculator = viewProperties.calculator().languageCalculator();
+        patternLink.setText(languageCalculator.getDescriptionText(pattern.nid())
+                .orElseGet(() -> languageCalculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(pattern.nid())));
+
+        Latest<PatternEntityVersion> latestPattern = viewProperties.calculator().latestPatternEntityVersion(pattern);
+        latestPattern.ifPresent(patternVersion -> {
+            meaningText.setText(languageCalculator.getDescriptionText(patternVersion.semanticMeaningNid())
+                    .orElse("No description for meaning"));
+            purposeText.setText(languageCalculator.getDescriptionText(patternVersion.semanticPurposeNid())
+                    .orElse("No description for purpose"));
+        });
+
+        patternLine.setVisible(true);
+        patternLine.setManaged(true);
+    }
+
+    /**
+     * Shows a muted line in place of the title, with no identicon and no identifiers: the window's
+     * component doesn't exist yet. The next {@link #updateComponent} replaces it.
+     */
+    void showPlaceholderTitle(String text) {
+        windowTitle.setComponentItem(new ComponentItem(text, null));
+        windowTitle.pseudoClassStateChanged(PLACEHOLDER, true);
+        windowTitleTooltip.setText(text);
+        identifierControl.setPublicIdList(java.util.List.of());
+    }
+
+    private static Text patternLineLabel(String text) {
+        Text label = new Text(text);
+        label.getStyleClass().add("banner-pattern-label");
+        return label;
+    }
+
+    private static Text patternLineSeparator() {
+        Text separator = new Text("   •   ");
+        separator.getStyleClass().add("banner-pattern-separator");
+        return separator;
     }
 
     /// Show the public ID
@@ -223,14 +308,45 @@ final class WindowBanner extends BorderPane {
     private void updateWindowTitle(ViewProperties viewProperties, EntityFacade refComponent) {
         // Follow the view coordinate's description-type preference (FQN vs preferred), like the axiom
         // badges, so the header tracks the coordinate too (ike-issues#660).
-        String componentName = viewProperties.calculator().getDescriptionTextOrNid(refComponent.nid());
+        // A semantic has no description of its own: it is named after what it is about and its
+        // pattern, the way the classic Semantic window names it.
+        EntityHandle handle = EntityHandle.get(refComponent);
+        String componentName = handle.isSemantic()
+                ? semanticName(viewProperties, handle.expectSemantic())
+                : viewProperties.calculator().getDescriptionTextOrNid(refComponent.nid());
         Image identicon = Identicon.generateIdenticonImage(refComponent.publicId());
 
-        boolean isConcept = EntityHandle.get(refComponent).isConcept();
+        boolean isConcept = handle.isConcept();
         ComponentItem componentItem = new ComponentItem(componentName, identicon, refComponent.publicId(), isConcept);
 
         windowTitle.setComponentItem(componentItem);
+        windowTitle.pseudoClassStateChanged(PLACEHOLDER, false);
 
         windowTitleTooltip.setText(componentName);
     }
+
+    /**
+     * "Reference component in Pattern": the reference component by the view's name for it, the
+     * pattern by its fully qualified name.
+     */
+    private static String semanticName(ViewProperties viewProperties, SemanticEntity<?> semantic) {
+        var languageCalculator = viewProperties.calculator().languageCalculator();
+        String referenceComponentName = languageCalculator.getDescriptionText(semantic.referencedComponentNid())
+                .orElse("No description for referenced component");
+        return referenceComponentName + " in "
+                + languageCalculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(semantic.patternNid());
+    }
+
+    /*=*************************************************************************
+     *                                                                         *
+     * Properties                                                              *
+     *                                                                         *
+     ************************************************************************=*/
+
+    // -- on open pattern
+    /** Called when the pattern named under the title is pressed, to open that pattern. */
+    private final ObjectProperty<Runnable> onOpenPattern = new SimpleObjectProperty<>(this, "onOpenPattern");
+    public Runnable getOnOpenPattern() { return onOpenPattern.get(); }
+    public ObjectProperty<Runnable> onOpenPatternProperty() { return onOpenPattern; }
+    public void setOnOpenPattern(Runnable handler) { this.onOpenPattern.set(handler); }
 }

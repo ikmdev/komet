@@ -417,10 +417,14 @@ public final class WindowEditSession {
         singleSemanticTransactionComposers.values().removeIf(ObservableComposer::releaseTransactionEndedElsewhere);
     }
 
-    /** The semantics passed in and the window's component. */
+    /**
+     * The semantics passed in and the window's component, each once: in the standard Semantic
+     * window the component is itself the semantic shown.
+     */
     private List<Entity<?>> unpublishedEntities(Collection<SemanticEntity<SemanticEntityVersion>> unpublishedSemantics) {
         List<Entity<?>> unpublished = new ArrayList<>(unpublishedSemantics);
-        if (getComponent() != null) {
+        if (getComponent() != null
+                && unpublishedSemantics.stream().noneMatch(semantic -> semantic.nid() == getComponent().nid())) {
             unpublished.add(EntityHandle.get(getComponent().nid()).expectEntity());
         }
         return unpublished;

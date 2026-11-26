@@ -6752,6 +6752,18 @@ Styling a context menu for kview ui/ux controls
     -bar-color: -Secondary-06;
 }
 
+/* Teal theme for the standard Semantic window (EditorWindowType.STANDARD_SEMANTIC, added by
+   GenPurposeDetailsController): a toned-down -Accent-color-tiffany at the depth of the Concept
+   window's blue, so the three standard windows read as one family — blue Concept, grey Pattern,
+   teal Semantic — and the tab chip the same darker shade of its bar the other two have. */
+.gen-purpose-window.semantic-window-theme .lidr-rounded-tab {
+    -tab-color: #1F5054;
+}
+
+.gen-purpose-window.semantic-window-theme .kl-window-control-toolbar .window-header-control {
+    -bar-color: #2A6A6F;
+}
+
 /* Light theme for user-created windows (EditorWindowType.SEMANTICS, added by
    GenPurposeDetailsController): the standard windows keep their dark filled chrome, while a
    window the user built in the KL editor drops it for a white bar and tab chip with dark text
@@ -6879,6 +6891,20 @@ Styling a context menu for kview ui/ux controls
 
 .gen-purpose-window.concept-window-theme:create-mode .kl-window-control-toolbar .window-header-control {
     -bar-color: #7E95BC; /* dimmed -Secondary-06, hue kept */
+}
+
+/* The Semantic window's ghost: its teal washed out the same way, and the dashes in a mid teal
+   instead of the mid blue, so the stitching belongs to the chrome it runs around. */
+.gen-purpose-window.semantic-window-theme:create-mode {
+    -create-mode-dash-color: #5F9397;
+}
+
+.gen-purpose-window.semantic-window-theme:create-mode .lidr-rounded-tab {
+    -tab-color: #5F8E92; /* dimmed tab teal, hue kept */
+}
+
+.gen-purpose-window.semantic-window-theme:create-mode .kl-window-control-toolbar .window-header-control {
+    -bar-color: #7FA7AA; /* dimmed bar teal, hue kept */
 }
 
 .gen-purpose-window:create-mode .lidr-rounded-tab {
@@ -7082,6 +7108,93 @@ Styling a context menu for kview ui/ux controls
 
 .gen-purpose-window .public-id .public-id-label {
     -fx-text-fill: -Grey-8;
+}
+
+/***********************  Semantic window banner  ******************************/
+
+/* The title and, in the standard Semantic window, the line under it naming the semantic's
+   pattern (WindowBanner). The gap is the banner grid's own row gap, so the line sits between the
+   title and the Komet ID at the same rhythm. */
+.gen-purpose-window .window-banner-title-box {
+    -fx-spacing: 8;
+}
+
+/* "Pattern: <link>  •  Meaning: …  •  Purpose: …": muted labels, values a step darker, the
+   pattern's name in the link blue of the unpublished strip's links. */
+.gen-purpose-window .window-banner-pattern-line .banner-pattern-label {
+    -fx-fill: -Grey-8;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 1em; /* 12px */
+}
+
+.gen-purpose-window .window-banner-pattern-line .banner-pattern-value {
+    -fx-fill: -Grey-10;
+    -fx-font-family: "Noto Sans";
+    -fx-font-size: 1em; /* 12px */
+}
+
+.gen-purpose-window .window-banner-pattern-line .banner-pattern-separator {
+    -fx-fill: -Grey-6;
+    -fx-font-size: 1em; /* 12px */
+}
+
+.gen-purpose-window .window-banner-pattern-line .banner-pattern-link {
+    -fx-text-fill: -Secondary-05;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 1em; /* 12px */
+    -fx-padding: 0;
+    -fx-border-color: transparent;
+}
+
+.gen-purpose-window .window-banner-pattern-line .banner-pattern-link:hover {
+    -fx-underline: true;
+}
+
+/* The title of a window whose component doesn't exist yet says what it is going to create,
+   muted so it does not read as a name. */
+.gen-purpose-window .window-main-title:placeholder .label {
+    -fx-text-fill: -Grey-7;
+}
+
+/***********************  Semantic window reference component  ******************************/
+
+/* The standard Semantic window's Reference Component section (SemanticReferenceView): while the
+   semantic doesn't exist, the component picker with the note under it and Confirm at the right. */
+.gen-purpose-window .semantic-reference .semantic-reference-chooser {
+    -fx-spacing: 8;
+}
+
+.gen-purpose-window .semantic-reference .semantic-reference-note {
+    -fx-text-fill: -Grey-9;
+    -fx-font-family: "Noto Sans SemiBold";
+    -fx-font-size: 0.916667em; /* 11px */
+}
+
+.gen-purpose-window .semantic-reference .semantic-reference-buttons {
+    -fx-alignment: center-right;
+}
+
+.gen-purpose-window .semantic-reference .semantic-reference-confirm {
+    -fx-background-color: -Secondary-05;
+    -fx-background-radius: 5;
+    -fx-text-fill: -Grey-White;
+    -fx-font-family: "Noto Sans Bold";
+    -fx-font-size: 1.083333em; /* 13px */
+    -fx-padding: 0.615385em 1.230769em; /* 8 16, relative to the 13px text */
+}
+
+.gen-purpose-window .semantic-reference .semantic-reference-confirm:hover {
+    -fx-background-color: -Secondary-04;
+}
+
+.gen-purpose-window .semantic-reference .semantic-reference-confirm:armed {
+    -fx-background-color: -Secondary-06;
+}
+
+/* Disabled keeps full opacity and pales the plate instead, like the toolbar's Publish button. */
+.gen-purpose-window .semantic-reference .semantic-reference-confirm:disabled {
+    -fx-opacity: 1.0;
+    -fx-background-color: #A9BFE9;
 }
 
  .window-main-title .label {
@@ -9025,8 +9138,8 @@ Styling a context menu for kview ui/ux controls
 }
 
 .unpublished-row .type-glyph.semantic {
-    -fx-background-color: #DCFCE7; /* a semantic has no window of its own: a pastel green */
-    -fx-text-fill: #15803D;
+    -fx-background-color: #D9F1F0; /* a pastel of the semantic window bar (teal, .semantic-window-theme) */
+    -fx-text-fill: #1F6368;
 }
 
 .unpublished-row .change-text {

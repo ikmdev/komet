@@ -15,8 +15,10 @@
  */
 package dev.ikm.komet.kview.klwindows.genpurpose;
 
+import dev.ikm.komet.framework.ComponentLookup;
 import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.framework.window.WindowSettings;
+import dev.ikm.komet.layout.editor.StandardEditorWindows;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowFactory;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowState;
 import dev.ikm.komet.kview.klwindows.EntityKlWindowType;
@@ -26,7 +28,9 @@ import dev.ikm.komet.preferences.KometPreferencesImpl;
 import dev.ikm.komet.preferences.NidTextEnum;
 import dev.ikm.tinkar.entity.Entity;
 import dev.ikm.tinkar.entity.EntityHandle;
+import dev.ikm.tinkar.entity.SemanticEntity;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.PatternFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +41,7 @@ import java.util.prefs.BackingStoreException;
 
 import static dev.ikm.komet.kview.events.EventTopics.JOURNAL_TOPIC;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_EDITOR_APP;
+import static dev.ikm.komet.preferences.KLEditorPreferences.KL_STANDARD_WINDOWS_DIR;
 import static dev.ikm.komet.preferences.KLEditorPreferences.KL_USER_WINDOWS_DIR;
 
 /**
@@ -76,6 +81,21 @@ public class GenPurposeKLWindowFactory implements EntityKlWindowFactory {
     }
 
     /**
+     * Creates the standard Semantic window: a general-purpose window framing one semantic, built
+     * from the definition generated for the semantic's pattern.
+     *
+     * @param semantic the semantic to show; null to create a new semantic of the pattern
+     * @param pattern  the pattern of the semantic
+     */
+    public GenPurposeKLWindow createSemanticWindow(UUID journalTopic,
+                                                   EntityFacade semantic,
+                                                   PatternFacade pattern,
+                                                   ViewProperties viewProperties,
+                                                   KometPreferences preferences) {
+        return new GenPurposeKLWindow(journalTopic, semantic, pattern, viewProperties, preferences);
+    }
+
+    /**
      * Restores a window from the state it saved to {@code preferences}, built from the same
      * KL-editor window definition, on the same component and with its saved geometry. Derives from
      * the journal's live view so the restored window tracks the live coordinate and author like a
@@ -110,6 +130,14 @@ public class GenPurposeKLWindowFactory implements EntityKlWindowFactory {
             return null;
         }
         String editorWindowDir = windowState.getStringProperty(GenPurposeKLWindow.KL_EDITOR_WINDOW_DIR, KL_USER_WINDOWS_DIR);
+
+        // The standard Semantic window has no stored definition: it is generated from the pattern
+        // of the semantic it was saved on, or, for a window that was still creating its semantic,
+        // from the pattern saved with it.
+        if (StandardEditorWindows.SEMANTIC_WINDOW.equals(editorWindowTitle) && KL_STANDARD_WINDOWS_DIR.equals(editorWindowDir)) {
+            return restoreSemanticWindow(journalTopic.get(), entityFacade, windowState, preferences, journalViewProperties);
+        }
+
         KometPreferences editorWindowsPreferences =
                 KometPreferencesImpl.getConfigurationRootPreferences().node(KL_EDITOR_APP).node(editorWindowDir);
         boolean definitionExists;
@@ -132,6 +160,42 @@ public class GenPurposeKLWindowFactory implements EntityKlWindowFactory {
         window.revert();
 
         LOG.info("Successfully restored general-purpose KL window: {}", window.getWindowTopic());
+        return window;
+    }
+
+    /**
+     * Restores a standard Semantic window on the semantic it was saved on. A semantic that is gone,
+     * or whose creation was discarded since, leaves the window where one opened to create a
+     * semantic starts: with no semantic, on the pattern saved with it.
+     *
+     * @return the restored window, or null when neither the semantic nor the saved pattern resolves
+     */
+    private GenPurposeKLWindow restoreSemanticWindow(UUID journalTopic, EntityFacade savedEntity,
+                                                     EntityKlWindowState windowState, KometPreferences preferences,
+                                                     ViewProperties journalViewProperties) {
+        SemanticEntity<?> semantic = savedEntity == null ? null
+                : EntityHandle.get(savedEntity.nid()).asSemantic().filter(saved -> !saved.canceled()).orElse(null);
+
+        OptionalLong patternNid;
+        if (semantic != null) {
+            patternNid = OptionalLong.of(semantic.patternNid());
+        } else {
+            String patternUuid = windowState.getStringProperty(GenPurposeKLWindow.SEMANTIC_PATTERN_UUID, null);
+            patternNid = patternUuid == null ? OptionalLong.empty() : ComponentLookup.nid(UUID.fromString(patternUuid));
+        }
+        if (patternNid.isEmpty()) {
+            LOG.warn("Skipping standard Semantic window {}: neither its semantic nor its pattern is in this knowledge base",
+                    windowState.getWindowId());
+            return null;
+        }
+
+        GenPurposeKLWindow window = createSemanticWindow(journalTopic, semantic,
+                PatternFacade.make(patternNid.getAsLong()), journalViewProperties, preferences);
+
+        // Restore the window state (geometry) after content init so the saved size/position wins.
+        window.revert();
+
+        LOG.info("Successfully restored standard Semantic window: {}", window.getWindowTopic());
         return window;
     }
 

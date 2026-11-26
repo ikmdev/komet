@@ -97,9 +97,9 @@ public class SortResultSemanticEntryController  {
 
 
         searchEntryContainer.setOnMouseClicked(mouseEvent -> {
-            // double left click opens the KL-driven general-purpose window — except for a
-            // semantic, which opens the gen editing window while there is no KL-driven window
-            // showing a single semantic; shift + double left click opens the classic window
+            // double left click opens the KL-driven general-purpose window — for a semantic the
+            // journal turns the gen editing event into the standard KL Semantic window;
+            // shift + double left click opens the classic window
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)){
                 if (mouseEvent.getClickCount() == 2) {
                     UUID journalTopic = searchEntryViewModel.getPropertyValue(CURRENT_JOURNAL_WINDOW_TOPIC);

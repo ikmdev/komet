@@ -43,6 +43,19 @@ public final class StandardEditorWindows {
     /** Title of the standard Pattern window. */
     public static final String PATTERN_WINDOW = "Pattern";
 
+    /**
+     * Title of the standard Semantic window. Unlike the other two it names no seeded definition: a
+     * semantic's pattern differs from window to window, so its definition is generated for the
+     * pattern each time a window opens (see {@link #createSemanticWindow}).
+     */
+    public static final String SEMANTIC_WINDOW = "Semantic";
+
+    /** Name of the standard Semantic window's section showing what the semantic is about. */
+    public static final String REFERENCE_COMPONENT_SECTION_NAME = "Reference Component";
+
+    /** Name of the standard Semantic window's section holding the semantic's fields. */
+    private static final String SEMANTIC_DETAILS_SECTION_NAME = "Semantic Details";
+
     /** Name of the section holding the Description pattern, in both standard windows. */
     private static final String DESCRIPTION_SECTION_NAME = "Description";
 
@@ -306,6 +319,54 @@ public final class StandardEditorWindows {
         window.getAdditionalSections().add(fieldsSection);
 
         window.save(standardWindowsPreferences);
+    }
+
+    /**
+     * The standard Semantic window for semantics of the passed in pattern: a main "Reference
+     * Component" section, which places no pattern (the window shows the semantic's reference
+     * component in it), and a "Semantic Details" section placing the pattern with every one of its
+     * fields, two to a row when the pattern has more than one.
+     *
+     * <p>The definition is built in memory and returned, never saved: there is one per pattern, and
+     * it follows from the pattern alone. Each window gets its own instance, so nothing is shared
+     * with the KL Editor or between windows. The window frames the semantic itself rather than a
+     * component semantics are on, so the placed pattern stands for that one semantic: it is
+     * required, since the window has nothing to create until its fields exist, and it accepts no
+     * second semantic.
+     *
+     * @param viewCalculator the view calculator used to resolve the pattern definition
+     * @param patternNid     the pattern of the semantics the window shows
+     * @return the window definition
+     */
+    public static EditorWindowModel createSemanticWindow(ViewCalculator viewCalculator, long patternNid) {
+        EditorWindowModel window = new EditorWindowModel();
+        window.setTitle(SEMANTIC_WINDOW);
+        window.setWindowType(EditorWindowType.STANDARD_SEMANTIC);
+
+        // Reference Component
+        window.getMainSection().setName(REFERENCE_COMPONENT_SECTION_NAME);
+
+        // Semantic Details
+        EditorSectionModel detailsSection = new EditorSectionModel();
+        detailsSection.setName(SEMANTIC_DETAILS_SECTION_NAME);
+
+        EditorPatternModel pattern = new EditorPatternModel(viewCalculator, patternNid);
+        pattern.setRequired(true);
+        pattern.setAllowNewSemantics(false);
+
+        List<EditorFieldModel> fields = pattern.getVisibleFields();
+        if (fields.size() > 1 && pattern.getFactoryProperties() instanceof StandardPatternProperties standardProperties) {
+            standardProperties.setNumberColumns(2);
+            for (int position = 0; position < fields.size(); position++) {
+                fields.get(position).setRowIndex(position / 2);
+                fields.get(position).setColumnIndex(position % 2);
+            }
+        }
+
+        detailsSection.getPatterns().add(pattern);
+        window.getAdditionalSections().add(detailsSection);
+
+        return window;
     }
 
     private static EditorSectionModel createAxiomSection(ViewCalculator viewCalculator) {

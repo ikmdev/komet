@@ -24,6 +24,7 @@ import dev.ikm.komet.kview.mvvm.view.journal.VerticallyFilledPane;
 import dev.ikm.komet.layout.controls.FilterOptionsPopup;
 import dev.ikm.komet.layout_engine.window.WindowSupport;
 import dev.ikm.tinkar.terms.EntityFacade;
+import dev.ikm.tinkar.terms.PatternFacade;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -195,6 +196,22 @@ public final class GenPurposeWindowView extends BorderPane {
     }
 
     /**
+     * Shows in the banner, under the title, the pattern the window's semantic is a semantic of,
+     * with the pattern's meaning and purpose: for the standard Semantic window.
+     */
+    public void setSemanticPattern(ViewProperties viewProperties, PatternFacade pattern) {
+        banner.updateSemanticPattern(viewProperties, pattern);
+    }
+
+    /**
+     * Shows a muted line in place of the banner's title, for a window whose component doesn't
+     * exist yet; {@link #setComponent} replaces it.
+     */
+    public void showPlaceholderTitle(String text) {
+        banner.showPlaceholderTitle(text);
+    }
+
+    /**
      * Puts the properties panel into the window's properties tray, starting out closed.
      *
      * @param panel      the properties panel
@@ -250,6 +267,26 @@ public final class GenPurposeWindowView extends BorderPane {
     public StringProperty windowTitleProperty() { return windowControlToolbar.titleProperty(); }
     public String getWindowTitle() { return windowControlToolbar.getTitle(); }
     public void setWindowTitle(String title) { windowControlToolbar.setTitle(title); }
+
+    // -- theme
+    /**
+     * The colours of the window's chrome, which tell the kinds of window apart: the view carries
+     * the theme's style class (see the {@code -window-theme} rules in kview.css).
+     */
+    private final ObjectProperty<Theme> theme = new SimpleObjectProperty<>(this, "theme", Theme.PATTERN) {
+        @Override
+        protected void invalidated() {
+            for (Theme other : Theme.values()) {
+                getStyleClass().remove(other.styleClass);
+            }
+            if (get().styleClass != null) {
+                getStyleClass().add(get().styleClass);
+            }
+        }
+    };
+    public ObjectProperty<Theme> themeProperty() { return theme; }
+    public Theme getTheme() { return theme.get(); }
+    public void setTheme(Theme value) { theme.set(value); }
 
     // -- creating
     /**
@@ -326,6 +363,12 @@ public final class GenPurposeWindowView extends BorderPane {
     public Runnable getOnDiscardUnpublished() { return onDiscardUnpublished.get(); }
     public ObjectProperty<Runnable> onDiscardUnpublishedProperty() { return onDiscardUnpublished; }
     public void setOnDiscardUnpublished(Runnable handler) { this.onDiscardUnpublished.set(handler); }
+
+    // -- on open semantic pattern
+    /** Called when the pattern named under the banner's title is pressed (see {@link #setSemanticPattern}). */
+    public ObjectProperty<Runnable> onOpenSemanticPatternProperty() { return banner.onOpenPatternProperty(); }
+    public Runnable getOnOpenSemanticPattern() { return banner.getOnOpenPattern(); }
+    public void setOnOpenSemanticPattern(Runnable handler) { banner.setOnOpenPattern(handler); }
 
     // -- on close
     /** Called when the toolbar's close button is pressed. */
@@ -475,5 +518,30 @@ public final class GenPurposeWindowView extends BorderPane {
         mainCenter.setCenter(content);
         mainCenter.setTop(banner);
         return mainCenter;
+    }
+
+    /*=========================================================================*
+     *                                                                         *
+     * Supporting Classes                                                      *
+     *                                                                         *
+     *=========================================================================*/
+
+    /** The colours a window's chrome can have, one per kind of window that is told apart by them. */
+    public enum Theme {
+        /** The grey chrome: the standard Pattern window. It is what a view starts with. */
+        PATTERN(null),
+        /** The classic concept window's blue chrome: the standard Concept window. */
+        CONCEPT("concept-window-theme"),
+        /** The teal chrome: the standard Semantic window. */
+        SEMANTIC("semantic-window-theme"),
+        /** The light chrome: the windows users create in the KL Editor. */
+        CUSTOM("custom-window-theme");
+
+        /** The style class the view carries while it has this theme; null for none. */
+        private final String styleClass;
+
+        Theme(String styleClass) {
+            this.styleClass = styleClass;
+        }
     }
 }

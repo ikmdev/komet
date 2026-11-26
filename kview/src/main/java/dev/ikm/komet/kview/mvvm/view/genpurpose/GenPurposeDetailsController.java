@@ -23,6 +23,7 @@ import dev.ikm.komet.framework.view.ViewProperties;
 import dev.ikm.komet.kview.controls.KLWorkspace;
 import dev.ikm.komet.kview.controls.SectionTitledPane;
 import dev.ikm.komet.kview.controls.Toast;
+import dev.ikm.komet.kview.events.MakeKLWindowEvent;
 import dev.ikm.komet.kview.events.genediting.MakeGenEditingWindowEvent;
 import dev.ikm.komet.kview.events.pattern.PatternSavedEvent;
 import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl;
@@ -30,6 +31,7 @@ import dev.ikm.komet.kview.mvvm.view.genpurpose.control.PropertiesTabsControl.Ta
 import dev.ikm.komet.kview.mvvm.viewmodel.FormViewModel.FormMode;
 import dev.ikm.komet.layout.InlineEditSaver;
 import dev.ikm.komet.layout.editor.EditorWindowManager;
+import dev.ikm.komet.layout.editor.StandardEditorWindows;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
@@ -96,6 +98,17 @@ public class GenPurposeDetailsController {
     /** The KL-editor window definition this window is built from; shared with the editor while both are open. */
     private final EditorWindowModel editorWindowModel;
     /**
+     * In the standard Semantic window, the placement of the pattern the window's semantic is a
+     * semantic of (see {@link #isSemanticWindow()}); null in every other window.
+     */
+    private final EditorPatternModel semanticPatternModel;
+    /**
+     * In the standard Semantic window, what its Reference Component section shows: the component
+     * the semantic is about, or the chooser for it while the semantic doesn't exist; null in every
+     * other window.
+     */
+    private final ReferenceComponentView referenceComponentView;
+    /**
      * The kind of component this window frames ("Concept", "Pattern" or "Semantic") — from the
      * authored window type. Names the component in the create-mode hint and the publish toast.
      */
@@ -150,6 +163,24 @@ public class GenPurposeDetailsController {
      */
     public GenPurposeDetailsController(GenPurposeWindowView view, WindowEditSession session, UUID journalTopic,
                                        KometPreferences editorWindowPreferences) {
+        this(view, session, journalTopic, EditorWindowManager.loadWindowModel(editorWindowPreferences,
+                session.getViewProperties().calculator(),
+                Paths.get(editorWindowPreferences.absolutePath()).getFileName().toString()));
+    }
+
+    /**
+     * Wires the window's behavior onto its view for a KL-editor window definition already at
+     * hand: one loaded from preferences (see the other constructor), or the standard Semantic
+     * window's, which is generated for the semantic's pattern and stored nowhere
+     * ({@code StandardEditorWindows.createSemanticWindow}).
+     *
+     * @param view              the window's scene graph, already the window's root pane
+     * @param session           what the window is editing, on the window's derived coordinate
+     * @param journalTopic      the owning journal's topic
+     * @param editorWindowModel the window definition
+     */
+    public GenPurposeDetailsController(GenPurposeWindowView view, WindowEditSession session, UUID journalTopic,
+                                       EditorWindowModel editorWindowModel) {
         this.session = session;
         this.journalTopic = journalTopic;
         this.viewProperties = session.getViewProperties();
@@ -158,9 +189,11 @@ public class GenPurposeDetailsController {
 
         // The definition comes first: the chrome wiring below already asks its window type
         // (see usesPublishFlow).
-        String windowTitle = Paths.get(editorWindowPreferences.absolutePath()).getFileName().toString();
-        this.editorWindowModel = EditorWindowManager.loadWindowModel(editorWindowPreferences,
-                viewProperties.calculator(), windowTitle);
+        String windowTitle = editorWindowModel.getTitle();
+        this.editorWindowModel = editorWindowModel;
+        // The standard Semantic window places one pattern: the one its semantic is a semantic of.
+        this.semanticPatternModel = isSemanticWindow() ? editorWindowModel.getAllPatterns().getFirst() : null;
+        this.referenceComponentView = isSemanticWindow() ? new ReferenceComponentView(viewProperties) : null;
         this.componentKindString = switch (editorWindowModel.getWindowType()) {
             case STANDARD_CONCEPT -> "Concept";
             case STANDARD_PATTERN -> "Pattern";
@@ -181,7 +214,9 @@ public class GenPurposeDetailsController {
         sectionEditMenu.setOnEditSemantic(this::showEditSemanticFieldsPanel);
         sectionEditMenu.setOnCreateSemantic(this::onCreateSemantic);
         sectionEditMenu.setOnCreateStatedDefinition(this::createSeededStatedDefinition);
-        windowSections.setOnSectionEditRequested(sectionEditMenu::open);
+        // A section's pencil opens the menu of its patterns' semantics. The standard Semantic window
+        // has the one semantic, so its pencil opens that semantic's edit form straight away.
+        windowSections.setOnSectionEditRequested(isSemanticWindow() ? _ -> editWindowSemantic() : sectionEditMenu::open);
         view.setOnShowUnpublished(windowSections::revealFirstUnpublishedSemantic);
 
         wireChrome();
@@ -303,6 +338,69 @@ public class GenPurposeDetailsController {
     }
 
     /**
+     * Whether this is the standard Semantic window, whose component is a semantic rather than a
+     * concept or pattern semantics are on: the window shows that one semantic's reference
+     * component and fields, and creating its component means creating the semantic.
+     */
+    private boolean isSemanticWindow() {
+        return editorWindowModel.getWindowType() == EditorWindowType.STANDARD_SEMANTIC;
+    }
+
+    /**
+     * The standard Semantic window's create step: runs when the user confirms the component the
+     * new semantic is about. The semantic is created against it, uncommitted, with the pattern's
+     * field defaults, and becomes the window's component; its edit form opens for the values.
+     * Cancelling that form before it was ever submitted discards the semantic again (see
+     * {@link #onSemanticCancelled}), which takes the window back to the choice.
+     *
+     * <p>A pattern without fields has no form to fill: its semantic is complete as soon as it has
+     * a reference component, so it is saved with the window's other edits right away.
+     */
+    private void onReferenceComponentConfirmed(EntityFacade referenceComponent) {
+        PatternFacade pattern = semanticPatternModel.getPatternFacade();
+        boolean hasFields = !semanticPatternModel.getFieldDefinitions().isEmpty();
+
+        SemanticEntity<SemanticEntityVersion> semantic;
+        if (hasFields) {
+            semantic = createUncommitedSemantic(referenceComponent, pattern, Map.of());
+            unsubmittedNewSemanticNids.add(semantic.nid());
+        } else {
+            semantic = session.createSemanticInWindowTransaction(referenceComponent, pattern.nid(), _ -> { });
+        }
+
+        session.setComponent(semantic);
+        updateView();
+        windowSections.reloadAllSemanticViews();
+        updateRequiredChips();
+
+        if (hasFields) {
+            showEditSemanticFieldsPanel(semantic, semanticPatternModel);
+        }
+    }
+
+    /** The standard Semantic window's pencil: opens the edit form of the window's semantic. */
+    private void editWindowSemantic() {
+        @SuppressWarnings("unchecked")
+        SemanticEntity<SemanticEntityVersion> semantic = EntityHandle.get(session.getComponent().nid()).expectSemantic();
+        showEditSemanticFieldsPanel(semantic, semanticPatternModel);
+    }
+
+    /**
+     * Opens a component named in the standard Semantic window (the semantic's pattern, its
+     * reference component) in the standard window for its kind, on the owning journal.
+     */
+    private void openInOwnWindow(EntityFacade component) {
+        EntityHandle handle = EntityHandle.get(component.nid());
+        if (handle.isSemantic()) {
+            openInstanceWindow(component);
+        } else {
+            EvtBusFactory.getDefaultEvtBus().publish(journalTopic, new MakeKLWindowEvent(this,
+                    MakeKLWindowEvent.OPEN_STANDARD_WINDOW, component,
+                    handle.isPattern() ? StandardEditorWindows.PATTERN_WINDOW : StandardEditorWindows.CONCEPT_WINDOW));
+        }
+    }
+
+    /**
      * Creates the stated definition semantic seeded with one necessary or sufficient set — the
      * classic concept window's "Add Necessary Set" / "Add Sufficient Set" actions: the set holds
      * an is-a to "Anonymous concept", the placeholder chip the user then replaces in the inline
@@ -404,6 +502,12 @@ public class GenPurposeDetailsController {
     private void onSemanticCancelled(SemanticEntity<SemanticEntityVersion> semantic) {
         if (unsubmittedNewSemanticNids.remove(semantic.nid())) {
             session.cancelSingleSemanticTransaction(semantic);
+            if (isSemanticWindow()) {
+                // The discarded semantic was the window's own: the window is back to having none,
+                // its Reference Component section offering the choice again.
+                session.setComponent(null);
+                updateView();
+            }
             windowSections.reloadSemanticViews(semantic);
             windowSections.refreshSectionsReferencing(referencePattern -> referencePattern.getNid() == semantic.patternNid());
             updateRequiredChips();
@@ -456,16 +560,20 @@ public class GenPurposeDetailsController {
     private void buildWindowFromDefinition(String windowTitle) {
         view.setWindowTitle(windowTitle.substring(0, 1).toUpperCase() + windowTitle.substring(1));
 
-        // The standard Concept window gets the classic concept window's blue chrome (see
-        // .concept-window-theme in kview.css) and its own set of properties tabs. User-created
-        // Semantics Windows get the light chrome (.custom-window-theme) that sets them apart from
-        // the standard windows; the other standard windows keep the default grey chrome and tabs.
+        // Each kind of window has its own chrome colours, which the view knows how to show: blue
+        // for the standard Concept window, teal for the standard Semantic window, light for the
+        // windows users create in the KL Editor, and grey for the standard Pattern window.
+        view.setTheme(switch (editorWindowModel.getWindowType()) {
+            case STANDARD_CONCEPT -> GenPurposeWindowView.Theme.CONCEPT;
+            case STANDARD_SEMANTIC -> GenPurposeWindowView.Theme.SEMANTIC;
+            case SEMANTICS -> GenPurposeWindowView.Theme.CUSTOM;
+            case STANDARD_PATTERN -> GenPurposeWindowView.Theme.PATTERN;
+        });
+
+        // The standard windows have their own sets of properties tabs.
         if (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_CONCEPT) {
-            view.getStyleClass().add("concept-window-theme");
             propertiesController.getPropertiesTabs().getTabs().setAll(
                     Tab.ADD_EDIT, Tab.HIERARCHY, Tab.HISTORY, Tab.COMMENTS);
-        } else if (editorWindowModel.getWindowType() == EditorWindowType.SEMANTICS) {
-            view.getStyleClass().add("custom-window-theme");
         } else if (editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN) {
             // The standard Pattern window also edits its pattern's field defaults — the values
             // new semantics of the pattern start with in every KL window (see PatternFieldDefaults)
@@ -478,6 +586,13 @@ public class GenPurposeDetailsController {
                         : List.of(Tab.ADD_EDIT, Tab.COMMENTS));
                 view.setFieldDefaultsVisible(patternExists);
             });
+        } else if (isSemanticWindow()) {
+            propertiesController.getPropertiesTabs().getTabs().setAll(Tab.ADD_EDIT, Tab.HISTORY, Tab.COMMENTS);
+
+            // The tab names the pattern, so two Semantic windows are told apart by their tabs,
+            // as the classic Semantic window's are.
+            view.setWindowTitle(createSemanticWindowTabTitle());
+            view.setOnOpenSemanticPattern(() -> openInOwnWindow(semanticPatternModel.getPatternFacade()));
         }
 
         // The create-mode hint names the kind of component this window will create.
@@ -495,6 +610,10 @@ public class GenPurposeDetailsController {
         applyEditorWindowSettings();
 
         windowSections.build();
+
+        if (isSemanticWindow()) {
+            buildSemanticReferenceSection();
+        }
 
         // Initial view update
         updateView();
@@ -520,6 +639,42 @@ public class GenPurposeDetailsController {
             }
         };
         Entity.provider().addSubscriberWithWeakReference(storeChangeSubscriber);
+    }
+
+    /**
+     * The words on the standard Semantic window's title tab: the pattern's name, by the name the
+     * view reads it by, followed by "semantic" (see {@link PatternUIUtils#semanticTabTitle}).
+     */
+    private String createSemanticWindowTabTitle() {
+        long patternNid = semanticPatternModel.getNid();
+        var languageCalculator = viewProperties.calculator().languageCalculator();
+        String patternName = languageCalculator.getDescriptionText(patternNid)
+                .orElseGet(() -> languageCalculator.getFullyQualifiedDescriptionTextWithFallbackOrNid(patternNid));
+        return PatternUIUtils.semanticTabTitle(patternName);
+    }
+
+    /**
+     * Fills the standard Semantic window's two sections with what the definition's patterns
+     * cannot say. The Reference Component section places no pattern: it shows the component the
+     * window's semantic is about, which follows the window's component, or the chooser for it
+     * while the semantic doesn't exist. Its pencil has nothing to open, since a reference
+     * component cannot be changed; the details section's pencil edits the semantic, so it waits
+     * for the semantic to exist.
+     */
+    private void buildSemanticReferenceSection() {
+        SectionTitledPane<EntityFacade> referencePane = windowSections.titledPaneOf(editorWindowModel.getMainSection());
+        referencePane.getItems().add(referenceComponentView);
+        referencePane.editEnabledProperty().unbind();
+        referencePane.setEditEnabled(false);
+
+        SectionTitledPane<EntityFacade> detailsPane = windowSections.titledPaneOf(semanticPatternModel.getParentSection());
+        detailsPane.editEnabledProperty().unbind();
+        detailsPane.editEnabledProperty().bind(session.componentProperty().isNotNull());
+
+        session.componentProperty().subscribe(component -> referenceComponentView.setReferenceComponent(
+                component == null ? null : EntityHandle.get(component.nid()).expectSemantic().referencedComponent()));
+        referenceComponentView.setOnConfirmed(this::onReferenceComponentConfirmed);
+        referenceComponentView.setOnOpenRequested(this::openInOwnWindow);
     }
 
     /**
@@ -598,6 +753,16 @@ public class GenPurposeDetailsController {
     private void updateView() {
         LOG.info("Update view called - implement coordinate changes here.");
         EntityFacade refComponent = session.getComponent();
+        if (isSemanticWindow()) {
+            // What the semantic is a semantic of, and about, is named whether or not it exists
+            // yet; until it does, the banner's title says what the window is going to create.
+            view.setSemanticPattern(viewProperties, semanticPatternModel.getPatternFacade());
+            referenceComponentView.refresh();
+            if (refComponent == null) {
+                view.showPlaceholderTitle("New " + createSemanticWindowTabTitle());
+                return;
+            }
+        }
         if (refComponent != null) {
             view.setComponent(viewProperties, refComponent);
         } else {
@@ -726,9 +891,10 @@ public class GenPurposeDetailsController {
     }
 
     /**
-     * Opens a semantic (an instance listed on the INSTANCES tab) in the journal's gen editing
-     * window — the window the next-gen search opens a semantic in, there being no KL-driven window
-     * showing a single semantic — with its own overridable coordinate derived from the journal's.
+     * Opens a semantic (an instance listed on the INSTANCES tab, or a semantic the standard
+     * Semantic window names) in a window of its own on the journal: the journal answers the gen
+     * editing event with the standard KL Semantic window, which derives its coordinate from the
+     * journal's.
      */
     private void openInstanceWindow(EntityFacade instance) {
         ViewProperties windowViewProperties = viewProperties.parentView()
@@ -745,7 +911,8 @@ public class GenPurposeDetailsController {
      */
     private boolean usesPublishFlow() {
         return editorWindowModel.getWindowType() == EditorWindowType.STANDARD_PATTERN
-                || editorWindowModel.getWindowType() == EditorWindowType.STANDARD_CONCEPT;
+                || editorWindowModel.getWindowType() == EditorWindowType.STANDARD_CONCEPT
+                || editorWindowModel.getWindowType() == EditorWindowType.STANDARD_SEMANTIC;
     }
 
     /**
@@ -762,6 +929,16 @@ public class GenPurposeDetailsController {
      */
     private void updateRequiredChips() {
         windowSections.updateRequiredChips();
+        if (isSemanticWindow()) {
+            // The Reference Component section places no pattern to be required, yet the semantic
+            // cannot exist without a reference component: met once the window's semantic exists.
+            // Null until the sections are built (the mode subscription runs before that).
+            SectionTitledPane<EntityFacade> referencePane = windowSections.titledPaneOf(editorWindowModel.getMainSection());
+            if (referencePane != null) {
+                referencePane.setRequiredChipVisible(session.isCreateMode());
+                referencePane.setRequiredSatisfied(session.getComponent() != null);
+            }
+        }
         updatePublishState();
     }
 
@@ -774,7 +951,11 @@ public class GenPurposeDetailsController {
             // there, unpublished, from the first semantic authored on it, whether this window
             // saved it or it was opened on one saved elsewhere.
             disabled = countUnpublishedInStore() == 0 || !windowSections.allRequiredPatternsSatisfied();
-            publishTooltip = disabled ? "Complete the required semantics to publish" : "Publish";
+            // The standard Semantic window requires no semantics of its component: it requires
+            // the semantic's own reference component and values.
+            publishTooltip = !disabled ? "Publish"
+                    : isSemanticWindow() ? "Complete the required values to publish"
+                    : "Complete the required semantics to publish";
         } else {
             // Changes saved but not published count whether this window instance saved them or
             // an earlier one did (the window was closed and reopened): they are read from the
@@ -803,7 +984,7 @@ public class GenPurposeDetailsController {
         windowSections.updateUnpublishedChips();
 
         shownUnpublishedNids.clear();
-        windowSections.unpublishedSemantics().forEach(semantic -> shownUnpublishedNids.add(semantic.nid()));
+        windowSections.getUnpublishedSemantics().forEach(semantic -> shownUnpublishedNids.add(semantic.nid()));
         EntityFacade component = session.getComponent();
         if (component != null && isSavedButUnpublished(component.nid())) {
             shownUnpublishedNids.add(component.nid());
@@ -819,9 +1000,12 @@ public class GenPurposeDetailsController {
      * covers that.
      */
     private int countUnpublishedInStore() {
-        int count = windowSections.unpublishedSemantics().size();
+        List<SemanticEntity<SemanticEntityVersion>> unpublishedSemantics = windowSections.getUnpublishedSemantics();
+        int count = unpublishedSemantics.size();
         EntityFacade refComponent = session.getComponent();
-        if (refComponent != null && EntityHandle.get(refComponent.nid()).expectEntity().uncommitted()) {
+        // In the standard Semantic window the component is itself the semantic shown: counted once.
+        if (refComponent != null && EntityHandle.get(refComponent.nid()).expectEntity().uncommitted()
+                && unpublishedSemantics.stream().noneMatch(semantic -> semantic.nid() == refComponent.nid())) {
             count++;
         }
         return count;
@@ -857,7 +1041,7 @@ public class GenPurposeDetailsController {
         if (confirm.showAndWait().filter(javafx.scene.control.ButtonType.OK::equals).isEmpty()) {
             return;
         }
-        session.cancelUnpublishedTransactions(windowSections.unpublishedSemantics());
+        session.cancelUnpublishedTransactions(windowSections.getUnpublishedSemantics());
         unsubmittedNewSemanticNids.clear();
         updateView();
         windowSections.reloadAllSemanticViews();
@@ -875,7 +1059,7 @@ public class GenPurposeDetailsController {
 
         session.commit();
 
-        int unpublishable = session.commitUnpublishedTransactions(windowSections.unpublishedSemantics());
+        int unpublishable = session.commitUnpublishedTransactions(windowSections.getUnpublishedSemantics());
 
         // A semantic whose form is still open when its creation publishes is published as it
         // stands; cancelling that form now only drops the form's edits.

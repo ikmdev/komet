@@ -29,6 +29,7 @@ import dev.ikm.komet.layout.editor.model.EditorFieldModel;
 import dev.ikm.komet.layout.editor.model.EditorPatternModel;
 import dev.ikm.komet.layout.editor.model.EditorSectionModel;
 import dev.ikm.komet.layout.editor.model.EditorWindowModel;
+import dev.ikm.komet.layout.editor.model.EditorWindowType;
 import dev.ikm.komet.layout_engine.host.SupplementalAreaRenderer;
 import dev.ikm.tinkar.entity.EntityHandle;
 import dev.ikm.tinkar.entity.EntityService;
@@ -143,7 +144,7 @@ final class WindowSections {
      * The semantics currently rendered in the window, by nid, in render order — each the entity
      * object its view was built from, which is the key its presenter is filed under in
      * {@link #semanticEntityToPatternSemanticsPresenter}. Kept in step by {@link #doAddSemanticViews}
-     * and {@link #clearSemanticViews}; read by {@link #unpublishedSemantics}.
+     * and {@link #clearSemanticViews}; read by {@link #getUnpublishedSemantics}.
      */
     private final Map<Long, SemanticEntity<SemanticEntityVersion>> displayedSemantics = new LinkedHashMap<>();
 
@@ -689,7 +690,7 @@ final class WindowSections {
 
         // Start adding Semantics — skipping the ones the pattern's display filters hide (see
         // EditorPatternSemanticFilter), e.g. a Description pattern showing only fully qualified names.
-        EntityService.get().forEachSemanticForComponentOfPattern(referenceComponent.nid(), patternEntity.nid(),
+        forEachSemanticOfPattern(referenceComponent, patternEntity.nid(),
                 (semantic) -> {
                     // A pattern's defaults semantic is a semantic of the pattern referencing
                     // the pattern itself; it holds the defaults, not content (see PatternFieldDefaults).
@@ -771,7 +772,7 @@ final class WindowSections {
             return refComponents;
         }
 
-        EntityService.get().forEachSemanticForComponentOfPattern(base.nid(), editorPatternModel.getNid(),
+        forEachSemanticOfPattern(base, editorPatternModel.getNid(),
                 (SemanticEntity<SemanticEntityVersion> semantic) -> {
                     // A semantic whose creation was cancelled stays in the store, canceled.
                     if (!semantic.canceled()) {
@@ -781,6 +782,26 @@ final class WindowSections {
         );
 
         return refComponents;
+    }
+
+    /**
+     * Visits the semantics a placed pattern shows for a component. Everywhere but in the standard
+     * Semantic window those are the pattern's semantics on the component. The standard Semantic
+     * window frames a semantic rather than a component semantics are on, and its one placed
+     * pattern is that semantic's own: there the only semantic visited is the window's, read again
+     * from the store, whatever component is passed in, and none while the window has none yet.
+     */
+    @SuppressWarnings("unchecked")
+    private void forEachSemanticOfPattern(EntityFacade referenceComponent, long patternNid,
+                                          Consumer<SemanticEntity<SemanticEntityVersion>> action) {
+        if (windowModel.getWindowType() == EditorWindowType.STANDARD_SEMANTIC) {
+            EntityFacade windowSemantic = session.getComponent();
+            if (windowSemantic != null) {
+                EntityHandle.get(windowSemantic.nid()).asSemantic().ifPresent(action::accept);
+            }
+            return;
+        }
+        EntityService.get().forEachSemanticForComponentOfPattern(referenceComponent.nid(), patternNid, action);
     }
 
     /**
@@ -818,7 +839,7 @@ final class WindowSections {
      * into view, expanding the section holding it if it is collapsed.
      */
     void revealFirstUnpublishedSemantic() {
-        List<SemanticEntity<SemanticEntityVersion>> unpublished = unpublishedSemantics();
+        List<SemanticEntity<SemanticEntityVersion>> unpublished = getUnpublishedSemantics();
         if (unpublished.isEmpty()) {
             return;
         }
@@ -841,7 +862,7 @@ final class WindowSections {
     void updateUnpublishedChips() {
         Map<EditorSectionModel, List<SemanticEntity<SemanticEntityVersion>>> unpublishedBySection = new HashMap<>();
         if (!session.isCreateMode()) {
-            for (SemanticEntity<SemanticEntityVersion> semantic : unpublishedSemantics()) {
+            for (SemanticEntity<SemanticEntityVersion> semantic : getUnpublishedSemantics()) {
                 PatternSemanticsPresenter presenter = semanticEntityToPatternSemanticsPresenter.get(semantic);
                 editorPatternModelToPatternPresenter.forEach((patternModel, patternPresenter) -> {
                     if (patternPresenter == presenter) {
@@ -873,7 +894,7 @@ final class WindowSections {
      * Whether a semantic is published is read from the store, since a version may have been
      * submitted or published since its view was built.
      */
-    List<SemanticEntity<SemanticEntityVersion>> unpublishedSemantics() {
+    List<SemanticEntity<SemanticEntityVersion>> getUnpublishedSemantics() {
         return displayedSemantics.values().stream()
                 .filter(semantic -> EntityHandle.get(semantic.nid()).expectSemantic().uncommitted())
                 .toList();
