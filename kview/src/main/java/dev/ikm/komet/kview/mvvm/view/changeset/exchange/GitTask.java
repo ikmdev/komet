@@ -25,13 +25,9 @@ import dev.ikm.tinkar.common.alert.AlertStreams;
 import dev.ikm.tinkar.common.service.PluggableService;
 import dev.ikm.tinkar.common.service.SaveState;
 import dev.ikm.tinkar.common.service.TrackingCallable;
-import dev.ikm.tinkar.coordinate.Calculators;
 import dev.ikm.tinkar.entity.ChangeSetWriterService;
 import dev.ikm.tinkar.importer.registry.ChangeSetLoad;
 import dev.ikm.tinkar.events.EvtBusFactory;
-import dev.ikm.tinkar.reasoner.service.ClassifierResults;
-import dev.ikm.tinkar.reasoner.service.ReasonerService;
-import dev.ikm.tinkar.terms.KernelPattern;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -74,7 +70,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.stream.Stream;
@@ -158,16 +153,17 @@ public class GitTask extends TrackingCallable<Boolean> {
 
         // PULL phases
         PULL_VALIDATION(0.0, 5.0),
-        PULL_FETCH(5.0, 25.0),
-        PULL_LOAD(25.0, 50.0),
-        PULL_REASONER(50.0, 100.0),
+        PULL_FETCH(5.0, 40.0),
+        PULL_LOAD(40.0, 95.0),
+        PULL_RECEIVE_SHARED(95.0, 100.0),
 
         // SYNC phases (includes PULL phases plus PUSH)
         SYNC_VALIDATION(0.0, 5.0),
-        SYNC_FETCH(5.0, 20.0),
-        SYNC_LOAD(20.0, 40.0),
-        SYNC_REASONER(40.0, 70.0),
-        SYNC_PUSH(70.0, 100.0);
+        SYNC_FETCH(5.0, 25.0),
+        SYNC_LOAD(25.0, 50.0),
+        SYNC_RECEIVE_SHARED(50.0, 55.0),
+        SYNC_PUSH(55.0, 95.0),
+        SYNC_SEND_SHARED(95.0, 100.0);
 
         private final double start;
         private final double end;
@@ -718,8 +714,7 @@ public class GitTask extends TrackingCallable<Boolean> {
         TaskPhase validationPhase = pushChanges ? TaskPhase.SYNC_VALIDATION : TaskPhase.PULL_VALIDATION;
         TaskPhase pullPhase = pushChanges ? TaskPhase.SYNC_FETCH : TaskPhase.PULL_FETCH;
         TaskPhase loadPhase = pushChanges ? TaskPhase.SYNC_LOAD : TaskPhase.PULL_LOAD;
-        TaskPhase reasonerPhase = pushChanges ? TaskPhase.SYNC_REASONER : TaskPhase.PULL_REASONER;
-        TaskPhase pushPhase = TaskPhase.SYNC_PUSH; // Only used in SYNC mode
+        TaskPhase receivePhase = pushChanges ? TaskPhase.SYNC_RECEIVE_SHARED : TaskPhase.PULL_RECEIVE_SHARED;
 
         updateMessage("Validating environment...");
         updateProgress(0, TOTAL_WORK);
@@ -736,19 +731,18 @@ public class GitTask extends TrackingCallable<Boolean> {
         loadChangesets(pullPhase.getEnd(), loadPhase.getEnd(), addedFiles);
         // Shared data after the knowledge it refers to (IKE-Network/ike-issues#1313)
         receiveShared(pushChanges);
+        updatePhaseProgress(receivePhase.getStart(), receivePhase.getEnd(), 1.0);
         //Refresh UI after changesets are loaded
         EvtBusFactory.getDefaultEvtBus().publish(CALCULATOR_CACHE_TOPIC, new RefreshCalculatorCacheEvent(this, GLOBAL_REFRESH));
 
         stopIfCancelled();
 
-        // Run reasoner phase
-        runReasoner(loadPhase.getEnd(), reasonerPhase.getEnd());
-        stopIfCancelled();
-
-        // Push phase (if enabled)
+        // No reasoner runs here: a Pull or Sync brings and sends what people wrote. A person runs the reasoner from
+        // the Reasoner results window, and the inferred results go with that person's change sets.
         if (pushChanges) {
-            push(reasonerPhase.getEnd(), pushPhase.getEnd());
+            push(TaskPhase.SYNC_PUSH.getStart(), TaskPhase.SYNC_PUSH.getEnd());
             sendShared();
+            updatePhaseProgress(TaskPhase.SYNC_SEND_SHARED.getStart(), TaskPhase.SYNC_SEND_SHARED.getEnd(), 1.0);
         }
         stopIfCancelled();
 
@@ -1035,114 +1029,6 @@ public class GitTask extends TrackingCallable<Boolean> {
         if (!cancelAsked()) {
             updateMessage("Sending the shared documents...");
             sharedData().send();
-        }
-    }
-
-    /**
-     * Runs the reasoning process on the loaded data.
-     *
-     * @param startPercentage the progress percentage at the start of this phase
-     * @param endPercentage   the progress percentage at the end of this phase
-     */
-    private void runReasoner(double startPercentage, double endPercentage) {
-        updateMessage("Starting reasoning process...");
-        updatePhaseProgress(startPercentage, endPercentage, 0.0);
-
-        ImmutableList<ReasonerService> reasoners = loadReasonerServices();
-        processWithReasoners(reasoners, startPercentage, endPercentage);
-
-        updateMessage("Reasoning process completed successfully.");
-        updatePhaseProgress(startPercentage, endPercentage, 1.0);
-    }
-
-    /**
-     * Loads available reasoner services of the specified type.
-     *
-     * @return A list of available reasoner services
-     */
-    private ImmutableList<ReasonerService> loadReasonerServices() {
-        final String reasonerType = "ElkSnomedReasoner";
-        ImmutableList<ReasonerService> reasoners = Lists.immutable
-                .ofAll(PluggableService.load(ReasonerService.class).stream()
-                        .map(ServiceLoader.Provider::get)
-                        .filter(reasoner -> reasoner.getName().contains(reasonerType))
-                        .sorted(Comparator.comparing(ReasonerService::getName)).toList());
-
-        LOG.info("Number of reasoners {}", reasoners.size());
-        return reasoners;
-    }
-
-    /**
-     * Processes data with the available reasoners.
-     *
-     * @param reasoners       The list of reasoners to use
-     * @param startPercentage The start percentage for this phase
-     * @param endPercentage   The end percentage for this phase
-     */
-    private void processWithReasoners(ImmutableList<ReasonerService> reasoners, double startPercentage, double endPercentage) {
-        MutableList<ClassifierResults> resultList = Lists.mutable.empty();
-        int reasonerCount = reasoners.size();
-
-        // Give 10% of the reasoning phase to loading reasoners
-        double reasoningWorkStart = startPercentage + ((endPercentage - startPercentage) * 0.1);
-        updatePhaseProgress(startPercentage, endPercentage, 0.1);
-
-        for (int i = 0; i < reasonerCount; i++) {
-            ReasonerService rs = reasoners.get(i);
-            LOG.info("Reasoner service: {}", rs);
-
-            // Each reasoner gets an equal portion of the reasoning phase (after the 10% loading)
-            double remainingReasoning = endPercentage - reasoningWorkStart;
-            double reasonerStartPercent = reasoningWorkStart + ((remainingReasoning / reasonerCount) * i);
-            double reasonerEndPercent = reasoningWorkStart + ((remainingReasoning / reasonerCount) * (i + 1));
-
-            rs.init(Calculators.View.Default(), KernelPattern.EL_PLUS_PLUS_STATED_AXIOMS_PATTERN, KernelPattern.EL_PLUS_PLUS_INFERRED_AXIOMS_PATTERN);
-
-            try {
-                // Extract
-                updateMessage("Extracting data for reasoning...");
-                rs.extractData(new TrackingCallable<Object>() {
-                    @Override
-                    protected Object compute() throws Exception {
-                        return null;
-                    }
-                });
-                updatePhaseProgress(reasonerStartPercent, reasonerEndPercent, 0.25);
-
-                // Load
-                updateMessage("Loading data for reasoning...");
-                rs.loadData(new TrackingCallable<Object>() {
-                    @Override
-                    protected Object compute() throws Exception {
-                        return null;
-                    }
-                });
-                updatePhaseProgress(reasonerStartPercent, reasonerEndPercent, 0.5);
-
-                // Compute
-                updateMessage("Computing inferences...");
-                rs.computeInferences();
-                updatePhaseProgress(reasonerStartPercent, reasonerEndPercent, 0.75);
-
-                // Build NNF
-                updateMessage("Building necessary normal form...");
-                rs.buildNecessaryNormalForm(this);
-                updatePhaseProgress(reasonerStartPercent, reasonerEndPercent, 0.9);
-
-                // Write inferred results
-                updateMessage("Writing inferred results...");
-                ClassifierResults results = rs.writeInferredResults(this);
-                updatePhaseProgress(reasonerStartPercent, reasonerEndPercent, 1.0);
-
-                LOG.info("After Size of ConceptSet: {}", rs.getReasonerConceptSet().size());
-                LOG.info("ClassifierResults: inferred changes size {}", results.getConceptsWithInferredChanges().size());
-                LOG.info("ClassifierResults: navigation changes size {}", results.getConceptsWithNavigationChanges().size());
-                LOG.info("ClassifierResults: classificationconcept size {}", results.getClassificationConceptSet().size());
-                resultList.add(results);
-            } catch (Exception ex) {
-                stopIfCancelled();
-                LOG.error("Failed to load data for reasoning", ex);
-            }
         }
     }
 
