@@ -16,10 +16,14 @@
 package dev.ikm.komet.kview.mvvm.view.genpurpose.test;
 
 import dev.ikm.komet.kview.mvvm.view.genpurpose.GenPurposeWindowView;
+import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.image.Image;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
@@ -31,9 +35,11 @@ import org.junit.jupiter.api.Test;
 import org.testfx.api.FxRobot;
 import org.testfx.api.FxService;
 import org.testfx.api.FxToolkit;
+import org.testfx.util.WaitForAsyncUtils;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -162,6 +168,35 @@ class GenPurposeWindowViewUTestFX {
         assertEquals(Color.web("#5F8E92"), fillOf(".lidr-rounded-tab"), "and so is the tab");
         FxService.serviceContext().getCaptureSupport().saveImage(robot.capture(view.getParent()).getImage(),
                 Path.of("target", "semantic-window-chrome-create.png"));
+    }
+
+    @Test
+    @DisplayName("With the properties tray open, the focus ring does not show through where the content meets the tray")
+    void openTrayLeavesNoGapInTheBottomEdge() throws Exception {
+        FxRobot robot = new FxRobot();
+        Region content = (Region) view.lookup(".main-center-container");
+        Region trays = (Region) view.lookup(".main-right-container");
+
+        FxToolkit.setupFixture(() -> {
+            Label dragHandle = new Label("Properties");
+            BorderPane panel = new BorderPane();
+            panel.setTop(dragHandle);
+            panel.setPrefWidth(300);
+            view.setPropertiesPanel(panel, dragHandle);
+            view.setPropertiesTrayOpen(true);
+            view.requestFocus();
+        });
+        WaitForAsyncUtils.waitFor(5, TimeUnit.SECONDS, () -> trays.getWidth() >= 300);
+        WaitForAsyncUtils.waitForFxEvents();
+
+        // The content's rounded bottom-right corner is now in the middle of the window's bottom
+        // edge. The scene's root is at the capture's origin, so scene and image coordinates agree.
+        Image capture = robot.capture(view.getParent()).getImage();
+        FxService.serviceContext().getCaptureSupport().saveImage(capture, Path.of("target", "gen-purpose-window-tray-open.png"));
+        Bounds contentInScene = content.localToScene(content.getBoundsInLocal());
+        assertEquals(Color.WHITE, capture.getPixelReader().getColor(
+                        (int) contentInScene.getMaxX() - 1, (int) contentInScene.getMaxY() - 1),
+                "the corner the content leaves unpainted is white, not the ring's blue");
     }
 
     /** The fill of the first background layer of the node the selector finds in the window. */

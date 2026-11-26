@@ -7088,6 +7088,16 @@ Styling a context menu for kview ui/ux controls
     -fx-padding: 0 0 10px 0;
 }
 
+/* The frame around the content and the trays is white too, to the same rounded bottom corners.
+   With the properties tray open, the content's rounded bottom-right corner is no longer a corner
+   of the window: it meets the tray in the middle of the bottom edge, and what it leaves unpainted
+   there would show whatever lies behind the window's body — the focus ring's blue, drawn as a
+   shadow under it. */
+.gen-purpose-window .window-body-frame {
+    -fx-background-color: white;
+    -fx-background-radius: 0 0 10px 10px;
+}
+
 /* No border line between the header banner and the sections. */
 .gen-purpose-window.concept-detail-pane .main-center-container .section-titled-pane {
     -fx-border-width: 0;
@@ -7164,6 +7174,16 @@ Styling a context menu for kview ui/ux controls
    semantic doesn't exist, the component picker with the note under it and Confirm at the right. */
 .gen-purpose-window .semantic-reference .semantic-reference-chooser {
     -fx-spacing: 8;
+}
+
+/* The picker's search text and prompt are regular weight, as in the properties panel and the
+   axiom tree's inline slot: the control's own rule names only the family, which keeps the bold
+   weight inherited from the hosting section. */
+.gen-purpose-window .semantic-reference .component-control > .concept-container > .concept-search-box > .search-field-container > .concept-text-field,
+.gen-purpose-window .semantic-reference .component-control > .concept-container > .concept-search-box > .search-field-container > .search-prompt {
+    -fx-font-family: "Noto Sans";
+    -fx-font-weight: normal;
+    -fx-font-style: normal;
 }
 
 .gen-purpose-window .semantic-reference .semantic-reference-note {

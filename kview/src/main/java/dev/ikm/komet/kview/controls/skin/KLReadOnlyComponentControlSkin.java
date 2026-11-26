@@ -55,7 +55,9 @@ public class KLReadOnlyComponentControlSkin extends KLReadOnlyBaseControlSkin<KL
         unpublishedDot.managedProperty().bind(control.unpublishedProperty());
         textContainer.getChildren().add(unpublishedDot);
         // With the row's own 4px spacing this is the 6px gap the text controls leave before their dot.
-        HBox.setMargin(unpublishedDot, new Insets(0, 0, 0, 2));
+        // The right margin keeps the dot off the row's edge when there is no value: the empty
+        // prompt then takes the whole row and the dot ends up at its far end.
+        HBox.setMargin(unpublishedDot, new Insets(0, 6, 0, 2));
         textContainer.setAlignment(Pos.CENTER_LEFT);
 
         // CSS

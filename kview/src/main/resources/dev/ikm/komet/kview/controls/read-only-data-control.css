@@ -34,18 +34,22 @@
 
 /* Value from a version that is not published yet (the :unpublished pseudo-class mirrors
    KLReadOnlyBaseControl.unpublishedProperty): the text keeps its color and a 6px amber dot follows
-   it (the label's right-hand graphic, KLReadOnlyDataTypeControlSkin). */
+   it (the label's right-hand graphic, KLReadOnlyDataTypeControlSkin).
+   The dot's node is 4px wider than the dot it paints, the extra being clear space on its left.
+   With text that space and the 2px gap make the 6px between text and dot. Without text the label
+   drops the gap and the dot would sit on the row's left edge: the clear space keeps it off it. */
 .read-only-data-control:unpublished .main-container .text-container > .text {
-    -fx-graphic-text-gap: 6;
+    -fx-graphic-text-gap: 2;
 }
 
 .read-only-data-control .text-container > .text > .unpublished-dot {
-    -fx-min-width: 6;
-    -fx-pref-width: 6;
-    -fx-max-width: 6;
+    -fx-min-width: 10;
+    -fx-pref-width: 10;
+    -fx-max-width: 10;
     -fx-min-height: 6;
     -fx-pref-height: 6;
     -fx-max-height: 6;
     -fx-background-color: #D9A93E;
+    -fx-background-insets: 0 0 0 4;
     -fx-background-radius: 3;
 }
