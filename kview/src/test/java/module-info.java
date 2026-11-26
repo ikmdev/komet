@@ -28,6 +28,8 @@ module dev.ikm.komet.kview.test {
     requires org.eclipse.collections.api;
     requires dev.ikm.tinkar.common;
     requires dev.ikm.tinkar.terms;
+    requires dev.ikm.tinkar.schema;
+    requires dev.ikm.jpms.protobuf;
     requires org.carlfx.axonic;
     requires org.carlfx.cognitive;
 

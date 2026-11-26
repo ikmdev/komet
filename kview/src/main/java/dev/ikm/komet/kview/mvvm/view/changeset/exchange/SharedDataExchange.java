@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 import static dev.ikm.komet.framework.events.appevents.RefreshCalculatorCacheEvent.GLOBAL_REFRESH;
 import static dev.ikm.tinkar.events.FrameworkTopics.CALCULATOR_CACHE_TOPIC;
@@ -81,11 +82,13 @@ public final class SharedDataExchange {
 
     /**
      * Brings the shared data others synced: what they shared is loaded, and what they deleted or made
-     * local is removed here, or kept as local data where something of this person's was never synced.
+     * local is removed here, or kept as local data where something of this person's was never synced. A shared
+     * change set the knowledge base refuses is reported in Warnings and Errors, with why.
      *
      * @param sending whether the sync also sends, so shared documents are first brought up to date with their files
+     * @return the shared change sets the knowledge base refused; empty when none was, or when they were not received
      */
-    public void receive(boolean sending) {
+    public List<ChangeSetLoad.Result> receive(boolean sending) {
         try {
             if (sending) {
                 ServiceLifecycleManager.get().beforeSync();
@@ -99,14 +102,17 @@ public final class SharedDataExchange {
             });
             ChangeSetLoad.Report report = ChangeSetLoad.loadShared(storeRoot(), ChangeSetLoad.Progress.NONE);
             LOG.info("Shared data: {}\n{}", report.summary(), report.markdown());
+            RefusedChangeSets.advise("Shared documents", "of the shared documents", storeRoot(), report.refused());
             if (changed || !applied.quiet() || !report.loaded().isEmpty()) {
                 // The calculators first, so what reads its document again reads it with the data just loaded.
                 EvtBusFactory.getDefaultEvtBus().publish(CALCULATOR_CACHE_TOPIC, new RefreshCalculatorCacheEvent(this, GLOBAL_REFRESH));
                 ServiceLifecycleManager.get().afterSync();
             }
+            return report.refused();
         } catch (GitAPIException | IOException | RuntimeException e) {
             LOG.error("The shared documents were not received", e);
             AlertStreams.getRoot().dispatch(AlertObject.makeError("Shared documents", "They were not received: " + e.getMessage(), e));
+            return List.of();
         }
     }
 

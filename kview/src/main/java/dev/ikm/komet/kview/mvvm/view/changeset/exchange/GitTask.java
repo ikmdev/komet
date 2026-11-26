@@ -65,6 +65,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
@@ -214,6 +215,9 @@ public class GitTask extends TrackingCallable<Boolean> {
 
     /** Whether the remote has taken something this operation pushed, which a cancel does not take back. */
     private boolean sent;
+
+    /** The change sets this operation loaded that the knowledge base refused, the knowledge first, then the shared. */
+    private final List<ChangeSetLoad.Result> refused = new ArrayList<>();
 
     /**
      * Creates a new GitTask with the specified operation mode and changeset folder.
@@ -746,7 +750,10 @@ public class GitTask extends TrackingCallable<Boolean> {
         }
         stopIfCancelled();
 
-        updateMessage("%s completed successfully.".formatted(pushChanges ? "Synchronization" : "Pulling"));
+        // A refused change set does not fail the operation; its last message names the file (IKE-Network/ike-issues#1406).
+        String operation = pushChanges ? "Synchronization" : "Pulling";
+        updateMessage(refused.isEmpty() ? operation + " completed successfully."
+                : operation + " completed; " + RefusedChangeSets.sentence(refused));
         return true;
     }
 
@@ -1000,6 +1007,9 @@ public class GitTask extends TrackingCallable<Boolean> {
         }
         if (!report.refused().isEmpty()) {
             message.append(", ").append(report.refused().size()).append(" refused");
+            refused.addAll(report.refused());
+            RefusedChangeSets.advise("Exchange", "brought by this " + operationMode, changeSetFolder.getParent(),
+                    report.refused());
         }
         updateMessage(message.append('.').toString());
         updatePhaseProgress(startPercentage, endPercentage, 1.0);
@@ -1013,14 +1023,15 @@ public class GitTask extends TrackingCallable<Boolean> {
     }
 
     /**
-     * Brings the shared data others synced. A failure is reported and the sync of the knowledge goes on.
+     * Brings the shared data others synced. A failure is reported and the sync of the knowledge goes on, and so does
+     * a shared change set the knowledge base refused, which the last message names.
      *
      * @param sending whether this sync also sends, so shared documents are first brought up to date with their files
      */
     private void receiveShared(boolean sending) {
         if (!cancelAsked()) {
             updateMessage("Bringing the shared documents...");
-            sharedData().receive(sending);
+            refused.addAll(sharedData().receive(sending));
         }
     }
 
