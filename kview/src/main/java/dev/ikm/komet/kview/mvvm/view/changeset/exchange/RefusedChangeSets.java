@@ -26,9 +26,10 @@ import java.util.List;
  * What a Pull or a Sync tells a person of the change sets the knowledge base refused: the files, at the end of its
  * last message, and why each was refused, in an advisory in Warnings and Errors. A refusal does not fail the
  * operation: what did load is in the knowledge base, a Sync still sends this person's change sets, and a refused
- * file stays in its folder (IKE-Network/ike-issues#1406).
+ * file stays in its folder (IKE-Network/ike-issues#1406). An open of the knowledge base gives the same advisory for
+ * the files it refuses, at every open that refuses them.
  */
-final class RefusedChangeSets {
+public final class RefusedChangeSets {
 
     /** How many files the last message names before it counts the rest, so it keeps to the popup's few lines. */
     private static final int NAMED = 2;
@@ -61,18 +62,19 @@ final class RefusedChangeSets {
      * none was.
      *
      * @param title     what was refused, in a few words
-     * @param which     which change sets they are, after "change set(s)": {@code brought by this Pull}
+     * @param which     which change sets they are, after "change set(s)": {@code brought by this Pull}, or
+     *                  {@code found when it opened}
      * @param storeRoot the knowledge base's root, to say whether the files are tried again when it next opens
      * @param refused   the refused files
      */
-    static void advise(String title, String which, Path storeRoot, List<ChangeSetLoad.Result> refused) {
+    public static void advise(String title, String which, Path storeRoot, List<ChangeSetLoad.Result> refused) {
         if (refused.isEmpty()) {
             return;
         }
         boolean one = refused.size() == 1;
         StringBuilder description = new StringBuilder("The knowledge base refused ")
                 .append(one ? "1 change set " : refused.size() + " change sets ").append(which)
-                .append(one ? ": what it holds" : ": what they hold").append(" is not in the knowledge base.");
+                .append(one ? ": what it contains" : ": what they contain").append(" is not in the knowledge base.");
         for (ChangeSetLoad.Result result : refused) {
             description.append("\n- ").append(name(result.file())).append(": ")
                     .append(result.reason().orElse("no reason was given"));
