@@ -68,6 +68,7 @@ public class SectionTitledPaneSkin<T> extends TitledPaneSkin {
 
         editButton = new EditButton(control);
         editButton.disableProperty().bind(control.editEnabledProperty().not());
+        editButton.visibleProperty().bind(control.editVisibleProperty());
 
         createRequiredChip(control);
         createUnpublishedChip(control);

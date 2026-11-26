@@ -47,6 +47,16 @@ public class SectionTitledPane<T> extends TitledPane {
     public BooleanProperty editEnabledProperty() { return editEnabled; }
     public void setEditEnabled(boolean editEnabled) { this.editEnabled.set(editEnabled); }
 
+    // -- edit visible
+    /**
+     * Whether the title bar shows the edit pencil. Off for a section that never has anything to
+     * edit, as opposed to one whose pencil is only disabled for now ({@link #editEnabledProperty()}).
+     */
+    private final BooleanProperty editVisible = new SimpleBooleanProperty(this, "editVisible", true);
+    public boolean isEditVisible() { return editVisible.get(); }
+    public BooleanProperty editVisibleProperty() { return editVisible; }
+    public void setEditVisible(boolean visible) { editVisible.set(visible); }
+
     // -- required chip visible
     /**
      * Whether the title bar shows the required-pattern chip.

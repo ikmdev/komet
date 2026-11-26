@@ -7151,9 +7151,11 @@ Styling a context menu for kview ui/ux controls
 }
 
 /* The title of a window whose component doesn't exist yet says what it is going to create,
-   muted so it does not read as a name. */
+   muted so it does not read as a name. It has no identicon either, so the label drops its graphic:
+   an empty one would still hold the identicon's width and the gap after it. */
 .gen-purpose-window .window-main-title:placeholder .label {
     -fx-text-fill: -Grey-7;
+    -fx-content-display: text-only;
 }
 
 /***********************  Semantic window reference component  ******************************/

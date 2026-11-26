@@ -657,15 +657,14 @@ public class GenPurposeDetailsController {
      * Fills the standard Semantic window's two sections with what the definition's patterns
      * cannot say. The Reference Component section places no pattern: it shows the component the
      * window's semantic is about, which follows the window's component, or the chooser for it
-     * while the semantic doesn't exist. Its pencil has nothing to open, since a reference
-     * component cannot be changed; the details section's pencil edits the semantic, so it waits
+     * while the semantic doesn't exist. It shows no pencil, since a reference component
+     * cannot be changed and the chooser is in the section itself; the details section's pencil edits the semantic, so it waits
      * for the semantic to exist.
      */
     private void buildSemanticReferenceSection() {
         SectionTitledPane<EntityFacade> referencePane = windowSections.titledPaneOf(editorWindowModel.getMainSection());
         referencePane.getItems().add(referenceComponentView);
-        referencePane.editEnabledProperty().unbind();
-        referencePane.setEditEnabled(false);
+        referencePane.setEditVisible(false);
 
         SectionTitledPane<EntityFacade> detailsPane = windowSections.titledPaneOf(semanticPatternModel.getParentSection());
         detailsPane.editEnabledProperty().unbind();
