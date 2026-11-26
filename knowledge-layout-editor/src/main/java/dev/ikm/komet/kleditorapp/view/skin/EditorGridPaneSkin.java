@@ -25,6 +25,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +34,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
+    private static final Logger LOG = LoggerFactory.getLogger(EditorGridPaneSkin.class);
+
     private static final int DRAG_LINE_THICKNESS = 5;
 
     private final GridPane gridPane = new GridPane();
@@ -364,7 +368,7 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
         }
 
         private void setupDragAndDrop() {
-            setOnDragOver(event -> {
+            setOnDragOver(event -> loggingFailure("drag over a tile", () -> {
                 if (event.getGestureSource() instanceof GridBaseControl gridBaseControl) {
                     if (!checkIfShouldAllowDragAndDropRearrange(gridBaseControl, event)) {
                         return;
@@ -378,9 +382,9 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
                 if (editorGridPane.getOnDragOverIntoTile() != null) {
                     editorGridPane.getOnDragOverIntoTile().accept(event);
                 }
-            });
+            }));
 
-            setOnDragDropped(event -> {
+            setOnDragDropped(event -> loggingFailure("drop into a tile", () -> {
                 if (event.getGestureSource() instanceof GridBaseControl gridBaseControl) {
                     if (!checkIfShouldAllowDragAndDropRearrange(gridBaseControl, event)) {
                         return;
@@ -396,7 +400,7 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
                     GridDropInfo gridDropInfo = new GridDropInfo(getRowIdex(), getColumnIndex());
                     editorGridPane.getOnDragDroppedIntoTile().accept(event, gridDropInfo);
                 }
-            });
+            }));
 
             setOnDragEntered(event -> {
                 pseudoClassStateChanged(DRAG_HOVER_CLASS, true);
@@ -405,6 +409,20 @@ public class EditorGridPaneSkin extends SkinBase<EditorGridPane> {
             setOnDragExited(event -> {
                 pseudoClassStateChanged(DRAG_HOVER_CLASS, false);
             });
+        }
+
+        /**
+         * Runs a drag-and-drop handler, logging what it throws before letting it go on. JavaFX
+         * calls these handlers from the platform's drag-and-drop callback, where an exception is
+         * dropped without a trace: the drop then just does nothing, and nothing says why.
+         */
+        private static void loggingFailure(String gesture, Runnable handler) {
+            try {
+                handler.run();
+            } catch (RuntimeException | Error failure) {
+                LOG.error("The editor grid failed on a {}", gesture, failure);
+                throw failure;
+            }
         }
 
         private boolean checkIfShouldAllowDragAndDropRearrange(GridBaseControl gridBaseControl, DragEvent event){

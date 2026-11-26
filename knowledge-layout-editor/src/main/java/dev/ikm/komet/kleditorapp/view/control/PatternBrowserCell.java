@@ -143,7 +143,8 @@ public class PatternBrowserCell extends ListCell<PatternBrowserItem> {
 
             // Create the content to be placed on the dragboard
             ClipboardContent clipboardContent = new ClipboardContent();
-            clipboardContent.put(KL_EDITOR_VERSION_PROXY, currentPatternEntityVersion.nid());
+            // As text: since JavaFX 27.0.1 a dragboard hands back anything but a String as raw bytes.
+            clipboardContent.put(KL_EDITOR_VERSION_PROXY, Long.toString(currentPatternEntityVersion.nid()));
 
             // Standard-size drag image with canonical cursor placement (right of the identicon).
             KonceptDragSource.setDragView(dragboard, this);
